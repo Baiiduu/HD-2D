@@ -2,6 +2,8 @@
 class_name ArtDirection
 extends Node
 
+const BEAM_LAYER := 1 << 17 # Layer 18; water mirror layers 19/20 remain separate.
+
 ## 美术总控：把调画面最常用的参数集中在一个节点上。
 ## 在编辑器检查器里修改会实时生效；运行时也以这里的数值为准，
 ## 会覆盖环境、月光、天空、地面材质、光晕与后处理中的对应设置。
@@ -103,6 +105,29 @@ extends Node
 	set(v): puddle_amount = v; _queue_apply()
 
 @export_group("灯光与后处理")
+## 城市路灯：真实聚光照明、局部锥形雾和阴影贴图共用同一个光源。
+@export var cone_enabled := true:
+	set(v): cone_enabled = v; _queue_apply()
+@export_range(0.0, 8.0, 0.1) var cone_energy := 4.0:
+	set(v): cone_energy = v; _queue_apply()
+@export_range(0.0, 40.0, 0.1) var cone_scattering := 18.0:
+	set(v): cone_scattering = v; _queue_apply()
+@export_range(0.0, 0.3, 0.005) var cone_density := 0.10:
+	set(v): cone_density = v; _queue_apply()
+## 路灯单独使用更宽的光晕；不改变其他灯笼的光晕设定。
+@export_range(0.0, 3.0, 0.05) var street_halo_energy := 1.25:
+	set(v): street_halo_energy = v; _queue_apply()
+@export var street_dust_enabled := true:
+	set(v): street_dust_enabled = v; _queue_apply()
+## 聚光灯照亮的柔边锥面补充轮廓；仍然接收真实阴影。
+@export_range(0.0, 2.0, 0.05) var cone_shape_gain := 0.18:
+	set(v): cone_shape_gain = v; _queue_apply()
+## 灯具尺寸决定离物体越远越柔和的 PCSS 阴影；0 可关闭该额外开销。
+@export_range(0.0, 0.3, 0.01) var cone_shadow_size := 0.08:
+	set(v): cone_shadow_size = v; _queue_apply()
+## 全向补光避免背面全黑，同时保留聚光阴影的对比。
+@export_range(0.0, 4.0, 0.1) var street_fill_energy := 1.2:
+	set(v): street_fill_energy = v; _queue_apply()
 ## 灯头光晕亮度
 @export_range(0.0, 2.0, 0.01) var halo_energy := 0.35:
 	set(v): halo_energy = v; _queue_apply()
@@ -173,7 +198,29 @@ func apply() -> void:
 		post.set_shader_parameter("vignette_strength", vignette)
 		post.set_shader_parameter("split_toning", split_toning)
 	if is_inside_tree():
+		_apply_street_lights()
 		_apply_halos(get_tree().edited_scene_root if Engine.is_editor_hint() else get_tree().current_scene)
+
+func _apply_street_lights() -> void:
+	for light: Light3D in get_parent().find_children("*", "Light3D", true, false):
+		light.light_cull_mask &= ~BEAM_LAYER
+	for light: OmniLight3D in get_tree().get_nodes_in_group("street_lights"):
+		light.light_energy = street_fill_energy
+		var cone := light.get_node("Cone") as SpotLight3D
+		cone.light_energy = cone_energy if cone_enabled else 0.0
+		cone.light_volumetric_fog_energy = cone_scattering
+		cone.light_size = cone_shadow_size
+		cone.light_cull_mask |= BEAM_LAYER
+		var beam := light.get_node("Beam") as MeshInstance3D
+		beam.visible = cone_enabled and volumetric_fog and cone_shape_gain > 0.0
+		beam.set_instance_shader_parameter("lamp_position", cone.global_position)
+		(beam.mesh.surface_get_material(0) as ShaderMaterial).set_shader_parameter("gain", cone_shape_gain)
+		var mist := light.get_node("Mist") as FogVolume
+		mist.visible = cone_enabled
+		(mist.material as ShaderMaterial).set_shader_parameter("density", cone_density)
+		var dust := light.get_node("Dust") as GPUParticles3D
+		dust.emitting = street_dust_enabled and cone_enabled
+		dust.visible = dust.emitting and volumetric_fog
 
 ## 场景里所有名为 Halo 的光晕面片（包括灯笼子场景里的）
 func _apply_halos(root: Node) -> void:
@@ -182,4 +229,4 @@ func _apply_halos(root: Node) -> void:
 	for node in root.find_children("Halo", "MeshInstance3D", true, false):
 		var mesh := (node as MeshInstance3D).mesh
 		if mesh and mesh.surface_get_material(0) is ShaderMaterial:
-			(mesh.surface_get_material(0) as ShaderMaterial).set_shader_parameter("energy", halo_energy)
+			(mesh.surface_get_material(0) as ShaderMaterial).set_shader_parameter("energy", street_halo_energy if node.is_in_group("street_halos") else halo_energy)

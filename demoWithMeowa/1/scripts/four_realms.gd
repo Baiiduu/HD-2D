@@ -59,6 +59,10 @@ func _set_shadows(enabled: bool) -> void:
 
 func _set_fog(enabled: bool) -> void:
 	environment.volumetric_fog_enabled = enabled
+	for dust: GPUParticles3D in get_tree().get_nodes_in_group("street_light_dust"):
+		dust.visible = enabled and dust.emitting
+	for beam: MeshInstance3D in get_tree().get_nodes_in_group("light_beams"):
+		beam.visible = enabled and $ArtDirection.cone_enabled and $ArtDirection.cone_shape_gain > 0.0
 	_update_status()
 
 func _set_mood(index: int) -> void:

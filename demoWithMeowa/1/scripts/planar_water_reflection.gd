@@ -156,6 +156,8 @@ func _water_visible(cells: Array, frustum: Array[Plane]) -> bool:
 func _prepare_geometry(sources: Array[Node], index: int, height: float) -> void:
 	var bit: int = MIRROR_BITS[index]
 	for source in sources:
+		if source.is_in_group("light_beams"):
+			continue # Mirrors omit volumetric fog and its cone surface accents.
 		if source is Sprite3D:
 			_make_sprite(source, bit, height)
 			continue
