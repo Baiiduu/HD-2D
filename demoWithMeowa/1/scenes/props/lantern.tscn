@@ -1,0 +1,61 @@
+[gd_scene format=3]
+
+[ext_resource type="Shader" path="res://shaders/halo.gdshader" id="halo_shader"]
+
+[sub_resource type="StandardMaterial3D" id="Post_material"]
+albedo_color = Color(0.22, 0.15, 0.1, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="Post_mesh"]
+material = SubResource("Post_material")
+size = Vector3(0.09, 1.1, 0.09)
+
+[sub_resource type="StandardMaterial3D" id="Lamp_material"]
+albedo_color = Color(1, 0.78, 0.5, 1)
+emission_enabled = true
+emission = Color(1, 0.7, 0.38, 1)
+emission_energy_multiplier = 3.5
+
+[sub_resource type="BoxMesh" id="Lamp_mesh"]
+material = SubResource("Lamp_material")
+size = Vector3(0.2, 0.24, 0.2)
+
+[sub_resource type="BoxMesh" id="Cap_mesh"]
+material = SubResource("Post_material")
+size = Vector3(0.28, 0.05, 0.28)
+
+[sub_resource type="ShaderMaterial" id="Halo_material"]
+render_priority = 0
+shader = ExtResource("halo_shader")
+
+[sub_resource type="QuadMesh" id="Halo_mesh"]
+material = SubResource("Halo_material")
+size = Vector2(1.1, 1.1)
+
+[node name="Lantern" type="Node3D"]
+
+[node name="Post" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+mesh = SubResource("Post_mesh")
+
+[node name="Lamp" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.22, 0)
+cast_shadow = 0
+mesh = SubResource("Lamp_mesh")
+
+[node name="Cap" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.36, 0)
+mesh = SubResource("Cap_mesh")
+
+[node name="Light" type="OmniLight3D" parent="." groups=["shadow_lights"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.22, 0)
+light_color = Color(1, 0.72, 0.42, 1)
+light_energy = 2.2
+light_volumetric_fog_energy = 1.2
+shadow_enabled = true
+omni_range = 5.5
+
+[node name="Halo" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.22, 0)
+cast_shadow = 0
+mesh = SubResource("Halo_mesh")
