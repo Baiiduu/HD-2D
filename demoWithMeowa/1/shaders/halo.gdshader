@@ -9,12 +9,18 @@ uniform float energy = 0.35;
 // 光晕直径上的像素数
 uniform float pixels = 28.0;
 uniform float falloff = 2.4;
+// Only mirror cameras use layers 19/20; the main camera omits those bits.
+uniform float reflection_height_0 = -0.32;
+uniform float reflection_height_1 = 0.48;
 
 void vertex() {
 	MODELVIEW_MATRIX = VIEW_MATRIX * mat4(INV_VIEW_MATRIX[0], INV_VIEW_MATRIX[1], INV_VIEW_MATRIX[2], MODEL_MATRIX[3]);
 }
 
 void fragment() {
+	float world_y = (INV_VIEW_MATRIX * vec4(VERTEX, 1.0)).y;
+	if (((CAMERA_VISIBLE_LAYERS & 262144u) != 0u && world_y < reflection_height_0 + 0.005) ||
+		((CAMERA_VISIBLE_LAYERS & 524288u) != 0u && world_y < reflection_height_1 + 0.005)) { discard; }
 	vec2 uv = (floor(UV * pixels) + 0.5) / pixels;
 	float r = length(uv - 0.5) * 2.0;
 	float intensity = pow(clamp(1.0 - r, 0.0, 1.0), falloff);

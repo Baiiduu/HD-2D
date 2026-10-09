@@ -4,8 +4,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
-// Art assets are served straight from the read-only asset pack (never modified).
-const ASSETS = path.resolve(root, '../../Asserts');
+// Prefer the original shared pack; the Godot benchmark bundles the same extracted assets.
+const sharedAssets = path.resolve(root, '../../Asserts');
+const ASSETS = fs.existsSync(sharedAssets) ? sharedAssets : path.resolve(root, '../godot/assets');
 
 // Small dev/preview endpoint so the page itself can save screenshots into ./screenshots
 function screenshotSaver() {

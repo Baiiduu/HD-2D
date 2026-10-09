@@ -41,6 +41,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		$HUD/Panel/Margin/Column/Effects/Fog.button_pressed = not environment.volumetric_fog_enabled
 	elif event.keycode == KEY_L:
 		_set_mood((mood_index + 1) % moods.count())
+	elif event.keycode == KEY_R:
+		$ArtDirection.water_reflection_enabled = not $WaterReflection.enabled
 
 func _zone_at(point: Vector3) -> int:
 	return terrain.data.get_biome(terrain.data.world_to_cell(point - terrain.global_position))

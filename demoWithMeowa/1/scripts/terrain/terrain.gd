@@ -310,6 +310,12 @@ func _upload_map() -> void:
 		RenderingServer.material_set_param(top_material.get_rid(), "terrain_map", _map_texture.get_rid())
 		RenderingServer.material_set_param(top_material.get_rid(), "map_origin", data.origin)
 		RenderingServer.material_set_param(top_material.get_rid(), "cell_size", data.cell_size)
+	if water_material is ShaderMaterial:
+		var water := water_material as ShaderMaterial
+		# Generated data stays in the rendering server, rather than being saved into .tscn.
+		RenderingServer.material_set_param(water.get_rid(), "terrain_map", _map_texture.get_rid())
+		water.set_shader_parameter("map_origin", data.origin)
+		water.set_shader_parameter("cell_size", data.cell_size)
 
 # ---------- 工具函数 ----------
 

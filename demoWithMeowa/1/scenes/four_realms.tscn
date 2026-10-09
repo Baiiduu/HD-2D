@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://dyh2hfsv2xv4g"]
+[gd_scene load_steps=96 format=3 uid="uid://dyh2hfsv2xv4g"]
 
 [ext_resource type="Script" uid="uid://srckk3f4b30t" path="res://scripts/art_direction.gd" id="art_direction"]
 [ext_resource type="Shader" uid="uid://duhny4lanykqa" path="res://shaders/cliff.gdshader" id="cliff_shader"]
@@ -30,6 +30,7 @@
 [ext_resource type="Texture2D" uid="uid://dgthxbtp632a2" path="res://assets/ground/tilesets/dirt/tileset/tileset.png" id="tileset_dirt"]
 [ext_resource type="Texture2D" uid="uid://bhp0fawqqvcne" path="res://assets/ground/tilesets/path/tileset/tileset.png" id="tileset_path"]
 [ext_resource type="Shader" uid="uid://srqt368qg3a" path="res://shaders/waterfall.gdshader" id="waterfall_shader"]
+[ext_resource type="Script" uid="uid://ce7x51clpltsu" path="res://scripts/planar_water_reflection.gd" id="water_reflection"]
 [ext_resource type="Shader" uid="uid://ckds5ydk553f1" path="res://shaders/water.gdshader" id="water_shader"]
 [ext_resource type="Script" uid="uid://cbecgwsphexb0" path="res://scripts/four_realms.gd" id="world"]
 
@@ -155,15 +156,23 @@ resource_name = "Water"
 render_priority = 0
 shader = ExtResource("water_shader")
 shader_parameter/water_texture = ExtResource("tex_water")
-shader_parameter/shallow_color = Color(0.42, 0.74, 0.82, 1)
-shader_parameter/deep_color = Color(0.18, 0.42, 0.58, 1)
-shader_parameter/foam_color = Color(0.92, 0.97, 1, 1)
+shader_parameter/map_origin = Vector2i(-7, -6)
+shader_parameter/shallow_color = Color(0.26, 0.46, 0.5, 1)
+shader_parameter/deep_color = Color(0.1, 0.25, 0.3, 1)
+shader_parameter/foam_color = Color(0.72, 0.83, 0.85, 1)
 shader_parameter/flow = Vector2(0, 0.12)
 shader_parameter/cell_size = 1.6
 shader_parameter/texture_pixels = 64.0
 shader_parameter/foam_distance = 0.12
 shader_parameter/depth_fade = 1.6
-shader_parameter/opacity = 0.7
+shader_parameter/opacity = 0.86
+shader_parameter/wave_strength = 0.08
+shader_parameter/reflection_strength = 0.85
+shader_parameter/reflection_matrix_0 = Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+shader_parameter/reflection_matrix_1 = Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+shader_parameter/reflection_heights = Vector2(-0.32, 0.48)
+shader_parameter/reflection_enabled_0 = false
+shader_parameter/reflection_enabled_1 = false
 
 [sub_resource type="ShaderMaterial" id="Waterfall_material"]
 resource_name = "Waterfall"
@@ -293,6 +302,8 @@ shader = ExtResource("halo_shader")
 shader_parameter/energy = 0.35
 shader_parameter/pixels = 28.0
 shader_parameter/falloff = 2.4
+shader_parameter/reflection_height_0 = -0.32
+shader_parameter/reflection_height_1 = 0.48
 
 [sub_resource type="QuadMesh" id="Halo_large"]
 material = SubResource("Halo_material")
@@ -401,7 +412,7 @@ material = SubResource("Halo_material")
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_66"]
 radius = 0.24
-height = 1.065918
+height = 1.06592
 
 [sub_resource type="ShaderMaterial" id="Post_material"]
 shader = ExtResource("post_shader")
@@ -431,15 +442,16 @@ corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
 
-[node name="FourRealms" type="Node3D" unique_id=633176447]
+[node name="FourRealms" type="Node3D"]
 script = ExtResource("world")
 
-[node name="ArtDirection" type="Node" parent="." unique_id=1873402500 node_paths=PackedStringArray("world_environment", "moon", "terrain", "post_process")]
+[node name="ArtDirection" type="Node" parent="." node_paths=PackedStringArray("world_environment", "moon", "terrain", "post_process", "water_reflection")]
 script = ExtResource("art_direction")
 world_environment = NodePath("../WorldEnvironment")
 moon = NodePath("../Moon")
 terrain = NodePath("../World/Ground")
 post_process = NodePath("../PostProcess/Screen")
+water_reflection = NodePath("../WaterReflection")
 exposure = 0.72
 brightness = 1.0
 contrast = 1.0
@@ -450,11 +462,11 @@ fog_end = 99.0
 fog_amount = 0.0
 low_fog = 0.06
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=856566514]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_20")
 
-[node name="Moon" type="DirectionalLight3D" parent="." unique_id=375952739 groups=["shadow_lights"]]
-transform = Transform3D(0.8480481, 0.3938068, -0.35458517, 0, 0.66913056, 0.74314487, 0.52991927, -0.63022256, 0.5674549, 0, 0, 0)
+[node name="Moon" type="DirectionalLight3D" parent="." groups=["shadow_lights"]]
+transform = Transform3D(0.848048, 0.393807, -0.354585, 0, 0.669131, 0.743145, 0.529919, -0.630223, 0.567455, 0, 0, 0)
 light_color = Color(0.9, 0.86, 0.8, 1)
 light_energy = 0.85
 light_volumetric_fog_energy = 0.4
@@ -463,8 +475,8 @@ shadow_enabled = true
 shadow_blur = 1.5
 directional_shadow_max_distance = 45.0
 
-[node name="Camera3D" type="Camera3D" parent="." unique_id=722368568 node_paths=PackedStringArray("target")]
-transform = Transform3D(1, 0, 0, 0, 0.81915206, 0.57357645, 0, -0.57357645, 0.81915206, 0, 8.456, 12.049)
+[node name="Camera3D" type="Camera3D" parent="." node_paths=PackedStringArray("target")]
+transform = Transform3D(1, 0, 0, 0, 0.819152, 0.573576, 0, -0.573576, 0.819152, 0, 8.456, 12.049)
 attributes = SubResource("CameraAttributes_follow")
 current = true
 fov = 30.0
@@ -476,9 +488,9 @@ pitch_degrees = 10.0
 dead_zone = 0.1
 dof_amount = 0.02
 
-[node name="World" type="Node3D" parent="." unique_id=1624529680]
+[node name="World" type="Node3D" parent="."]
 
-[node name="Ground" type="Node3D" parent="World" unique_id=1873402219]
+[node name="Ground" type="Node3D" parent="World"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
 script = ExtResource("terrain_script")
 data = ExtResource("terrain_data")
@@ -488,7 +500,7 @@ water_material = SubResource("Water_material")
 waterfall_material = SubResource("Waterfall_material")
 bridge_material = SubResource("Bridge_material")
 
-[node name="Fireflies" type="GPUParticles3D" parent="World" unique_id=1873402301]
+[node name="Fireflies" type="GPUParticles3D" parent="World"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 1, 5.5)
 amount = 36
 lifetime = 7.0
@@ -497,7 +509,7 @@ visibility_aabb = AABB(-6, -2, -5, 12, 4, 10)
 process_material = SubResource("Firefly_process")
 draw_pass_1 = SubResource("Firefly_mesh")
 
-[node name="FirefliesEastLowland" type="GPUParticles3D" parent="World" unique_id=1873402302]
+[node name="FirefliesEastLowland" type="GPUParticles3D" parent="World"]
 transform = Transform3D(1.5, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0.9, 5.5)
 amount = 48
 lifetime = 7.0
@@ -506,7 +518,7 @@ visibility_aabb = AABB(-8, -2, -5, 16, 4, 10)
 process_material = SubResource("Firefly_process")
 draw_pass_1 = SubResource("Firefly_mesh")
 
-[node name="FirefliesEastHighland" type="GPUParticles3D" parent="World" unique_id=1873402303]
+[node name="FirefliesEastHighland" type="GPUParticles3D" parent="World"]
 transform = Transform3D(1.5, 0, 0, 0, 1, 0, 0, 0, 0.6, 27, 1.8, -7)
 amount = 36
 lifetime = 7.0
@@ -515,122 +527,122 @@ visibility_aabb = AABB(-8, -2, -4, 16, 4, 8)
 process_material = SubResource("Firefly_process")
 draw_pass_1 = SubResource("Firefly_mesh")
 
-[node name="WaterfallMist" type="FogVolume" parent="World" unique_id=1873402304]
+[node name="WaterfallMist" type="FogVolume" parent="World"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.4, -0.05, -1.7)
 size = Vector3(2, 1.1, 1.8)
 material = SubResource("Mist_material")
 
-[node name="Lantern0" parent="World" unique_id=1873402310 instance=ExtResource("lantern_scene")]
+[node name="Lantern0" parent="World" instance=ExtResource("lantern_scene")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.9, 0.02, -1)
 
-[node name="Lantern1" parent="World" unique_id=1873402311 instance=ExtResource("lantern_scene")]
+[node name="Lantern1" parent="World" instance=ExtResource("lantern_scene")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.9, 0.02, 1)
 
-[node name="Lantern2" parent="World" unique_id=1873402312 instance=ExtResource("lantern_scene")]
+[node name="Lantern2" parent="World" instance=ExtResource("lantern_scene")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.9, 0.82, -6)
 
-[node name="Lantern3" parent="World" unique_id=1873402313 instance=ExtResource("lantern_scene")]
+[node name="Lantern3" parent="World" instance=ExtResource("lantern_scene")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.9, 0.82, -3.6)
 
-[node name="City" type="Node3D" parent="World" unique_id=1107943110]
+[node name="City" type="Node3D" parent="World"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -5)
 
-[node name="Building0" type="MeshInstance3D" parent="World/City" unique_id=939261574]
+[node name="Building0" type="MeshInstance3D" parent="World/City"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 1.7, -2)
 material_override = SubResource("StandardMaterial3D_11")
 mesh = SubResource("BoxMesh_31")
 
-[node name="Body" type="StaticBody3D" parent="World/City/Building0" unique_id=85007558]
+[node name="Body" type="StaticBody3D" parent="World/City/Building0"]
 
-[node name="Collision" type="CollisionShape3D" parent="World/City/Building0/Body" unique_id=2130732460]
+[node name="Collision" type="CollisionShape3D" parent="World/City/Building0/Body"]
 shape = SubResource("BoxShape3D_32")
 
-[node name="Roof0" type="MeshInstance3D" parent="World/City" unique_id=1293827629]
+[node name="Roof0" type="MeshInstance3D" parent="World/City"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 3.5, -2)
 material_override = SubResource("StandardMaterial3D_12")
 mesh = SubResource("BoxMesh_33")
 
-[node name="Window0_0_0" type="MeshInstance3D" parent="World/City" unique_id=532865848]
+[node name="Window0_0_0" type="MeshInstance3D" parent="World/City"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.25, 1.15, -0.73)
 material_override = SubResource("StandardMaterial3D_15")
 mesh = SubResource("BoxMesh_34")
 
-[node name="Window0_0_1" type="MeshInstance3D" parent="World/City" unique_id=1326392417]
+[node name="Window0_0_1" type="MeshInstance3D" parent="World/City"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.75, 1.15, -0.73)
 material_override = SubResource("StandardMaterial3D_15")
 mesh = SubResource("BoxMesh_34")
 
-[node name="Window0_1_0" type="MeshInstance3D" parent="World/City" unique_id=358335421]
+[node name="Window0_1_0" type="MeshInstance3D" parent="World/City"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.25, 2.6, -0.73)
 material_override = SubResource("StandardMaterial3D_15")
 mesh = SubResource("BoxMesh_34")
 
-[node name="Window0_1_1" type="MeshInstance3D" parent="World/City" unique_id=1235624017]
+[node name="Window0_1_1" type="MeshInstance3D" parent="World/City"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.75, 2.6, -0.73)
 material_override = SubResource("StandardMaterial3D_15")
 mesh = SubResource("BoxMesh_34")
 
-[node name="Door0" type="MeshInstance3D" parent="World/City" unique_id=970238496]
+[node name="Door0" type="MeshInstance3D" parent="World/City"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 0.65, -0.71)
 material_override = SubResource("StandardMaterial3D_7")
 mesh = SubResource("BoxMesh_35")
 
-[node name="Building1" type="MeshInstance3D" parent="World/City" unique_id=1287685000]
+[node name="Building1" type="MeshInstance3D" parent="World/City"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2.25, -2.4)
 material_override = SubResource("StandardMaterial3D_11")
 mesh = SubResource("BoxMesh_36")
 
-[node name="Body" type="StaticBody3D" parent="World/City/Building1" unique_id=1810175404]
+[node name="Body" type="StaticBody3D" parent="World/City/Building1"]
 
-[node name="Collision" type="CollisionShape3D" parent="World/City/Building1/Body" unique_id=2022857033]
+[node name="Collision" type="CollisionShape3D" parent="World/City/Building1/Body"]
 shape = SubResource("BoxShape3D_37")
 
-[node name="Roof1" type="MeshInstance3D" parent="World/City" unique_id=1489388928]
+[node name="Roof1" type="MeshInstance3D" parent="World/City"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 4.6, -2.4)
 material_override = SubResource("StandardMaterial3D_12")
 mesh = SubResource("BoxMesh_38")
 
-[node name="Window1_0_0" type="MeshInstance3D" parent="World/City" unique_id=1128508227]
+[node name="Window1_0_0" type="MeshInstance3D" parent="World/City"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.25, 1.15, -1.03)
 material_override = SubResource("StandardMaterial3D_15")
 mesh = SubResource("BoxMesh_34")
 
-[node name="Window1_0_1" type="MeshInstance3D" parent="World/City" unique_id=403438828]
+[node name="Window1_0_1" type="MeshInstance3D" parent="World/City"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.75, 1.15, -1.03)
 material_override = SubResource("StandardMaterial3D_15")
 mesh = SubResource("BoxMesh_34")
 
-[node name="Window1_1_0" type="MeshInstance3D" parent="World/City" unique_id=2093893988]
+[node name="Window1_1_0" type="MeshInstance3D" parent="World/City"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.25, 2.6, -1.03)
 material_override = SubResource("StandardMaterial3D_15")
 mesh = SubResource("BoxMesh_34")
 
-[node name="Window1_1_1" type="MeshInstance3D" parent="World/City" unique_id=463868563]
+[node name="Window1_1_1" type="MeshInstance3D" parent="World/City"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.75, 2.6, -1.03)
 material_override = SubResource("StandardMaterial3D_15")
 mesh = SubResource("BoxMesh_34")
 
-[node name="Door1" type="MeshInstance3D" parent="World/City" unique_id=1989372974]
+[node name="Door1" type="MeshInstance3D" parent="World/City"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.65, -1.01)
 material_override = SubResource("StandardMaterial3D_7")
 mesh = SubResource("BoxMesh_35")
 
-[node name="Lamppost0" type="MeshInstance3D" parent="World/City" unique_id=1846638816]
+[node name="Lamppost0" type="MeshInstance3D" parent="World/City"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.7, 1.25, 2.3)
 material_override = SubResource("StandardMaterial3D_1")
 mesh = SubResource("CylinderMesh_39")
 
-[node name="Lantern0" type="MeshInstance3D" parent="World/City" unique_id=1391972439]
+[node name="Lantern0" type="MeshInstance3D" parent="World/City"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.7, 2.55, 2.3)
 material_override = SubResource("StandardMaterial3D_15")
 mesh = SubResource("BoxMesh_40")
 
-[node name="Halo" type="MeshInstance3D" parent="World/City/Lantern0" unique_id=1873402401]
+[node name="Halo" type="MeshInstance3D" parent="World/City/Lantern0"]
 cast_shadow = 0
 instance_shader_parameters/halo_color = Color(1, 0.84, 0.62, 1)
 mesh = SubResource("Halo_large")
 
-[node name="StreetLight0" type="OmniLight3D" parent="World/City" unique_id=1058493172 groups=["shadow_lights"]]
+[node name="StreetLight0" type="OmniLight3D" parent="World/City" groups=["shadow_lights"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.7, 2.5, 2.3)
 light_color = Color(1, 0.79608, 0.54118, 1)
 light_energy = 2.7
@@ -638,7 +650,7 @@ light_volumetric_fog_energy = 0.6
 shadow_enabled = true
 omni_range = 6.5
 
-[node name="Cone" type="SpotLight3D" parent="World/City/StreetLight0" unique_id=1873402402]
+[node name="Cone" type="SpotLight3D" parent="World/City/StreetLight0"]
 transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0)
 light_color = Color(1, 0.8, 0.55, 1)
 light_energy = 2.5
@@ -647,28 +659,28 @@ spot_range = 4.0
 spot_angle = 36.0
 spot_angle_attenuation = 0.6
 
-[node name="Mist" type="FogVolume" parent="World/City/StreetLight0" unique_id=1873402403]
+[node name="Mist" type="FogVolume" parent="World/City/StreetLight0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.2, 0)
 size = Vector3(2.6, 2.8, 2.6)
 shape = 0
 material = SubResource("Lamp_fog")
 
-[node name="Lamppost1" type="MeshInstance3D" parent="World/City" unique_id=689176460]
+[node name="Lamppost1" type="MeshInstance3D" parent="World/City"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.6, 1.25, 2.3)
 material_override = SubResource("StandardMaterial3D_1")
 mesh = SubResource("CylinderMesh_39")
 
-[node name="Lantern1" type="MeshInstance3D" parent="World/City" unique_id=965629873]
+[node name="Lantern1" type="MeshInstance3D" parent="World/City"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.6, 2.55, 2.3)
 material_override = SubResource("StandardMaterial3D_15")
 mesh = SubResource("BoxMesh_40")
 
-[node name="Halo" type="MeshInstance3D" parent="World/City/Lantern1" unique_id=1873402405]
+[node name="Halo" type="MeshInstance3D" parent="World/City/Lantern1"]
 cast_shadow = 0
 instance_shader_parameters/halo_color = Color(1, 0.84, 0.62, 1)
 mesh = SubResource("Halo_large")
 
-[node name="StreetLight1" type="OmniLight3D" parent="World/City" unique_id=2024443887 groups=["shadow_lights"]]
+[node name="StreetLight1" type="OmniLight3D" parent="World/City" groups=["shadow_lights"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.6, 2.5, 2.3)
 light_color = Color(1, 0.79608, 0.54118, 1)
 light_energy = 2.7
@@ -676,7 +688,7 @@ light_volumetric_fog_energy = 0.6
 shadow_enabled = true
 omni_range = 6.5
 
-[node name="Cone" type="SpotLight3D" parent="World/City/StreetLight1" unique_id=1873402406]
+[node name="Cone" type="SpotLight3D" parent="World/City/StreetLight1"]
 transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0)
 light_color = Color(1, 0.8, 0.55, 1)
 light_energy = 2.5
@@ -685,13 +697,13 @@ spot_range = 4.0
 spot_angle = 36.0
 spot_angle_attenuation = 0.6
 
-[node name="Mist" type="FogVolume" parent="World/City/StreetLight1" unique_id=1873402407]
+[node name="Mist" type="FogVolume" parent="World/City/StreetLight1"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.2, 0)
 size = Vector3(2.6, 2.8, 2.6)
 shape = 0
 material = SubResource("Lamp_fog")
 
-[node name="NPC0" type="Sprite3D" parent="World/City" unique_id=1025089759]
+[node name="NPC0" type="Sprite3D" parent="World/City"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.3, 0.79, 3.5)
 pixel_size = 0.0234375
 billboard = 2
@@ -700,7 +712,7 @@ alpha_cut = 1
 texture_filter = 0
 texture = ExtResource("tex_17")
 
-[node name="NPC1" type="Sprite3D" parent="World/City" unique_id=1092715268]
+[node name="NPC1" type="Sprite3D" parent="World/City"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.9, 0.79, 3.5)
 pixel_size = 0.0234375
 billboard = 2
@@ -709,100 +721,100 @@ alpha_cut = 1
 texture_filter = 0
 texture = ExtResource("tex_18")
 
-[node name="Cyber" type="Node3D" parent="World" unique_id=318544791]
+[node name="Cyber" type="Node3D" parent="World"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -5)
 
-[node name="Tower0" type="MeshInstance3D" parent="World/Cyber" unique_id=1177221780]
+[node name="Tower0" type="MeshInstance3D" parent="World/Cyber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.8, 2.3, -2.3)
 material_override = SubResource("StandardMaterial3D_13")
 mesh = SubResource("BoxMesh_41")
 
-[node name="Body" type="StaticBody3D" parent="World/Cyber/Tower0" unique_id=841348550]
+[node name="Body" type="StaticBody3D" parent="World/Cyber/Tower0"]
 
-[node name="Collision" type="CollisionShape3D" parent="World/Cyber/Tower0/Body" unique_id=1872661261]
+[node name="Collision" type="CollisionShape3D" parent="World/Cyber/Tower0/Body"]
 shape = SubResource("BoxShape3D_42")
 
-[node name="Strip0_0" type="MeshInstance3D" parent="World/Cyber" unique_id=156391025]
+[node name="Strip0_0" type="MeshInstance3D" parent="World/Cyber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.8, 3.8, -1.17)
 material_override = SubResource("StandardMaterial3D_16")
 mesh = SubResource("BoxMesh_43")
 
-[node name="Strip0_1" type="MeshInstance3D" parent="World/Cyber" unique_id=823338109]
+[node name="Strip0_1" type="MeshInstance3D" parent="World/Cyber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.8, 2.85, -1.17)
 material_override = SubResource("StandardMaterial3D_16")
 mesh = SubResource("BoxMesh_43")
 
-[node name="Strip0_2" type="MeshInstance3D" parent="World/Cyber" unique_id=1634556465]
+[node name="Strip0_2" type="MeshInstance3D" parent="World/Cyber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.8, 1.9, -1.17)
 material_override = SubResource("StandardMaterial3D_16")
 mesh = SubResource("BoxMesh_43")
 
-[node name="Edge0" type="MeshInstance3D" parent="World/Cyber" unique_id=723719968]
+[node name="Edge0" type="MeshInstance3D" parent="World/Cyber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.92, 2.25, -1.17)
 material_override = SubResource("StandardMaterial3D_17")
 mesh = SubResource("BoxMesh_44")
 
-[node name="Tower1" type="MeshInstance3D" parent="World/Cyber" unique_id=1176413463]
+[node name="Tower1" type="MeshInstance3D" parent="World/Cyber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 2.9, -2.8)
 material_override = SubResource("StandardMaterial3D_13")
 mesh = SubResource("BoxMesh_45")
 
-[node name="Body" type="StaticBody3D" parent="World/Cyber/Tower1" unique_id=399796492]
+[node name="Body" type="StaticBody3D" parent="World/Cyber/Tower1"]
 
-[node name="Collision" type="CollisionShape3D" parent="World/Cyber/Tower1/Body" unique_id=1590910807]
+[node name="Collision" type="CollisionShape3D" parent="World/Cyber/Tower1/Body"]
 shape = SubResource("BoxShape3D_46")
 
-[node name="Strip1_0" type="MeshInstance3D" parent="World/Cyber" unique_id=740344141]
+[node name="Strip1_0" type="MeshInstance3D" parent="World/Cyber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 5, -1.67)
 material_override = SubResource("StandardMaterial3D_17")
 mesh = SubResource("BoxMesh_43")
 
-[node name="Strip1_1" type="MeshInstance3D" parent="World/Cyber" unique_id=770628352]
+[node name="Strip1_1" type="MeshInstance3D" parent="World/Cyber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 4.05, -1.67)
 material_override = SubResource("StandardMaterial3D_17")
 mesh = SubResource("BoxMesh_43")
 
-[node name="Strip1_2" type="MeshInstance3D" parent="World/Cyber" unique_id=1592469669]
+[node name="Strip1_2" type="MeshInstance3D" parent="World/Cyber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 3.1, -1.67)
 material_override = SubResource("StandardMaterial3D_17")
 mesh = SubResource("BoxMesh_43")
 
-[node name="Edge1" type="MeshInstance3D" parent="World/Cyber" unique_id=2018050459]
+[node name="Edge1" type="MeshInstance3D" parent="World/Cyber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.72, 2.85, -1.67)
 material_override = SubResource("StandardMaterial3D_17")
 mesh = SubResource("BoxMesh_47")
 
-[node name="Tower2" type="MeshInstance3D" parent="World/Cyber" unique_id=558740547]
+[node name="Tower2" type="MeshInstance3D" parent="World/Cyber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.3, 1.85, -1.7)
 material_override = SubResource("StandardMaterial3D_13")
 mesh = SubResource("BoxMesh_48")
 
-[node name="Body" type="StaticBody3D" parent="World/Cyber/Tower2" unique_id=1468115985]
+[node name="Body" type="StaticBody3D" parent="World/Cyber/Tower2"]
 
-[node name="Collision" type="CollisionShape3D" parent="World/Cyber/Tower2/Body" unique_id=498896295]
+[node name="Collision" type="CollisionShape3D" parent="World/Cyber/Tower2/Body"]
 shape = SubResource("BoxShape3D_49")
 
-[node name="Strip2_0" type="MeshInstance3D" parent="World/Cyber" unique_id=1098112660]
+[node name="Strip2_0" type="MeshInstance3D" parent="World/Cyber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.3, 2.9, -0.57)
 material_override = SubResource("StandardMaterial3D_16")
 mesh = SubResource("BoxMesh_43")
 
-[node name="Strip2_1" type="MeshInstance3D" parent="World/Cyber" unique_id=90806047]
+[node name="Strip2_1" type="MeshInstance3D" parent="World/Cyber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.3, 1.95, -0.57)
 material_override = SubResource("StandardMaterial3D_16")
 mesh = SubResource("BoxMesh_43")
 
-[node name="Strip2_2" type="MeshInstance3D" parent="World/Cyber" unique_id=370956995]
+[node name="Strip2_2" type="MeshInstance3D" parent="World/Cyber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.3, 1, -0.57)
 material_override = SubResource("StandardMaterial3D_16")
 mesh = SubResource("BoxMesh_43")
 
-[node name="Edge2" type="MeshInstance3D" parent="World/Cyber" unique_id=136952227]
+[node name="Edge2" type="MeshInstance3D" parent="World/Cyber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.18, 1.8, -0.57)
 material_override = SubResource("StandardMaterial3D_17")
 mesh = SubResource("BoxMesh_50")
 
-[node name="CyanWash" type="OmniLight3D" parent="World/Cyber" unique_id=1697694522 groups=["shadow_lights"]]
+[node name="CyanWash" type="OmniLight3D" parent="World/Cyber" groups=["shadow_lights"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 2, 1)
 light_color = Color(0.28627, 0.86275, 0.90588, 1)
 light_energy = 3.0
@@ -810,7 +822,7 @@ light_volumetric_fog_energy = 0.6
 shadow_enabled = true
 omni_range = 7.0
 
-[node name="MagentaWash" type="OmniLight3D" parent="World/Cyber" unique_id=671190495 groups=["shadow_lights"]]
+[node name="MagentaWash" type="OmniLight3D" parent="World/Cyber" groups=["shadow_lights"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 2, 2)
 light_color = Color(0.8902, 0.2902, 0.68627, 1)
 light_energy = 3.0
@@ -818,7 +830,7 @@ light_volumetric_fog_energy = 0.6
 shadow_enabled = true
 omni_range = 7.0
 
-[node name="NPC0" type="Sprite3D" parent="World/Cyber" unique_id=1052823807]
+[node name="NPC0" type="Sprite3D" parent="World/Cyber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.3, 0.79, 3.5)
 pixel_size = 0.0234375
 billboard = 2
@@ -827,7 +839,7 @@ alpha_cut = 1
 texture_filter = 0
 texture = ExtResource("tex_19")
 
-[node name="NPC1" type="Sprite3D" parent="World/Cyber" unique_id=696510484]
+[node name="NPC1" type="Sprite3D" parent="World/Cyber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.9, 0.79, 3.5)
 pixel_size = 0.0234375
 billboard = 2
@@ -836,94 +848,94 @@ alpha_cut = 1
 texture_filter = 0
 texture = ExtResource("tex_20")
 
-[node name="Cultivation" type="Node3D" parent="World" unique_id=225199431]
+[node name="Cultivation" type="Node3D" parent="World"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, 5)
 
-[node name="TempleBase" type="MeshInstance3D" parent="World/Cultivation" unique_id=798658767]
+[node name="TempleBase" type="MeshInstance3D" parent="World/Cultivation"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0.3, -1.8)
 material_override = SubResource("StandardMaterial3D_14")
 mesh = SubResource("BoxMesh_52")
 
-[node name="Body" type="StaticBody3D" parent="World/Cultivation/TempleBase" unique_id=245980571]
+[node name="Body" type="StaticBody3D" parent="World/Cultivation/TempleBase"]
 
-[node name="Collision" type="CollisionShape3D" parent="World/Cultivation/TempleBase/Body" unique_id=1120038079]
+[node name="Collision" type="CollisionShape3D" parent="World/Cultivation/TempleBase/Body"]
 shape = SubResource("BoxShape3D_53")
 
-[node name="Step1" type="MeshInstance3D" parent="World/Cultivation" unique_id=659196693]
+[node name="Step1" type="MeshInstance3D" parent="World/Cultivation"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0.12, 0.7)
 material_override = SubResource("StandardMaterial3D_14")
 mesh = SubResource("BoxMesh_54")
 
-[node name="Step2" type="MeshInstance3D" parent="World/Cultivation" unique_id=1857761054]
+[node name="Step2" type="MeshInstance3D" parent="World/Cultivation"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0.3, 0.25)
 material_override = SubResource("StandardMaterial3D_14")
 mesh = SubResource("BoxMesh_55")
 
-[node name="Pillar0" type="MeshInstance3D" parent="World/Cultivation" unique_id=790684851]
+[node name="Pillar0" type="MeshInstance3D" parent="World/Cultivation"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1.75, -3)
 material_override = SubResource("StandardMaterial3D_7")
 mesh = SubResource("CylinderMesh_56")
 
-[node name="Pillar1" type="MeshInstance3D" parent="World/Cultivation" unique_id=713121319]
+[node name="Pillar1" type="MeshInstance3D" parent="World/Cultivation"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 1.75, -3)
 material_override = SubResource("StandardMaterial3D_7")
 mesh = SubResource("CylinderMesh_56")
 
-[node name="Pillar2" type="MeshInstance3D" parent="World/Cultivation" unique_id=1099752313]
+[node name="Pillar2" type="MeshInstance3D" parent="World/Cultivation"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1.75, -0.6)
 material_override = SubResource("StandardMaterial3D_7")
 mesh = SubResource("CylinderMesh_56")
 
-[node name="Pillar3" type="MeshInstance3D" parent="World/Cultivation" unique_id=1945071528]
+[node name="Pillar3" type="MeshInstance3D" parent="World/Cultivation"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 1.75, -0.6)
 material_override = SubResource("StandardMaterial3D_7")
 mesh = SubResource("CylinderMesh_56")
 
-[node name="RoofEaves" type="MeshInstance3D" parent="World/Cultivation" unique_id=1533944354]
+[node name="RoofEaves" type="MeshInstance3D" parent="World/Cultivation"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 3, -1.8)
 material_override = SubResource("StandardMaterial3D_8")
 mesh = SubResource("BoxMesh_57")
 
-[node name="TempleRoof" type="MeshInstance3D" parent="World/Cultivation" unique_id=275783450]
+[node name="TempleRoof" type="MeshInstance3D" parent="World/Cultivation"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 3.5, -1.8)
 material_override = SubResource("StandardMaterial3D_8")
 mesh = SubResource("PrismMesh_58")
 
-[node name="RedLantern0" type="MeshInstance3D" parent="World/Cultivation" unique_id=1695448620]
+[node name="RedLantern0" type="MeshInstance3D" parent="World/Cultivation"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 2.35, 0.15)
 material_override = SubResource("StandardMaterial3D_15")
 mesh = SubResource("CylinderMesh_59")
 
-[node name="Halo" type="MeshInstance3D" parent="World/Cultivation/RedLantern0" unique_id=1873402404]
+[node name="Halo" type="MeshInstance3D" parent="World/Cultivation/RedLantern0"]
 cast_shadow = 0
 instance_shader_parameters/halo_color = Color(1, 0.35, 0.22, 1)
 mesh = SubResource("Halo_small")
 
-[node name="LanternLight0" type="OmniLight3D" parent="World/Cultivation" unique_id=1918221739 groups=["shadow_lights"]]
+[node name="LanternLight0" type="OmniLight3D" parent="World/Cultivation" groups=["shadow_lights"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 2.25, 0.25)
 light_color = Color(1, 0.78039, 0.4902, 1)
 light_energy = 1.6
 light_volumetric_fog_energy = 0.6
 shadow_enabled = true
 
-[node name="RedLantern1" type="MeshInstance3D" parent="World/Cultivation" unique_id=321163015]
+[node name="RedLantern1" type="MeshInstance3D" parent="World/Cultivation"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 2.35, 0.15)
 material_override = SubResource("StandardMaterial3D_15")
 mesh = SubResource("CylinderMesh_59")
 
-[node name="Halo" type="MeshInstance3D" parent="World/Cultivation/RedLantern1" unique_id=1873402408]
+[node name="Halo" type="MeshInstance3D" parent="World/Cultivation/RedLantern1"]
 cast_shadow = 0
 instance_shader_parameters/halo_color = Color(1, 0.35, 0.22, 1)
 mesh = SubResource("Halo_small")
 
-[node name="LanternLight1" type="OmniLight3D" parent="World/Cultivation" unique_id=2016537141 groups=["shadow_lights"]]
+[node name="LanternLight1" type="OmniLight3D" parent="World/Cultivation" groups=["shadow_lights"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 2.25, 0.25)
 light_color = Color(1, 0.78039, 0.4902, 1)
 light_energy = 1.6
 light_volumetric_fog_energy = 0.6
 shadow_enabled = true
 
-[node name="SpiritLight" type="OmniLight3D" parent="World/Cultivation" unique_id=366436998 groups=["shadow_lights"]]
+[node name="SpiritLight" type="OmniLight3D" parent="World/Cultivation" groups=["shadow_lights"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1.4, 1.5)
 light_color = Color(0.39216, 0.91765, 0.72157, 1)
 light_energy = 3.0
@@ -931,7 +943,7 @@ light_volumetric_fog_energy = 0.6
 shadow_enabled = true
 omni_range = 6.0
 
-[node name="NPC0" type="Sprite3D" parent="World/Cultivation" unique_id=1404829744]
+[node name="NPC0" type="Sprite3D" parent="World/Cultivation"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.3, 0.79, 3.5)
 pixel_size = 0.0234375
 billboard = 2
@@ -940,8 +952,8 @@ alpha_cut = 1
 texture_filter = 0
 texture = ExtResource("tex_21")
 
-[node name="NPC1" type="Sprite3D" parent="World/Cultivation" unique_id=1173714720]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.7981405, 0.79, 3.5)
+[node name="NPC1" type="Sprite3D" parent="World/Cultivation"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.79814, 0.79, 3.5)
 pixel_size = 0.0234375
 billboard = 2
 shaded = true
@@ -949,10 +961,10 @@ alpha_cut = 1
 texture_filter = 0
 texture = ExtResource("tex_22")
 
-[node name="Wilderness" type="Node3D" parent="World" unique_id=1948331151]
+[node name="Wilderness" type="Node3D" parent="World"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 5)
 
-[node name="ForestGlade" type="OmniLight3D" parent="World/Wilderness" unique_id=399929322 groups=["shadow_lights"]]
+[node name="ForestGlade" type="OmniLight3D" parent="World/Wilderness" groups=["shadow_lights"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 1)
 light_color = Color(0.5451, 0.74118, 0.63529, 1)
 light_energy = 1.8
@@ -960,7 +972,7 @@ light_volumetric_fog_energy = 0.6
 shadow_enabled = true
 omni_range = 7.0
 
-[node name="NPC0" type="Sprite3D" parent="World/Wilderness" unique_id=1479916689]
+[node name="NPC0" type="Sprite3D" parent="World/Wilderness"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.3, 0.79, 3.5)
 pixel_size = 0.0234375
 billboard = 2
@@ -969,7 +981,7 @@ alpha_cut = 1
 texture_filter = 0
 texture = ExtResource("tex_23")
 
-[node name="NPC1" type="Sprite3D" parent="World/Wilderness" unique_id=2011883700]
+[node name="NPC1" type="Sprite3D" parent="World/Wilderness"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.9, 0.79, 3.5)
 pixel_size = 0.0234375
 billboard = 2
@@ -978,15 +990,15 @@ alpha_cut = 1
 texture_filter = 0
 texture = ExtResource("tex_24")
 
-[node name="Player" type="CharacterBody3D" parent="." unique_id=1023953083]
+[node name="Player" type="CharacterBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 1.4)
 script = ExtResource("player")
 
-[node name="Collision" type="CollisionShape3D" parent="Player" unique_id=624466867]
+[node name="Collision" type="CollisionShape3D" parent="Player"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.532959, 0)
 shape = SubResource("CapsuleShape3D_66")
 
-[node name="Sprite" type="Sprite3D" parent="Player" unique_id=912098709]
+[node name="Sprite" type="Sprite3D" parent="Player"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
 pixel_size = 0.0234375
 billboard = 2
@@ -995,10 +1007,10 @@ alpha_cut = 1
 texture_filter = 0
 texture = ExtResource("tex_17")
 
-[node name="PostProcess" type="CanvasLayer" parent="." unique_id=1873402305]
+[node name="PostProcess" type="CanvasLayer" parent="."]
 layer = 0
 
-[node name="Screen" type="ColorRect" parent="PostProcess" unique_id=1873402306]
+[node name="Screen" type="ColorRect" parent="PostProcess"]
 material = SubResource("Post_material")
 anchors_preset = 15
 anchor_right = 1.0
@@ -1007,64 +1019,64 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="HUD" type="CanvasLayer" parent="." unique_id=317513956]
+[node name="HUD" type="CanvasLayer" parent="."]
 visible = false
 
-[node name="Panel" type="PanelContainer" parent="HUD" unique_id=584865263]
+[node name="Panel" type="PanelContainer" parent="HUD"]
 offset_left = 24.0
 offset_top = 24.0
 offset_right = 500.0
 theme = SubResource("Theme_22")
 theme_override_styles/panel = SubResource("StyleBoxFlat_23")
 
-[node name="Margin" type="MarginContainer" parent="HUD/Panel" unique_id=1132315872]
+[node name="Margin" type="MarginContainer" parent="HUD/Panel"]
 layout_mode = 2
 theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 16
 
-[node name="Column" type="VBoxContainer" parent="HUD/Panel/Margin" unique_id=1907066602]
+[node name="Column" type="VBoxContainer" parent="HUD/Panel/Margin"]
 layout_mode = 2
 theme_override_constants/separation = 9
 
-[node name="Title" type="Label" parent="HUD/Panel/Margin/Column" unique_id=1353872552]
+[node name="Title" type="Label" parent="HUD/Panel/Margin/Column"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
 text = "四境 / HD-2D"
 
-[node name="Subtitle" type="Label" parent="HUD/Panel/Margin/Column" unique_id=1720583375]
+[node name="Subtitle" type="Label" parent="HUD/Panel/Margin/Column"]
 modulate = Color(0.65, 0.78, 0.82, 1)
 layout_mode = 2
 text = "同一世界里的城市、霓虹、修仙与野外"
 
-[node name="Effects" type="HBoxContainer" parent="HUD/Panel/Margin/Column" unique_id=752794600]
+[node name="Effects" type="HBoxContainer" parent="HUD/Panel/Margin/Column"]
 layout_mode = 2
 
-[node name="Glow" type="CheckButton" parent="HUD/Panel/Margin/Column/Effects" unique_id=737403768]
+[node name="Glow" type="CheckButton" parent="HUD/Panel/Margin/Column/Effects"]
 layout_mode = 2
 focus_mode = 0
 button_pressed = true
 text = "泛光 G"
 
-[node name="Shadows" type="CheckButton" parent="HUD/Panel/Margin/Column/Effects" unique_id=207478124]
+[node name="Shadows" type="CheckButton" parent="HUD/Panel/Margin/Column/Effects"]
 layout_mode = 2
 focus_mode = 0
 button_pressed = true
 text = "阴影 H"
 
-[node name="Fog" type="CheckButton" parent="HUD/Panel/Margin/Column/Effects" unique_id=634514650]
+[node name="Fog" type="CheckButton" parent="HUD/Panel/Margin/Column/Effects"]
 layout_mode = 2
 focus_mode = 0
 button_pressed = true
 text = "雾效 F"
 
-[node name="Status" type="Label" parent="HUD/Panel/Margin/Column" unique_id=1621113454]
+[node name="Status" type="Label" parent="HUD/Panel/Margin/Column"]
 modulate = Color(0.8, 0.88, 0.8, 1)
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 
-[node name="Footer" type="Label" parent="HUD" unique_id=1736487843]
+[node name="Footer" type="Label" parent="HUD"]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -1072,4 +1084,10 @@ offset_left = 24.0
 offset_top = -43.0
 offset_bottom = -16.0
 theme = SubResource("Theme_22")
-text = "WASD / 方向键移动 · G 泛光 · H 阴影 · F 雾效 · L 光照 · 静态角色原型"
+text = "WASD / 方向键移动 · G 泛光 · H 阴影 · F 雾效 · L 光照 · R 水面反射 · 静态角色原型"
+
+[node name="WaterReflection" type="Node3D" parent="." node_paths=PackedStringArray("terrain", "source_camera", "world_environment")]
+script = ExtResource("water_reflection")
+terrain = NodePath("../World/Ground")
+source_camera = NodePath("../Camera3D")
+world_environment = NodePath("../WorldEnvironment")

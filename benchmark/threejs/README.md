@@ -3,7 +3,7 @@
 一个可游玩的 HD-2D 夜景场景。四个区域（城市 / 赛博 / 修仙 / 野外）和东部高地，全部按 `Asserts/layout/scene_layout.json` 1:1 还原。
 
 - 引擎：`three@0.170.0`，后处理用 `postprocessing@6.36.4` 和 `n8ao@1.9.4`，构建用 Vite 5
-- 美术素材：只用 `../../Asserts` 里的贴图和精灵。Vite 的 `publicDir` 直接指向那个目录，只读不改，构建时原样复制。天空、远山、雾、粒子和所有表面细节都是程序化 shader 或几何体。
+- 美术素材：使用从 `demoWithMeowa/1` 提取的共享素材包。Vite 优先读取 `../../Asserts`；该目录不存在时读取仓库自带的 `../godot/assets`，只读不改，构建时原样复制。天空、远山、雾、粒子和所有表面细节都是程序化 shader 或几何体。
 
 ## 运行
 

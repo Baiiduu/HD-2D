@@ -15,6 +15,19 @@ extends Node
 	set(v): terrain = v; _queue_apply()
 @export var post_process: CanvasItem:
 	set(v): post_process = v; _queue_apply()
+@export var water_reflection: PlanarWaterReflection:
+	set(v): water_reflection = v; _queue_apply()
+
+@export_group("水面")
+@export var water_reflection_enabled := true:
+	set(v): water_reflection_enabled = v; _queue_apply()
+## 宽高比例：0.5 对应四分之一像素数量；可见的两个水位各用一张视图。
+@export_range(0.25, 1.0, 0.05) var water_reflection_scale := 0.5:
+	set(v): water_reflection_scale = v; _queue_apply()
+@export_range(0.0, 1.5, 0.05) var water_reflection_strength := 0.85:
+	set(v): water_reflection_strength = v; _queue_apply()
+@export_range(0.0, 0.3, 0.01) var water_wave_strength := 0.08:
+	set(v): water_wave_strength = v; _queue_apply()
 
 @export_group("整体")
 ## 曝光：整体明暗，最直接的提亮手段
@@ -102,6 +115,8 @@ extends Node
 var _apply_queued := false
 
 func _ready() -> void:
+	if not Engine.is_editor_hint() and "--no-reflection" in OS.get_cmdline_user_args():
+		water_reflection_enabled = false
 	apply()
 
 func _queue_apply() -> void:
@@ -112,6 +127,11 @@ func _queue_apply() -> void:
 
 func apply() -> void:
 	_apply_queued = false
+	if water_reflection and not Engine.is_editor_hint():
+		water_reflection.enabled = water_reflection_enabled
+		water_reflection.resolution_scale = water_reflection_scale
+		water_reflection.strength = water_reflection_strength
+		water_reflection.wave_strength = water_wave_strength
 	if world_environment and world_environment.environment:
 		var env := world_environment.environment
 		env.tonemap_exposure = exposure
