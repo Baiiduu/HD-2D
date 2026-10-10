@@ -13,6 +13,7 @@ extends Node3D
 
 const MIRROR_BITS := [1 << 18, 1 << 19]
 const SPRITE_SHADER = preload("res://shaders/reflection_sprite.gdshader")
+const CHARACTER_SHADER = preload("res://shaders/character_lighting.gdshader")
 var views: Array[Dictionary] = []
 var sprites: Array[Dictionary] = []
 var water: ShaderMaterial
@@ -124,6 +125,8 @@ func _process(_delta: float) -> void:
 		material.set_shader_parameter("tint", source.modulate)
 		material.set_shader_parameter("flip_h", source.flip_h)
 		material.set_shader_parameter("flip_v", source.flip_v)
+		if source.has_method("apply_lighting_to"):
+			source.apply_lighting_to(material, true)
 
 func _sync_environment(env: Environment) -> void:
 	var original := world_environment.environment
@@ -197,11 +200,13 @@ func _make_sprite(source: Sprite3D, bit: int, height: float) -> void:
 	var quad := QuadMesh.new()
 	quad.size = source.texture.get_size() * source.pixel_size
 	var material := ShaderMaterial.new()
-	material.shader = SPRITE_SHADER
+	material.shader = CHARACTER_SHADER if source.has_method("apply_lighting_to") else SPRITE_SHADER
 	material.set_shader_parameter("clip_height", height + 0.005)
 	material.set_shader_parameter("fixed_y", source.billboard == BaseMaterial3D.BILLBOARD_FIXED_Y)
 	material.set_shader_parameter("sprite_texture", source.texture)
 	material.set_shader_parameter("tint", source.modulate)
+	if source.has_method("apply_lighting_to"):
+		source.apply_lighting_to(material, true)
 	var proxy := MeshInstance3D.new()
 	proxy.mesh = quad
 	proxy.material_override = material

@@ -18,6 +18,7 @@
 [ext_resource type="Shader" uid="uid://btq86vm2xekqy" path="res://shaders/lamp_dust.gdshader" id="lamp_dust"]
 [ext_resource type="PackedScene" path="res://scenes/props/lantern.tscn" id="lantern_scene"]
 [ext_resource type="Script" uid="uid://c3bn768plavjr" path="res://scripts/player.gd" id="player"]
+[ext_resource type="Script" path="res://scripts/character_lighting.gd" id="character_lighting"]
 [ext_resource type="SpriteFrames" uid="uid://65qht0ymca02" path="res://assets/meowa/player/animations.tres" id="player_frames"]
 [ext_resource type="Shader" uid="uid://fuoorj3rrv6c" path="res://shaders/post_process.gdshader" id="post_shader"]
 [ext_resource type="Shader" uid="uid://vs810xu7skxb" path="res://shaders/night_sky.gdshader" id="sky_shader"]
@@ -1300,6 +1301,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.532959, 0)
 shape = SubResource("CapsuleShape3D_66")
 
 [node name="Sprite" type="Sprite3D" parent="Player" unique_id=916617438]
+script = ExtResource("character_lighting")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
 pixel_size = 0.0234375
 billboard = 2
