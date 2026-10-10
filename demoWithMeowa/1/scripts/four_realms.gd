@@ -53,15 +53,24 @@ func _set_glow(enabled: bool) -> void:
 
 func _set_shadows(enabled: bool) -> void:
 	shadows_enabled = enabled
+	$ArtDirection.street_shadows_enabled = enabled
+	for lamp in get_tree().get_nodes_in_group("environment_lanterns"):
+		lamp.shadows_enabled = enabled
 	for light: Light3D in get_tree().get_nodes_in_group("shadow_lights"):
 		light.shadow_enabled = enabled
 	_update_status()
 
 func _set_fog(enabled: bool) -> void:
+	# Keep the master setting in sync so a queued material update cannot restore fog.
+	$ArtDirection.volumetric_fog = enabled
 	environment.volumetric_fog_enabled = enabled
+	for lamp in get_tree().get_nodes_in_group("environment_lanterns"):
+		lamp.apply()
 	for dust: GPUParticles3D in get_tree().get_nodes_in_group("street_light_dust"):
 		dust.visible = enabled and dust.emitting
 	for beam: MeshInstance3D in get_tree().get_nodes_in_group("light_beams"):
+		if beam.get_parent().is_in_group("environment_lanterns"):
+			continue # These lamps apply their own beam strength above.
 		beam.visible = enabled and $ArtDirection.cone_enabled and $ArtDirection.cone_shape_gain > 0.0
 	_update_status()
 

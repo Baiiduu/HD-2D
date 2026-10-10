@@ -9,7 +9,7 @@ uniform float energy = 0.35;
 // 光晕直径上的像素数
 uniform float pixels = 28.0;
 uniform float falloff = 2.4;
-// Street lamps use the reference's bright core and broad exponential halo.
+// Street lamps keep a small luminous core and a restrained, warm outer halo.
 uniform bool street_style = false;
 uniform float front_offset = 0.0;
 // Only mirror cameras use layers 19/20; the main camera omits those bits.
@@ -30,7 +30,7 @@ void fragment() {
 	float intensity = pow(clamp(1.0 - r, 0.0, 1.0), falloff);
 	if (street_style) {
 		r = length(UV - 0.5) * 2.0;
-		intensity = (exp(-r * r * 28.0) * 1.6 + exp(-r * 4.2) * 0.42) * (1.0 - smoothstep(0.7, 1.0, r));
+		intensity = (exp(-r * r * 52.0) * 0.75 + exp(-r * r * 9.0) * 0.22) * (1.0 - smoothstep(0.65, 1.0, r));
 	}
 	ALBEDO = halo_color.rgb * energy * intensity;
 }

@@ -2,6 +2,8 @@
 class_name Terrain
 extends Node3D
 
+const WATER_LIGHT_LAYER := 1 << 16 # Layer 17; beam accents use 18, mirrors use 19/20.
+
 ## 根据 TerrainData 生成分层地形：平台顶面、崖壁、坡道、水面、瀑布、桥与碰撞体。
 ## 生成的子节点不写入场景文件，每次加载时重新生成。
 
@@ -22,6 +24,29 @@ extends Node3D
 ## 地图外缘崖壁向下延伸到的层级
 @export var skirt_level := -2
 
+@export_group("草地与崖壁材质衔接")
+## 关闭后恢复原来的草沿和阴影线，不改变地形几何。
+@export var grass_transition_enabled := true:
+	set(value): grass_transition_enabled = value; _queue_transition_apply()
+## 草地纹理向崖面延伸的厚度（纹理像素）。
+@export_range(0.0, 8.0, 0.5) var grass_lip_pixels := 3.0:
+	set(value): grass_lip_pixels = value; _queue_transition_apply()
+## 草沿厚度的固定斑驳变化，0 表示整齐边缘。
+@export_range(0.0, 4.0, 0.5) var grass_edge_variation := 2.0:
+	set(value): grass_edge_variation = value; _queue_transition_apply()
+## 草沿下方逐渐融入岩壁的距离（米）。
+@export_range(0.0, 0.4, 0.01) var grass_transition_height := 0.16:
+	set(value): grass_transition_height = value; _queue_transition_apply()
+## 岩壁上下接缝处使用现有草地纹理的覆盖强度。
+@export_range(0.0, 1.0, 0.05) var grass_moss_strength := 0.4:
+	set(value): grass_moss_strength = value; _queue_transition_apply()
+## 草沿下的柔和阴影强度。
+@export_range(0.0, 0.5, 0.01) var grass_lip_shadow := 0.16:
+	set(value): grass_lip_shadow = value; _queue_transition_apply()
+## 崖脚与下层草地衔接的距离（米），0 关闭。
+@export_range(0.0, 0.4, 0.01) var grass_base_blend_height := 0.16:
+	set(value): grass_base_blend_height = value; _queue_transition_apply()
+
 ## 崖顶草沿 / 石沿的颜色，按区域类型索引
 const LIP_COLORS: Array[Color] = [
 	Color(0.55, 0.53, 0.5), Color(0.3, 0.34, 0.42), Color(0.45, 0.62, 0.5), Color(0.36, 0.6, 0.26)]
@@ -33,6 +58,7 @@ const RAIL_HEIGHT := 0.55
 var _map_texture: ImageTexture
 var _rebuild_queued := false
 var _generated: Node3D
+var _transition_apply_queued := false
 
 func _ready() -> void:
 	_rebuild()
@@ -42,6 +68,27 @@ func _queue_rebuild() -> void:
 		return
 	_rebuild_queued = true
 	_rebuild.call_deferred()
+
+func _queue_transition_apply() -> void:
+	if _transition_apply_queued or not is_inside_tree():
+		return
+	_transition_apply_queued = true
+	_apply_grass_transition.call_deferred()
+
+func _apply_grass_transition() -> void:
+	_transition_apply_queued = false
+	var wall := wall_material as ShaderMaterial
+	if not wall or not top_material:
+		return
+	wall.set_shader_parameter("transition_enabled", grass_transition_enabled)
+	wall.set_shader_parameter("grass_texture", top_material.get_shader_parameter("wild_texture"))
+	wall.set_shader_parameter("grass_tint", top_material.get_shader_parameter("wild_tint"))
+	wall.set_shader_parameter("grass_lip_pixels", grass_lip_pixels)
+	wall.set_shader_parameter("edge_variation_pixels", grass_edge_variation)
+	wall.set_shader_parameter("transition_height", grass_transition_height)
+	wall.set_shader_parameter("moss_strength", grass_moss_strength)
+	wall.set_shader_parameter("lip_shadow_strength", grass_lip_shadow)
+	wall.set_shader_parameter("base_blend_height", grass_base_blend_height)
 
 func _rebuild() -> void:
 	_rebuild_queued = false
@@ -224,19 +271,51 @@ func _build_waterfalls() -> ArrayMesh:
 				var to: Vector2 = points[edges[d][1]]
 				var top := _water_height(cell)
 				var bottom := _water_height(neighbor)
-				var quad: Array[Vector3] = [
-					Vector3(from.x, top, from.y) + offset, Vector3(to.x, top, to.y) + offset,
-					Vector3(to.x, bottom, to.y) + offset, Vector3(from.x, bottom, from.y) + offset]
-				var u_from := (from.x if DIRECTIONS[d].y != 0 else from.y) / data.cell_size
-				var u_to := (to.x if DIRECTIONS[d].y != 0 else to.y) / data.cell_size
-				var uvs := [Vector2(u_from, -top / data.cell_size), Vector2(u_to, -top / data.cell_size),
-					Vector2(u_to, -bottom / data.cell_size), Vector2(u_from, -bottom / data.cell_size)]
-				for index in [0, 1, 2, 0, 2, 3]:
-					st.set_normal(Vector3(DIRECTIONS[d].x, 0, DIRECTIONS[d].y))
-					st.set_uv(uvs[index])
-					st.set_uv2(Vector2(top, bottom))
-					st.add_vertex(quad[index])
+				var direction := Vector3(DIRECTIONS[d].x, 0, DIRECTIONS[d].y)
+				var across := Vector2i(roundi((to.x - from.x) / data.cell_size), roundi((to.y - from.y) / data.cell_size))
+				var left_edge := 0.0 if _same_waterfall(cell - across, d, cell, neighbor) else 1.0
+				var right_edge := 0.0 if _same_waterfall(cell + across, d, cell, neighbor) else 1.0
+				# 分段水帘供 shader 弯曲；同一条瀑布的格子接缝不做透明衰减。
+				for row in 12:
+					var start := float(row) / 12.0
+					var end := float(row + 1) / 12.0
+					var quad: Array[Vector3] = [
+						Vector3(from.x, lerpf(top, bottom, start), from.y) + offset,
+						Vector3(to.x, lerpf(top, bottom, start), to.y) + offset,
+						Vector3(to.x, lerpf(top, bottom, end), to.y) + offset,
+						Vector3(from.x, lerpf(top, bottom, end), from.y) + offset]
+					_add_fall_quad(st, quad, [Vector2(0, start), Vector2(1, start), Vector2(1, end), Vector2(0, end)],
+						direction, Vector2(top, bottom), Color(0, left_edge, right_edge, 1))
+				# 底部白沫仅覆盖落水点附近；长度由 shader 调节。
+				var foot: Array[Vector3] = [
+					Vector3(from.x, bottom + 0.018, from.y) + offset,
+					Vector3(to.x, bottom + 0.018, to.y) + offset,
+					Vector3(to.x, bottom + 0.018, to.y) + offset + direction,
+					Vector3(from.x, bottom + 0.018, from.y) + offset + direction]
+				_add_fall_quad(st, foot, [Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)],
+					direction, Vector2(top, bottom), Color(0.5, left_edge, right_edge, 1))
+				# 固定种子的少量水滴，位移在 shader 中按抛物线计算。
+				for drop in 18:
+					var t := (float(drop) + 0.5) / 18.0
+					var center := Vector3(lerpf(from.x, to.x, t), bottom + 0.03, lerpf(from.y, to.y, t)) + offset
+					# UV 在 shader 中展开成面向相机的小水滴。
+					var spray: Array[Vector3] = [center, center, center, center]
+					_add_fall_quad(st, spray, [Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)],
+						direction, Vector2(top, bottom), Color(1, t, float(posmod(cell.x * 17 + cell.y * 31, 97)) / 97.0, 1))
 	return st.commit()
+
+func _same_waterfall(side: Vector2i, d: int, upper: Vector2i, lower: Vector2i) -> bool:
+	var down := side + DIRECTIONS[d]
+	return _is(side, TerrainData.OVERLAY_WATER) and _is(down, TerrainData.OVERLAY_WATER) \
+		and _level(side) == _level(upper) and _level(down) == _level(lower)
+
+func _add_fall_quad(st: SurfaceTool, quad: Array[Vector3], uvs: Array, normal: Vector3, span: Vector2, zone: Color) -> void:
+	for index in [0, 1, 2, 0, 2, 3]:
+		st.set_normal(normal)
+		st.set_uv(uvs[index])
+		st.set_uv2(span)
+		st.set_color(zone)
+		st.add_vertex(quad[index])
 
 # ---------- 桥 ----------
 
@@ -310,6 +389,12 @@ func _upload_map() -> void:
 		RenderingServer.material_set_param(top_material.get_rid(), "terrain_map", _map_texture.get_rid())
 		RenderingServer.material_set_param(top_material.get_rid(), "map_origin", data.origin)
 		RenderingServer.material_set_param(top_material.get_rid(), "cell_size", data.cell_size)
+	if wall_material is ShaderMaterial:
+		var wall := wall_material as ShaderMaterial
+		RenderingServer.material_set_param(wall.get_rid(), "terrain_map", _map_texture.get_rid())
+		wall.set_shader_parameter("map_origin", data.origin)
+		wall.set_shader_parameter("cell_size", data.cell_size)
+		_apply_grass_transition()
 	if water_material is ShaderMaterial:
 		var water := water_material as ShaderMaterial
 		# Generated data stays in the rendering server, rather than being saved into .tscn.
@@ -326,6 +411,8 @@ func _add_mesh(mesh_name: String, mesh: ArrayMesh, material: Material, cast_shad
 	instance.name = mesh_name
 	instance.mesh = mesh
 	instance.material_override = material
+	if mesh_name == "Water":
+		instance.layers |= WATER_LIGHT_LAYER
 	if not cast_shadows:
 		instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_generated.add_child(instance)
