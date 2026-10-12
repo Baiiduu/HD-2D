@@ -1,0 +1,302 @@
+[gd_resource type="Resource" script_class="LoadoutCatalog" format=3 uid="uid://ccrsmq60m8i50"]
+
+[ext_resource type="Script" uid="uid://byhuuawe88r2m" path="res://scripts/rpg/equipment_definition.gd" id="1_0lo2u"]
+[ext_resource type="Texture2D" uid="uid://md5nibdlmwbv" path="res://assets/meowa/ui/inventory/items/sword.png" id="2_71hvt"]
+[ext_resource type="Texture2D" uid="uid://cdhn1xgyrm0h7" path="res://assets/meowa/ui/journal/items/staff.png" id="3_7b1ou"]
+[ext_resource type="Texture2D" uid="uid://t7p0crwgsh6m" path="res://assets/meowa/ui/inventory/items/armor.png" id="4_ovo30"]
+[ext_resource type="Texture2D" uid="uid://ca4np4m5upptd" path="res://assets/meowa/ui/journal/items/tunic.png" id="5_a0lse"]
+[ext_resource type="Texture2D" uid="uid://kf87vq7n1emm" path="res://assets/meowa/ui/journal/items/amulet.png" id="6_4pdiv"]
+[ext_resource type="Texture2D" uid="uid://clyntalgwhllx" path="res://assets/meowa/ui/journal/items/ring.png" id="7_uwvfm"]
+[ext_resource type="Script" uid="uid://cx4r7h26v14x4" path="res://scripts/rpg/loadout_catalog.gd" id="8_ruap7"]
+[ext_resource type="Script" uid="uid://mars8mde54qs" path="res://scripts/rpg/skill_definition.gd" id="9_chrlf"]
+[ext_resource type="Texture2D" uid="uid://bupw0aafbnlm0" path="res://assets/meowa/ui/journal/skills/fire.png" id="10_oo6is"]
+[ext_resource type="Texture2D" uid="uid://cqo48nhyks7fu" path="res://assets/meowa/ui/journal/skills/ice.png" id="11_cmfu2"]
+[ext_resource type="Texture2D" uid="uid://bx22cs14d1dcq" path="res://assets/meowa/ui/journal/skills/lightning.png" id="12_cjub5"]
+[ext_resource type="Texture2D" uid="uid://bb7kjk4k87gsh" path="res://assets/meowa/ui/journal/skills/heal.png" id="13_iucxo"]
+[ext_resource type="Texture2D" uid="uid://bb3bjk7wfl20l" path="res://assets/meowa/ui/inventory/items/axe.png" id="inventory_icon_axe"]
+[ext_resource type="Texture2D" uid="uid://dapo5u5rdmc8l" path="res://assets/meowa/ui/inventory/items/bread.png" id="inventory_icon_bread"]
+[ext_resource type="Texture2D" uid="uid://bqeg3ir7tu7tr" path="res://assets/meowa/ui/inventory/items/cotton.png" id="inventory_icon_cotton"]
+[ext_resource type="Texture2D" uid="uid://cbv7ltqtid1vw" path="res://assets/meowa/ui/inventory/items/crystal.png" id="inventory_icon_crystal"]
+[ext_resource type="Texture2D" uid="uid://b240r0gjsuhee" path="res://assets/meowa/ui/inventory/items/fertilizer.png" id="inventory_icon_fertilizer"]
+[ext_resource type="Texture2D" uid="uid://d3l012yncb4pw" path="res://assets/meowa/ui/inventory/items/hoe.png" id="inventory_icon_hoe"]
+[ext_resource type="Texture2D" uid="uid://bm05mmxo3a3wa" path="res://assets/meowa/ui/inventory/items/leather.png" id="inventory_icon_leather"]
+[ext_resource type="Texture2D" uid="uid://ciawsuhjd8cyd" path="res://assets/meowa/ui/inventory/items/mushroom.png" id="inventory_icon_mushroom"]
+[ext_resource type="Texture2D" uid="uid://dq70qmn2d4rdf" path="res://assets/meowa/ui/inventory/items/ore.png" id="inventory_icon_ore"]
+[ext_resource type="Texture2D" uid="uid://00gh2l82ojli" path="res://assets/meowa/ui/inventory/items/potion.png" id="inventory_icon_potion"]
+[ext_resource type="Texture2D" uid="uid://ccn0wcj5c4gok" path="res://assets/meowa/ui/inventory/items/stone.png" id="inventory_icon_stone"]
+[ext_resource type="Texture2D" uid="uid://bp7k64itdg13f" path="res://assets/meowa/ui/inventory/items/tomato.png" id="inventory_icon_tomato"]
+[ext_resource type="Texture2D" uid="uid://h47vfrc5q3cm" path="res://assets/meowa/ui/inventory/items/tomato_seed.png" id="inventory_icon_tomato_seed"]
+[ext_resource type="Texture2D" uid="uid://dttwd1e582n3b" path="res://assets/meowa/ui/inventory/items/watering_can.png" id="inventory_icon_watering_can"]
+[ext_resource type="Texture2D" uid="uid://dnn60ixmysbec" path="res://assets/meowa/ui/inventory/items/wheat.png" id="inventory_icon_wheat"]
+[ext_resource type="Texture2D" uid="uid://c4uqoun3y3qnp" path="res://assets/meowa/ui/inventory/items/wood.png" id="inventory_icon_wood"]
+[ext_resource type="Script" uid="uid://dbb8tlyuskwhm" path="res://scripts/rpg/item_definition.gd" id="item_definition"]
+[ext_resource type="Texture2D" uid="uid://cuqwy3lyl8ge" path="res://assets/meowa/ui/inventory/seed-illustration.png" id="seed_illustration"]
+
+[sub_resource type="Resource" id="Resource_exdga"]
+script = ExtResource("1_0lo2u")
+id = "sword"
+display_name = "精铁长剑"
+description = "平衡而坚实的长剑，提供攻击加成。"
+icon = ExtResource("2_71hvt")
+attribute_bonuses = Dictionary[String, float]({
+"attack": 8.0
+})
+
+[sub_resource type="Resource" id="Resource_iabwd"]
+script = ExtResource("1_0lo2u")
+id = "staff"
+display_name = "晶石法杖"
+description = "蓝色晶石引导元素力量，增强火焰与冰晶技能。"
+icon = ExtResource("3_7b1ou")
+attribute_bonuses = Dictionary[String, float]({
+"attack": 3.0
+})
+skill_bonuses = Dictionary[String, float]({
+"fire": 18.0,
+"ice": 18.0
+})
+
+[sub_resource type="Resource" id="Resource_s4hv1"]
+script = ExtResource("1_0lo2u")
+id = "armor"
+display_name = "旅行皮甲"
+description = "结实的皮革护甲，提升生命与防御。"
+icon = ExtResource("4_ovo30")
+slot = 1
+attribute_bonuses = Dictionary[String, float]({
+"defense": 5.0,
+"health": 20.0
+})
+
+[sub_resource type="Resource" id="Resource_einqv"]
+script = ExtResource("1_0lo2u")
+id = "tunic"
+display_name = "蓝纹布衣"
+description = "轻便的布衣，提供基础防护并增强治愈效果。"
+icon = ExtResource("5_a0lse")
+slot = 1
+attribute_bonuses = Dictionary[String, float]({
+"defense": 3.0,
+"health": 10.0
+})
+skill_bonuses = Dictionary[String, float]({
+"heal": 10.0
+})
+
+[sub_resource type="Resource" id="Resource_ixau7"]
+script = ExtResource("1_0lo2u")
+id = "amulet"
+display_name = "青辉护符"
+description = "温润的护符，提升生命并增强火焰与治愈效果。"
+icon = ExtResource("6_4pdiv")
+slot = 2
+attribute_bonuses = Dictionary[String, float]({
+"health": 15.0
+})
+skill_bonuses = Dictionary[String, float]({
+"fire": 10.0,
+"heal": 15.0
+})
+
+[sub_resource type="Resource" id="Resource_ovjid"]
+script = ExtResource("1_0lo2u")
+id = "ring"
+display_name = "金纹指环"
+description = "精巧的金色指环，提供攻击与雷光技能加成。"
+icon = ExtResource("7_uwvfm")
+slot = 2
+attribute_bonuses = Dictionary[String, float]({
+"attack": 3.0
+})
+skill_bonuses = Dictionary[String, float]({
+"lightning": 12.0
+})
+
+[sub_resource type="Resource" id="inventory_item_hoe"]
+script = ExtResource("item_definition")
+id = "hoe"
+farm_action = 1
+display_name = "锄头"
+description = "开垦草地，为播种准备耕地；也可以把耕地恢复为原草地。"
+icon = ExtResource("inventory_icon_hoe")
+category = 1
+stackable = false
+
+[sub_resource type="Resource" id="inventory_item_watering_can"]
+script = ExtResource("item_definition")
+id = "watering_can"
+farm_action = 3
+display_name = "洒水壶"
+description = "为已经开垦的地块浇水。"
+icon = ExtResource("inventory_icon_watering_can")
+category = 1
+stackable = false
+
+[sub_resource type="Resource" id="inventory_item_axe"]
+script = ExtResource("item_definition")
+id = "axe"
+display_name = "斧头"
+description = "收集木材时随身携带的工具。"
+icon = ExtResource("inventory_icon_axe")
+category = 1
+stackable = false
+
+[sub_resource type="Resource" id="inventory_item_tomato_seed"]
+script = ExtResource("item_definition")
+id = "tomato_seed"
+farm_action = 2
+display_name = "番茄种子"
+description = "在耕地上播种，每次消耗一颗种子。"
+icon = ExtResource("inventory_icon_tomato_seed")
+illustration = ExtResource("seed_illustration")
+category = 3
+
+[sub_resource type="Resource" id="inventory_item_wood"]
+script = ExtResource("item_definition")
+id = "wood"
+display_name = "木材"
+description = "常用的建筑与制作材料。"
+icon = ExtResource("inventory_icon_wood")
+
+[sub_resource type="Resource" id="inventory_item_stone"]
+script = ExtResource("item_definition")
+id = "stone"
+display_name = "石料"
+description = "坚实的基础制作材料。"
+icon = ExtResource("inventory_icon_stone")
+
+[sub_resource type="Resource" id="inventory_item_ore"]
+script = ExtResource("item_definition")
+id = "ore"
+display_name = "矿石"
+description = "可用于加工与制作的矿物原料。"
+icon = ExtResource("inventory_icon_ore")
+
+[sub_resource type="Resource" id="inventory_item_cotton"]
+script = ExtResource("item_definition")
+id = "cotton"
+display_name = "棉花"
+description = "柔软的纤维，可用于制作布料。"
+icon = ExtResource("inventory_icon_cotton")
+
+[sub_resource type="Resource" id="inventory_item_tomato"]
+script = ExtResource("item_definition")
+id = "tomato"
+display_name = "番茄"
+description = "新鲜作物，可作为烹饪材料。"
+icon = ExtResource("inventory_icon_tomato")
+category = 3
+
+[sub_resource type="Resource" id="inventory_item_wheat"]
+script = ExtResource("item_definition")
+id = "wheat"
+display_name = "麦穗"
+description = "收获的谷物，可作为制作材料。"
+icon = ExtResource("inventory_icon_wheat")
+category = 3
+
+[sub_resource type="Resource" id="inventory_item_mushroom"]
+script = ExtResource("item_definition")
+id = "mushroom"
+display_name = "蘑菇"
+description = "可作为烹饪材料的食材。"
+icon = ExtResource("inventory_icon_mushroom")
+category = 4
+
+[sub_resource type="Resource" id="inventory_item_bread"]
+script = ExtResource("item_definition")
+id = "bread"
+display_name = "面包"
+description = "冒险时随身携带的食物。"
+icon = ExtResource("inventory_icon_bread")
+category = 4
+
+[sub_resource type="Resource" id="inventory_item_potion"]
+script = ExtResource("item_definition")
+id = "potion"
+display_name = "红药水"
+description = "旅行中随身携带的补给品。"
+icon = ExtResource("inventory_icon_potion")
+category = 4
+
+[sub_resource type="Resource" id="inventory_item_crystal"]
+script = ExtResource("item_definition")
+id = "crystal"
+display_name = "蓝晶石"
+description = "晶莹的材料，可用于装备制作。"
+icon = ExtResource("inventory_icon_crystal")
+
+[sub_resource type="Resource" id="inventory_item_leather"]
+script = ExtResource("item_definition")
+id = "leather"
+display_name = "皮革"
+description = "结实的护具制作材料。"
+icon = ExtResource("inventory_icon_leather")
+
+[sub_resource type="Resource" id="inventory_item_fertilizer"]
+script = ExtResource("item_definition")
+id = "fertilizer"
+display_name = "植物肥料"
+description = "照料耕地与作物时使用的物品。"
+icon = ExtResource("inventory_icon_fertilizer")
+category = 3
+
+[sub_resource type="Resource" id="Resource_2dfwo"]
+script = ExtResource("9_chrlf")
+id = "fire"
+display_name = "火焰"
+description = "灼热的火焰力量，可通过装备提高效果强度。"
+icon = ExtResource("10_oo6is")
+values = Dictionary[String, float]({
+"cooldown": 4.0,
+"power": 20.0
+})
+
+[sub_resource type="Resource" id="Resource_gbogu"]
+script = ExtResource("9_chrlf")
+id = "ice"
+display_name = "冰晶"
+description = "凝聚冰晶的力量，可搭配元素加成装备。"
+icon = ExtResource("11_cmfu2")
+values = Dictionary[String, float]({
+"cooldown": 5.0,
+"power": 18.0
+})
+
+[sub_resource type="Resource" id="Resource_yrtrh"]
+script = ExtResource("9_chrlf")
+id = "lightning"
+display_name = "雷光"
+description = "明亮的雷电力量，可搭配雷光技能加成。"
+icon = ExtResource("12_cjub5")
+values = Dictionary[String, float]({
+"cooldown": 6.0,
+"power": 24.0
+})
+
+[sub_resource type="Resource" id="Resource_kixtk"]
+script = ExtResource("9_chrlf")
+id = "heal"
+display_name = "治愈"
+description = "温和的恢复力量，可通过装备增强效果。"
+icon = ExtResource("13_iucxo")
+values = Dictionary[String, float]({
+"cooldown": 8.0,
+"power": 16.0
+})
+
+[resource]
+script = ExtResource("8_ruap7")
+equipment = Array[ExtResource("1_0lo2u")]([SubResource("Resource_exdga"), SubResource("Resource_iabwd"), SubResource("Resource_s4hv1"), SubResource("Resource_einqv"), SubResource("Resource_ixau7"), SubResource("Resource_ovjid")])
+skills = Array[ExtResource("9_chrlf")]([SubResource("Resource_2dfwo"), SubResource("Resource_gbogu"), SubResource("Resource_yrtrh"), SubResource("Resource_kixtk")])
+items = Array[ExtResource("item_definition")]([SubResource("inventory_item_hoe"), SubResource("inventory_item_watering_can"), SubResource("inventory_item_axe"), SubResource("inventory_item_tomato_seed"), SubResource("inventory_item_wood"), SubResource("inventory_item_stone"), SubResource("inventory_item_ore"), SubResource("inventory_item_cotton"), SubResource("inventory_item_tomato"), SubResource("inventory_item_wheat"), SubResource("inventory_item_mushroom"), SubResource("inventory_item_bread"), SubResource("inventory_item_potion"), SubResource("inventory_item_crystal"), SubResource("inventory_item_leather"), SubResource("inventory_item_fertilizer")])
+attribute_labels = Dictionary[String, String]({
+"attack": "攻击",
+"defense": "防御",
+"health": "生命",
+"mana": "魔力"
+})
+skill_value_labels = Dictionary[String, String]({
+"cooldown": "冷却时间",
+"power": "效果强度"
+})

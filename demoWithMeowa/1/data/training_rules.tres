@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="TrainingRules" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/rpg/training_rules.gd" id="rules"]
+
+[resource]
+script = ExtResource("rules")

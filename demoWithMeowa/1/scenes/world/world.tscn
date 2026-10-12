@@ -1,0 +1,460 @@
+[gd_scene format=4 uid="uid://257i05ytk0fi"]
+
+[ext_resource type="Shader" uid="uid://syr3vpca6sp4" path="res://shaders/firefly.gdshader" id="10_wbwoo"]
+[ext_resource type="Shader" uid="uid://vs810xu7skxb" path="res://shaders/night_sky.gdshader" id="17_tytul"]
+[ext_resource type="Shader" uid="uid://fuoorj3rrv6c" path="res://shaders/post_process.gdshader" id="18_t634p"]
+[ext_resource type="Script" uid="uid://cnj43gbbfi4sc" path="res://scripts/character_lighting.gd" id="character_lighting"]
+[ext_resource type="Script" uid="uid://b63uoy4636ic5" path="res://scripts/ground_dressing_region.gd" id="dressing_region"]
+[ext_resource type="PackedScene" path="res://scenes/shared/fireflies.tscn" id="fireflies"]
+[ext_resource type="PackedScene" path="res://scenes/shared/ground_dressing_defaults.tscn" id="ground_dressing"]
+[ext_resource type="Script" uid="uid://bl1cnu18o3dyt" path="res://scripts/terrain/terrain.gd" id="homestead"]
+[ext_resource type="PackedScene" path="res://scenes/ui/loadout_ui.tscn" id="loadout_ui"]
+[ext_resource type="PackedScene" path="res://scenes/shared/map_effects.tscn" id="map_effects"]
+[ext_resource type="PackedScene" path="res://scenes/shared/player_movement_audio.tscn" id="movement_audio"]
+[ext_resource type="Resource" uid="uid://bfxn17thkosrs" path="res://data/spawn_paint_palette.tres" id="paint_palette"]
+[ext_resource type="Script" uid="uid://c3bn768plavjr" path="res://scripts/player.gd" id="player"]
+[ext_resource type="SpriteFrames" uid="uid://65qht0ymca02" path="res://assets/meowa/player/animations.tres" id="player_frames"]
+[ext_resource type="Texture2D" uid="uid://7bwsfpeaisy6" path="res://assets/meowa/player/idle_00.png" id="player_texture"]
+[ext_resource type="PackedScene" uid="uid://nonwwjcstfxt" path="res://scenes/enemies/slime.tscn" id="slime"]
+[ext_resource type="Material" path="res://materials/world/spawn_cliff.tres" id="spawn_cliff"]
+[ext_resource type="Material" path="res://materials/world/spawn_ground.tres" id="spawn_ground"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/home.tscn" id="spawn_home"]
+[ext_resource type="Script" uid="uid://ct6dsst8r0t64" path="res://scripts/world/spawn_world.gd" id="spawn_world"]
+[ext_resource type="Resource" uid="uid://mmc3hedvf4rw" path="res://data/spawn_terrain.tres" id="terrain_data"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/training_hut.tscn" id="training_hut"]
+[ext_resource type="PackedScene" path="res://scenes/ui/training_ui.tscn" id="training_ui"]
+[ext_resource type="PackedScene" path="res://scenes/shared/wave_prototype.tscn" id="wave_prototype"]
+[ext_resource type="PackedScene" path="res://scenes/shared/farming.tscn" id="farming"]
+
+[sub_resource type="Gradient" id="Gradient_ues17"]
+resource_local_to_scene = true
+offsets = PackedFloat32Array(0, 0.2, 0.45, 0.6, 0.85, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0.25, 1, 1, 1, 1, 1, 1, 1, 0.6, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_xq18t"]
+resource_local_to_scene = true
+gradient = SubResource("Gradient_ues17")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_x0nq1"]
+resource_local_to_scene = true
+emission_shape = 3
+emission_box_extents = Vector3(4.5, 0.7, 3.5)
+direction = Vector3(0, 1, 0)
+spread = 180.0
+initial_velocity_min = 0.05
+initial_velocity_max = 0.25
+gravity = Vector3(0, 0, 0)
+scale_min = 0.7
+scale_max = 1.3
+color_ramp = SubResource("GradientTexture1D_xq18t")
+turbulence_enabled = true
+turbulence_noise_strength = 0.6
+turbulence_noise_scale = 3.0
+turbulence_influence_min = 0.05
+turbulence_influence_max = 0.15
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_rwifv"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("10_wbwoo")
+shader_parameter/glow_color = Color(0.75, 1, 0.45, 1)
+shader_parameter/energy = 2.6
+shader_parameter/softness = 0.7
+shader_parameter/pulse_strength = 0.55
+shader_parameter/pulse_speed = 0.35
+
+[sub_resource type="QuadMesh" id="QuadMesh_ckok1"]
+resource_local_to_scene = true
+material = SubResource("ShaderMaterial_rwifv")
+size = Vector2(0.045, 0.045)
+
+[sub_resource type="Gradient" id="Gradient_2x71e"]
+resource_local_to_scene = true
+offsets = PackedFloat32Array(0, 0.2, 0.45, 0.6, 0.85, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0.25, 1, 1, 1, 1, 1, 1, 1, 0.6, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_wnndm"]
+resource_local_to_scene = true
+gradient = SubResource("Gradient_2x71e")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_26xou"]
+resource_local_to_scene = true
+emission_shape = 3
+emission_box_extents = Vector3(4.5, 0.7, 3.5)
+direction = Vector3(0, 1, 0)
+spread = 180.0
+initial_velocity_min = 0.05
+initial_velocity_max = 0.25
+gravity = Vector3(0, 0, 0)
+scale_min = 0.7
+scale_max = 1.3
+color_ramp = SubResource("GradientTexture1D_wnndm")
+turbulence_enabled = true
+turbulence_noise_strength = 0.6
+turbulence_noise_scale = 3.0
+turbulence_influence_min = 0.05
+turbulence_influence_max = 0.15
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jyr8v"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("10_wbwoo")
+shader_parameter/glow_color = Color(0.75, 1, 0.45, 1)
+shader_parameter/energy = 2.6
+shader_parameter/softness = 0.7
+shader_parameter/pulse_strength = 0.55
+shader_parameter/pulse_speed = 0.35
+
+[sub_resource type="QuadMesh" id="QuadMesh_5o5dd"]
+resource_local_to_scene = true
+material = SubResource("ShaderMaterial_jyr8v")
+size = Vector2(0.045, 0.045)
+
+[sub_resource type="Gradient" id="Gradient_d0ajt"]
+resource_local_to_scene = true
+offsets = PackedFloat32Array(0, 0.2, 0.45, 0.6, 0.85, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0.25, 1, 1, 1, 1, 1, 1, 1, 0.6, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_fymcc"]
+resource_local_to_scene = true
+gradient = SubResource("Gradient_d0ajt")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_lbnhc"]
+resource_local_to_scene = true
+emission_shape = 3
+emission_box_extents = Vector3(4.5, 0.7, 3.5)
+direction = Vector3(0, 1, 0)
+spread = 180.0
+initial_velocity_min = 0.05
+initial_velocity_max = 0.25
+gravity = Vector3(0, 0, 0)
+scale_min = 0.7
+scale_max = 1.3
+color_ramp = SubResource("GradientTexture1D_fymcc")
+turbulence_enabled = true
+turbulence_noise_strength = 0.6
+turbulence_noise_scale = 3.0
+turbulence_influence_min = 0.05
+turbulence_influence_max = 0.15
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sygq6"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("10_wbwoo")
+shader_parameter/glow_color = Color(0.75, 1, 0.45, 1)
+shader_parameter/energy = 2.6
+shader_parameter/softness = 0.7
+shader_parameter/pulse_strength = 0.55
+shader_parameter/pulse_speed = 0.35
+
+[sub_resource type="QuadMesh" id="QuadMesh_0wrxw"]
+resource_local_to_scene = true
+material = SubResource("ShaderMaterial_sygq6")
+size = Vector2(0.045, 0.045)
+
+[sub_resource type="CapsuleShape3D" id="player_capsule"]
+radius = 0.24
+height = 1.06592
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cmg7y"]
+resource_local_to_scene = true
+shader = ExtResource("17_tytul")
+shader_parameter/zenith_color = Color(0.05, 0.05, 0.11, 1)
+shader_parameter/horizon_color = Color(0.38, 0.35, 0.4, 1)
+shader_parameter/fog_color = Color(0.38, 0.35, 0.4, 1)
+shader_parameter/silhouette_color = Color(0.1, 0.09, 0.13, 1)
+shader_parameter/glow_color = Color(0.75, 0.42, 0.24, 1)
+shader_parameter/glow_strength = 0.5
+shader_parameter/moon_glow_color = Color(0.55, 0.62, 0.85, 1)
+shader_parameter/star_density = 0.01
+shader_parameter/pixel_angle = 0.004
+
+[sub_resource type="Sky" id="Sky_nqe8x"]
+resource_local_to_scene = true
+sky_material = SubResource("ShaderMaterial_cmg7y")
+radiance_size = 2
+
+[sub_resource type="Environment" id="Environment_sh7a8"]
+resource_local_to_scene = true
+background_mode = 2
+background_color = Color(0.07059, 0.10588, 0.18039, 1)
+sky = SubResource("Sky_nqe8x")
+ambient_light_source = 2
+ambient_light_color = Color(0.5, 0.52, 0.6, 1)
+ambient_light_energy = 0.6
+reflected_light_source = 2
+tonemap_mode = 3
+tonemap_exposure = 0.86
+tonemap_white = 6.0
+ssr_enabled = true
+ssr_max_steps = 96
+ssr_fade_in = 0.1
+ssr_fade_out = 2.5
+ssr_depth_tolerance = 0.4
+ssao_enabled = true
+ssao_intensity = 2.2
+ssao_power = 1.6
+ssao_detail = 0.7
+ssao_light_affect = 0.15
+ssil_enabled = true
+ssil_intensity = 1.6
+glow_enabled = true
+glow_levels/2 = 0.6
+glow_levels/3 = 0.8
+glow_levels/5 = 0.6
+glow_intensity = 0.18
+glow_strength = 1.05
+glow_bloom = 0.04
+fog_enabled = true
+fog_mode = 1
+fog_light_color = Color(0.38, 0.35, 0.4, 1)
+fog_density = 0.0
+fog_sky_affect = 0.0
+fog_height = -0.3
+fog_height_density = 0.06
+fog_depth_begin = 21.5
+fog_depth_end = 99.0
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.006
+volumetric_fog_albedo = Color(0.75, 0.85, 0.92, 1)
+volumetric_fog_length = 80.0
+volumetric_fog_ambient_inject = 0.2
+adjustment_enabled = true
+adjustment_brightness = 1.06
+adjustment_contrast = 1.2
+adjustment_saturation = 1.45
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_7mx70"]
+resource_local_to_scene = true
+dof_blur_far_enabled = true
+dof_blur_near_enabled = true
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1cxds"]
+resource_local_to_scene = true
+shader = ExtResource("18_t634p")
+shader_parameter/ellipse_enabled = false
+shader_parameter/ellipse_center = Vector2(0.5, 0.5)
+shader_parameter/ellipse_radius = Vector2(0.34, 0.27)
+shader_parameter/ellipse_transition = 0.7
+shader_parameter/ellipse_blur_amount = 0.03
+shader_parameter/lens_enabled = false
+shader_parameter/lens_drop_count = 0
+shader_parameter/lens_drops = PackedVector4Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/lens_drop_shapes = PackedVector4Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/lens_blur = 1.0
+shader_parameter/lens_refraction = 9.0
+shader_parameter/lens_irregularity = 0.7
+shader_parameter/lens_light_response = 0.55
+shader_parameter/lens_rim_strength = 0.18
+shader_parameter/lens_center_protection = 0.14
+shader_parameter/vignette_strength = 0.3
+shader_parameter/vignette_radius = 0.85
+shader_parameter/shadow_tint = Color(0.86, 0.94, 1.12, 1)
+shader_parameter/highlight_tint = Color(1.08, 1, 0.9, 1)
+shader_parameter/split_toning = 0.25
+
+[node name="WorldMap" type="Node3D" unique_id=1305977705 node_paths=PackedStringArray("ground", "home", "home_site", "training_hut", "spawn_point", "player")]
+script = ExtResource("spawn_world")
+ground = NodePath("Homestead")
+home = NodePath("HouseSite/Home")
+home_site = NodePath("HouseSite")
+training_hut = NodePath("TrainingHut")
+spawn_point = NodePath("SpawnPoint")
+player = NodePath("Player")
+
+[node name="Homestead" type="Node3D" parent="." unique_id=632530697]
+script = ExtResource("homestead")
+data = ExtResource("terrain_data")
+top_material = ExtResource("spawn_ground")
+wall_material = ExtResource("spawn_cliff")
+paint_palette = ExtResource("paint_palette")
+
+[node name="HouseSite" type="Marker3D" parent="." unique_id=730779469]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.8, -15.2)
+gizmo_extents = 1.0
+
+[node name="Home" parent="HouseSite" unique_id=1548694409 instance=ExtResource("spawn_home")]
+metadata/triangle_count = 1365
+
+[node name="TrainingHut" parent="." unique_id=1172938634 instance=ExtResource("training_hut")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.6, 0, -4.8)
+metadata/triangle_count = 935
+
+[node name="GardenSite" type="Marker3D" parent="." unique_id=677525346]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 1.6)
+
+[node name="GroundDressing" parent="." unique_id=1290936241 node_paths=PackedStringArray("terrain") instance=ExtResource("ground_dressing")]
+terrain = NodePath("../Homestead")
+pebble_density = 0.0
+excluded_areas = Array[Rect2]([Rect2(5.8, -8, 7.6, 14.4)])
+
+[node name="SouthField" type="Node3D" parent="GroundDressing" unique_id=1380829279]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0, 16)
+script = ExtResource("dressing_region")
+area_size = Vector2(40, 16)
+density_multiplier = 0.3
+
+[node name="WestField" type="Node3D" parent="GroundDressing" unique_id=749540077]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.4, 1.6, -2.4)
+script = ExtResource("dressing_region")
+area_size = Vector2(11.2, 28.8)
+density_multiplier = 0.55
+
+[node name="EastField" type="Node3D" parent="GroundDressing" unique_id=386158954]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.4, 0, -4)
+script = ExtResource("dressing_region")
+area_size = Vector2(17.6, 36.8)
+density_multiplier = 0.4
+
+[node name="Courtyard" type="Node3D" parent="GroundDressing" unique_id=1655623242]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.8, 0.8, -1.6)
+script = ExtResource("dressing_region")
+area_size = Vector2(10, 14.4)
+density_multiplier = 0.45
+
+[node name="NorthRidge" type="Node3D" parent="GroundDressing" unique_id=1044401057]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 1.6, -22.4)
+script = ExtResource("dressing_region")
+area_size = Vector2(40, 6.4)
+density_multiplier = 0.35
+
+[node name="GreenLights" type="Node3D" parent="." unique_id=877221300]
+
+[node name="Courtyard" parent="GreenLights" unique_id=1113881073 instance=ExtResource("fireflies")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.8, 1.7, -4.8)
+process_material = SubResource("ParticleProcessMaterial_x0nq1")
+draw_pass_1 = SubResource("QuadMesh_ckok1")
+
+[node name="EastField" parent="GreenLights" unique_id=1799941101 instance=ExtResource("fireflies")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.4, 0.9, 0)
+process_material = SubResource("ParticleProcessMaterial_26xou")
+draw_pass_1 = SubResource("QuadMesh_5o5dd")
+
+[node name="SouthField" parent="GreenLights" unique_id=1337530057 instance=ExtResource("fireflies")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.4, 0.9, 10.4)
+process_material = SubResource("ParticleProcessMaterial_lbnhc")
+draw_pass_1 = SubResource("QuadMesh_0wrxw")
+
+[node name="SpawnPoint" type="Marker3D" parent="." unique_id=911715457]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 1.05, 5.6)
+
+[node name="Player" type="CharacterBody3D" parent="." unique_id=1341574611 node_paths=PackedStringArray("movement_camera")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 1.05, 5.6)
+script = ExtResource("player")
+animations = ExtResource("player_frames")
+movement_camera = NodePath("../MapEffects/Camera3D")
+
+[node name="MovementAudio" parent="Player" unique_id=2116248796 instance=ExtResource("movement_audio")]
+step_volume_db = -4.0
+
+[node name="Collision" type="CollisionShape3D" parent="Player" unique_id=1180828062]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.532959, 0)
+shape = SubResource("player_capsule")
+
+[node name="Sprite" type="Sprite3D" parent="Player" unique_id=1227070036]
+process_priority = 1
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+pixel_size = 0.0234375
+billboard = 2
+shaded = true
+alpha_cut = 1
+texture_filter = 0
+texture = ExtResource("player_texture")
+script = ExtResource("character_lighting")
+
+[node name="MapEffects" parent="." unique_id=252326751 node_paths=PackedStringArray("terrain", "surface_source", "player", "dressing") instance=ExtResource("map_effects")]
+terrain = NodePath("../Homestead")
+surface_source = NodePath("../Homestead")
+player = NodePath("../Player")
+dressing = NodePath("../GroundDressing")
+
+[node name="ArtDirection" parent="MapEffects" index="0" node_paths=PackedStringArray("scene_root", "terrain", "surface_source")]
+scene_root = NodePath("../..")
+terrain = NodePath("../../Homestead")
+surface_source = NodePath("../../Homestead")
+
+[node name="AtmosphericLight" parent="MapEffects" index="2"]
+process_priority = 40
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 0, 3)
+
+[node name="Weather" parent="MapEffects" index="4" node_paths=PackedStringArray("player", "dressing", "terrain", "surface_source")]
+rain_audio_enabled = true
+blink_plant_strength = 0.29
+blink_plant_duration = 2.0
+blink_rain_strength = 0.34
+player = NodePath("../../Player")
+dressing = NodePath("../../GroundDressing")
+terrain = NodePath("../../Homestead")
+surface_source = NodePath("../../Homestead")
+
+[node name="WorldEnvironment" parent="MapEffects" index="5"]
+environment = SubResource("Environment_sh7a8")
+
+[node name="Moon" parent="MapEffects" index="6"]
+light_cull_mask = 4294803455
+
+[node name="Camera3D" parent="MapEffects" index="7" node_paths=PackedStringArray("target", "post_process")]
+attributes = SubResource("CameraAttributesPractical_7mx70")
+target = NodePath("../../Player")
+post_process = NodePath("../PostProcess/Screen")
+
+[node name="Screen" parent="MapEffects/PostProcess" index="0"]
+material = SubResource("ShaderMaterial_1cxds")
+
+[node name="WaterReflection" parent="MapEffects" index="9" node_paths=PackedStringArray("terrain", "surface_source", "geometry_root")]
+terrain = NodePath("../../Homestead")
+surface_source = NodePath("../../Homestead")
+geometry_root = NodePath("../..")
+
+[node name="LoadoutUI" parent="." unique_id=1022841047 node_paths=PackedStringArray("player", "wave_session") instance=ExtResource("loadout_ui")]
+player = NodePath("../Player")
+wave_session = NodePath("../WavePrototype")
+training_rules = null
+toggle_key = null
+skill_slot_count = null
+ui_scale = null
+font_size = null
+world_dim_amount = null
+motion_enabled = null
+open_duration = null
+close_duration = null
+open_start_scale = null
+open_lift = null
+hover_duration = null
+hover_scale = null
+hover_brightness = null
+button_press_distance = null
+page_duration = null
+page_slide_distance = null
+equip_duration = null
+attribute_duration = null
+equip_glow_color = null
+save_enabled = null
+save_path = null
+
+[node name="TrainingUI" parent="." unique_id=782111745 node_paths=PackedStringArray("player", "loadout", "interaction_point") instance=ExtResource("training_ui")]
+player = NodePath("../Player")
+loadout = NodePath("../LoadoutUI")
+interaction_point = NodePath("../TrainingHut/InteractionPoint")
+
+[node name="Slime" parent="." unique_id=1084028334 node_paths=PackedStringArray("terrain", "target", "camera") instance=ExtResource("slime")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0.05, 12.8)
+terrain = NodePath("../Homestead")
+target = NodePath("../Player")
+camera = NodePath("../MapEffects/Camera3D")
+
+[node name="Farming" parent="." node_paths=PackedStringArray("terrain", "player", "loadout", "dressing") instance=ExtResource("farming")]
+terrain = NodePath("../Homestead")
+player = NodePath("../Player")
+loadout = NodePath("../LoadoutUI")
+dressing = NodePath("../GroundDressing")
+
+[node name="WavePrototype" parent="." node_paths=PackedStringArray("player", "terrain", "loadout", "return_point") instance=ExtResource("wave_prototype")]
+position = Vector3(0, 0, 12.8)
+player = NodePath("../Player")
+terrain = NodePath("../Homestead")
+loadout = NodePath("../LoadoutUI")
+return_point = NodePath("../SpawnPoint")
+
+[editable path="GroundDressing"]
+[editable path="MapEffects"]

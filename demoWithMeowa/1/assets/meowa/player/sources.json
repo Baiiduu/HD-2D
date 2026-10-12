@@ -80,5 +80,195 @@
     "playback_fps": 12.0,
     "frame_duration_weight": 1.0,
     "processing": "Native WebP byte copy and lossless PNG frame decode; no scaling"
+  },
+  "jump": {
+    "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\player\\jump-source\\side-new.webp",
+    "job_id": "job_ebf7f4423bd3491d87b016d4f2086758",
+    "sha256": "2d04e640144cea3dc161e8b496efc6c8106f7f3c9efde021c82580a199f9aca9",
+    "canvas": [
+      80,
+      80
+    ],
+    "source_canvas": [
+      80,
+      96
+    ],
+    "source_frame_order": [
+      0,
+      2,
+      3
+    ],
+    "selected_unique_frames": [
+      0,
+      2,
+      3,
+      7
+    ],
+    "frame_files": [
+      "hop_00.png",
+      "hop_02.png",
+      "hop_03.png"
+    ],
+    "frames": 3,
+    "playback_fps": 12.0,
+    "loop": false,
+    "integer_y_offsets": {
+      "0": 0,
+      "2": 1,
+      "3": 8
+    },
+    "face_policy": "User accepts small face changes; select source frames 0,2,3,7 closest to idle facing/face. Keep original generated face pixels. No eye or head replacement.",
+    "processing": "New Meowa advanced pixel animation, 8 source frames, 64-color setting. Select 4 source frames, normalize generated whole-body upward travel by integer translation, and crop only transparent padding. No scaling, drawing, or pixelation."
+  },
+  "fall": {
+    "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\player\\jump-source\\side-new.webp",
+    "job_id": "job_ebf7f4423bd3491d87b016d4f2086758",
+    "sha256": "2d04e640144cea3dc161e8b496efc6c8106f7f3c9efde021c82580a199f9aca9",
+    "canvas": [
+      80,
+      80
+    ],
+    "source_canvas": [
+      80,
+      96
+    ],
+    "source_frame_order": [
+      3,
+      2
+    ],
+    "selected_unique_frames": [
+      0,
+      2,
+      3,
+      7
+    ],
+    "frame_files": [
+      "hop_03.png",
+      "hop_02.png"
+    ],
+    "frames": 2,
+    "playback_fps": 12.0,
+    "loop": false,
+    "integer_y_offsets": {
+      "3": 8,
+      "2": 1
+    },
+    "face_policy": "User accepts small face changes; select source frames 0,2,3,7 closest to idle facing/face. Keep original generated face pixels. No eye or head replacement.",
+    "processing": "New Meowa advanced pixel animation, 8 source frames, 64-color setting. Select 4 source frames, normalize generated whole-body upward travel by integer translation, and crop only transparent padding. No scaling, drawing, or pixelation."
+  },
+  "land": {
+    "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\player\\jump-source\\side-new.webp",
+    "job_id": "job_ebf7f4423bd3491d87b016d4f2086758",
+    "sha256": "2d04e640144cea3dc161e8b496efc6c8106f7f3c9efde021c82580a199f9aca9",
+    "canvas": [
+      80,
+      80
+    ],
+    "source_canvas": [
+      80,
+      96
+    ],
+    "source_frame_order": [
+      7,
+      "idle"
+    ],
+    "selected_unique_frames": [
+      0,
+      2,
+      3,
+      7
+    ],
+    "frame_files": [
+      "hop_07.png",
+      "idle_00.png"
+    ],
+    "frames": 2,
+    "playback_fps": 16.0,
+    "loop": false,
+    "integer_y_offsets": {
+      "7": 0
+    },
+    "face_policy": "User accepts small face changes; select source frames 0,2,3,7 closest to idle facing/face. Keep original generated face pixels. No eye or head replacement.",
+    "processing": "New Meowa advanced pixel animation, 8 source frames, 64-color setting. Select 4 source frames, normalize generated whole-body upward travel by integer translation, and crop only transparent padding. No scaling, drawing, or pixelation."
+  },
+  "jump_back": {
+    "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\player\\jump-source\\back.webp",
+    "job_id": "job_7829e790888148cf8c289c13855f3086",
+    "sha256": "91570813ab70bf16864cdaa33e7576e40767c476182e9336b15c2e524af70884",
+    "canvas": [
+      80,
+      80
+    ],
+    "source_canvas": [
+      80,
+      96
+    ],
+    "source_frame_order": [
+      0,
+      2,
+      3,
+      4
+    ],
+    "integer_y_offsets": {
+      "0": 0,
+      "2": 4,
+      "3": 4,
+      "4": 0
+    },
+    "frames": 4,
+    "playback_fps": 12.0,
+    "loop": false,
+    "processing": "Lossless frame selection; remove transparent top/bottom padding. Back rise frames translated 4 pixels to remove generated upward travel; no scaling or drawing."
+  },
+  "fall_back": {
+    "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\player\\jump-source\\back.webp",
+    "job_id": "job_7829e790888148cf8c289c13855f3086",
+    "sha256": "91570813ab70bf16864cdaa33e7576e40767c476182e9336b15c2e524af70884",
+    "canvas": [
+      80,
+      80
+    ],
+    "source_canvas": [
+      80,
+      96
+    ],
+    "source_frame_order": [
+      4,
+      5,
+      6
+    ],
+    "integer_y_offsets": {
+      "4": 0,
+      "5": 0,
+      "6": 0
+    },
+    "frames": 3,
+    "playback_fps": 16.0,
+    "loop": false,
+    "processing": "Lossless frame selection; remove transparent top/bottom padding. Back rise frames translated 4 pixels to remove generated upward travel; no scaling or drawing."
+  },
+  "land_back": {
+    "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\player\\jump-source\\back.webp",
+    "job_id": "job_7829e790888148cf8c289c13855f3086",
+    "sha256": "91570813ab70bf16864cdaa33e7576e40767c476182e9336b15c2e524af70884",
+    "canvas": [
+      80,
+      80
+    ],
+    "source_canvas": [
+      80,
+      96
+    ],
+    "source_frame_order": [
+      6,
+      "idle"
+    ],
+    "integer_y_offsets": {
+      "6": 0
+    },
+    "frames": 2,
+    "playback_fps": 16.0,
+    "loop": false,
+    "processing": "Lossless frame selection; remove transparent top/bottom padding. Back rise frames translated 4 pixels to remove generated upward travel; no scaling or drawing."
   }
 }

@@ -10,6 +10,13 @@ const CATEGORY_NAMES := ["grass", "flowers", "pebbles"]
 const WEIGHTS := {"grass": [18.0, 6.0, 1.0, 1.0, 3.0, 1.0], "flowers": [9.0, 8.0, 7.0, 0.4, 0.4, 0.4], "pebbles": [4.0, 4.0, 4.0, 3.0, 2.0, 1.0]}
 const WIND_SHADER := preload("res://shaders/vegetation_wind.gdshader")
 
+@export_group("地图连接")
+## 指定要铺设的台地；留空沿用同层名为 Ground 的地形。
+@export var terrain: Terrain:
+	set(value):
+		terrain = value
+		_queue_rebuild()
+
 @export_group("编辑器预览")
 ## 不运行游戏也显示铺设；此开关只影响编辑器。
 @export var editor_preview_enabled := true:
@@ -41,6 +48,9 @@ const WIND_SHADER := preload("res://shaders/vegetation_wind.gdshader")
 ## 草地对美术总控及天气湿润的响应；反光比石板更粗糙，0 保持干草地。
 @export_range(0.0, 0.5, 0.01) var ground_wet_response := 0.2:
 	set(value): ground_wet_response = value; _queue_lighting()
+## 湿草地中零散反光区域的覆盖量；0 关闭，不让整片草地变成镜面。
+@export_range(0.0, 0.6, 0.01) var ground_sheen := 0.35:
+	set(value): ground_sheen = value; _queue_lighting()
 
 @export_group("铺设密度")
 ## 每平方米的草丛数量；0 隐藏草。
@@ -60,6 +70,11 @@ const WIND_SHADER := preload("res://shaders/vegetation_wind.gdshader")
 		_queue_rebuild()
 
 @export_group("随机分布")
+## 不铺设花草的矩形，坐标为地形本地 X/Z（米）；用于建筑用地与入口。
+@export var excluded_areas: Array[Rect2] = []:
+	set(value):
+		excluded_areas = value
+		_queue_rebuild()
 ## 修改此整数，重新随机位置和变种。
 @export var scatter_seed := 10102026:
 	set(value):
@@ -93,6 +108,8 @@ var _generated: Node3D
 var _rebuild_queued := false
 var _editor_initialized := false
 var _terrain: Terrain
+var _bound_data: TerrainData
+var _bound_palette: TerrainPaintPalette
 var _lighting_queued := false
 var _root_map: ImageTexture
 var _root_bounds := Vector4(0, 0, 1, 1)
@@ -107,12 +124,12 @@ func apply_lighting() -> void:
 	_lighting_queued = false
 	# 新导出项在已打开的 @tool 实例上可能为 Nil；保留有效的 0 / false。
 	var defaults := {"lighting_enabled": true, "stable_shadows": true, "normal_strength": 0.35, "root_occlusion": 0.3,
-		"backlight_strength": 0.12, "ground_relief": 0.008, "ground_wet_response": 0.2}
+		"backlight_strength": 0.12, "ground_relief": 0.008, "ground_wet_response": 0.2, "ground_sheen": 0.35}
 	for key in defaults:
 		if get(key) == null:
 			set(key, defaults[key])
 	if not is_instance_valid(_terrain):
-		_terrain = get_parent().get_node_or_null("Ground") as Terrain
+		_terrain = terrain if is_instance_valid(terrain) else get_parent().get_node_or_null("Ground") as Terrain
 	if not _terrain:
 		return
 	if not _root_map and is_instance_valid(_generated):
@@ -123,6 +140,7 @@ func apply_lighting() -> void:
 		ground.set_shader_parameter("grass_lighting_enabled", lighting_enabled)
 		ground.set_shader_parameter("grass_relief", ground_relief)
 		ground.set_shader_parameter("grass_wet_response", ground_wet_response)
+		ground.set_shader_parameter("grass_sheen", ground_sheen)
 		ground.set_shader_parameter("grass_root_occlusion", root_occlusion if _root_map else 0.0)
 		# Keep this generated texture out of saved scene resources, like Terrain's map.
 		RenderingServer.material_set_param(ground.get_rid(), "grass_root_map", _root_map.get_rid() if _root_map else RID())
@@ -202,12 +220,39 @@ func _queue_rebuild() -> void:
 	_rebuild_queued = true
 	_rebuild.call_deferred()
 
+## 运行时锄地只隐藏对应格的花草及投影，不重新随机整片地编。
+func set_farming_mask(texture: ImageTexture, bounds: Vector4) -> void:
+	if not is_instance_valid(_generated): return
+	for layer in _generated.get_children():
+		for instance in layer.get_children():
+			if not instance is MultiMeshInstance3D: continue
+			var material := instance.multimesh.mesh.material as ShaderMaterial
+			if not material: continue
+			material.set_shader_parameter("farming_hide_enabled", texture != null)
+			material.set_shader_parameter("farming_bounds", bounds)
+			RenderingServer.material_set_param(material.get_rid(), "farming_map", texture.get_rid() if texture else RID())
+
 func _rebuild() -> void:
 	_rebuild_queued = false
 	if not is_inside_tree():
 		return
 	_editor_initialized = true
-	_terrain = get_parent().get_node_or_null("Ground") as Terrain
+	_terrain = terrain if is_instance_valid(terrain) else get_parent().get_node_or_null("Ground") as Terrain
+	if _terrain and not _terrain.paint_palette_applied.is_connected(_queue_rebuild):
+		_terrain.paint_palette_applied.connect(_queue_rebuild)
+	var data := _terrain.data if _terrain else null
+	if _bound_data != data:
+		if _bound_data and _bound_data.changed.is_connected(_queue_rebuild):
+			_bound_data.changed.disconnect(_queue_rebuild)
+		_bound_data = data
+		if _bound_data:
+			_bound_data.changed.connect(_queue_rebuild)
+	var palette := _terrain.paint_palette if _terrain else null
+	if _bound_palette != palette:
+		if _bound_palette and _bound_palette.changed.is_connected(_queue_rebuild):
+			_bound_palette.changed.disconnect(_queue_rebuild)
+		_bound_palette = palette
+		if _bound_palette: _bound_palette.changed.connect(_queue_rebuild)
 	if not child_entered_tree.is_connected(_on_region_entered):
 		child_entered_tree.connect(_on_region_entered)
 	if not child_exiting_tree.is_connected(_on_region_exiting):
@@ -264,12 +309,14 @@ func _rebuild() -> void:
 			mesh.subdivide_depth = 11
 		var multimesh := MultiMesh.new()
 		multimesh.transform_format = MultiMesh.TRANSFORM_3D
+		multimesh.use_custom_data = true
 		multimesh.mesh = mesh
 		var points: Array = batch["points"]
 		multimesh.instance_count = points.size()
 		var anchor_height: float = (float(item["anchor"][1]) - float(item["canvas"][1]) * 0.5) * float(item["pixel_size"])
 		for index in points.size():
 			multimesh.set_instance_transform(index, Transform3D(Basis.IDENTITY, points[index] + Vector3.UP * anchor_height))
+			multimesh.set_instance_custom_data(index, Color(anchor_height, 0.0, 0.0, 0.0))
 		var instance := MultiMeshInstance3D.new()
 		instance.name = key
 		instance.multimesh = multimesh
@@ -285,6 +332,7 @@ func _material_for(item: Dictionary, category: String) -> Material:
 		vegetation.shader = WIND_SHADER
 		vegetation.set_shader_parameter("sprite_texture", load(item["texture"]))
 		vegetation.set_shader_parameter("root_uv", float(item["anchor"][1]) / float(item["canvas"][1]))
+		vegetation.set_shader_parameter("visible_height_uv", float(item["visible_size"][1]) / float(item["canvas"][1]))
 		vegetation.set_shader_parameter("flexibility", 0.055 if category == "grass" else 0.035)
 		return vegetation
 	var stone := StandardMaterial3D.new()
@@ -354,6 +402,11 @@ func _paintable_cell(cell: Vector2i, level: int) -> bool:
 	for flag in [1, 2, 4, 8, 16]:
 		if data.has_overlay(cell, flag):
 			return false
+	var local := cell-data.origin
+	var paint := data.paint_at_index(local.y*data.size.x+local.x)
+	if paint != 0:
+		var brush := _terrain.paint_palette.brush_for_id(paint) if _terrain.paint_palette else null
+		return brush != null and brush.is_grass
 	return true
 
 func _region_surface(region: GroundDressingRegion) -> Array[Dictionary]:
@@ -411,6 +464,10 @@ func _pick_variant(choices: Array, weights: Array, random: RandomNumberGenerator
 	return choices.back()
 
 func _claim_point(point: Vector2, occupied: Dictionary) -> bool:
+	if excluded_areas:
+		for area: Rect2 in excluded_areas:
+			if area.has_point(point):
+				return false
 	for reserved in [Vector2(0, 1.4), Vector2(4.7, 8.5), Vector2(6.9, 8.5)]:
 		if point.distance_squared_to(reserved) < 0.95 * 0.95:
 			return false

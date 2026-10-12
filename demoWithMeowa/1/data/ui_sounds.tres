@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="UISoundBank" load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://scripts/audio/ui_sound_bank.gd" id="bank"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/ui/journal_open.wav" id="open"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/ui/journal_close.wav" id="close"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/ui/page_turn.wav" id="page"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/ui/select.wav" id="select"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/ui/drag_start.wav" id="drag"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/ui/item_drop.wav" id="drop"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/ui/equip.wav" id="equip"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/ui/confirm.wav" id="confirm"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/ui/cancel.wav" id="cancel"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/ui/error.wav" id="error"]
+
+[resource]
+script = ExtResource("bank")
+journal_open = ExtResource("open")
+journal_close = ExtResource("close")
+page_turn = ExtResource("page")
+select = ExtResource("select")
+drag_start = ExtResource("drag")
+item_drop = ExtResource("drop")
+equip = ExtResource("equip")
+confirm = ExtResource("confirm")
+cancel = ExtResource("cancel")
+error = ExtResource("error")

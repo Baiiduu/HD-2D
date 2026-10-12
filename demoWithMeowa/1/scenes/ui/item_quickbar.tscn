@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/item_quickbar.gd" id="quickbar"]
+
+[node name="ItemQuickbar" type="Control"]
+script = ExtResource("quickbar")
+mouse_filter = 2

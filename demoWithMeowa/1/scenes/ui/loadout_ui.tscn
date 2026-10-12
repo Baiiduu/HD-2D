@@ -1,0 +1,27 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/loadout_ui.gd" id="ui"]
+[ext_resource type="Resource" path="res://data/loadout_catalog.tres" id="catalog"]
+[ext_resource type="PackedScene" path="res://scenes/ui/skill_hud.tscn" id="skill_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/item_quickbar.tscn" id="item_quickbar"]
+[ext_resource type="PackedScene" path="res://scenes/ui/attribute_hud.tscn" id="attribute_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ui_audio.tscn" id="ui_audio"]
+
+[node name="LoadoutUI" type="CanvasLayer"]
+process_mode = 3
+layer = 20
+script = ExtResource("ui")
+catalog = ExtResource("catalog")
+starting_equipment = Array[String](["sword", "staff", "armor", "tunic", "amulet", "ring"])
+starting_skills = Array[String](["fire", "heal"])
+starting_assignments = Array[String](["fire", "heal"])
+starting_items = Dictionary[String, int]({"hoe":1,"watering_can":1,"axe":1,"tomato_seed":20,"wood":36,"stone":28,"ore":14,"cotton":12,"tomato":8,"wheat":15,"mushroom":9,"bread":6,"potion":3,"crystal":7,"leather":4,"fertilizer":10})
+starting_quick_items = Array[String](["hoe","watering_can","axe","tomato_seed","tomato","potion","",""])
+
+[node name="SkillHUD" parent="." instance=ExtResource("skill_hud")]
+
+[node name="ItemQuickbar" parent="." instance=ExtResource("item_quickbar")]
+
+[node name="AttributeHUD" parent="." instance=ExtResource("attribute_hud")]
+
+[node name="UIAudio" parent="." instance=ExtResource("ui_audio")]

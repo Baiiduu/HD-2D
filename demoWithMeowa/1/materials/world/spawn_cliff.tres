@@ -1,0 +1,18 @@
+[gd_resource type="ShaderMaterial" load_steps=3 format=3]
+
+[ext_resource type="Shader" path="res://shaders/cliff.gdshader" id="cliff_shader"]
+[ext_resource type="Texture2D" path="res://assets/ground/generated/cliff/Pixel_art_earthen_cliff_face_seen_from_the_side_horizontal_layered_rock_strata_in_warm_brown_and_gray_small_cracks/texture.png" id="rock"]
+
+[resource]
+resource_local_to_scene = true
+resource_name = "出生区台地侧壁"
+shader = ExtResource("cliff_shader")
+shader_parameter/wall_texture = ExtResource("rock")
+shader_parameter/tint = Color(0.91, 0.89, 0.86, 1)
+shader_parameter/saturation = 0.4
+shader_parameter/texel = 0.025
+shader_parameter/lip_pixels = 3
+shader_parameter/lip_shadow_pixels = 2
+shader_parameter/base_shadow_height = 0.4
+shader_parameter/base_shadow_strength = 0.36
+shader_parameter/roughness = 0.95

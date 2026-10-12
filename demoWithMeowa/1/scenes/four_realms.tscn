@@ -1,9 +1,12 @@
 [gd_scene format=4 uid="uid://dyh2hfsv2xv4g"]
 
 [ext_resource type="Script" uid="uid://srckk3f4b30t" path="res://scripts/art_direction.gd" id="art_direction"]
+[ext_resource type="Script" path="res://scripts/atmospheric_light.gd" id="atmospheric_light"]
 [ext_resource type="Script" uid="uid://yq5plellwbbv" path="res://scripts/bgm.gd" id="bgm"]
+[ext_resource type="Script" uid="uid://cnj43gbbfi4sc" path="res://scripts/character_lighting.gd" id="character_lighting"]
 [ext_resource type="Shader" uid="uid://duhny4lanykqa" path="res://shaders/cliff.gdshader" id="cliff_shader"]
 [ext_resource type="Shader" uid="uid://bhqytu36o1qiy" path="res://shaders/lamp_cone_fog.gdshader" id="cone_fog"]
+[ext_resource type="Script" uid="uid://cehtfiwluxpej" path="res://scripts/daylight_preview.gd" id="daylight_preview"]
 [ext_resource type="Script" uid="uid://b63uoy4636ic5" path="res://scripts/ground_dressing_region.gd" id="dressing_region"]
 [ext_resource type="Shader" uid="uid://syr3vpca6sp4" path="res://shaders/firefly.gdshader" id="firefly_shader"]
 [ext_resource type="Script" uid="uid://c4p56r7qm7y5b" path="res://scripts/follow_camera.gd" id="follow_camera"]
@@ -18,7 +21,7 @@
 [ext_resource type="Shader" uid="uid://btq86vm2xekqy" path="res://shaders/lamp_dust.gdshader" id="lamp_dust"]
 [ext_resource type="PackedScene" path="res://scenes/props/lantern.tscn" id="lantern_scene"]
 [ext_resource type="Script" uid="uid://c3bn768plavjr" path="res://scripts/player.gd" id="player"]
-[ext_resource type="Script" path="res://scripts/character_lighting.gd" id="character_lighting"]
+[ext_resource type="PackedScene" path="res://scenes/shared/player_movement_audio.tscn" id="movement_audio"]
 [ext_resource type="SpriteFrames" uid="uid://65qht0ymca02" path="res://assets/meowa/player/animations.tres" id="player_frames"]
 [ext_resource type="Shader" uid="uid://fuoorj3rrv6c" path="res://shaders/post_process.gdshader" id="post_shader"]
 [ext_resource type="Shader" uid="uid://vs810xu7skxb" path="res://shaders/night_sky.gdshader" id="sky_shader"]
@@ -137,9 +140,9 @@ shader_parameter/grass_lighting_enabled = true
 shader_parameter/grass_relief = 0.008
 shader_parameter/grass_wet_response = 0.2
 shader_parameter/grass_root_occlusion = 0.3
-shader_parameter/grass_root_bounds = Vector4(0, 0, 1, 1)
+shader_parameter/grass_root_bounds = Vector4(-12, -10.4, 48, 20.800001)
 shader_parameter/rain_amount = 0.7
-shader_parameter/rain_clock = 548.9214533332047
+shader_parameter/rain_clock = 428.0245135555554
 shader_parameter/rain_density = 0.9
 shader_parameter/rain_radius = 0.11
 shader_parameter/rain_strength = 0.32
@@ -217,7 +220,7 @@ shader_parameter/reflection_heights = Vector2(-0.32, 0.48)
 shader_parameter/reflection_enabled_0 = false
 shader_parameter/reflection_enabled_1 = false
 shader_parameter/rain_amount = 0.7
-shader_parameter/rain_clock = 548.9214533332047
+shader_parameter/rain_clock = 428.0245135555554
 shader_parameter/rain_density = 1.8
 shader_parameter/rain_radius = 0.28
 shader_parameter/rain_lifetime = 0.8
@@ -615,20 +618,35 @@ fog_amount = 0.0
 low_fog = 0.06
 wetness = 0.6
 
+[node name="DaylightPreview" type="Node3D" parent="." unique_id=1194857335 node_paths=PackedStringArray("art_direction")]
+process_priority = 30
+script = ExtResource("daylight_preview")
+art_direction = NodePath("../ArtDirection")
+enabled = false
+progress = 0.0
+travel_seconds = 20.0
+
+[node name="AtmosphericLight" type="Node3D" parent="." node_paths=PackedStringArray("art_direction")]
+position = Vector3(11, 0, 3)
+script = ExtResource("atmospheric_light")
+art_direction = NodePath("../ArtDirection")
+
 [node name="BGM" type="Node" parent="." unique_id=1093464065]
 script = ExtResource("bgm")
 music_volume_db = -18.0
 
-[node name="Weather" type="Node3D" parent="." unique_id=1290084438 node_paths=PackedStringArray("camera", "dressing", "post_process", "terrain")]
+[node name="Weather" type="Node3D" parent="." unique_id=1290084438 node_paths=PackedStringArray("player", "camera", "dressing", "post_process", "terrain")]
 physics_interpolation_mode = 2
 script = ExtResource("weather")
 rain_intensity = 0.7
 rain_amount = 4800
+rain_audio_enabled = false
 rain_volume_db = -10.0
 rain_audio_fade_time = 3.0
 wind_volume_db = -5.0
 wind_strength = 1.65
 lens_drop_rate = 1.0
+player = NodePath("../Player")
 camera = NodePath("../Camera3D")
 dressing = NodePath("../World/GroundDressing")
 post_process = NodePath("../PostProcess/Screen")
@@ -659,7 +677,6 @@ target = NodePath("../Player")
 distance = 11.0
 pitch_degrees = 10.0
 dead_zone = 0.1
-max_yaw_degrees = 180.0
 dof_mode = 0
 dof_far_transition = 4.0
 dof_near_transition = 1.5
@@ -681,13 +698,6 @@ bridge_material = SubResource("Bridge_material")
 
 [node name="GroundDressing" type="Node3D" parent="World" unique_id=741584959]
 script = ExtResource("ground_dressing")
-lighting_enabled = null
-stable_shadows = null
-normal_strength = null
-root_occlusion = null
-backlight_strength = null
-ground_relief = null
-ground_wet_response = null
 grass_density = 1.0
 flower_density = 1.55
 pebble_density = 0.42
@@ -1296,12 +1306,14 @@ script = ExtResource("player")
 animations = ExtResource("player_frames")
 movement_camera = NodePath("../Camera3D")
 
+[node name="MovementAudio" parent="Player" instance=ExtResource("movement_audio")]
+
 [node name="Collision" type="CollisionShape3D" parent="Player" unique_id=1536128845]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.532959, 0)
 shape = SubResource("CapsuleShape3D_66")
 
 [node name="Sprite" type="Sprite3D" parent="Player" unique_id=916617438]
-script = ExtResource("character_lighting")
+process_priority = 1
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
 pixel_size = 0.0234375
 billboard = 2
@@ -1309,6 +1321,7 @@ shaded = true
 alpha_cut = 1
 texture_filter = 0
 texture = ExtResource("tex_17")
+script = ExtResource("character_lighting")
 
 [node name="PostProcess" type="CanvasLayer" parent="." unique_id=2033645574]
 layer = 0

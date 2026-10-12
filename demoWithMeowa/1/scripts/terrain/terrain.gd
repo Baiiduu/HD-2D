@@ -2,6 +2,8 @@
 class_name Terrain
 extends Node3D
 
+signal paint_palette_applied
+
 const WATER_LIGHT_LAYER := 1 << 16 # Layer 17; beam accents use 18, mirrors use 19/20.
 
 ## 根据 TerrainData 生成分层地形：平台顶面、崖壁、坡道、水面、瀑布、桥与碰撞体。
@@ -16,13 +18,24 @@ const WATER_LIGHT_LAYER := 1 << 16 # Layer 17; beam accents use 18, mirrors use 
 			data.changed.connect(_queue_rebuild)
 		_queue_rebuild()
 
-@export var top_material: ShaderMaterial
+@export var top_material: ShaderMaterial:
+	set(value): top_material = value; _queue_palette_apply()
 @export var wall_material: Material
 @export var water_material: Material
 @export var waterfall_material: Material
 @export var bridge_material: Material
 ## 地图外缘崖壁向下延伸到的层级
 @export var skirt_level := -2
+
+@export_group("地表画笔配置")
+## 每个地形可使用独立画笔列表；配置纹理、图集及表面参数，已有绘制随固定编号对应。
+@export var paint_palette: TerrainPaintPalette:
+	set(value):
+		if paint_palette and paint_palette.changed.is_connected(_queue_palette_apply):
+			paint_palette.changed.disconnect(_queue_palette_apply)
+		paint_palette = value
+		if paint_palette: paint_palette.changed.connect(_queue_palette_apply)
+		_queue_palette_apply()
 
 @export_group("草地与崖壁材质衔接")
 ## 关闭后恢复原来的草沿和阴影线，不改变地形几何。
@@ -47,6 +60,20 @@ const WATER_LIGHT_LAYER := 1 << 16 # Layer 17; beam accents use 18, mirrors use 
 @export_range(0.0, 0.4, 0.01) var grass_base_blend_height := 0.16:
 	set(value): grass_base_blend_height = value; _queue_transition_apply()
 
+@export_group("坡道与铺装侧边衔接")
+## 泥土坡道、道路及其他铺装沿用顶面的实际纹理；关闭恢复此前侧边效果。
+@export var surface_edge_transition_enabled := true:
+	set(value): surface_edge_transition_enabled = value; _queue_transition_apply()
+## 顶面纹理向侧面延伸的基础厚度，单位为纹理像素。
+@export_range(0.0, 8.0, 0.5) var surface_edge_lip_pixels := 2.0:
+	set(value): surface_edge_lip_pixels = value; _queue_transition_apply()
+## 顶面纹理淡入岩壁的距离，单位米；短墙自动缩小，保留岩壁主体。
+@export_range(0.0, 0.4, 0.01) var surface_edge_transition_height := 0.14:
+	set(value): surface_edge_transition_height = value; _queue_transition_apply()
+## 接缝附近向顶面法线靠拢的程度，柔化光照折线；0 关闭，不改变轮廓或碰撞。
+@export_range(0.0, 0.8, 0.05) var surface_edge_normal_softening := 0.35:
+	set(value): surface_edge_normal_softening = value; _queue_transition_apply()
+
 ## 崖顶草沿 / 石沿的颜色，按区域类型索引
 const LIP_COLORS: Array[Color] = [
 	Color(0.55, 0.53, 0.5), Color(0.3, 0.34, 0.42), Color(0.45, 0.62, 0.5), Color(0.36, 0.6, 0.26)]
@@ -59,9 +86,45 @@ var _map_texture: ImageTexture
 var _rebuild_queued := false
 var _generated: Node3D
 var _transition_apply_queued := false
+var _edge_surface_values := Vector4(-1.0, -1.0, -1.0, -1.0)
+var _palette_apply_queued := false
+var _paint_textures: Dictionary = {}
 
 func _ready() -> void:
+	_apply_paint_palette()
 	_rebuild()
+
+func _queue_palette_apply() -> void:
+	if _palette_apply_queued or not is_inside_tree(): return
+	_palette_apply_queued = true
+	_apply_paint_palette.call_deferred()
+
+func _apply_paint_palette() -> void:
+	_palette_apply_queued = false
+	if not top_material: return
+	for parameter in _paint_textures:
+		var original: Variant = top_material.get_shader_parameter(parameter)
+		RenderingServer.material_set_param(top_material.get_rid(),parameter,original.get_rid() if original is Texture else RID())
+	_paint_textures.clear()
+	if paint_palette:
+		_paint_textures = paint_palette.apply_to(top_material)
+	else:
+		top_material.set_shader_parameter("paint_enabled",false)
+	_bind_paint_textures(top_material)
+	_apply_grass_transition()
+	paint_palette_applied.emit()
+
+func _bind_paint_textures(material: ShaderMaterial) -> void:
+	# Generated arrays and atlas crops stay out of saved scenes/materials.
+	for parameter in _paint_textures:
+		RenderingServer.material_set_param(material.get_rid(),parameter,_paint_textures[parameter].get_rid())
+	if material == wall_material and _paint_textures.has("wild_texture"):
+		RenderingServer.material_set_param(material.get_rid(),"grass_texture",_paint_textures["wild_texture"].get_rid())
+
+func _process(_delta: float) -> void:
+	# ShaderMaterial parameter writes do not emit Resource.changed.
+	# Track only the dynamic wet response; textures and biome layers are copied on apply.
+	_sync_edge_wetness()
 
 func _queue_rebuild() -> void:
 	if _rebuild_queued or not is_inside_tree():
@@ -89,6 +152,37 @@ func _apply_grass_transition() -> void:
 	wall.set_shader_parameter("moss_strength", grass_moss_strength)
 	wall.set_shader_parameter("lip_shadow_strength", grass_lip_shadow)
 	wall.set_shader_parameter("base_blend_height", grass_base_blend_height)
+	wall.set_shader_parameter("surface_edge_enabled", surface_edge_transition_enabled)
+	wall.set_shader_parameter("surface_edge_lip_pixels", surface_edge_lip_pixels)
+	wall.set_shader_parameter("surface_edge_height", surface_edge_transition_height)
+	wall.set_shader_parameter("surface_edge_normal_softening", surface_edge_normal_softening)
+	for parameter in ["city_texture", "cyber_texture", "cultivation_texture", "wild_texture", "path_atlas", "dirt_atlas",
+			"path_grid", "path_tiles", "path_configured", "paint_enabled",
+			"city_tint", "cyber_tint", "cultivation_tint", "wild_tint", "path_tint", "dirt_tint",
+			"city_surface", "cyber_surface", "cultivation_surface", "wild_surface", "path_surface", "dirt_surface"]:
+		wall.set_shader_parameter(parameter, top_material.get_shader_parameter(parameter))
+	_bind_paint_textures(wall)
+	_edge_surface_values = Vector4(-1.0, -1.0, -1.0, -1.0)
+	_sync_edge_wetness()
+
+func _sync_edge_wetness() -> void:
+	var wall := wall_material as ShaderMaterial
+	if not surface_edge_transition_enabled or not wall or not top_material:
+		return
+	# Whitebox materials have no wet surface parameters.
+	if top_material.get_shader_parameter("wetness") == null:
+		return
+	var grass_wet := float(top_material.get_shader_parameter("grass_wet_response")) if top_material.get_shader_parameter("grass_lighting_enabled") else 0.0
+	var values := Vector4(
+		clampf(float(top_material.get_shader_parameter("wetness")) + float(top_material.get_shader_parameter("weather_wetness")), 0.0, 1.0),
+		float(top_material.get_shader_parameter("wet_darkening")), float(top_material.get_shader_parameter("wet_roughness")), grass_wet)
+	if values == _edge_surface_values:
+		return
+	_edge_surface_values = values
+	wall.set_shader_parameter("edge_wetness", values.x)
+	wall.set_shader_parameter("edge_wet_darkening", values.y)
+	wall.set_shader_parameter("edge_wet_roughness", values.z)
+	wall.set_shader_parameter("edge_grass_wet_response", values.w)
 
 func _rebuild() -> void:
 	_rebuild_queued = false
@@ -377,6 +471,11 @@ func _build_collision(collision_faces: PackedVector3Array) -> void:
 			body.add_child(blocker)
 
 # ---------- 数据纹理 ----------
+
+## 画笔拖动时只刷新地表数据纹理；结束一笔后再统一通知碰撞与装饰更新。
+func refresh_surface() -> void:
+	if data:
+		_upload_map()
 
 func _upload_map() -> void:
 	# 直接写到 RenderingServer，避免数据纹理被序列化进场景文件

@@ -1,0 +1,123 @@
+{
+  "design_canvas": [
+    2048,
+    1152
+  ],
+  "fixed_art": {
+    "file": "foundation.png",
+    "rect": [
+      0,
+      0,
+      2048,
+      1152
+    ],
+    "includes": [
+      "book binding and paper",
+      "left landscape",
+      "detail landscape",
+      "fixed frames and slots",
+      "garden and table",
+      "lantern and watch",
+      "foreground flowers and envelope"
+    ]
+  },
+  "portrait": {
+    "file": "portrait.png",
+    "rect": [
+      350,
+      180,
+      306,
+      690
+    ]
+  },
+  "inventory": {
+    "origin": [
+      1038,
+      328
+    ],
+    "step": [
+      118,
+      142
+    ],
+    "cell": [
+      114,
+      140
+    ],
+    "order": [
+      "sword",
+      "staff",
+      "armor",
+      "tunic",
+      "amulet",
+      "ring",
+      "green-potion",
+      "red-potion",
+      "scroll",
+      "white-herb",
+      "ore",
+      "feather",
+      "bread",
+      "pouch",
+      "lantern",
+      "purple-herb"
+    ]
+  },
+  "equipment_icons": [
+    {
+      "file": "items/sword.png",
+      "rect": [
+        780,
+        207,
+        138,
+        139
+      ]
+    },
+    {
+      "file": "items/armor.png",
+      "rect": [
+        791,
+        422,
+        137,
+        130
+      ]
+    },
+    {
+      "file": "items/amulet.png",
+      "rect": [
+        790,
+        654,
+        138,
+        125
+      ]
+    }
+  ],
+  "detail_icon": {
+    "file": "items/sword.png",
+    "rect": [
+      1544,
+      337,
+      291,
+      248
+    ]
+  },
+  "symbols": [
+    "character",
+    "backpack",
+    "star",
+    "heart",
+    "sword",
+    "shield",
+    "boot"
+  ],
+  "separate_ornaments": [
+    "note",
+    "lantern",
+    "flowers",
+    "envelope",
+    "watch",
+    "sprig",
+    "divider"
+  ],
+  "text": "Rendered as native Godot labels in preview.gd; text and values are visual examples.",
+  "fidelity": "Generative extraction and reconstruction; it is not a lossless recovery of the original image layers."
+}

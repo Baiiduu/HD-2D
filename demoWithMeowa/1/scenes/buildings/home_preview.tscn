@@ -1,0 +1,92 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/buildings/home.tscn" id="home"]
+[ext_resource type="Script" path="res://scripts/buildings/home_preview.gd" id="preview"]
+[ext_resource type="Script" path="res://scripts/player.gd" id="player"]
+[ext_resource type="PackedScene" path="res://scenes/shared/player_movement_audio.tscn" id="movement_audio"]
+[ext_resource type="SpriteFrames" path="res://assets/meowa/player/animations.tres" id="frames"]
+[ext_resource type="Script" path="res://scripts/follow_camera.gd" id="camera"]
+[ext_resource type="Script" path="res://scripts/character_lighting.gd" id="character_lighting"]
+
+[sub_resource type="Environment" id="environment"]
+background_mode = 1
+ambient_light_source = 2
+reflected_light_source = 1
+tonemap_mode = 2
+ssao_enabled = true
+ssao_radius = 0.8
+ssao_intensity = 1.0
+
+[sub_resource type="BoxShape3D" id="ground_shape"]
+size = Vector3(26,0.2,26)
+
+[sub_resource type="BoxMesh" id="ground_mesh"]
+size = Vector3(26,0.2,26)
+
+[sub_resource type="StandardMaterial3D" id="ground_material"]
+albedo_color = Color(0.23,0.25,0.26,1)
+roughness = 1.0
+
+[sub_resource type="CapsuleShape3D" id="player_shape"]
+radius = 0.25
+height = 1.05
+
+[node name="HomePreview" type="Node3D"]
+script = ExtResource("preview")
+
+[node name="Home" parent="." instance=ExtResource("home")]
+
+[node name="Environment" type="WorldEnvironment" parent="."]
+environment = SubResource("environment")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-42,-32,0)
+shadow_enabled = true
+light_angular_distance = 0.5
+directional_shadow_max_distance = 35.0
+
+[node name="Ground" type="StaticBody3D" parent="."]
+position = Vector3(0,-0.1,0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("ground_mesh")
+material_override = SubResource("ground_material")
+
+[node name="Collision" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("ground_shape")
+
+[node name="Focus" type="Node3D" parent="."]
+position = Vector3(0,1.0,0.7)
+
+[node name="Camera3D" type="Camera3D" parent="." node_paths=PackedStringArray("target")]
+current = true
+fov = 34.0
+far = 100.0
+script = ExtResource("camera")
+target = NodePath("../Focus")
+focus_height = 1.2
+distance = 16.0
+pitch_degrees = 25.0
+yaw_degrees = 35.0
+dof_enabled = false
+
+[node name="Player" type="CharacterBody3D" parent="." node_paths=PackedStringArray("movement_camera")]
+position = Vector3(0,0.02,6.0)
+script = ExtResource("player")
+animations = ExtResource("frames")
+movement_camera = NodePath("../Camera3D")
+
+[node name="MovementAudio" parent="Player" instance=ExtResource("movement_audio")]
+
+[node name="Collision" type="CollisionShape3D" parent="Player"]
+position = Vector3(0,0.53,0)
+shape = SubResource("player_shape")
+
+[node name="Sprite" type="Sprite3D" parent="Player"]
+position = Vector3(0,0.75,0)
+pixel_size = 0.0234375
+billboard = 2
+shaded = true
+alpha_cut = 1
+texture_filter = 0
+script = ExtResource("character_lighting")

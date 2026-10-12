@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/buildings/training_hut.gd" id="hut"]
+
+[node name="TrainingHut" type="Node3D"]
+script = ExtResource("hut")
+width = 5.4
+depth = 3.8
+eave_height = 2.8
+roof_rise = 1.15
+
+[node name="InteractionPoint" type="Marker3D" parent="."]
+position = Vector3(1.242,0.75,3.8)

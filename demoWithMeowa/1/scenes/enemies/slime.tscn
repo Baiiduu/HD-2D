@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://nonwwjcstfxt"]
+
+[ext_resource type="SpriteFrames" uid="uid://d0bbnyltugo8y" path="res://assets/meowa/slime/animations.tres" id="frames"]
+[ext_resource type="Script" uid="uid://cnj43gbbfi4sc" path="res://scripts/character_lighting.gd" id="lighting"]
+[ext_resource type="Script" uid="uid://jkjmywicd43h" path="res://scripts/enemies/slime.gd" id="slime"]
+[ext_resource type="Texture2D" uid="uid://76scfvhfbk0f" path="res://assets/meowa/slime/frames/idle_front.png" id="texture"]
+
+[sub_resource type="CapsuleShape3D" id="body"]
+radius = 0.28
+height = 0.7
+
+[sub_resource type="AtlasTexture" id="first_frame"]
+atlas = ExtResource("texture")
+region = Rect2(0, 0, 80, 80)
+
+[node name="Slime" type="CharacterBody3D" unique_id=846547876]
+floor_snap_length = 0.25
+script = ExtResource("slime")
+animations = ExtResource("frames")
+
+[node name="Collision" type="CollisionShape3D" parent="." unique_id=1788828744]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+shape = SubResource("body")
+
+[node name="Sprite" type="Sprite3D" parent="." unique_id=549636403]
+process_priority = 1
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.375, 0)
+pixel_size = 0.015625
+billboard = 2
+shaded = true
+alpha_cut = 1
+texture_filter = 0
+texture = SubResource("first_frame")
+script = ExtResource("lighting")
+occlusion_outline_color = Color(0.99327, 0.68301725, 0.7753131, 1)

@@ -1,0 +1,22 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/farming_ui.gd" id="ui"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/farming/frame.png" id="frame"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/farming/sprout.png" id="sprout"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/farming/water.png" id="water"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/farming/mouse-left.png" id="left"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/farming/mouse-right.png" id="right"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/farming/success.png" id="success"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/farming/error.png" id="error"]
+
+[node name="FarmingUI" type="CanvasLayer"]
+process_mode = 3
+layer = 21
+script = ExtResource("ui")
+frame_texture = ExtResource("frame")
+sprout_texture = ExtResource("sprout")
+water_texture = ExtResource("water")
+left_mouse_texture = ExtResource("left")
+right_mouse_texture = ExtResource("right")
+success_texture = ExtResource("success")
+error_texture = ExtResource("error")

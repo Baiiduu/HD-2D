@@ -1,0 +1,8 @@
+[gd_resource type="AtlasTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/interaction/interaction.png" id="sheet"]
+
+[resource]
+atlas = ExtResource("sheet")
+region = Rect2(84, 193, 378, 368)
+filter_clip = true

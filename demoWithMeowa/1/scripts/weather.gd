@@ -4,6 +4,7 @@ extends Node3D
 ## 天气总控。花草、雨丝与地表反馈可在编辑器预览，镜头水滴在游戏画面中生效。
 const RAIN_SHADER := preload("res://shaders/rain_streak.gdshader")
 const MAX_DROPS := 12
+const MAX_BLINK_PATHS := 8
 
 @export_group("天气")
 @export var enabled := true:
@@ -40,7 +41,7 @@ const MAX_DROPS := 12
 @export var rain_audio_enabled := true:
 	set(v): rain_audio_enabled = v; _queue_apply()
 ## 循环环境音；仅在运行游戏时播放，音量随雨量变化。
-@export var rain_sound: AudioStream = preload("res://assets/meowa/weather/rain.wav"):
+@export var rain_sound: AudioStream = preload("res://assets/meowa/weather/drizzle.wav"):
 	set(v): rain_sound = v; _queue_apply()
 ## 满雨量时的音量，分贝；0 是素材原始音量，负数更轻。
 @export_range(-40.0, 6.0, 0.5) var rain_volume_db := -8.0:
@@ -120,6 +121,34 @@ const MAX_DROPS := 12
 @export_range(0.0, 0.2, 0.001) var flower_sway := 0.035:
 	set(v): flower_sway = maxf(v, 0.0); _queue_apply()
 
+@export_group("闪身影响花草")
+## 独立于天气风摆：关闭自然风后，闪身仍可带动花草。
+@export var blink_plants_enabled := true
+## 实际闪身路径两侧的影响半径，米；向边缘平滑衰减。
+@export_range(0.1, 3.0, 0.05, "suffix:m") var blink_plant_radius := 0.85
+## 草根相对闪身脚底的高度容差，米；避免带动其他层台地。
+@export_range(0.1, 1.5, 0.05, "suffix:m") var blink_plant_height := 0.5
+## 叶尖的最大额外偏移，米；0 关闭闪身弯曲，花簇默认比草柔和。
+@export_range(0.0, 0.4, 0.01, "suffix:m") var blink_plant_strength := 0.16
+## 压弯、回弹到完全恢复的总时间，秒。
+@export_range(0.2, 2.0, 0.05, "suffix:s") var blink_plant_duration := 0.85
+## 回弹相对压弯的幅度；0 只恢复，不向反方向摆动。
+@export_range(0.0, 0.5, 0.01) var blink_plant_rebound := 0.2
+
+@export_group("闪身影响雨滴")
+## 只带偏路径附近的空中雨丝，不修改全场风向或降雨速度。
+@export var blink_rain_enabled := true
+@export_range(0.1, 3.0, 0.05, "suffix:m") var blink_rain_radius := 1.1
+## 相对脚底的气流中心高度，米。
+@export_range(0.0, 3.0, 0.05, "suffix:m") var blink_rain_offset := 0.9
+## 气流中心上下的影响距离，米；超出后保持原下落方向。
+@export_range(0.1, 3.0, 0.05, "suffix:m") var blink_rain_height := 1.3
+## 雨丝额外横向偏移，米；与倾斜量分别调节。
+@export_range(0.0, 0.6, 0.01, "suffix:m") var blink_rain_strength := 0.22
+## 局部雨丝倾斜量；0 保留位移但不增加倾斜。
+@export_range(0.0, 2.0, 0.05) var blink_rain_tilt := 0.8
+@export_range(0.1, 1.5, 0.05, "suffix:s") var blink_rain_duration := 0.45
+
 @export_group("镜头水滴")
 @export var lens_drops_enabled := true:
 	set(v): lens_drops_enabled = v; _queue_apply()
@@ -160,6 +189,9 @@ const MAX_DROPS := 12
 	set(v): lens_center_protection = maxf(v, 0.0); _queue_apply()
 
 @export_group("场景引用")
+## 闪身扰动来源；使用角色碰撞检查后发出的真实路径。
+@export var player: Node3D:
+	set(v): player = v; _queue_apply()
 @export var camera: Camera3D:
 	set(v): camera = v; _queue_apply()
 @export var dressing: Node3D:
@@ -168,6 +200,8 @@ const MAX_DROPS := 12
 	set(v): post_process = v; _queue_apply()
 @export var terrain: Terrain:
 	set(v): terrain = v; _queue_apply()
+@export var surface_source: Node3D:
+	set(v): surface_source = v; _queue_apply()
 
 var _rain: GPUParticles3D
 var _rain_process: ParticleProcessMaterial
@@ -190,6 +224,8 @@ var _wind_audio_level := 0.0
 var _water: ShaderMaterial
 var _ground: ShaderMaterial
 var _wetness := 0.0
+var _blink_paths: Array[Dictionary] = []
+var _bound_blink_player: Node3D
 
 func _ready() -> void:
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
@@ -266,6 +302,7 @@ func _apply() -> void:
 	if dressing and dressing.has_signal("dressing_rebuilt") and not dressing.is_connected("dressing_rebuilt", _refresh_vegetation):
 		dressing.connect("dressing_rebuilt", _refresh_vegetation)
 	_refresh_vegetation()
+	_bind_blink_player()
 	_bind_post()
 	_apply_lens_settings()
 	_follow_rain()
@@ -274,20 +311,16 @@ func _apply() -> void:
 	_apply_surface()
 
 func _bind_surface() -> void:
-	if not terrain:
-		return
-	var water := terrain.water_material as ShaderMaterial
-	var ground := terrain.top_material
+	var water := _surface_material("get_water_material")
+	var ground := _surface_material("get_ground_material")
 	if water != _water or ground != _ground:
 		_water = water
 		_ground = ground
 		_apply_surface()
 
 func _apply_surface() -> void:
-	if not terrain:
-		return
-	_water = terrain.water_material as ShaderMaterial
-	_ground = terrain.top_material
+	_water = _surface_material("get_water_material")
+	_ground = _surface_material("get_ground_material")
 	if _water:
 		_water.set_shader_parameter("rain_amount", _rainfall() if water_rain_enabled else 0.0)
 		_water.set_shader_parameter("rain_density", water_ripple_density)
@@ -300,6 +333,11 @@ func _apply_surface() -> void:
 		_ground.set_shader_parameter("rain_radius", ground_splash_size)
 		_ground.set_shader_parameter("rain_strength", ground_splash_strength)
 	_update_surface(0.0)
+
+func _surface_material(method: String) -> ShaderMaterial:
+	if terrain:
+		return terrain.water_material as ShaderMaterial if method == "get_water_material" else terrain.top_material
+	return surface_source.call(method) as ShaderMaterial if surface_source and surface_source.has_method(method) else null
 
 func _update_surface(delta: float) -> void:
 	var target := _rainfall() * rain_wetness if ground_rain_enabled else 0.0
@@ -322,6 +360,8 @@ func _apply_audio() -> void:
 	if not is_instance_valid(_rain_audio):
 		_rain_audio = AudioStreamPlayer.new()
 		_rain_audio.name = "RainAudio"
+		# 环境声独立于全局暂停，打开界面时持续循环。
+		_rain_audio.process_mode = Node.PROCESS_MODE_ALWAYS
 		_rain_audio.volume_db = -80.0
 		add_child(_rain_audio)
 	_rain_audio.bus = rain_audio_bus if AudioServer.get_bus_index(rain_audio_bus) >= 0 else &"Master"
@@ -356,6 +396,7 @@ func _apply_wind_audio() -> void:
 	if not is_instance_valid(_wind_audio):
 		_wind_audio = AudioStreamPlayer.new()
 		_wind_audio.name = "WindAudio"
+		_wind_audio.process_mode = Node.PROCESS_MODE_ALWAYS
 		_wind_audio.volume_db = -80.0
 		add_child(_wind_audio)
 	_wind_audio.bus = wind_audio_bus if AudioServer.get_bus_index(wind_audio_bus) >= 0 else &"Master"
@@ -399,6 +440,70 @@ func _refresh_vegetation() -> void:
 		material.set_shader_parameter("gust_strength", gust_strength)
 		material.set_shader_parameter("flexibility", grass_sway if String(batch.name).begins_with("grass_") else flower_sway)
 		material.set_shader_parameter("wind_time", _clock)
+		material.set_shader_parameter("blink_plant_response", 1.0 if String(batch.name).begins_with("grass_") else 0.7)
+	_write_blink_airflow()
+
+func _bind_blink_player() -> void:
+	if Engine.is_editor_hint() or _bound_blink_player == player:
+		return
+	if is_instance_valid(_bound_blink_player) and _bound_blink_player.is_connected("blink_travelled", _on_blink_travelled):
+		_bound_blink_player.disconnect("blink_travelled", _on_blink_travelled)
+	_bound_blink_player = player
+	if is_instance_valid(player) and player.has_signal("blink_travelled"):
+		player.connect("blink_travelled", _on_blink_travelled)
+
+func _on_blink_travelled(start: Vector3, destination: Vector3) -> void:
+	if not blink_plants_enabled and not blink_rain_enabled:
+		return
+	if Vector2(start.x, start.z).distance_squared_to(Vector2(destination.x, destination.z)) < 0.000625:
+		return
+	if _blink_paths.size() >= MAX_BLINK_PATHS:
+		_blink_paths.pop_front()
+	_blink_paths.append({"start": start, "end": destination, "age": 0.0})
+	_write_blink_airflow()
+
+func _advance_blink_airflow(delta: float) -> void:
+	if Engine.is_editor_hint() or _blink_paths.is_empty():
+		return
+	var lifetime := maxf(blink_plant_duration, blink_rain_duration)
+	for index in range(_blink_paths.size() - 1, -1, -1):
+		_blink_paths[index]["age"] += delta
+		if _blink_paths[index]["age"] >= lifetime:
+			_blink_paths.remove_at(index)
+	_write_blink_airflow()
+
+func _write_blink_airflow() -> void:
+	if Engine.is_editor_hint():
+		return
+	var starts := PackedVector4Array()
+	var ends := PackedVector4Array()
+	starts.resize(MAX_BLINK_PATHS)
+	ends.resize(MAX_BLINK_PATHS)
+	for index in _blink_paths.size():
+		var path := _blink_paths[index]
+		var start: Vector3 = path["start"]
+		var end: Vector3 = path["end"]
+		starts[index] = Vector4(start.x, start.y, start.z, path["age"])
+		ends[index] = Vector4(end.x, end.y, end.z, 0.0)
+	for material in _vegetation:
+		material.set_shader_parameter("blink_path_count", _blink_paths.size() if blink_plants_enabled else 0)
+		material.set_shader_parameter("blink_path_starts", starts)
+		material.set_shader_parameter("blink_path_ends", ends)
+		material.set_shader_parameter("blink_plant_radius", blink_plant_radius)
+		material.set_shader_parameter("blink_plant_height", blink_plant_height)
+		material.set_shader_parameter("blink_plant_strength", blink_plant_strength)
+		material.set_shader_parameter("blink_plant_duration", blink_plant_duration)
+		material.set_shader_parameter("blink_plant_rebound", blink_plant_rebound)
+	if _rain_material:
+		_rain_material.set_shader_parameter("blink_path_count", _blink_paths.size() if blink_rain_enabled else 0)
+		_rain_material.set_shader_parameter("blink_path_starts", starts)
+		_rain_material.set_shader_parameter("blink_path_ends", ends)
+		_rain_material.set_shader_parameter("blink_rain_radius", blink_rain_radius)
+		_rain_material.set_shader_parameter("blink_rain_height", blink_rain_height)
+		_rain_material.set_shader_parameter("blink_rain_offset", blink_rain_offset)
+		_rain_material.set_shader_parameter("blink_rain_strength", blink_rain_strength)
+		_rain_material.set_shader_parameter("blink_rain_tilt", blink_rain_tilt)
+		_rain_material.set_shader_parameter("blink_rain_duration", blink_rain_duration)
 
 func _bind_post() -> void:
 	if post_process and post_process.material is ShaderMaterial and _post != post_process.material:
@@ -428,6 +533,7 @@ func _process(delta: float) -> void:
 	if not is_instance_valid(_rain):
 		_apply()
 	_clock += delta
+	_advance_blink_airflow(delta)
 	for material in _vegetation:
 		material.set_shader_parameter("wind_time", _clock)
 	_follow_rain()

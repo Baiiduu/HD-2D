@@ -30,6 +30,8 @@ const WATER_SURFACE := 0.6
 @export var biomes := PackedByteArray()
 @export var overlays := PackedByteArray()
 @export var heights := PackedByteArray()
+## 自定义画笔的固定编号；0 使用原底层 / 道路。旧地图留空时全部视为 0。
+@export var paints := PackedByteArray()
 
 ## 改变地图范围，保留重叠部分的数据，新增的格子为城市区、高度 0、无覆盖层
 func resize(new_origin: Vector2i, new_size: Vector2i) -> void:
@@ -38,6 +40,7 @@ func resize(new_origin: Vector2i, new_size: Vector2i) -> void:
 	var old_biomes := biomes
 	var old_overlays := overlays
 	var old_heights := heights
+	var old_paints := paints
 	if old_heights.size() != old_biomes.size():
 		old_heights = PackedByteArray()
 		old_heights.resize(old_biomes.size())
@@ -51,6 +54,8 @@ func resize(new_origin: Vector2i, new_size: Vector2i) -> void:
 	heights = PackedByteArray()
 	heights.resize(size.x * size.y)
 	heights.fill(HEIGHT_OFFSET)
+	paints = PackedByteArray()
+	paints.resize(size.x * size.y)
 	for z in old_size.y:
 		for x in old_size.x:
 			var cell := old_origin + Vector2i(x, z)
@@ -60,6 +65,7 @@ func resize(new_origin: Vector2i, new_size: Vector2i) -> void:
 				biomes[to] = old_biomes[from]
 				overlays[to] = old_overlays[from]
 				heights[to] = old_heights[from]
+				paints[to] = old_paints[from] if from < old_paints.size() else 0
 	emit_changed()
 
 func has_cell(cell: Vector2i) -> bool:
@@ -99,6 +105,31 @@ func set_overlay(cell: Vector2i, flag: int, enabled: bool) -> void:
 	overlays[index] = overlays[index] | flag if enabled else overlays[index] & ~flag
 	emit_changed()
 
+## 批量应用地表修改；画笔的一笔及撤销/重做均只发送一次更新。
+func paint_at_index(index: int) -> int:
+	return paints[index] if index < paints.size() else 0
+
+func set_paint_at_index(index: int, id: int) -> void:
+	if paints.size() != biomes.size(): paints.resize(biomes.size())
+	paints[index] = id
+
+func apply_surface_patch(indices: PackedInt32Array, patch_biomes: PackedByteArray, patch_overlays: PackedByteArray, patch_paints := PackedByteArray()) -> void:
+	if indices.size() != patch_biomes.size() or indices.size() != patch_overlays.size():
+		push_error("地表修改的格子与数据数量不一致。")
+		return
+	if not patch_paints.is_empty() and patch_paints.size() != indices.size():
+		push_error("自定义地表修改的格子与数据数量不一致。")
+		return
+	for index in indices:
+		if index < 0 or index >= biomes.size() or index >= overlays.size():
+			push_error("地表修改包含地图范围外的格子。")
+			return
+	for i in indices.size():
+		biomes[indices[i]] = patch_biomes[i]
+		overlays[indices[i]] = patch_overlays[i]
+		if not patch_paints.is_empty(): set_paint_at_index(indices[i],patch_paints[i])
+	emit_changed()
+
 func world_to_cell(position: Vector3) -> Vector2i:
 	return Vector2i(roundi(position.x / cell_size), roundi(position.z / cell_size))
 
@@ -114,5 +145,5 @@ func to_image() -> Image:
 		bytes[i * 4] = biomes[i]
 		bytes[i * 4 + 1] = overlays[i]
 		bytes[i * 4 + 2] = heights[i] if i < heights.size() else HEIGHT_OFFSET
-		bytes[i * 4 + 3] = 255
+		bytes[i * 4 + 3] = paint_at_index(i)
 	return Image.create_from_data(size.x, size.y, false, Image.FORMAT_RGBA8, bytes)

@@ -9,12 +9,16 @@ const BEAM_LAYER := 1 << 17 # Layer 18; water mirror layers 19/20 remain separat
 ## 会覆盖环境、月光、天空、地面材质、光晕与后处理中的对应设置。
 
 @export_group("引用")
+## 整张地图的根节点；通用效果作为子场景时，用于查找地图灯光和瀑布雾。
+@export var scene_root: Node3D
 @export var world_environment: WorldEnvironment:
 	set(v): world_environment = v; _queue_apply()
 @export var moon: DirectionalLight3D:
 	set(v): moon = v; _queue_apply()
 @export var terrain: Terrain:
 	set(v): terrain = v; _queue_apply()
+@export var surface_source: Node3D:
+	set(v): surface_source = v; _queue_apply()
 @export var post_process: CanvasItem:
 	set(v): post_process = v; _queue_apply()
 @export var water_reflection: PlanarWaterReflection:
@@ -118,6 +122,13 @@ const BEAM_LAYER := 1 << 17 # Layer 18; water mirror layers 19/20 remain separat
 ## 主光俯照角度；越低，人物和灯杆的投影越长。
 @export_range(5.0, 85.0, 1.0, "degrees") var moon_elevation := 48.0:
 	set(v): moon_elevation = v; _queue_apply()
+## 月光阴影柔化；日照演示关闭后恢复此值。
+@export_range(0.0, 6.0, 0.1, "degrees") var moon_softness := 1.5:
+	set(v): moon_softness = v; _queue_apply()
+@export_range(0.0, 1.0, 0.05) var moon_shadow_opacity := 1.0:
+	set(v): moon_shadow_opacity = v; _queue_apply()
+@export var moon_glow_color := Color(0.55, 0.62, 0.85):
+	set(v): moon_glow_color = v; _queue_apply()
 
 @export_group("雾")
 ## 雾色：同时用于距离雾、天空地平线、地图边缘
@@ -142,6 +153,12 @@ const BEAM_LAYER := 1 << 17 # Layer 18; water mirror layers 19/20 remain separat
 	set(v): volumetric_fog = v; _queue_apply()
 @export_range(0.0, 0.1, 0.001) var volumetric_density := 0.006:
 	set(v): volumetric_density = v; _queue_apply()
+## 基础体积雾渲染距离；远景空气光启用时会临时延长，关闭后恢复。
+@export_range(10.0, 120.0, 5.0, "suffix:m") var volumetric_length := 40.0:
+	set(v): volumetric_length = v; _queue_apply()
+## 原有雾对天空的影响；空气光关闭后恢复此基线。
+@export_range(0.0, 1.0, 0.05) var volumetric_sky_affect := 0.0:
+	set(v): volumetric_sky_affect = v; _queue_apply()
 
 @export_group("天空")
 @export var sky_top_color := Color(0.05, 0.05, 0.11):
@@ -308,11 +325,11 @@ func _queue_apply() -> void:
 	_apply_queued = true
 	apply.call_deferred()
 
-func apply() -> void:
+func apply(include_daylight := true) -> void:
 	_restore_missing_export_defaults()
 	_apply_queued = false
-	if terrain and terrain.water_material is ShaderMaterial:
-		var water := terrain.water_material as ShaderMaterial
+	var water := get_water_material()
+	if water:
 		water.set_shader_parameter("wave_strength", water_wave_strength)
 		water.set_shader_parameter("highlight_strength", water_highlight_strength)
 		water.set_shader_parameter("highlight_roughness", water_highlight_roughness)
@@ -341,7 +358,8 @@ func apply() -> void:
 		if terrain.water_material is ShaderMaterial:
 			var current_flow: Vector2 = (terrain.water_material as ShaderMaterial).get_shader_parameter("flow")
 			waterfall.set_shader_parameter("foam_flow", current_flow.normalized())
-	var waterfall_mist := get_parent().get_node_or_null("World/WaterfallMist") as FogVolume
+	var root := scene_root if scene_root else get_parent()
+	var waterfall_mist := root.get_node_or_null("World/WaterfallMist") as FogVolume
 	if waterfall_mist and waterfall_mist.material is FogMaterial:
 		(waterfall_mist.material as FogMaterial).density = waterfall_mist_density
 	if water_reflection and not Engine.is_editor_hint():
@@ -366,6 +384,8 @@ func apply() -> void:
 		env.fog_height_density = low_fog
 		env.volumetric_fog_enabled = volumetric_fog
 		env.volumetric_fog_density = volumetric_density
+		env.volumetric_fog_length = volumetric_length
+		env.volumetric_fog_sky_affect = volumetric_sky_affect
 		var sky := env.sky.sky_material as ShaderMaterial if env.sky else null
 		if sky:
 			sky.set_shader_parameter("zenith_color", sky_top_color)
@@ -375,12 +395,15 @@ func apply() -> void:
 			sky.set_shader_parameter("glow_color", horizon_glow_color)
 			sky.set_shader_parameter("glow_strength", horizon_glow)
 			sky.set_shader_parameter("star_density", stars)
+			sky.set_shader_parameter("moon_glow_color", moon_glow_color)
 	if moon:
 		moon.light_color = moon_color
 		moon.light_energy = moon_energy
 		moon.rotation_degrees = Vector3(-moon_elevation, moon_azimuth, 0.0)
-	if terrain and terrain.top_material:
-		var ground := terrain.top_material
+		moon.light_angular_distance = moon_softness
+		moon.shadow_opacity = moon_shadow_opacity
+	var ground := get_ground_material()
+	if ground:
 		ground.set_shader_parameter("wetness", wetness)
 		ground.set_shader_parameter("stone_relief", stone_relief)
 		ground.set_shader_parameter("stone_gloss_variation", stone_gloss_variation)
@@ -399,6 +422,29 @@ func apply() -> void:
 		_apply_lamp_dust()
 		_apply_fireflies()
 		_apply_halos(get_tree().edited_scene_root if Engine.is_editor_hint() else get_tree().current_scene)
+		var daylight := get_parent().get_node_or_null("DaylightPreview")
+		if daylight and include_daylight:
+			daylight.apply_daylight()
+		var atmosphere := get_parent().get_node_or_null("AtmosphericLight")
+		if atmosphere:
+			atmosphere.apply_atmosphere()
+
+func get_ground_material() -> ShaderMaterial:
+	if terrain:
+		return terrain.top_material
+	return surface_source.call("get_ground_material") as ShaderMaterial if surface_source and surface_source.has_method("get_ground_material") else null
+
+func get_water_material() -> ShaderMaterial:
+	if terrain:
+		return terrain.water_material as ShaderMaterial
+	return surface_source.call("get_water_material") as ShaderMaterial if surface_source and surface_source.has_method("get_water_material") else null
+
+func get_map_rect() -> Rect2:
+	if terrain:
+		return terrain.get_world_rect()
+	if surface_source and surface_source.has_method("get_world_rect"):
+		return surface_source.call("get_world_rect")
+	return Rect2(-12.0, -10.4, 48.0, 20.8)
 
 func _restore_missing_export_defaults() -> void:
 	# 热重载旧实例时，新增导出参数可能为 Nil；只恢复缺失值，保留 false、0 和有效调节值。
@@ -415,7 +461,8 @@ func _restore_missing_export_defaults() -> void:
 		notify_property_list_changed()
 
 func _apply_street_lights() -> void:
-	for light: Light3D in get_parent().find_children("*", "Light3D", true, false):
+	var root := scene_root if scene_root else get_parent()
+	for light: Light3D in root.find_children("*", "Light3D", true, false):
 		light.light_cull_mask &= ~BEAM_LAYER
 	for light: OmniLight3D in get_tree().get_nodes_in_group("street_lights"):
 		light.light_energy = street_fill_energy

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="MovementSoundBank" load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://scripts/audio/movement_sound_bank.gd" id="bank"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/movement/grass1.wav" id="grass1"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/movement/grass2.wav" id="grass2"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/movement/cobble1.wav" id="cobble1"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/movement/cobble2.wav" id="cobble2"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/movement/stone.wav" id="stone"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/movement/soil.wav" id="soil"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/movement/wood.wav" id="wood"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/movement/metal.wav" id="metal"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/movement/jump1.wav" id="jump1"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/movement/jump2.wav" id="jump2"]
+
+[resource]
+script = ExtResource("bank")
+grass = Array[AudioStream]([ExtResource("grass1"), ExtResource("grass2")])
+cobble = Array[AudioStream]([ExtResource("cobble1"), ExtResource("cobble2")])
+stone = Array[AudioStream]([ExtResource("stone")])
+soil = Array[AudioStream]([ExtResource("soil")])
+wood = Array[AudioStream]([ExtResource("wood")])
+metal = Array[AudioStream]([ExtResource("metal")])
+jump = Array[AudioStream]([ExtResource("jump1"), ExtResource("jump2")])

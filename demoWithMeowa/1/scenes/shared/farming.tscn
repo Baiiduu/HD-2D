@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/rpg/farming.gd" id="farming"]
+[ext_resource type="PackedScene" path="res://scenes/ui/farming_ui.tscn" id="ui"]
+
+[node name="Farming" type="Node3D"]
+script = ExtResource("farming")
+
+[node name="FarmingUI" parent="." node_paths=PackedStringArray("farming") instance=ExtResource("ui")]
+farming = NodePath("..")

@@ -1,0 +1,15 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/attribute_hud.gd" id="hud"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/player_bars/hp_frame.png" id="hp_frame"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/player_bars/mp_frame.png" id="mp_frame"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/player_bars/hp_fill.png" id="hp_fill"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/player_bars/mp_fill.png" id="mp_fill"]
+
+[node name="AttributeHUD" type="Control"]
+mouse_filter = 2
+script = ExtResource("hud")
+health_frame = ExtResource("hp_frame")
+mana_frame = ExtResource("mp_frame")
+health_fill = ExtResource("hp_fill")
+mana_fill = ExtResource("mp_fill")

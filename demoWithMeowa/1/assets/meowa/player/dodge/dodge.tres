@@ -1,0 +1,42 @@
+[gd_resource type="SpriteFrames" format=3 uid="uid://bhy3q2bf5liic"]
+
+[ext_resource type="Texture2D" uid="uid://cko7n7jhjxokn" path="res://assets/meowa/player/dodge/dodge_00.png" id="1"]
+[ext_resource type="Texture2D" uid="uid://c6a7kbx4lvuai" path="res://assets/meowa/player/dodge/dodge_01.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://bjrvs0pmxvhhw" path="res://assets/meowa/player/dodge/dodge_02.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://byuxukq0g4tch" path="res://assets/meowa/player/dodge/dodge_03.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://cmbl4t2yk8nes" path="res://assets/meowa/player/dodge/dodge_04.png" id="5"]
+[ext_resource type="Texture2D" uid="uid://cn55g5xsxjbhp" path="res://assets/meowa/player/dodge/dodge_05.png" id="6"]
+[ext_resource type="Texture2D" uid="uid://47mh2ne0jfe0" path="res://assets/meowa/player/dodge/dodge_06.png" id="7"]
+[ext_resource type="Texture2D" uid="uid://xumeiyncybft" path="res://assets/meowa/player/dodge/dodge_07.png" id="8"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8")
+}],
+"loop": 0,
+"name": &"dodge",
+"speed": 40.0
+}]

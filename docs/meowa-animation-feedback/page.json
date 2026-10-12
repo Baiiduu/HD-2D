@@ -1,0 +1,78 @@
+{
+  "page_id": "page_e5d5d91407788191a0f9d755d9abf911",
+  "page_url": "https://chatgpt.com/space/page_e5d5d91407788191a0f9d755d9abf911",
+  "page_sequence": 3,
+  "access_scope": "Owner only verified: shares empty, complete inherited sources empty, same user owner",
+  "content_readback_verified": true,
+  "rendered_page_preview_verified": false,
+  "evidence_files": {
+    "heads": {
+      "page_id": "page_e5d5d91407788191a0f9d755d9abf911",
+      "reference": "library-file:fde1_bGliZmlsZV9CdHFwRWxmRHByRUpSUG9pZE9jZDZR_FileDrive_b0cd212106448191af79c2c6871680a3",
+      "file_name": "advanced-heads-6f3d0b2211f241bd96b31ee1f11989c7.png",
+      "mime_type": "image/png",
+      "byte_size": 16834,
+      "sha256": "60a85f3afd7f92a7d3f6868ced94223ee04cb8d481ca3a24365ae7d21e7f6847",
+      "file_access_confirmed": true,
+      "is_image": true,
+      "markdown": "![原待机与新版原始动画八帧头部对照](library-file:fde1_bGliZmlsZV9CdHFwRWxmRHByRUpSUG9pZE9jZDZR_FileDrive_b0cd212106448191af79c2c6871680a3)",
+      "inserted": false,
+      "next_step": "Read the Page and use edit_page with its fresh guards to insert markdown."
+    },
+    "strict00": {
+      "page_id": "page_e5d5d91407788191a0f9d755d9abf911",
+      "reference": "library-file:fde1_bGliZmlsZV9yYmw2ckFDYy1UYm5wMUxBeldRbGxB_FileDrive_b0cd212106448191af79c2c6871680a3",
+      "file_name": "strict-00-comparison-1eefd22b6f984f128e0deceb92f07175.png",
+      "mime_type": "image/png",
+      "byte_size": 18786,
+      "sha256": "fdca0f1d0a804864e8fde83aa26abd02447d14861db5ef11aea866cd6804a734",
+      "file_access_confirmed": true,
+      "is_image": true,
+      "markdown": "![屈膝帧严格像素编辑实际输入和结果](library-file:fde1_bGliZmlsZV9yYmw2ckFDYy1UYm5wMUxBeldRbGxB_FileDrive_b0cd212106448191af79c2c6871680a3)",
+      "inserted": false,
+      "next_step": "Read the Page and use edit_page with its fresh guards to insert markdown."
+    },
+    "strict03": {
+      "page_id": "page_e5d5d91407788191a0f9d755d9abf911",
+      "reference": "library-file:fde1_bGliZmlsZV96VjNrb2xfOGtUZ3BOTS1SUEZFX1Zn_FileDrive_b0cd212106448191af79c2c6871680a3",
+      "file_name": "strict-03-comparison-88b7dcd28f6b4a009b7a5fb5769b74a5.png",
+      "mime_type": "image/png",
+      "byte_size": 19047,
+      "sha256": "0df8e72040780211ea1d0022a48bb0eff721585a7bec2477a380f2109e8262a0",
+      "file_access_confirmed": true,
+      "is_image": true,
+      "markdown": "![收腿帧严格像素编辑实际输入和结果](library-file:fde1_bGliZmlsZV96VjNrb2xfOGtUZ3BOTS1SUEZFX1Zn_FileDrive_b0cd212106448191af79c2c6871680a3)",
+      "inserted": false,
+      "next_step": "Read the Page and use edit_page with its fresh guards to insert markdown."
+    },
+    "reference": {
+      "page_id": "page_e5d5d91407788191a0f9d755d9abf911",
+      "reference": "library-file:fde1_bGliZmlsZV9ZWTVfaTkybGJIdFV6UWZ3MU92VWZ3_FileDrive_b0cd212106448191af79c2c6871680a3",
+      "file_name": "reference-541565d49af3460a94fef44fd235dfc3.png",
+      "mime_type": "image/png",
+      "byte_size": 1389,
+      "sha256": "6eb1aea9ced7f576fc498df731efc9196c84dce59fdc159bc8d13bc65de2eaa5",
+      "file_access_confirmed": true,
+      "is_image": true,
+      "markdown": "![实际使用的80×80透明角色参考](library-file:fde1_bGliZmlsZV9ZWTVfaTkybGJIdFV6UWZ3MU92VWZ3_FileDrive_b0cd212106448191af79c2c6871680a3)",
+      "inserted": false,
+      "next_step": "Read the Page and use edit_page with its fresh guards to insert markdown."
+    },
+    "zip": {
+      "page_id": "page_e5d5d91407788191a0f9d755d9abf911",
+      "reference": "library-file:fde1_bGliZmlsZV9vSEc3NU5NUGRhLU95aGdCVUNZRzNn_FileDrive_b0cd212106448191af79c2c6871680a3",
+      "file_name": "meowa-animation-feedback-5aaacd7ac5274a819557fcb25f6ee209.zip",
+      "mime_type": "application/zip",
+      "byte_size": 3015325,
+      "sha256": "88e521ae15fbbfdb765b981858d8af915d8ff1df962a619b98a2970826045b04",
+      "file_access_confirmed": true,
+      "is_image": false,
+      "markdown": "[修正版反馈文档与复现证据包](library-file:fde1_bGliZmlsZV9vSEc3NU5NUGRhLU95aGdCVUNZRzNn_FileDrive_b0cd212106448191af79c2c6871680a3)",
+      "inserted": false,
+      "next_step": "Read the Page and use edit_page with its fresh guards to insert markdown."
+    }
+  },
+  "local_report": "D:/Project/HD-2DMap/docs/meowa-animation-feedback.md",
+  "local_evidence_zip": "D:/Project/HD-2DMap/docs/meowa-animation-feedback.zip",
+  "correction_note": "User-confirmed chronology and game-art acceptance criteria; strict-edit output usability is not established by pixel differences."
+}

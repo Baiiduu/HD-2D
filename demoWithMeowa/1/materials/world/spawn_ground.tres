@@ -1,0 +1,41 @@
+[gd_resource type="ShaderMaterial" load_steps=7 format=3]
+
+[ext_resource type="Shader" path="res://shaders/terrain.gdshader" id="ground_shader"]
+[ext_resource type="Texture2D" path="res://assets/ground/cultivation/精致像素风灰青色青石板地面材质_长方形石板规则错缝铺设_细而清晰的深色砖缝_40699501/texture.png" id="stone"]
+[ext_resource type="Texture2D" path="res://assets/meowa/homestead/grass.png" id="grass"]
+[ext_resource type="Texture2D" path="res://assets/ground/references/04_road_cobblestone.png" id="cobble"]
+[ext_resource type="Texture2D" path="res://assets/ground/tilesets/path/tileset/tileset.png" id="path"]
+[ext_resource type="Texture2D" path="res://assets/ground/tilesets/dirt/tileset/tileset.png" id="dirt"]
+
+[resource]
+resource_local_to_scene = true
+resource_name = "出生区地表"
+shader = ExtResource("ground_shader")
+shader_parameter/city_texture = ExtResource("cobble")
+shader_parameter/cyber_texture = ExtResource("stone")
+shader_parameter/cultivation_texture = ExtResource("stone")
+shader_parameter/wild_texture = ExtResource("grass")
+shader_parameter/path_atlas = ExtResource("path")
+shader_parameter/dirt_atlas = ExtResource("dirt")
+shader_parameter/city_tint = Color(0.92, 0.95, 1, 1)
+shader_parameter/cyber_tint = Color(0.92, 1, 0.98, 1)
+shader_parameter/cultivation_tint = Color(0.96, 0.97, 1, 1)
+shader_parameter/wild_tint = Color(1, 0.76, 1, 1)
+shader_parameter/path_tint = Color(1.08, 1.1, 1.12, 1)
+shader_parameter/dirt_tint = Color(0.98, 1.3, 1.5, 1)
+shader_parameter/city_surface = Vector3(0.76, 0, 0.9)
+shader_parameter/cyber_surface = Vector3(0.7, 0, 0.8)
+shader_parameter/cultivation_surface = Vector3(0.72, 0, 0.85)
+shader_parameter/wild_surface = Vector3(0.97, 0, 0)
+shader_parameter/path_surface = Vector3(0.8, 0, 0.85)
+shader_parameter/dirt_surface = Vector3(0.96, 0, 0.45)
+shader_parameter/wetness = 0.4
+shader_parameter/wet_darkening = 0.65
+shader_parameter/wet_roughness = 0.16
+shader_parameter/weather_wetness = 0.0
+shader_parameter/grass_lighting_enabled = true
+shader_parameter/grass_root_occlusion = 0.0
+shader_parameter/grass_relief = 0.006
+shader_parameter/grass_wet_response = 0.12
+shader_parameter/grass_sheen = 0.2
+shader_parameter/texture_pixels = 64.0

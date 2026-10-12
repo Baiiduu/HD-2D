@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://cfvh3q5a8be5u" path="res://scripts/ground_dressing.gd" id="ground_dressing"]
+[node name="GroundDressing" type="Node3D"]
+script = ExtResource("ground_dressing")
+grass_density = 1.0
+flower_density = 1.55
+pebble_density = 0.42
+grass_variants = 31
+

@@ -4,8 +4,11 @@ extends Node3D
 ## Two water heights share the scene's lights, with one view per visible height.
 ## Layers 19/20 are reserved for mirrors; clipped static meshes are built once.
 @export var terrain: Terrain
+@export var surface_source: Node3D
 @export var source_camera: Camera3D
 @export var world_environment: WorldEnvironment
+## 整张地图的几何根节点；效果子场景不能只扫描自身的灯光与相机。
+@export var geometry_root: Node3D
 @export var enabled := true
 @export_range(0.25, 1.0, 0.05) var resolution_scale := 0.5
 @export_range(0.0, 1.5, 0.05) var strength := 0.85
@@ -23,34 +26,65 @@ var _last_size := Vector2i.ZERO
 func _ready() -> void:
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	process_priority = 100 # FollowCamera has already moved for this frame.
-	water = terrain.water_material as ShaderMaterial
-	if not water or not terrain.data or not source_camera:
+	set_process(false)
+	initialize.call_deferred()
+
+func initialize() -> void:
+	if not is_inside_tree() or not views.is_empty():
+		return
+	if not world_environment or not world_environment.environment:
+		return
+	water = terrain.water_material as ShaderMaterial if terrain else null
+	if not terrain and surface_source and surface_source.has_method("get_water_material"):
+		water = surface_source.call("get_water_material") as ShaderMaterial
+	if not water or not source_camera:
 		set_process(false)
 		return
 	source_camera.cull_mask &= ~(MIRROR_BITS[0] | MIRROR_BITS[1])
 	var cells_by_height: Dictionary = {}
-	var data := terrain.data
-	for z in data.size.y:
-		for x in data.size.x:
-			var cell := data.origin + Vector2i(x, z)
-			if not data.has_overlay(cell, TerrainData.OVERLAY_WATER):
-				continue
-			var height := (data.get_level(cell) + TerrainData.WATER_SURFACE) * data.layer_height + terrain.global_position.y
+	if terrain and terrain.data:
+		var data := terrain.data
+		for z in data.size.y:
+			for x in data.size.x:
+				var cell := data.origin + Vector2i(x, z)
+				if not data.has_overlay(cell, TerrainData.OVERLAY_WATER):
+					continue
+				var height := (data.get_level(cell) + TerrainData.WATER_SURFACE) * data.layer_height + terrain.global_position.y
+				if not cells_by_height.has(height):
+					cells_by_height[height] = []
+				var center := terrain.to_global(Vector3(cell.x * data.cell_size, height - terrain.global_position.y, cell.y * data.cell_size))
+				cells_by_height[height].append(AABB(center - Vector3(data.cell_size * 0.5, 0.02, data.cell_size * 0.5), Vector3(data.cell_size, 0.04, data.cell_size)))
+	elif surface_source and surface_source.has_method("get_water_surfaces"):
+		for surface: MeshInstance3D in surface_source.call("get_water_surfaces"):
+			var box: AABB = surface.global_transform * surface.get_aabb()
+			var height := box.get_center().y
 			if not cells_by_height.has(height):
 				cells_by_height[height] = []
-			var center := terrain.to_global(Vector3(cell.x * data.cell_size, height - terrain.global_position.y, cell.y * data.cell_size))
-			cells_by_height[height].append(AABB(center - Vector3(data.cell_size * 0.5, 0.02, data.cell_size * 0.5), Vector3(data.cell_size, 0.04, data.cell_size)))
+			cells_by_height[height].append(box.grow(0.02))
 	var heights: Array = cells_by_height.keys()
 	heights.sort()
 	if heights.size() > 2:
 		push_warning("Water reflection supports two height groups; additional heights use the water material without a mirror.")
-	var sources := get_parent().find_children("*", "GeometryInstance3D", true, false)
+	var root := geometry_root if geometry_root else get_parent()
+	var sources := root.find_children("*", "GeometryInstance3D", true, false)
 	for index in mini(2, heights.size()):
 		_make_view(index, float(heights[index]), cells_by_height[heights[index]])
 		_prepare_geometry(sources, index, float(heights[index]))
 	water.set_shader_parameter("reflection_heights", Vector2(float(heights[0]), float(heights[mini(1, heights.size() - 1)])) if not heights.is_empty() else Vector2.ZERO)
 	if "--no-reflection" in OS.get_cmdline_user_args():
 		enabled = false
+	set_process(not views.is_empty())
+
+func rebuild() -> void:
+	set_process(false)
+	for child in get_children():
+		remove_child(child)
+		child.queue_free()
+	views.clear()
+	sprites.clear()
+	active_view_count = 0
+	_last_size = Vector2i.ZERO
+	initialize.call_deferred()
 
 func _make_view(index: int, height: float, cells: Array) -> void:
 	var viewport := SubViewport.new()
@@ -159,8 +193,8 @@ func _water_visible(cells: Array, frustum: Array[Plane]) -> bool:
 func _prepare_geometry(sources: Array[Node], index: int, height: float) -> void:
 	var bit: int = MIRROR_BITS[index]
 	for source in sources:
-		if source.is_in_group("light_beams"):
-			continue # Mirrors omit volumetric fog and its cone surface accents.
+		if source.is_in_group("light_beams") or source.is_in_group("atmospheric_beams") or source.is_in_group("occlusion_outlines"):
+			continue # Visibility outlines and volumetric accents belong to the main view.
 		if source is Sprite3D:
 			_make_sprite(source, bit, height)
 			continue

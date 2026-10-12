@@ -1,0 +1,73 @@
+{
+  "id": "CALL002",
+  "task": "9-修正跳跃眼部",
+  "recordType": "retrospective_backfill",
+  "recordedBeijingTime": "2026-10-12T12:34:12.756121+08:00",
+  "originalCallDate": "2026-10-12",
+  "originalSubmissionTime": null,
+  "timeNote": "精确提交时间未保存；补记时间不冒充调用时间。",
+  "tool": "Meowa CLI / image-edit-run",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "python": "C:/Users/PC/AppData/Local/Programs/Python/Python314/python.exe",
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "arguments": [
+    "image-edit-run",
+    "--reference-image",
+    "D:\\.codexfile\\work\\player-jump-eyes\\originals\\air_03.png",
+    "--reference-image",
+    "D:\\.codexfile\\work\\player-jump-eyes\\originals\\idle_00.png",
+    "--prompt",
+    "修正第一张人物的眼睛，参照第二张站立图的眼睛，将眼白收回到原来的像素大小和形状，保持相同的瞳孔与朝向。只改眼部，保持第一张的动作、头发、脸型、衣服、像素大小和画布位置。",
+    "--mode",
+    "pixel",
+    "--strict",
+    "--generation-model",
+    "nano-banana",
+    "--generation-speed",
+    "normal",
+    "--resolution",
+    "1K",
+    "--remove-bg-method",
+    "standard",
+    "--output-dir",
+    "D:\\.codexfile\\work\\player-jump-eyes\\edit-03"
+  ],
+  "prompt": "修正第一张人物的眼睛，参照第二张站立图的眼睛，将眼白收回到原来的像素大小和形状，保持相同的瞳孔与朝向。只改眼部，保持第一张的动作、头发、脸型、衣服、像素大小和画布位置。",
+  "negativePrompt": null,
+  "negativePromptNote": "未单独发送负向提示词。",
+  "parameters": {
+    "mode": "pixel",
+    "strict": true,
+    "generation_model": "nano-banana",
+    "generation_speed": "normal",
+    "resolution": "1K",
+    "remove_bg_method": "standard"
+  },
+  "references": [
+    {
+      "order": 1,
+      "actualSentPath": "D:\\.codexfile\\work\\player-jump-eyes\\originals\\air_03.png",
+      "archivedPath": "D:\\Project\\HD-2DMap\\meowa-call-logs\\9-修正跳跃眼部\\inputs\\air_03.png",
+      "sha256": "711c929bed07eba1caa672ef673aa752b4050ca173e35dbc3fd9aab757ae5f96",
+      "canvas": [
+        80,
+        80
+      ]
+    },
+    {
+      "order": 2,
+      "actualSentPath": "D:\\.codexfile\\work\\player-jump-eyes\\originals\\idle_00.png",
+      "archivedPath": "D:\\Project\\HD-2DMap\\meowa-call-logs\\9-修正跳跃眼部\\inputs\\idle_00.png",
+      "sha256": "6eb1aea9ced7f576fc498df731efc9196c84dce59fdc159bc8d13bc65de2eaa5",
+      "canvas": [
+        80,
+        80
+      ]
+    }
+  ],
+  "evidence": "保留的执行脚本与输入备份；这是实际 CLI 参数，不能视作 HTTP 原始请求。",
+  "rawHttpRequest": null,
+  "rawHttpRequestNote": "当时未保存提交、轮询、下载的逐次 HTTP 请求或精确次数，无法补造。",
+  "relatedJob": "job_c2f03dd77ca14dff9cc2d836e4514a69",
+  "credentials": "本地环境认证；不记录密钥。"
+}

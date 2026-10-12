@@ -1,0 +1,134 @@
+{
+  "id": "CALL001",
+  "task": "9-修正跳跃眼部",
+  "recordType": "retrospective_backfill",
+  "recordedBeijingTime": "2026-10-12T12:34:12.756121+08:00",
+  "status": "success",
+  "exitCode": 0,
+  "job_id": "job_6032cc4b19b44da1b8176f09bdc5e6cc",
+  "originalFileSavedBeijingTime": "2026-10-12T12:24:11.756743+08:00",
+  "fileSavedTimeNote": "下载文件修改时间；不是精确 API 提交或完成时间。",
+  "savedFinalOutputsManifest": {
+    "status": "success",
+    "job_id": "job_6032cc4b19b44da1b8176f09bdc5e6cc",
+    "outputs": [
+      {
+        "type": "media",
+        "path": "D:\\.codexfile\\work\\player-jump-eyes\\edit-00\\修正第一张人物的眼睛_参照第二张站立图的眼睛_将眼白收回到原来的像素大小和形_9bc1748b\\remove_bg.png",
+        "mime_type": "image/png"
+      }
+    ]
+  },
+  "cliReportedResult": {
+    "job_id": "job_6032cc4b19b44da1b8176f09bdc5e6cc",
+    "job_type": "workflow",
+    "status": "success",
+    "next_poll_after_seconds": 0,
+    "animation_type": null,
+    "queue": {
+      "position": 0,
+      "estimated_wait_seconds": 0
+    },
+    "progress": {
+      "label": "已完成",
+      "percent": 100
+    },
+    "result": {
+      "job_name": "042347_image_edit_image_edit",
+      "remove_bg_path": "https://media.meowa.ai/public/image-edit/output/2026-10-12/04%3A24%3A07-workflow-8460fe4805c641f794a9db7a/remove_bg.png",
+      "url": "https://media.meowa.ai/public/image-edit/output/2026-10-12/04%3A24%3A07-workflow-8460fe4805c641f794a9db7a/remove_bg.png"
+    },
+    "generation_parameters": {
+      "version": 1,
+      "details": [
+        {
+          "key": "mode",
+          "value": "pixel"
+        },
+        {
+          "key": "template",
+          "value": "default"
+        },
+        {
+          "key": "resolution",
+          "value": "1K"
+        },
+        {
+          "key": "aspect_ratio",
+          "value": "auto"
+        },
+        {
+          "key": "generation_speed",
+          "value": "normal"
+        },
+        {
+          "key": "temperature",
+          "value": 0.0
+        },
+        {
+          "key": "remove_background",
+          "value": "standard"
+        },
+        {
+          "key": "reference_count",
+          "value": 2
+        }
+      ]
+    },
+    "user_prompt": null,
+    "outputs": [
+      {
+        "output_key": "primary",
+        "media_type": "image",
+        "mime_type": null,
+        "asset_id": null,
+        "thumb_url": null,
+        "width": null,
+        "height": null,
+        "byte_size": null
+      }
+    ],
+    "error": null,
+    "error_code": null,
+    "error_id": null,
+    "credit_refund": {
+      "refunded": false,
+      "amount": 0
+    }
+  },
+  "cliReportedResultEvidence": "逐字段转录此前工具返回的 CLI 标准输出；没有重新查询 API。",
+  "rawHttpResponse": null,
+  "rawHttpResponseNote": "逐次 HTTP 原始响应当时未保存。",
+  "output": {
+    "actualDownloadedPath": "D:\\.codexfile\\work\\player-jump-eyes\\edit-00\\修正第一张人物的眼睛_参照第二张站立图的眼睛_将眼白收回到原来的像素大小和形_9bc1748b\\remove_bg.png",
+    "archivedPath": "D:\\Project\\HD-2DMap\\meowa-call-logs\\9-修正跳跃眼部\\results\\CALL001.png",
+    "sha256": "54ca0b863e711b935ad0411b4c8bfb94eeecfa410197ab415b1f620a376afc98",
+    "canvas": [
+      80,
+      80
+    ],
+    "mime_type": "image/png",
+    "bytes": 3512
+  },
+  "modelSelection": "nano-banana",
+  "actualUnderlyingModel": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "review": {
+    "canvas": [
+      80,
+      80
+    ],
+    "changedPixels": 1036,
+    "changedPixelsOutsideEyeReviewWindow": 884,
+    "eyeReviewWindowXYWH": [
+      32,
+      20,
+      16,
+      10
+    ],
+    "reviewWindowNote": "宽松核对窗口，不是最终局部眼部复制的矩形。",
+    "adopted": false,
+    "reason": "完整返回图仍改变眼部以外的配色或像素；收腿帧瞳孔颜色与眼白仍未匹配原待机。"
+  }
+}

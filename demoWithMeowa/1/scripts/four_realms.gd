@@ -18,7 +18,9 @@ func _ready() -> void:
 	player.bounds = world_rect.grow(-0.3)
 	camera.set_world_rect(world_rect)
 	camera.snap_to_target()
+	$ArtDirection.apply(false)
 	moods = LightingMoods.new(environment, $Moon)
+	$ArtDirection.apply()
 	$HUD/Panel/Margin/Column/Effects/Glow.toggled.connect(_set_glow)
 	$HUD/Panel/Margin/Column/Effects/Shadows.toggled.connect(_set_shadows)
 	$HUD/Panel/Margin/Column/Effects/Fog.toggled.connect(_set_fog)
@@ -54,6 +56,9 @@ func _set_glow(enabled: bool) -> void:
 func _set_shadows(enabled: bool) -> void:
 	shadows_enabled = enabled
 	$ArtDirection.street_shadows_enabled = enabled
+	var atmosphere := get_node_or_null("AtmosphericLight")
+	if atmosphere:
+		atmosphere.shadows_enabled = enabled
 	for lamp in get_tree().get_nodes_in_group("environment_lanterns"):
 		lamp.shadows_enabled = enabled
 	for light: Light3D in get_tree().get_nodes_in_group("shadow_lights"):
@@ -76,7 +81,12 @@ func _set_fog(enabled: bool) -> void:
 
 func _set_mood(index: int) -> void:
 	mood_index = index
-	moods.apply(index)
+	var daylight := get_node_or_null("DaylightPreview")
+	if daylight and daylight.enabled:
+		daylight.enabled = false
+		moods.apply.call_deferred(index) # After the queued restoration of base lighting.
+	else:
+		moods.apply(index)
 	_update_status()
 
 func _update_status() -> void:

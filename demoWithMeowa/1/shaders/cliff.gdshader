@@ -1,6 +1,8 @@
 shader_type spatial;
 
-// 崖壁保留岩层结构，用现有草地纹理衔接崖顶与崖脚；关闭过渡可恢复纯色草沿。
+#include "res://shaders/terrain_surface.gdshaderinc"
+
+// 草地衔接崖顶与崖脚；坡道及铺装侧边共享顶面取样，保留岩壁主体。
 // UV2 = (墙顶高度, 墙底高度)，所有距离都量化到纹理像素，保持像素风。
 
 uniform sampler2D wall_texture : source_color, filter_nearest_mipmap, repeat_enable;
@@ -20,9 +22,6 @@ group_uniforms grass_transition;
 uniform bool transition_enabled = true;
 uniform sampler2D grass_texture : source_color, filter_nearest_mipmap, repeat_enable;
 uniform vec4 grass_tint : source_color = vec4(0.78, 0.91, 0.82, 1.0);
-uniform sampler2D terrain_map : filter_nearest, repeat_disable;
-uniform ivec2 map_origin = ivec2(0);
-uniform float cell_size = 1.6;
 uniform float grass_lip_pixels : hint_range(0.0, 8.0) = 3.0;
 uniform float edge_variation_pixels : hint_range(0.0, 4.0) = 2.0;
 uniform float transition_height : hint_range(0.0, 0.4) = 0.16;
@@ -30,10 +29,22 @@ uniform float moss_strength : hint_range(0.0, 1.0) = 0.4;
 uniform float lip_shadow_strength : hint_range(0.0, 0.5) = 0.16;
 uniform float base_blend_height : hint_range(0.0, 0.4) = 0.16;
 
+group_uniforms surface_edge;
+uniform bool surface_edge_enabled = true;
+uniform float surface_edge_lip_pixels : hint_range(0.0, 8.0) = 2.0;
+uniform float surface_edge_height : hint_range(0.0, 0.4) = 0.14;
+uniform float surface_edge_normal_softening : hint_range(0.0, 0.8) = 0.35;
+uniform float edge_wetness = 0.6;
+uniform float edge_wet_darkening = 0.65;
+uniform float edge_wet_roughness = 0.16;
+uniform float edge_grass_wet_response = 0.2;
+
 varying float world_y;
 varying vec2 wall_span;
 varying vec3 terrain_position;
 varying vec2 wall_direction;
+varying vec3 world_position;
+varying vec2 world_wall_direction;
 
 float edge_hash(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -53,14 +64,25 @@ bool has_grass(vec2 point) {
 	ivec2 size = textureSize(terrain_map, 0);
 	bool inside = all(greaterThanEqual(index, ivec2(0))) && all(lessThan(index, size));
 	ivec2 cell = ivec2(round(texelFetch(terrain_map, clamp(index, ivec2(0), size - 1), 0).rg * 255.0));
-	return inside && cell.x == 3 && (cell.y & 7) == 0;
+	int paint = paint_enabled ? paint_id_at(ivec2(round(point / cell_size))) : 0;
+	return inside && cell.x == 3 && (cell.y & 7) == 0 && paint == 0;
+}
+
+bool has_land(vec2 point) {
+	ivec2 index = ivec2(round(point / cell_size)) - map_origin;
+	ivec2 size = textureSize(terrain_map, 0);
+	bool inside = all(greaterThanEqual(index, ivec2(0))) && all(lessThan(index, size));
+	int overlay = int(round(texelFetch(terrain_map, clamp(index, ivec2(0), size - 1), 0).g * 255.0));
+	return inside && (overlay & 4) == 0;
 }
 
 void vertex() {
-	world_y = (MODEL_MATRIX * vec4(VERTEX, 1.0)).y;
+	world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	world_y = world_position.y;
 	wall_span = UV2;
 	terrain_position = VERTEX;
 	wall_direction = NORMAL.xz;
+	world_wall_direction = (MODEL_MATRIX * vec4(NORMAL, 0.0)).xz;
 }
 
 void fragment() {
@@ -68,8 +90,41 @@ void fragment() {
 	color = mix(vec3(dot(color, vec3(0.3, 0.59, 0.11))), color, saturation) * tint.rgb;
 	float from_top = floor((wall_span.x - world_y) / texel);
 	float from_bottom = floor((world_y - wall_span.y) / texel) * texel;
+	float edge_depth = max(0.0, wall_span.x - terrain_position.y);
+	float edge_span = max(wall_span.x - wall_span.y, texel);
+	float edge_width = max(texel, min(surface_edge_height, edge_span * 0.35));
+	vec2 folded_point = world_position.xz - world_wall_direction * (edge_depth + texel * 0.5);
+	vec2 edge_ddx = dFdx(folded_point / cell_size);
+	vec2 edge_ddy = dFdy(folded_point / cell_size);
+	vec3 top_surface = vec3(roughness, 0.0, 0.0);
+	float top_grass = 1.0;
+	vec3 top_color = vec3(0.0);
+	bool land_edge = surface_edge_enabled && has_land(terrain_position.xz - wall_direction * texel);
+	if (land_edge && edge_depth <= max(grass_lip_pixels, surface_edge_lip_pixels) * texel + edge_width) {
+		// Share the exact atlas selection used on top: dirt ramps must not get a green rim.
+		top_color = albedo_at(folded_point, edge_ddx, edge_ddy, top_surface, top_grass);
+	}
 	bool grass_top = transition_enabled && has_grass(terrain_position.xz - wall_direction * texel);
-	if (grass_top) {
+	float edge_roughness = roughness;
+	float edge_metallic = 0.0;
+	float rim_shade_cover = 0.0;
+	if (land_edge && (top_grass < 0.5 || !has_grass(terrain_position.xz - wall_direction * texel))) {
+		float depth = floor(edge_depth / texel) * texel;
+		float lip = min(surface_edge_lip_pixels * texel, edge_span * 0.2);
+		float cover = 1.0 - smoothstep(lip, lip + edge_width, depth);
+		float full_surface = 1.0 - smoothstep(max(0.0, lip - texel), lip + texel, depth);
+		vec2 pixel = (floor(world_position.xz / texel) + 0.5) * texel;
+		float weight = cover * mix(0.35 + edge_noise(pixel * 5.0) * 0.2, 1.0, full_surface);
+		float wet = mix(top_surface.z, edge_grass_wet_response, top_grass) * edge_wetness;
+		top_color *= mix(1.0, edge_wet_darkening, wet);
+		color = mix(color, top_color, weight);
+		// Short ramp wedges must not paint the old bottom shadow across the top seam.
+		rim_shade_cover = weight * full_surface;
+		edge_roughness = mix(roughness, mix(top_surface.x, edge_wet_roughness, wet), weight);
+		edge_metallic = top_surface.y * weight;
+		float fade = smoothstep(lip, lip + edge_width, depth);
+		color *= 1.0 - lip_shadow_strength * 4.0 * fade * (1.0 - fade);
+	} else if (grass_top) {
 		// UV2 and VERTEX are both local: Ground's vertical offset must not shift the rim.
 		float depth = max(0.0, floor((wall_span.x - terrain_position.y) / texel)) * texel;
 		float bottom = max(0.0, floor((terrain_position.y - wall_span.y) / texel)) * texel;
@@ -100,6 +155,18 @@ void fragment() {
 		color *= 0.55;
 	}
 	float shade = mix(1.0 - base_shadow_strength, 1.0, smoothstep(0.0, base_shadow_height, from_bottom));
+	shade = mix(shade, 1.0, rim_shade_cover);
+	// A narrow shading bevel follows the actual sloped wall top, leaving geometry intact.
+	vec2 tangent = vec2(wall_direction.y, -wall_direction.x);
+	float along_dx = dot(dFdx(terrain_position.xz), tangent);
+	float along_dy = dot(dFdy(terrain_position.xz), tangent);
+	float slope = (dFdx(wall_span.x) * along_dx + dFdy(wall_span.x) * along_dy)
+		/ max(along_dx * along_dx + along_dy * along_dy, 0.0000001);
+	vec3 top_normal = normalize(vec3(-tangent.x * slope, 1.0, -tangent.y * slope));
+	vec3 view_top_normal = normalize(mat3(VIEW_MATRIX) * MODEL_NORMAL_MATRIX * top_normal);
+	float normal_cover = land_edge ? 1.0 - smoothstep(0.0, max(texel, edge_width * 0.5), edge_depth) : 0.0;
+	NORMAL = normalize(mix(NORMAL, view_top_normal, normal_cover * surface_edge_normal_softening));
 	ALBEDO = color * shade;
-	ROUGHNESS = roughness;
+	ROUGHNESS = edge_roughness;
+	METALLIC = edge_metallic;
 }

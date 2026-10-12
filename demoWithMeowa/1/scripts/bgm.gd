@@ -27,6 +27,8 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		set_process(false)
 		return
+	# 音乐及循环淡化独立于全局暂停，打开界面时保持连续播放。
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_configure()
 
 func _configure() -> void:
