@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="SpawnVisualPreset" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/spawn_visual_preset.gd" id="preset"]
+[ext_resource type="Resource" path="res://data/visual/spawn_foliage_palette.tres" id="colors"]
+
+[resource]
+script = ExtResource("preset")
+title = "Lumina 草地与花草"
+node_values = {
+"GroundDressing": {
+"grass_density": 2.0,
+"flower_density": 0.26,
+"cluster_size": 5.6,
+"cluster_strength": 1.0,
+"flower_patch_threshold": 0.65,
+"minimum_spacing": 0.34,
+"flower_color_grouping": 0.82,
+"layered_growth_strength": 0.8,
+"scale_variation": 0.16,
+"leaf_normals_enabled": true,
+"leaf_normal_strength": 0.55,
+"color_ramps_enabled": true,
+"color_palette": ExtResource("colors"),
+"detail_contrast": 0.76
+}
+}

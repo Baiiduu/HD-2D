@@ -1,0 +1,100 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/growth_choice_ui.gd" id="ui"]
+[ext_resource type="Script" path="res://scripts/ui/growth_choice_option.gd" id="option"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/upgrade/title-left.png" id="left"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/upgrade/title-right.png" id="right"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/upgrade/divider.png" id="divider"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/upgrade/button.png" id="button"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ui_audio.tscn" id="audio"]
+
+[sub_resource type="Resource" id="preview_a"]
+script = ExtResource("option")
+id = &"preview_a"
+
+[sub_resource type="Resource" id="preview_b"]
+script = ExtResource("option")
+id = &"preview_b"
+
+[sub_resource type="StyleBoxTexture" id="button_skin"]
+texture = ExtResource("button")
+
+[sub_resource type="StyleBoxEmpty" id="focus"]
+
+[node name="GrowthChoiceUI" type="CanvasLayer"]
+layer = 40
+process_mode = 3
+script = ExtResource("ui")
+preview_options = Array[ExtResource("option")]([SubResource("preview_a"), SubResource("preview_b")])
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Shade" type="ColorRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0)
+
+[node name="Content" type="Control" parent="Root"]
+mouse_filter = 2
+
+[node name="Header" type="Control" parent="Root/Content"]
+mouse_filter = 2
+
+[node name="Title" type="Label" parent="Root/Content/Header"]
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.82, 0.53, 1)
+theme_override_colors/font_shadow_color = Color(0.12, 0.08, 0.03, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="Left" type="TextureRect" parent="Root/Content/Header"]
+texture_filter = 2
+mouse_filter = 2
+texture = ExtResource("left")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Right" type="TextureRect" parent="Root/Content/Header"]
+texture_filter = 2
+mouse_filter = 2
+texture = ExtResource("right")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Divider" type="TextureRect" parent="Root/Content/Header"]
+texture_filter = 2
+mouse_filter = 2
+texture = ExtResource("divider")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Cards" type="Control" parent="Root/Content"]
+mouse_filter = 2
+
+[node name="Confirm" type="Button" parent="Root/Content"]
+focus_mode = 0
+theme_override_colors/font_color = Color(1, 0.88, 0.64, 1)
+theme_override_colors/font_hover_color = Color(1, 0.94, 0.77, 1)
+theme_override_colors/font_pressed_color = Color(0.88, 0.72, 0.47, 1)
+theme_override_styles/normal = SubResource("button_skin")
+theme_override_styles/hover = SubResource("button_skin")
+theme_override_styles/pressed = SubResource("button_skin")
+theme_override_styles/disabled = SubResource("button_skin")
+theme_override_styles/focus = SubResource("focus")
+
+[node name="UIAudio" parent="." instance=ExtResource("audio")]

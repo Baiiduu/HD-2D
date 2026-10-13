@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/world/environment_dynamics.gd" id="dynamics"]
+[ext_resource type="PackedScene" path="res://scenes/shared/fireflies.tscn" id="fireflies"]
+
+[node name="EnvironmentDynamics" type="Node3D"]
+script = ExtResource("dynamics")
+
+[node name="WestLights" parent="." instance=ExtResource("fireflies")]
+amount = 24
+use_fixed_seed = true
+seed = 131031
+
+[node name="EastLights" parent="." instance=ExtResource("fireflies")]
+amount = 24
+use_fixed_seed = true
+seed = 131032
+
+[node name="SouthLights" parent="." instance=ExtResource("fireflies")]
+amount = 24
+use_fixed_seed = true
+seed = 131033

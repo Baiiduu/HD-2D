@@ -10,6 +10,7 @@ signal blink_travelled(start: Vector3, destination: Vector3)
 signal vitals_changed
 
 const ANIMATION_REFERENCE_SPEED := 4.0
+@export_group("移动与动画")
 @export var speed: float = 4.0
 @export var animations: SpriteFrames
 ## 移动参照相机：W/S 沿相机前后方向，A/D 沿相机左右方向，均投影到地面。

@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="WaveDefinition" format=3 uid="uid://orhpbkem853w"]
+
+[ext_resource type="Script" uid="uid://i1xql6e8gpsr" path="res://scripts/combat/wave_spawn_entry.gd" id="entry"]
+[ext_resource type="Resource" path="res://data/wave_slime.tres" id="slime"]
+[ext_resource type="Script" uid="uid://caklrlj8ospwr" path="res://scripts/combat/wave_definition.gd" id="wave"]
+
+[sub_resource type="Resource" id="west"]
+script = ExtResource("entry")
+enemy = ExtResource("slime")
+count = 8
+start_delay = 0.6
+interval = 0.55
+spawn_zone_ids = PackedStringArray("WestNorth", "WestSouth")
+
+[sub_resource type="Resource" id="east"]
+script = ExtResource("entry")
+enemy = ExtResource("slime")
+count = 12
+start_delay = 9.0
+interval = 0.35
+spawn_zone_ids = PackedStringArray("EastNorth", "EastSouth")
+
+[sub_resource type="Resource" id="south"]
+script = ExtResource("entry")
+enemy = ExtResource("slime")
+count = 8
+start_delay = 18.0
+interval = 0.45
+spawn_zone_ids = PackedStringArray("SouthWest", "SouthEast")
+
+[resource]
+script = ExtResource("wave")
+description = "28 只：西侧试探 8 → 东侧密集推进 12 → 南侧增援 8"
+entries = Array[ExtResource("entry")]([SubResource("west"), SubResource("east"), SubResource("south")])

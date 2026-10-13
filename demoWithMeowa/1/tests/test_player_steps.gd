@@ -63,6 +63,8 @@ func _run() -> void:
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
 	world.get_node("LoadoutUI").save_enabled = false
 	root.add_child(world)
+	# VisualSample applies its building positions after scene ready.
+	await frames(3)
 	var player: Player = world.get_node("Player")
 	player.movement_camera = null
 	player.jumped.connect(func(): jumps += 1)

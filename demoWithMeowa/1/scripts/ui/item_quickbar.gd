@@ -10,17 +10,81 @@ const SLOT_SHADER := preload("res://shaders/skill_hud.gdshader")
 @export_range(0,20,1) var slot_spacing := 6
 @export_range(8,80,1) var bottom_margin := 24.0
 @export_range(0.0,1.0,0.05) var background_opacity := 0.65
+@export_group("悬浮名称提示")
+## 仅显示物品名称；完整说明在背包页查看，空槽不弹提示。
+@export var show_item_name := true:
+	set(value): show_item_name = value; _update_name_hint()
+@export_range(12,20,1) var name_font_size := 16:
+	set(value): name_font_size = value; _update_name_hint()
+## 名称最大宽度，逻辑像素；过长名称省略，保持一行。
+@export_range(80,240,8) var name_max_width := 160.0:
+	set(value): name_max_width = value; _update_name_hint()
+## 0 为全透明背景；增加少量暗底以方便在明亮地面上阅读。
+@export_range(0.0,0.5,0.05) var name_background_opacity := 0.0:
+	set(value): name_background_opacity = value; _update_name_hint()
 var state: LoadoutState
 var audio: UIAudio
 var reserved_hud: Control
 var _slots := HBoxContainer.new()
 var _queued := false
+var _name_panel: PanelContainer
+var _name_label: Label
+var _hovered_slot := -1
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_slots.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_slots)
+	_name_panel = PanelContainer.new()
+	_name_panel.name = "ItemNameHint"
+	_name_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_name_panel)
+	_name_label = _label("",name_font_size)
+	_name_panel.add_child(_name_label)
+	_update_name_hint()
 	get_viewport().size_changed.connect(update_layout)
+
+func _update_name_hint() -> void:
+	if not _name_panel: return
+	var panel := StyleBoxFlat.new()
+	panel.bg_color = Color(0.05,0.07,0.06,name_background_opacity)
+	for side in [SIDE_LEFT,SIDE_TOP,SIDE_RIGHT,SIDE_BOTTOM]:
+		panel.set_content_margin(side,4.0 if side in [SIDE_LEFT,SIDE_RIGHT] else 2.0)
+	_name_panel.add_theme_stylebox_override("panel",panel)
+	_name_label.add_theme_font_size_override("font_size",name_font_size)
+	if not state or _hovered_slot < 0 or _hovered_slot >= _slots.get_child_count():
+		_name_panel.hide()
+		return
+	_name_label.text = _name_hint(state.catalog.get_inventory_entry(state.get_quick_slots()[_hovered_slot]))
+	if _name_label.text.is_empty():
+		_name_panel.hide()
+		return
+	_name_panel.reset_size()
+	var tile: Control = _slots.get_child(_hovered_slot)
+	var local := _slots.position + tile.position + Vector2((tile.size.x-_name_panel.size.x)*0.5,-_name_panel.size.y-8)
+	var point := get_global_transform() * local
+	var viewport := get_viewport().get_visible_rect().size
+	point.x = clampf(point.x,12,viewport.x-_name_panel.size.x*get_global_transform().get_scale().x-12)
+	_name_panel.position = (get_global_transform().affine_inverse() * point).round()
+	_name_panel.show()
+
+func _show_name(index: int) -> void:
+	_hovered_slot = index
+	_update_name_hint()
+
+func _hide_name(index: int) -> void:
+	if _hovered_slot != index: return
+	_hovered_slot = -1
+	_name_panel.hide()
+
+func _name_hint(entry: Resource) -> String:
+	if not entry or not show_item_name: return ""
+	var words: String = entry.display_name.replace("\n"," ")
+	var font := get_theme_font("font")
+	if font.get_string_size(words,HORIZONTAL_ALIGNMENT_LEFT,-1,name_font_size).x <= name_max_width: return words
+	while words.length() > 1 and font.get_string_size(words+"…",HORIZONTAL_ALIGNMENT_LEFT,-1,name_font_size).x > name_max_width:
+		words = words.substr(0,words.length()-1)
+	return words+"…"
 
 func bind_state(value: LoadoutState, skill_hud: Control) -> void:
 	state = value
@@ -50,7 +114,10 @@ func refresh() -> void:
 		tile.loadout = state
 		tile.quick_slot = index
 		tile.custom_minimum_size = Vector2.ONE * slot_size
-		tile.tooltip_text = "%d：%s\n拖入背包物品，右键移出快捷栏。" % [index + 1, entry.display_name if entry else "空物品槽"]
+		# 默认纸面 Tooltip 不用于地图上的快捷栏。
+		tile.tooltip_text = ""
+		tile.mouse_entered.connect(_show_name.bind(index))
+		tile.mouse_exited.connect(_hide_name.bind(index))
 		for style in ["normal","hover","pressed","focus"]:
 			tile.add_theme_stylebox_override(style, StyleBoxEmpty.new())
 		tile.pressed.connect(_select.bind(index))
@@ -136,3 +203,4 @@ func update_layout() -> void:
 	# 窄窗口只上移物品栏，保持原技能栏的样式与位置。
 	if is_instance_valid(reserved_hud) and reserved_hud.visible and get_global_rect().intersects(reserved_hud.get_global_rect().grow(8)):
 		position.y = reserved_hud.get_global_rect().position.y-slot_size*factor-12
+	_update_name_hint()

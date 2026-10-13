@@ -54,6 +54,9 @@ func run() -> void:
 	check(state.restore_farm_plot("test", second, false) and state.get_quantity("tomato_seed") == 1, "Refund can be disabled without leaving a stale plot")
 	check(restored.import_state(state.export_state()) and restored.get_farm_plots("test").is_empty() and restored.get_quantity("tomato_seed") == 1, "A restored save cannot recreate cancelled farmland")
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
+	var terrain_source_path: String = world.get_node("Homestead").data.resource_path
+	var terrain_source_hash := FileAccess.get_sha256(terrain_source_path)
+	var original_paints: PackedByteArray = world.get_node("Homestead").data.paints.duplicate()
 	var ui: LoadoutUI = world.get_node("LoadoutUI")
 	ui.save_enabled = false
 	ui.motion_enabled = false
@@ -123,8 +126,7 @@ func run() -> void:
 		ui.open_menu()
 		check(ui.take_inventory_item("tomato_seed"), "Backpack can pick up a usable item")
 		check(not ui.menu_open and ui.state.get_quick_slots()[ui.state.active_quick_slot] == "tomato_seed", "Picking up closes the book and selects the correct shortcut")
-	var source: TerrainData = load("res://data/spawn_terrain.tres")
-	check(source.paints == farm._base_data.paints, "The saved editor terrain resource is unchanged")
+	check(FileAccess.get_sha256(terrain_source_path) == terrain_source_hash and farm._base_data.paints == original_paints, "The saved editor terrain resource is unchanged")
 	world.free()
 	state.changed.disconnect(observe)
 	for frame in 6: await process_frame

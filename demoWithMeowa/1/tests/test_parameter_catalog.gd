@@ -1,0 +1,56 @@
+extends SceneTree
+
+func _initialize() -> void:
+	run.call_deferred()
+
+func run() -> void:
+	var scene: Node = load("res://scenes/world/world.tscn").instantiate()
+	scene.get_node("LoadoutUI").save_enabled = false
+	scene.get_node("WavePrototype/RunGrowth").enabled = false
+	var catalog := preload("res://addons/parameter_hub/catalog.gd").new()
+	var entries: Array[Dictionary] = catalog.collect(scene)
+	var found := {}
+	var categories := {}
+	for entry in entries:
+		found[entry.path + ":" + entry.property] = entry
+		categories[entry.category] = true
+	var required := ["VisualSample:style", "MapEffects/Camera3D:fov", "Player:blink_distance", "WavePrototype/FanAutoAttack:damage",
+		"WavePrototype/RunGrowth → 规则资源:first_level_experience", "Homestead → 地表画笔列表 → brushes[0]:texture",
+		"LoadoutUI/AttributeHUD:glow_strength", "WavePrototype/RunGrowth/ExperienceHUD:track_width", "MapEffects/Weather:rain_volume_db"]
+	required.append("WavePrototype/WaveHUD:font_size")
+	required.append("MapEffects/GameAudio:max_voices")
+	required.append("MapEffects/GameAudio:merge_window")
+	required.append("MapEffects/GameAudio:limiter_ceiling_db")
+	required.append("WavePrototype:endless_mode")
+	required.append("WavePrototype:endless_enemies_per_wave")
+	required.append("WavePrototype:endless_max_enemies")
+	required.append("WavePrototype/RunBuffs → definitions[0]:bonus_per_level")
+	required.append("WavePrototype/RunBuffs → definitions[1]:bonus_cap")
+	required.append("WavePrototype/RunBuffs → definitions[2]:max_level")
+	var failures: Array[String] = []
+	for name in required:
+		if not found.has(name): failures.append(name)
+	for category in catalog.CATEGORIES:
+		if not categories.has(category): failures.append(category)
+	if found.has("WavePrototype/FanAutoAttack:damage") and not found["WavePrototype/FanAutoAttack:damage"].common: failures.append("damage must be common")
+	if found.has("MapEffects/GameAudio:max_voices"):
+		var audio_entry: Dictionary = found["MapEffects/GameAudio:max_voices"]
+		if not audio_entry.common or audio_entry.category != "声音": failures.append("global voice budget must be a common sound parameter")
+	if found.has("WavePrototype/RunGrowth/ExperienceHUD:track_width") and not found["WavePrototype/RunGrowth/ExperienceHUD:track_width"].common: failures.append("experience width must be common")
+	if found.has("WavePrototype/RunBuffs → definitions[0]:bonus_per_level"):
+		var buff_entry: Dictionary = found["WavePrototype/RunBuffs → definitions[0]:bonus_per_level"]
+		if not buff_entry.common or buff_entry.category != "战斗与成长": failures.append("buff values must be common combat parameters")
+	print(JSON.stringify({"parameters": entries.size(), "categories": categories.keys(), "failures": failures}))
+	# 在未运行的场景结构上索引，再初始化以让组件正常释放其运行时对象。
+	root.add_child(scene)
+	current_scene = scene
+	for index in 12: await physics_frame
+	catalog.entries.clear()
+	for audio in scene.find_children("*", "AudioStreamPlayer", true, false): audio.stop()
+	await create_timer(0.1).timeout
+	await process_frame
+	scene.free()
+	await process_frame
+	await process_frame
+	await create_timer(0.1).timeout
+	quit(0 if failures.is_empty() else 1)

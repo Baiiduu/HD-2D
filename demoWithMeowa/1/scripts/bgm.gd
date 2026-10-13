@@ -13,7 +13,7 @@ extends Node
 ## 循环末尾与开头的交叉淡化时间，秒；短素材自动缩短。
 @export_range(0.1, 15.0, 0.1) var music_loop_crossfade := 6.0
 ## 项目中已有的音频总线名称；不存在时使用 Master。
-@export var music_bus: StringName = &"Master"
+@export var music_bus: StringName = &"Music"
 
 var _players: Array[AudioStreamPlayer] = []
 var _source: AudioStream

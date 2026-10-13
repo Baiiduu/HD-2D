@@ -1,0 +1,33 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/growth/run_growth.gd" id="growth"]
+[ext_resource type="Resource" path="res://data/experience_rules.tres" id="rules"]
+[ext_resource type="PackedScene" path="res://scenes/growth/experience_pickup.tscn" id="pickup"]
+[ext_resource type="PackedScene" path="res://scenes/ui/growth_choice_ui.tscn" id="ui"]
+[ext_resource type="Script" path="res://scripts/ui/growth_choice_option.gd" id="option"]
+[ext_resource type="PackedScene" path="res://scenes/ui/experience_hud.tscn" id="experience_hud"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/experience/absorb.png" id="absorb"]
+
+[sub_resource type="Resource" id="empty_a"]
+script = ExtResource("option")
+id = &"slot_a"
+
+[sub_resource type="Resource" id="empty_b"]
+script = ExtResource("option")
+id = &"slot_b"
+
+[node name="RunGrowth" type="Node3D"]
+script = ExtResource("growth")
+rules = ExtResource("rules")
+pickup_scene = ExtResource("pickup")
+choice_options = Array[ExtResource("option")]([SubResource("empty_a"), SubResource("empty_b")])
+
+[node name="GrowthChoiceUI" parent="." instance=ExtResource("ui")]
+
+[node name="ExperienceHUD" parent="." instance=ExtResource("experience_hud")]
+
+[node name="AbsorbFlash" type="Sprite3D" parent="."]
+visible = false
+texture = ExtResource("absorb")
+billboard = 1
+cast_shadow = 0

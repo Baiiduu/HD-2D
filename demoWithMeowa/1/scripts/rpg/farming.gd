@@ -3,6 +3,7 @@ extends Node3D
 
 signal interaction_feedback(message: String, success: bool)
 
+@export_group("场景连接与存档")
 @export var terrain: Terrain
 @export var player: Player
 @export var loadout: LoadoutUI

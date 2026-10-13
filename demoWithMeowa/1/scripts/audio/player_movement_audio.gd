@@ -6,7 +6,7 @@ extends Node
 @export var sounds: MovementSoundBank
 ## 挂在 Player 下时自动连接；可以手动指定其他人物。
 @export var player: Player
-@export var audio_bus: StringName = &"Master"
+@export var audio_bus: StringName = &"Movement"
 ## 所有动作音效的总增益；负数越小声音越轻。
 @export_range(-40.0, 6.0, 0.5) var volume_db := -8.0
 @export_group("脚步")

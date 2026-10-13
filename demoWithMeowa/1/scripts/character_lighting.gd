@@ -18,6 +18,16 @@ const OCCLUSION_SHADER := preload("res://shaders/character_occlusion.gdshader")
 @export_range(0.0, 0.5, 0.01) var back_rim_strength := 0.12:
 	set(value): back_rim_strength = value; _queue_apply()
 
+@export_group("人物逐帧法线")
+## 独立法线提供轻微身体和衣物受光；源图及动画保持原样。
+@export var normal_mapping_enabled := false:
+	set(value): normal_mapping_enabled = value; _queue_apply()
+@export_range(0.0, 1.0, 0.05) var normal_mapping_strength := 0.4:
+	set(value): normal_mapping_strength = value; _queue_apply()
+## 可选对应法线图；使用图集时必须与完整颜色图集同尺寸、同帧排列。
+@export var normal_texture_override: Texture2D:
+	set(value): normal_texture_override = value; _queue_apply()
+
 @export_group("遮挡轮廓")
 ## 被建筑等不透明表面挡住时，仅显示被挡部分的像素轮廓。
 @export var occlusion_outline_enabled := true:
@@ -67,6 +77,7 @@ func _queue_apply() -> void:
 func _sync_texture() -> void:
 	if _material:
 		_material.set_shader_parameter("sprite_texture", texture)
+		_bind_normal(_material)
 	else:
 		_queue_apply()
 
@@ -76,6 +87,7 @@ func apply_lighting() -> void:
 		texture_changed.connect(_sync_texture)
 	var defaults := {"lighting_enabled": true, "light_wrap": 0.3,
 		"top_light_response": 0.4, "back_rim_strength": 0.12,
+		"normal_mapping_enabled": false, "normal_mapping_strength": 0.4,
 		"occlusion_outline_enabled": true, "occlusion_outline_color": Color(1.0, 0.89, 0.55),
 		"occlusion_outline_width": 1.0, "occlusion_outline_opacity": 0.85, "occlusion_depth_bias": 0.03}
 	for key in defaults:
@@ -158,6 +170,23 @@ func apply_lighting_to(material: ShaderMaterial, reflection := false) -> void:
 	material.set_shader_parameter("light_wrap", light_wrap)
 	material.set_shader_parameter("top_light_response", top_light_response)
 	material.set_shader_parameter("back_rim_strength", back_rim_strength)
+	_bind_normal(material)
+
+func _bind_normal(material: ShaderMaterial) -> void:
+	var normal := normal_texture_override if normal_texture_override else SurfaceNormalMaps.for_texture(texture)
+	var source := (texture as AtlasTexture).atlas if texture is AtlasTexture else texture
+	if normal and source and normal.get_size() != source.get_size(): normal = null
+	material.set_shader_parameter("normal_texture",normal)
+	material.set_shader_parameter("normal_mapping_enabled",normal_mapping_enabled && normal != null)
+	material.set_shader_parameter("normal_mapping_strength",normal_mapping_strength)
+	var region := Vector4(0.0,0.0,1.0,1.0)
+	if texture is AtlasTexture and (texture as AtlasTexture).atlas:
+		var atlas := texture as AtlasTexture
+		var size := atlas.atlas.get_size()
+		var rect := atlas.region
+		if rect.size == Vector2.ZERO: rect.size = size
+		region = Vector4(rect.position.x / size.x,rect.position.y / size.y,rect.size.x / size.x,rect.size.y / size.y)
+	material.set_shader_parameter("sprite_region",region)
 
 func _validate_property(property: Dictionary) -> void:
 	# Recreate the preview material on load instead of saving a generated override.

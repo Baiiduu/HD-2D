@@ -1,5 +1,5 @@
 class_name SlimeEnemy
-extends CharacterBody3D
+extends WaveEnemy
 
 enum State { IDLE, PATROL, CHASE, RETURN }
 const DIRECTIONS := ["front","front_right","right","back_right","back","back_left","left","front_left"]
@@ -37,6 +37,15 @@ signal state_changed(state: State)
 ## 动画速度独立于怪物移动速度，1 为美术默认帧率。
 @export_range(0.25,2.0,0.05) var animation_speed := 1.0
 
+@export_group("波次接触攻击")
+## 战斗模式持续追击，到此距离停下；展示模式仍使用 Stop Distance。
+@export_range(0.3,1.5,0.05) var combat_stop_distance := 0.65
+@export_range(0.4,2.0,0.05) var contact_distance := 0.85
+@export_range(0.2,1.5,0.05) var contact_height := 0.8
+## 出场预告期间缩小显示，不移动、攻击或受伤。
+@export_range(0.1,0.8,0.05) var warning_scale := 0.35
+@export_range(0.0,0.5,0.01) var hit_flash_seconds := 0.15
+
 var state := State.IDLE
 var home_position: Vector3
 var patrol_goal: Vector3
@@ -54,9 +63,20 @@ var _look := Vector3.FORWARD
 var _clip: StringName = &""
 var _frame := 0
 var _elapsed := 0.0
+var _hit_flash := 0.0
+var _sprite_scale := Vector3.ONE
+var _sprite_color := Color.WHITE
 @onready var sprite: Sprite3D = $Sprite
 
+func configure_wave(context: Dictionary, definition: WaveEnemyDefinition, warning: float) -> void:
+	super.configure_wave(context, definition, warning)
+	terrain = context.terrain
+	target = wave_target
+	camera = context.camera
+	_path = navigation
+
 func _ready() -> void:
+	super._ready()
 	add_to_group(&"enemies")
 	_random.seed = random_seed
 	var shape := $Collision.shape.duplicate() as CapsuleShape3D
@@ -66,7 +86,13 @@ func _ready() -> void:
 	$Collision.position.y = shape.height*0.5
 	home_position = global_position
 	_idle_clock = _rest_time()
-	_initialize.call_deferred()
+	_sprite_scale = sprite.scale
+	_sprite_color = sprite.modulate
+	if wave_mode:
+		_set_state(State.CHASE)
+		sprite.scale = _sprite_scale * warning_scale
+	else:
+		_initialize.call_deferred()
 
 func _initialize() -> void:
 	for frame in 3: await get_tree().physics_frame
@@ -138,6 +164,9 @@ func _pick_patrol() -> void:
 	_idle_clock = _rest_time()
 
 func _physics_process(delta: float) -> void:
+	if wave_mode:
+		super._physics_process(delta)
+		return
 	velocity.y = 0.0 if is_on_floor() else velocity.y-gravity*delta
 	var direction := Vector3.ZERO
 	var speed := patrol_speed
@@ -193,7 +222,55 @@ func _physics_process(delta: float) -> void:
 	else:
 		_stuck_clock = 0.0
 
+func _combat_tick(delta: float) -> void:
+	velocity.y = 0.0 if is_on_floor() else velocity.y - gravity * delta
+	var direction := Vector3.ZERO
+	if TerrainPath.horizontal_distance(global_position, target.global_position) > combat_stop_distance:
+		_route_clock -= delta
+		if _route_clock <= 0.0:
+			_route_clock = route_interval
+			_route = _path.route(global_position, _path.ground_position(target.global_position))
+			_waypoint = 1 if _route.size() > 1 else 0
+		if not _route.is_empty():
+			while _waypoint < _route.size() - 1 and TerrainPath.horizontal_distance(global_position, _route[_waypoint]) < 0.14:
+				_waypoint += 1
+			direction = _route[_waypoint] - global_position
+			direction.y = 0.0
+			direction = direction.normalized()
+			var separation := Vector3.ZERO
+			for other in get_tree().get_nodes_in_group(&"wave_enemies"):
+				if other == self or other.dead or other.spawn_delay > 0.0: continue
+				var offset: Vector3 = global_position - other.global_position
+				offset.y = 0.0
+				var distance := offset.length()
+				if distance > 0.01 and distance < 0.75:
+					separation += offset / distance * (0.75 - distance)
+			direction = (direction + separation * 1.5).normalized()
+	velocity.x = direction.x * move_speed
+	velocity.z = direction.z * move_speed
+	if direction != Vector3.ZERO: _look = direction
+	move_and_slide()
+	# 接触范围、高差和遮挡属于史莱姆招式，不放进通用波次控制器。
+	if TerrainPath.horizontal_distance(global_position, target.global_position) < contact_distance and absf(global_position.y - target.global_position.y) < contact_height and _can_see_target():
+		damage_player.call(attack_damage)
+
+func _damage_feedback() -> void:
+	_hit_flash = hit_flash_seconds
+
+func apply_knockback(push: Vector3, distance: float) -> void:
+	if not wave_mode or dead or distance <= 0.0 or push == Vector3.ZERO: return
+	var destination := navigation.ground_position(global_position + push * distance)
+	# 不击落台地，也不跨断层或穿墙。
+	if absf(destination.y - navigation.ground_position(global_position).y) > 0.2 or navigation.route(global_position, destination).is_empty(): return
+	move_and_collide(push * distance)
+	_route_clock = 0.0
+
 func _process(delta: float) -> void:
+	if wave_mode:
+		_hit_flash = maxf(_hit_flash - delta, 0.0)
+		sprite.scale = _sprite_scale * (warning_scale if spawn_delay > 0.0 else 1.0)
+		sprite.modulate = _sprite_color * (1.8 if _hit_flash > 0.0 else 1.0)
+		sprite.modulate.a = _sprite_color.a
 	if not animations or not camera: return
 	var right := camera.global_basis.x
 	var backward := camera.global_basis.z

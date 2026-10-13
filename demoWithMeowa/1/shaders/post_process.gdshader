@@ -26,6 +26,8 @@ uniform float vignette_radius : hint_range(0.2, 1.5) = 0.85;
 uniform vec3 shadow_tint : source_color = vec3(0.86, 0.94, 1.12);
 uniform vec3 highlight_tint : source_color = vec3(1.08, 1.0, 0.9);
 uniform float split_toning : hint_range(0.0, 1.0) = 0.5;
+uniform bool lumina_grade_enabled = false;
+uniform vec3 shadow_lift = vec3(0.012, 0.02, 0.035);
 
 float lens_field(vec2 point, vec4 shape) {
 	float c = cos(shape.z);
@@ -111,6 +113,9 @@ void fragment() {
 	float luma = dot(color, vec3(0.3, 0.59, 0.11));
 	vec3 toned = color * mix(shadow_tint, highlight_tint, smoothstep(0.15, 0.7, luma));
 	color = mix(color, toned, split_toning);
+	if (lumina_grade_enabled) {
+		color += shadow_lift * (1.0 - smoothstep(0.08, 0.5, luma));
+	}
 	vec2 centered = (SCREEN_UV - 0.5) * vec2(1.0, 0.8);
 	float vignette = smoothstep(vignette_radius, vignette_radius * 0.35, length(centered) * 1.6);
 	color *= mix(1.0 - vignette_strength, 1.0, vignette);

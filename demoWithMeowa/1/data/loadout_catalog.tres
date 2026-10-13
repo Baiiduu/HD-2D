@@ -115,22 +115,22 @@ skill_bonuses = Dictionary[String, float]({
 [sub_resource type="Resource" id="inventory_item_hoe"]
 script = ExtResource("item_definition")
 id = "hoe"
-farm_action = 1
 display_name = "锄头"
 description = "开垦草地，为播种准备耕地；也可以把耕地恢复为原草地。"
 icon = ExtResource("inventory_icon_hoe")
 category = 1
 stackable = false
+farm_action = 1
 
 [sub_resource type="Resource" id="inventory_item_watering_can"]
 script = ExtResource("item_definition")
 id = "watering_can"
-farm_action = 3
 display_name = "洒水壶"
 description = "为已经开垦的地块浇水。"
 icon = ExtResource("inventory_icon_watering_can")
 category = 1
 stackable = false
+farm_action = 3
 
 [sub_resource type="Resource" id="inventory_item_axe"]
 script = ExtResource("item_definition")
@@ -144,12 +144,12 @@ stackable = false
 [sub_resource type="Resource" id="inventory_item_tomato_seed"]
 script = ExtResource("item_definition")
 id = "tomato_seed"
-farm_action = 2
 display_name = "番茄种子"
 description = "在耕地上播种，每次消耗一颗种子。"
 icon = ExtResource("inventory_icon_tomato_seed")
 illustration = ExtResource("seed_illustration")
 category = 3
+farm_action = 2
 
 [sub_resource type="Resource" id="inventory_item_wood"]
 script = ExtResource("item_definition")

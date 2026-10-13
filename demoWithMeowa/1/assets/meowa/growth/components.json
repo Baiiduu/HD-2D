@@ -1,0 +1,26 @@
+[
+  {
+    "file": "assets/meowa/growth/cyan.png",
+    "width": 54,
+    "height": 82,
+    "mode": "RGBA",
+    "alpha_min": 0,
+    "alpha_max": 255
+  },
+  {
+    "file": "assets/meowa/growth/violet.png",
+    "width": 55,
+    "height": 86,
+    "mode": "RGBA",
+    "alpha_min": 0,
+    "alpha_max": 255
+  },
+  {
+    "file": "assets/meowa/growth/amber.png",
+    "width": 73,
+    "height": 93,
+    "mode": "RGBA",
+    "alpha_min": 0,
+    "alpha_max": 255
+  }
+]

@@ -50,7 +50,7 @@ const MAX_BLINK_PATHS := 8
 @export_range(0.1, 5.0, 0.1) var rain_audio_fade_time := 1.5:
 	set(v): rain_audio_fade_time = maxf(v, 0.1); _queue_apply()
 ## 默认 Master；可填写项目中已有音频总线名称。
-@export var rain_audio_bus: StringName = &"Master":
+@export var rain_audio_bus: StringName = &"Ambience":
 	set(v): rain_audio_bus = v; _queue_apply()
 
 @export_group("轻微风声")
@@ -64,7 +64,7 @@ const MAX_BLINK_PATHS := 8
 	set(v): wind_volume_db = v; _queue_apply()
 @export_range(0.1, 10.0, 0.1) var wind_audio_fade_time := 3.0:
 	set(v): wind_audio_fade_time = maxf(v, 0.1); _queue_apply()
-@export var wind_audio_bus: StringName = &"Master":
+@export var wind_audio_bus: StringName = &"Ambience":
 	set(v): wind_audio_bus = v; _queue_apply()
 
 @export_group("水面雨纹")

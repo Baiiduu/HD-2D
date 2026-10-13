@@ -91,7 +91,7 @@ func refresh() -> void:
 	_shade.visible = result
 	_rest_actions.visible = controller.phase == controller.Phase.REST
 	_title.text = controller.result_reason
-	_description.text = "已完成 %d 波 · 击败 %d 个敌人\n本轮只验证基础战斗与休整，不提供技能或成长奖励。" % [controller.completed_waves, controller.kills]
+	_description.text = "%s · 已完成 %d 波\n击败 %d 个敌人" % ["无尽挑战" if controller.is_endless() else "波次挑战", controller.completed_waves, controller.kills]
 	_fit.call_deferred()
 
 func _fit() -> void:

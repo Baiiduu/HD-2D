@@ -1,0 +1,12 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/light_pierce_effect.gd" id="effect"]
+[ext_resource type="Texture2D" path="res://assets/meowa/combat/light_pierce/head.png" id="head"]
+[ext_resource type="Texture2D" path="res://assets/meowa/combat/light_pierce/trail.png" id="trail"]
+[ext_resource type="SpriteFrames" path="res://assets/meowa/combat/light_pierce/impact_frames.tres" id="impact"]
+
+[node name="LightPierceEffect" type="Node3D"]
+script = ExtResource("effect")
+head_texture = ExtResource("head")
+trail_texture = ExtResource("trail")
+impact_frames = ExtResource("impact")

@@ -1,0 +1,71 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/growth_choice_card.gd" id="card"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/upgrade/card.png" id="normal"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/upgrade/card-selected.png" id="selected"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/upgrade/icon-slot.png" id="socket"]
+[ext_resource type="Shader" path="res://shaders/growth_choice_card.gdshader" id="shader"]
+
+[sub_resource type="StyleBoxEmpty" id="empty"]
+
+[sub_resource type="ShaderMaterial" id="skin"]
+resource_local_to_scene = true
+shader = ExtResource("shader")
+shader_parameter/selected_texture = ExtResource("selected")
+shader_parameter/selected_mix = 0.0
+shader_parameter/background_opacity = 0.72
+
+[node name="GrowthChoiceCard" type="Button"]
+offset_right = 280.0
+offset_bottom = 458.8889
+focus_mode = 0
+theme_override_styles/normal = SubResource("empty")
+theme_override_styles/hover = SubResource("empty")
+theme_override_styles/pressed = SubResource("empty")
+theme_override_styles/hover_pressed = SubResource("empty")
+theme_override_styles/disabled = SubResource("empty")
+theme_override_styles/focus = SubResource("empty")
+script = ExtResource("card")
+
+[node name="Frame" type="TextureRect" parent="."]
+material = SubResource("skin")
+texture_filter = 2
+offset_right = 280.0
+offset_bottom = 458.8889
+mouse_filter = 2
+texture = ExtResource("normal")
+expand_mode = 1
+
+[node name="IconSlot" type="TextureRect" parent="."]
+texture_filter = 2
+offset_left = 81.2
+offset_top = 59.66
+offset_right = 198.8
+offset_bottom = 177.26
+mouse_filter = 2
+texture = ExtResource("socket")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Icon" type="TextureRect" parent="IconSlot"]
+texture_filter = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="."]
+visible = false
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.14, 0.17, 0.12, 1)
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="Description" type="Label" parent="."]
+visible = false
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.14, 0.17, 0.12, 1)
+autowrap_mode = 3
+clip_text = true
+max_lines_visible = 6

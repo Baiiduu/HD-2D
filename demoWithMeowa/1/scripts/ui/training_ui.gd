@@ -5,6 +5,7 @@ const TITLES := {"health": "体能训练", "attack": "力量训练", "defense": 
 const ICONS := {"health": "heal", "attack": "sword", "defense": "armor"}
 const LABELS := {"health": "生命", "attack": "攻击", "defense": "防御"}
 
+@export_group("场景连接")
 @export var player: Player
 @export var loadout: LoadoutUI
 @export var interaction_point: Node3D

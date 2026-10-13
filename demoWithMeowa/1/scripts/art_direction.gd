@@ -112,6 +112,14 @@ const BEAM_LAYER := 1 << 17 # Layer 18; water mirror layers 19/20 remain separat
 	set(v): ambient_color = v; _queue_apply()
 @export_range(0.0, 3.0, 0.01) var ambient_energy := 0.7:
 	set(v): ambient_energy = v; _queue_apply()
+## 天空色与地面色按表面朝向形成补光；关闭恢复均匀环境色。强度仍由 Ambient Energy 控制。
+@export var hemisphere_fill_enabled := false:
+	set(v): hemisphere_fill_enabled = v; _queue_apply()
+## 朝上的表面更多接收天空色，侧面同时接收天空色与地面反弹色。
+@export var hemisphere_sky_color := Color(0.416, 0.510, 0.780):
+	set(v): hemisphere_sky_color = v; _queue_apply()
+@export var hemisphere_ground_color := Color(0.318, 0.275, 0.329):
+	set(v): hemisphere_ground_color = v; _queue_apply()
 @export var moon_color := Color(0.9, 0.86, 0.8):
 	set(v): moon_color = v; _queue_apply()
 @export_range(0.0, 4.0, 0.01) var moon_energy := 0.85:
@@ -377,6 +385,8 @@ func apply(include_daylight := true) -> void:
 		env.glow_intensity = bloom
 		env.ambient_light_color = ambient_color
 		env.ambient_light_energy = ambient_energy
+		env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY if hemisphere_fill_enabled else Environment.AMBIENT_SOURCE_COLOR
+		if hemisphere_fill_enabled: env.ambient_light_sky_contribution = 1.0
 		env.fog_light_color = fog_color
 		env.fog_depth_begin = fog_begin
 		env.fog_depth_end = maxf(fog_end, fog_begin + 1.0)
@@ -388,6 +398,9 @@ func apply(include_daylight := true) -> void:
 		env.volumetric_fog_sky_affect = volumetric_sky_affect
 		var sky := env.sky.sky_material as ShaderMaterial if env.sky else null
 		if sky:
+			sky.set_shader_parameter("hemisphere_fill_enabled", hemisphere_fill_enabled)
+			sky.set_shader_parameter("hemisphere_sky_color", hemisphere_sky_color)
+			sky.set_shader_parameter("hemisphere_ground_color", hemisphere_ground_color)
 			sky.set_shader_parameter("zenith_color", sky_top_color)
 			sky.set_shader_parameter("horizon_color", fog_color)
 			sky.set_shader_parameter("fog_color", fog_color)

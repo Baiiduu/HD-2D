@@ -18,6 +18,10 @@ uniform vec3 moon_glow_color : source_color = vec3(0.6, 0.7, 0.9);
 uniform float star_density : hint_range(0.0, 0.05) = 0.01;
 // 每个"天空像素"对应的角度（弧度）
 uniform float pixel_angle = 0.004;
+// Only the lighting cubemap uses these colours; the visible sky keeps its existing artwork.
+uniform bool hemisphere_fill_enabled = false;
+uniform vec3 hemisphere_sky_color : source_color = vec3(0.416, 0.510, 0.780);
+uniform vec3 hemisphere_ground_color : source_color = vec3(0.318, 0.275, 0.329);
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -98,5 +102,6 @@ void sky() {
 	if (elevation < -0.125) {
 		color = mix(mix(fog_color, silhouette_color, 0.85), fog_color, 0.5 * smoothstep(-0.4, -0.125, elevation));
 	}
-	COLOR = color;
+	COLOR = hemisphere_fill_enabled && AT_CUBEMAP_PASS
+		? mix(hemisphere_ground_color, hemisphere_sky_color, dir.y * 0.5 + 0.5) : color;
 }

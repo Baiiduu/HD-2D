@@ -10,7 +10,7 @@ var _size := Vector2i.ZERO
 var _query := PhysicsShapeQueryParameters3D.new()
 var _clearance := 0.0
 
-func build(source: Terrain, radius: float, exclude: Array[RID]) -> void:
+func build(source: Terrain, radius: float, exclude: Array[RID], world_bounds := Rect2()) -> void:
 	terrain = source
 	data = source.data
 	_size = data.size*SUBDIVISIONS
@@ -29,8 +29,15 @@ func build(source: Terrain, radius: float, exclude: Array[RID]) -> void:
 	_query.motion = Vector3.ZERO
 	_clearance = radius+0.08
 	var space := source.get_world_3d().direct_space_state
-	for z in _size.y:
-		for x in _size.x:
+	var first := Vector2i.ZERO
+	var last := _size
+	if world_bounds.has_area():
+		var local_start := source.to_local(Vector3(world_bounds.position.x, 0, world_bounds.position.y))
+		var local_end := source.to_local(Vector3(world_bounds.end.x, 0, world_bounds.end.y))
+		first = Vector2i(((Vector2(local_start.x, local_start.z) / data.cell_size - Vector2(data.origin) + Vector2.ONE * 0.5) * SUBDIVISIONS).floor()).clamp(Vector2i.ZERO, _size)
+		last = Vector2i(((Vector2(local_end.x, local_end.z) / data.cell_size - Vector2(data.origin) + Vector2.ONE * 0.5) * SUBDIVISIONS).ceil()).clamp(Vector2i.ZERO, _size)
+	for z in range(first.y, last.y):
+		for x in range(first.x, last.x):
 			var grid := Vector2i(x,z)
 			var cell := _cell(grid)
 			if data.has_overlay(cell,TerrainData.OVERLAY_WATER) and not data.has_overlay(cell,TerrainData.OVERLAY_BRIDGE): continue
@@ -76,6 +83,15 @@ func grid_position(grid: Vector2i) -> Vector3:
 	var xz := (Vector2(cell)+fraction-Vector2.ONE*0.5)*data.cell_size
 	return terrain.to_global(Vector3(xz.x,height,xz.y))
 
+## 将跳跃中的目标投影回实际坡面；不能只取台地格子的基础高度。
+func ground_position(world: Vector3) -> Vector3:
+	var local := terrain.to_local(world)
+	var cell := data.world_to_cell(local)
+	var fraction := Vector2(local.x, local.z) / data.cell_size - Vector2(cell) + Vector2.ONE * 0.5
+	var corners := _surface_heights(cell)
+	local.y = lerpf(lerpf(corners[0], corners[1], fraction.x), lerpf(corners[3], corners[2], fraction.x), fraction.y)
+	return terrain.to_global(local)
+
 func _segment_clear(from: Vector3,to: Vector3) -> bool:
 	_query.transform = Transform3D(Basis.IDENTITY,from+Vector3.UP*_clearance)
 	_query.motion = to-from
@@ -90,7 +106,7 @@ func route(from: Vector3,to: Vector3) -> PackedVector3Array:
 	var start := graph.get_closest_point(from)
 	var end := _id(grid)
 	var path := graph.get_point_path(start,end)
-	if path.is_empty() or not _segment_clear(path[-1],to): return PackedVector3Array()
+	if path.is_empty() or not _segment_clear(from,path[0]) or not _segment_clear(path[-1],to): return PackedVector3Array()
 	path.append(to)
 	return path
 

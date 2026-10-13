@@ -36,6 +36,21 @@
 
 窄窗口时物品栏自动缩小，必要时上移避开左下技能栏。背包网格的行列数位于 `InventoryBookPage` 的 `columns`／`rows`；它在运行时创建，当前可在远程检查器查看，调整后刷新页面生效。
 
+物品栏的悬浮提示只在对应格子上方显示一行名称，默认全透明背景、小字号和浅色描边，不显示纸面详情卡或操作说明，空槽不弹出提示。完整说明在背包页查看。`ItemQuickbar → 悬浮名称提示` 可实时调节：
+
+| 参数 | 默认值 | 含义 |
+| --- | --- | --- |
+| `show_item_name` | 开 | 名称提示开关 |
+| `name_font_size` | 16 | 提示字号，独立于手帐字号 |
+| `name_max_width` | 160 | 名称最大逻辑宽度，过长时省略，保持一行 |
+| `name_background_opacity` | 0 | 背景暗底透明度；0 完全透出游戏世界，最高 0.5 |
+
+![透明名称提示](inventory-preview/hover-name-detail.png)
+
+背包内的格子悬浮也只显示物品名称，完整说明继续放在右侧详情区。手帐共用的悬浮提示使用无描边的黑字、全透明背景，便于在浅色书页上阅读；收藏、拿起使用等按钮采用短提示。`LoadoutUI` 的 `tooltip_font_size`（默认 16）与 `tooltip_background_opacity`（默认 0，全透明）可独立调节，不随书页正文字号放大。
+
+![背包悬浮名称的透明 UI](inventory-preview/hover-inventory-tip.png)
+
 `data/loadout_catalog.tres` 的 `items` 列表使用 `ItemDefinition` 配置稳定 ID、名称、类别、图标、详情图、说明与是否堆叠；装备继续使用既有 `equipment` 列表。`LoadoutUI.starting_items` 和 `starting_quick_items` 决定演示库存与初始绑定，仅在新存档或旧版存档升级时初始化一次。已有有效存档优先，不会因重新运行补回已耗尽物品。
 
 后续掉落、采集或制作系统可调用 `LoadoutUI.state.add_item(id, quantity)` 与 `remove_item(id, quantity)`，数量不足时扣除失败。通过 `get_quick_slots()` 和 `active_quick_slot` 获取当前物品；`ItemQuickbar.slot_selected` 提供选择通知。

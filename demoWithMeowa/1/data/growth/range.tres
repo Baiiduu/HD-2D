@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="GrowthBuffDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/growth/growth_buff_definition.gd" id="buff"]
+
+[resource]
+script = ExtResource("buff")
+id = &"P03"
+title = "范围扩大"
+attribute = 2
+bonus_per_level = 0.15
+max_level = 3
+bonus_cap = 0.75

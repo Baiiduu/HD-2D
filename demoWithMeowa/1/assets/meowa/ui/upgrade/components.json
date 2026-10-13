@@ -1,0 +1,170 @@
+{
+  "format": "RGBA PNG",
+  "source": "source.png",
+  "source_size": [
+    2048,
+    1536
+  ],
+  "components": [
+    {
+      "file": "card-selected.png",
+      "role": "选中卡片",
+      "size": [
+        720,
+        1180
+      ],
+      "source_rect": [
+        730,
+        163,
+        1413,
+        1327
+      ],
+      "canvas_offset": [
+        18,
+        8
+      ],
+      "alpha_range": [
+        0,
+        254
+      ]
+    },
+    {
+      "file": "card.png",
+      "role": "普通卡片",
+      "size": [
+        720,
+        1180
+      ],
+      "source_rect": [
+        58,
+        193,
+        699,
+        1301
+      ],
+      "canvas_offset": [
+        39,
+        36
+      ],
+      "alpha_range": [
+        0,
+        254
+      ]
+    },
+    {
+      "file": "icon-slot.png",
+      "role": "空白圆形图标槽",
+      "size": [
+        414,
+        415
+      ],
+      "source_rect": [
+        1513,
+        271,
+        1927,
+        686
+      ],
+      "canvas_offset": [
+        0,
+        0
+      ],
+      "alpha_range": [
+        0,
+        254
+      ]
+    },
+    {
+      "file": "button.png",
+      "role": "空白确认按钮",
+      "size": [
+        588,
+        186
+      ],
+      "source_rect": [
+        1425,
+        793,
+        2013,
+        979
+      ],
+      "canvas_offset": [
+        0,
+        0
+      ],
+      "alpha_range": [
+        0,
+        253
+      ]
+    },
+    {
+      "file": "divider.png",
+      "role": "标题下分隔装饰",
+      "size": [
+        592,
+        83
+      ],
+      "source_rect": [
+        1416,
+        1262,
+        2008,
+        1345
+      ],
+      "canvas_offset": [
+        0,
+        0
+      ],
+      "alpha_range": [
+        0,
+        253
+      ]
+    },
+    {
+      "file": "title-right.png",
+      "role": "标题右装饰",
+      "size": [
+        273,
+        113
+      ],
+      "source_rect": [
+        1736,
+        1082,
+        2009,
+        1195
+      ],
+      "canvas_offset": [
+        0,
+        0
+      ],
+      "alpha_range": [
+        0,
+        254
+      ]
+    },
+    {
+      "file": "title-left.png",
+      "role": "标题左装饰",
+      "size": [
+        267,
+        113
+      ],
+      "source_rect": [
+        1428,
+        1082,
+        1695,
+        1195
+      ],
+      "canvas_offset": [
+        0,
+        0
+      ],
+      "alpha_range": [
+        0,
+        253
+      ]
+    }
+  ],
+  "notes": [
+    "普通与选中卡片使用同一画布，未缩放绘画内容。",
+    "卡片不含圆形图标槽；图标槽、按钮和标题装饰独立。",
+    "外部透明并保留柔和 alpha；卡片绿色底纹和按钮内底接近不透明。",
+    "不含标题、按钮文字、技能图标、技能详情或玩法逻辑。"
+  ]
+}

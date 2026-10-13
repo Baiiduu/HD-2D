@@ -7,6 +7,10 @@ uniform bool lighting_enabled = true;
 uniform float light_wrap : hint_range(0.0, 0.8) = 0.3;
 uniform float top_light_response : hint_range(0.0, 1.0) = 0.4;
 uniform float back_rim_strength : hint_range(0.0, 0.5) = 0.12;
+uniform sampler2D normal_texture : filter_nearest, repeat_disable;
+uniform bool normal_mapping_enabled = false;
+uniform float normal_mapping_strength : hint_range(0.0, 1.0) = 0.4;
+uniform vec4 sprite_region = vec4(0.0,0.0,1.0,1.0);
 // The water proxy shares lighting, with its own camera and clipping plane.
 uniform bool mirror_view = false;
 uniform float clip_height = -10000.0;
@@ -42,20 +46,31 @@ void vertex() {
 
 void fragment() {
 	if (world_position.y < clip_height) { discard; }
-	vec2 uv = mirror_view ? vec2(flip_h ? 1.0 - UV.x : UV.x, flip_v ? 1.0 - UV.y : UV.y) : UV;
+	vec2 uv = UV;
+	if (mirror_view) {
+		vec2 local = vec2(flip_h ? 1.0-UV.x : UV.x,flip_v ? 1.0-UV.y : UV.y);
+		uv = sprite_region.xy + local * sprite_region.zw;
+	}
 	vec4 color = texture(sprite_texture, uv) * tint;
 	ALBEDO = color.rgb;
 	ALPHA = color.a;
 	ALPHA_SCISSOR_THRESHOLD = 0.5;
 	ROUGHNESS = 1.0;
+	if (lighting_enabled && normal_mapping_enabled) {
+		vec3 normal = texture(normal_texture,uv).rgb * 2.0 - 1.0;
+		normal.xy *= vec2(flip_h ? -1.0 : 1.0,flip_v ? -1.0 : 1.0);
+		NORMAL = normalize(NORMAL + (card_right_view * normal.x + card_up_view * normal.y) * normal_mapping_strength);
+	}
 	edge_normal = vec3(0.0);
 	edge_amount = 0.0;
 	if (lighting_enabled && back_rim_strength > 0.0) {
 		vec2 pixel = 1.0 / vec2(textureSize(sprite_texture, 0));
-		float left = texture(sprite_texture, uv - vec2(pixel.x, 0.0)).a;
-		float right = texture(sprite_texture, uv + vec2(pixel.x, 0.0)).a;
-		float above = texture(sprite_texture, uv - vec2(0.0, pixel.y)).a;
-		float below = texture(sprite_texture, uv + vec2(0.0, pixel.y)).a;
+		vec2 low = sprite_region.xy + pixel * 0.5;
+		vec2 high = sprite_region.xy + sprite_region.zw - pixel * 0.5;
+		float left = texture(sprite_texture, clamp(uv - vec2(pixel.x, 0.0),low,high)).a;
+		float right = texture(sprite_texture, clamp(uv + vec2(pixel.x, 0.0),low,high)).a;
+		float above = texture(sprite_texture, clamp(uv - vec2(0.0, pixel.y),low,high)).a;
+		float below = texture(sprite_texture, clamp(uv + vec2(0.0, pixel.y),low,high)).a;
 		vec2 outward = vec2(left - right, below - above);
 		outward *= vec2(flip_h ? -1.0 : 1.0, flip_v ? -1.0 : 1.0);
 		edge_amount = clamp(length(outward), 0.0, 1.0);

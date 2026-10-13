@@ -1,0 +1,78 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/experience_hud.gd" id="script"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/experience/frame.png" id="frame"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/experience/fill.png" id="fill"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/experience/badge.png" id="badge"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/experience/glint.png" id="glint"]
+[ext_resource type="Shader" path="res://shaders/attribute_hud.gdshader" id="shader"]
+[ext_resource type="Shader" path="res://shaders/experience_flow.gdshader" id="flow_shader"]
+[ext_resource type="Shader" path="res://shaders/experience_glint.gdshader" id="glint_shader"]
+
+[sub_resource type="ShaderMaterial" id="skin"]
+resource_local_to_scene = true
+shader = ExtResource("shader")
+shader_parameter/glow_strength = 0.7
+shader_parameter/background_opacity = 0.5
+
+[sub_resource type="ShaderMaterial" id="flow"]
+resource_local_to_scene = true
+shader = ExtResource("flow_shader")
+
+[sub_resource type="ShaderMaterial" id="glint_skin"]
+resource_local_to_scene = true
+shader = ExtResource("glint_shader")
+
+[node name="ExperienceHUD" type="CanvasLayer"]
+layer = 21
+script = ExtResource("script")
+
+[node name="Root" type="Control" parent="."]
+mouse_filter = 2
+
+[node name="Badge" type="TextureRect" parent="Root"]
+texture_filter = 2
+material = SubResource("skin")
+mouse_filter = 2
+texture = ExtResource("badge")
+expand_mode = 1
+
+[node name="Frame" type="TextureRect" parent="Root"]
+texture_filter = 2
+material = SubResource("skin")
+mouse_filter = 2
+texture = ExtResource("frame")
+expand_mode = 1
+
+[node name="Progress" type="Control" parent="Root"]
+clip_contents = true
+mouse_filter = 2
+
+[node name="Fill" type="TextureRect" parent="Root/Progress"]
+texture_filter = 2
+material = SubResource("flow")
+mouse_filter = 2
+texture = ExtResource("fill")
+expand_mode = 1
+
+[node name="Level" type="Label" parent="Root"]
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.96, 0.88, 1)
+theme_override_colors/font_outline_color = Color(0.03, 0.02, 0.01, 0.9)
+theme_override_constants/outline_size = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Value" type="Label" parent="Root"]
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.96, 0.88, 1)
+theme_override_colors/font_outline_color = Color(0.03, 0.02, 0.01, 0.9)
+theme_override_constants/outline_size = 2
+vertical_alignment = 1
+
+[node name="Glint" type="TextureRect" parent="Root"]
+texture_filter = 2
+material = SubResource("glint_skin")
+mouse_filter = 2
+texture = ExtResource("glint")
+expand_mode = 1

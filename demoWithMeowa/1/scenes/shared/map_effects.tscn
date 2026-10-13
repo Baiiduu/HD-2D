@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scripts/map_effects.gd" id="map_effects"]
+[ext_resource type="PackedScene" path="res://scenes/shared/game_audio.tscn" id="game_audio"]
 
 [ext_resource type="Script" uid="uid://srckk3f4b30t" path="res://scripts/art_direction.gd" id="art_direction"]
 [ext_resource type="Script" path="res://scripts/atmospheric_light.gd" id="atmospheric_light"]
@@ -120,6 +121,8 @@ script = ExtResource("map_effects")
 [node name="ArtDirection" type="Node" parent="." node_paths=PackedStringArray("world_environment", "moon", "post_process", "water_reflection")]
 script = ExtResource("art_direction")
 world_environment = NodePath("../WorldEnvironment")
+
+[node name="GameAudio" parent="." instance=ExtResource("game_audio")]
 moon = NodePath("../Moon")
 post_process = NodePath("../PostProcess/Screen")
 water_reflection = NodePath("../WaterReflection")

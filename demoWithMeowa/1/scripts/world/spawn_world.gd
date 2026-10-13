@@ -2,6 +2,7 @@
 extends Node3D
 
 ## 正式出生区的摆放连接。台地几何由独立 TerrainData 和既有 Terrain 生成。
+@export_group("场景连接与出生")
 @export var ground: Terrain
 @export var home: Node3D
 @export var home_site: Marker3D

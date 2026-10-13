@@ -1,0 +1,141 @@
+[gd_resource type="Resource" script_class="SpawnVisualPreset" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/spawn_visual_preset.gd" id="1_ln574"]
+
+[resource]
+script = ExtResource("1_ln574")
+title = "Lumina 出生区 · day"
+node_values = {
+"GroundDressing": {
+"cluster_size": 4.8,
+"cluster_strength": 0.85,
+"clustered_distribution": true,
+"excluded_areas": Array[Rect2]([Rect2(5.8, -8, 7.6, 14.4), Rect2(-0.7, 4.1, 1.4, 1.4), Rect2(-3.6, 3.8, 4, 3.6), Rect2(-6, -2.4, 4, 4)]),
+"flower_density": 0.44,
+"flower_patch_threshold": 0.6,
+"flower_scale": 0.85,
+"grass_density": 3.0,
+"grass_scale": 0.9,
+"ground_relief": 0.006,
+"normal_strength": 0.3,
+"root_occlusion": 0.35
+},
+"HouseSite": {
+"position": Vector3(-4, 0.8, -4.8)
+},
+"HouseSite/Home": {
+"lumina_matte_floor": 0.48,
+"lumina_relief_enabled": true,
+"lumina_relief_strength": 0.8,
+"lumina_tone_strength": 0.08,
+"window_glow_color": Color(1, 0.66, 0.3, 1),
+"window_glow_enabled": true,
+"window_glow_energy": 0.08
+},
+"MapEffects/ArtDirection": {
+"ambient_color": Color(0.47, 0.58, 0.82, 1),
+"ambient_energy": 0.55,
+"bloom": 0.22,
+"brightness": 1.0,
+"contrast": 1.07,
+"exposure": 1.0,
+"firefly_color": Color(0.96, 0.84, 0.52, 1),
+"firefly_energy": 1.4,
+"firefly_size": 0.025,
+"fog_amount": 0.28,
+"fog_begin": 24.0,
+"fog_color": Color(0.6, 0.65, 0.65, 1),
+"fog_end": 80.0,
+"horizon_glow": 0.12,
+"low_fog": 0.012,
+"moon_azimuth": -112.0,
+"moon_color": Color(1, 0.71, 0.4, 1),
+"moon_elevation": 28.0,
+"moon_energy": 1.65,
+"moon_shadow_opacity": 0.72,
+"moon_softness": 1.4,
+"saturation": 1.16,
+"silhouette_color": Color(0.27, 0.34, 0.39, 1),
+"sky_top_color": Color(0.18, 0.32, 0.48, 1),
+"split_toning": 0.35,
+"stars": 0.0,
+"stone_gloss_variation": 0.25,
+"vignette": 0.22,
+"volumetric_density": 0.0015,
+"volumetric_length": 65.0,
+"wetness": 0.18
+},
+"MapEffects/AtmosphericLight": {
+"distant_enabled": false,
+"light_color": Color(1, 0.83, 0.55, 1),
+"map_accents_enabled": true,
+"surface_energy": 0.18
+},
+"MapEffects/Camera3D": {
+"distance": 28.0,
+"dof_amount": 0.065,
+"dof_far_margin": 4.0,
+"dof_far_transition": 6.0,
+"dof_mode": 0,
+"dof_near_margin": 3.0,
+"dof_near_transition": 2.5,
+"focus_height": 0.9,
+"fov": 28.0,
+"pitch_degrees": 32.0
+},
+"MapEffects/DaylightPreview": {
+"enabled": false
+},
+"MapEffects/Weather": {
+"rain_amount": 2800,
+"rain_intensity": 0.48,
+"weather_mode": 0
+},
+"Player/Sprite": {
+"back_rim_strength": 0.08,
+"light_wrap": 0.45,
+"top_light_response": 0.55
+},
+"TrainingHut": {
+"lumina_matte_floor": 0.48,
+"lumina_relief_enabled": true,
+"lumina_relief_strength": 0.8,
+"lumina_tone_strength": 0.08,
+"position": Vector3(7.2, 0, -4.8),
+"window_glow_color": Color(1, 0.66, 0.3, 1),
+"window_glow_enabled": true,
+"window_glow_energy": 0.08
+}
+}
+shader_values = {
+"ground": {
+"lumina_matte_floor": 0.48,
+"lumina_relief_enabled": true,
+"lumina_relief_strength": 0.8,
+"lumina_tone_strength": 0.08
+},
+"post": {
+"highlight_tint": Color(1.07, 1.01, 0.94, 1),
+"lumina_grade_enabled": true,
+"shadow_lift": Vector3(0.012, 0.02, 0.035),
+"shadow_tint": Color(0.92, 1.01, 1.18, 1)
+},
+"wall": {
+"lumina_matte_floor": 0.48,
+"lumina_relief_enabled": true,
+"lumina_relief_strength": 0.8,
+"lumina_tone_strength": 0.08
+}
+}
+palette_values = {
+0: {
+"roughness": 0.97,
+"tint": Color(0.82, 0.94, 0.86, 1),
+"wet_response": 0.08
+},
+1: {
+"roughness": 0.84,
+"tint": Color(0.88, 0.91, 1, 1),
+"wet_response": 0.65
+}
+}

@@ -160,7 +160,7 @@ func refresh() -> void:
 			if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT and event.double_click:
 				if entry is EquipmentDefinition: _host._ui_action(state.equip.bind(id),&"equip")
 				else: _host._ui_action(state.assign_item.bind(id,state.active_quick_slot),&"item_drop"))
-		tile.tooltip_text = entry.display_name+"\n"+entry.description+"\n拖到物品快捷栏，数量与背包共用。"
+		tile.tooltip_text = entry.display_name
 		_at(_image(entry.icon),Rect2(Vector2.ONE*10,cell-Vector2.ONE*20),tile)
 		if entry is ItemDefinition and entry.stackable:
 			var amount := _label(str(state.get_quantity(id)),24,Color("fff6df"))
@@ -202,7 +202,7 @@ func _refresh_details() -> void:
 	_actions.add_child(row)
 	if entry is ItemDefinition and entry.farm_action != ItemDefinition.FarmAction.NONE:
 		var take := _button("拿起使用", _host.take_inventory_item.bind(entry.id))
-		take.tooltip_text = "选中这个物品并返回地图。未绑定时放入空快捷槽；槽位已满则使用当前槽。"
+		take.tooltip_text = "拿起物品并返回地图"
 		_actions.add_child(take)
 	if entry is EquipmentDefinition:
 		var worn: bool = state.get_equipped_id(entry.slot)==entry.id

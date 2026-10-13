@@ -28,9 +28,15 @@ const SLOT_SHADER := preload("res://shaders/skill_hud.gdshader")
 ## 当前先确认空槽，默认不显示技能图标；后续定稿时可开启。
 @export var show_skill_icons := false:
 	set(value): show_skill_icons = value; _queue_rebuild()
+## 本局真实攻击的图标独立于旧学习目录；空槽外框沿用既有美术。
+@export var show_run_skill_icons := true:
+	set(value): show_run_skill_icons = value; _queue_rebuild()
+@export_range(10, 24, 1) var level_font_size := 14:
+	set(value): level_font_size = value; _queue_rebuild()
 
 var _slot_ids: Array[String] = ["", "", "", ""]
 var _catalog: LoadoutCatalog
+var _run_slots: Array[Dictionary] = []
 var _rebuild_queued := false
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -41,6 +47,15 @@ func _ready() -> void:
 func set_slots(ids: Array[String], catalog: LoadoutCatalog) -> void:
 	_slot_ids = ids.duplicate()
 	_catalog = catalog
+	_run_slots.clear()
+	_queue_rebuild()
+
+func set_run_slots(slots: Array[Dictionary]) -> void:
+	_run_slots = slots.duplicate()
+	_catalog = null
+	_slot_ids.clear()
+	for slot in slots: _slot_ids.append(slot.id)
+	while _slot_ids.size() < 4: _slot_ids.append("")
 	_queue_rebuild()
 
 func _queue_rebuild() -> void:
@@ -80,24 +95,46 @@ func _rebuild() -> void:
 		button.mouse_exited.connect(_update_skins)
 		button.focus_entered.connect(_update_skins)
 		button.focus_exited.connect(_update_skins)
-		if show_skill_icons and _catalog:
+		var texture: Texture2D
+		if index < _run_slots.size():
+			var slot := _run_slots[index]
+			if show_run_skill_icons: texture = slot.icon
+			button.tooltip_text = "%s · Lv.%d / %d\n%s" % [slot.name, slot.level, slot.max_level, slot.description]
+			var label := Label.new()
+			label.name = "Level"
+			label.text = "MAX" if slot.level == slot.max_level else "Lv.%d" % slot.level
+			label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			label.add_theme_font_size_override("font_size", level_font_size)
+			label.add_theme_color_override("font_color", Color(1.0, 0.91, 0.65))
+			label.add_theme_color_override("font_outline_color", Color(0.06, 0.08, 0.07, 0.95))
+			label.add_theme_constant_override("outline_size", 3)
+			label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+			label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+			button.add_child(label)
+			label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+			label.offset_right = -6
+			label.offset_bottom = -4
+		elif show_skill_icons and _catalog:
 			var entry := _catalog.get_skill(id)
 			if entry and entry.icon:
-				var icon := TextureRect.new()
-				icon.name = "Icon"
-				icon.texture = entry.icon
-				icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-				icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-				icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-				icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				button.add_child(icon)
-				icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-				var inset := slot_size * 0.2
-				icon.offset_left = inset
-				icon.offset_top = inset
-				icon.offset_right = -inset
-				icon.offset_bottom = -inset
+				texture = entry.icon
 				button.tooltip_text = entry.display_name
+		if texture:
+			var icon := TextureRect.new()
+			icon.name = "Icon"
+			icon.texture = texture
+			icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+			icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			button.add_child(icon)
+			button.move_child(icon, 1)
+			icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+			var inset := slot_size * 0.2
+			icon.offset_left = inset
+			icon.offset_top = inset
+			icon.offset_right = -inset
+			icon.offset_bottom = -inset
 	_update_skins()
 	update_layout.call_deferred()
 

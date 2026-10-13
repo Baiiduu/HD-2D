@@ -1,0 +1,60 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/growth/experience_pickup.gd" id="pickup"]
+[ext_resource type="Texture2D" path="res://assets/meowa/growth/cyan.png" id="cyan"]
+[ext_resource type="Texture2D" path="res://assets/meowa/growth/violet.png" id="violet"]
+[ext_resource type="Texture2D" path="res://assets/meowa/growth/amber.png" id="amber"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/experience/shadow.png" id="shadow"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/experience/glint.png" id="glint"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/experience/absorb.png" id="mote"]
+
+[node name="ExperiencePickup" type="Node3D"]
+script = ExtResource("pickup")
+cyan_texture = ExtResource("cyan")
+violet_texture = ExtResource("violet")
+amber_texture = ExtResource("amber")
+
+[node name="Shadow" type="Sprite3D" parent="."]
+position = Vector3(0, -0.02, 0)
+rotation = Vector3(-1.5707964, 0, 0)
+texture = ExtResource("shadow")
+no_depth_test = false
+cast_shadow = 0
+
+[node name="Gem" type="Sprite3D" parent="."]
+texture = ExtResource("cyan")
+billboard = 1
+texture_filter = 0
+cast_shadow = 0
+
+[node name="TrailA" type="Sprite3D" parent="."]
+visible = false
+texture = ExtResource("mote")
+pixel_size = 0.00016
+billboard = 1
+cast_shadow = 0
+
+[node name="TrailB" type="Sprite3D" parent="."]
+visible = false
+texture = ExtResource("mote")
+pixel_size = 0.00012
+billboard = 1
+cast_shadow = 0
+
+[node name="TrailC" type="Sprite3D" parent="."]
+visible = false
+texture = ExtResource("glint")
+billboard = 1
+cast_shadow = 0
+
+[node name="TrailD" type="Sprite3D" parent="."]
+visible = false
+texture = ExtResource("glint")
+billboard = 1
+cast_shadow = 0
+
+[node name="TrailE" type="Sprite3D" parent="."]
+visible = false
+texture = ExtResource("glint")
+billboard = 1
+cast_shadow = 0

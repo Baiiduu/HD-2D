@@ -11,6 +11,7 @@ const GOLD := Color("e5c578")
 const MUTED := Color("a7b5c8")
 const GREEN := Color("92d5b0")
 
+@export_group("场景连接与角色规则")
 @export var catalog: LoadoutCatalog
 @export var player: Player
 ## 波次灰盒的管理限制；技能页先留空，不修改原有学习存档。
@@ -31,6 +32,12 @@ const GREEN := Color("92d5b0")
 	set(value): ui_scale = value; _fit_window()
 ## 中文文字的基础字号，标题及说明在此基础上分级。
 @export_range(16, 28, 1) var font_size := 24
+## 悬浮提示独立使用小字号，不随书页正文放大。
+@export_range(12, 20, 1) var tooltip_font_size := 16:
+	set(value): tooltip_font_size = value; _update_tooltip_theme()
+## 悬浮提示默认全透明；需要暗底辅助阅读时可小幅增加。
+@export_range(0.0, 0.5, 0.05) var tooltip_background_opacity := 0.0:
+	set(value): tooltip_background_opacity = value; _update_tooltip_theme()
 ## 打开界面时游戏世界的压暗程度；0 完全保留，越大背景越暗。
 @export_range(0.0, 0.65, 0.05) var world_dim_amount := 0.18:
 	set(value):
@@ -181,6 +188,8 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if not visible or not state or not event is InputEventKey or not event.pressed or event.echo:
 		return
+	if not menu_open and get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null:
+		return
 	if event.physical_keycode == toggle_key:
 		close_menu() if menu_open and not _motion.closing else open_menu()
 		get_viewport().set_input_as_handled()
@@ -193,6 +202,8 @@ func _unhandled_key_input(_event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func open_menu(page := 0) -> void:
+	if not menu_open and get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null:
+		return
 	if wave_session and not wave_session.management_allowed():
 		wave_session.show_notice("战斗期间不打开管理页；休整时按 Tab。")
 		return
@@ -314,9 +325,18 @@ func _build_theme() -> void:
 	_theme.set_stylebox("panel", "PopupMenu", _skin("controls/details.png", 14))
 	_theme.set_color("font_color", "PopupMenu", INK)
 	_theme.set_color("font_color_hover", "PopupMenu", GILT)
-	_theme.set_stylebox("panel", "TooltipPanel", _skin("controls/details.png", 14))
-	_theme.set_color("font_color", "TooltipLabel", INK)
-	_theme.set_font_size("font_size", "TooltipLabel", font_size)
+	_update_tooltip_theme()
+
+func _update_tooltip_theme() -> void:
+	if not _theme: return
+	var panel := StyleBoxFlat.new()
+	panel.bg_color = Color(0.05, 0.07, 0.06, tooltip_background_opacity)
+	for side in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
+		panel.set_content_margin(side, 4.0 if side in [SIDE_LEFT, SIDE_RIGHT] else 2.0)
+	_theme.set_stylebox("panel", "TooltipPanel", panel)
+	_theme.set_color("font_color", "TooltipLabel", Color.BLACK)
+	_theme.set_constant("outline_size", "TooltipLabel", 0)
+	_theme.set_font_size("font_size", "TooltipLabel", tooltip_font_size)
 
 func _at(control: Control, rect: Rect2, parent: Node = null) -> Control:
 	control.position = rect.position
@@ -876,34 +896,40 @@ func _number(value: float) -> String:
 	return str(int(value)) if is_equal_approx(value, roundf(value)) else "%.1f" % value
 
 func _refresh_hud() -> void:
-	_hud.set_slots(wave_session.get_skill_slots() if wave_session else state.get_skill_slots(), catalog)
+	if wave_session:
+		_hud.set_run_slots(wave_session.get_run_skill_slots())
+	else:
+		_hud.set_slots(state.get_skill_slots(), catalog)
 
 func _refresh_session_skills() -> void:
 	_picture("controls/details.png", Rect2(211, 172, 744, 684), _left, true)
-	_text("波次测试", Rect2(263, 195, 630, 65), 51, _left)
-	_text("技能实际表现与成长留待后续讨论", Rect2(265, 258, 617, 42), 26, _left, FADED)
+	_text("本局自动技能", Rect2(263, 195, 630, 65), 51, _left)
+	_text("经验升级后直接强化，下次挑战重置", Rect2(265, 258, 617, 42), 26, _left, FADED)
 	_left_scroll = _scroll(Rect2(260, 311, 662, 511), _left)
 	var content := VBoxContainer.new()
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	content.custom_minimum_size.x = 600.0
 	content.add_theme_constant_override("separation", 24)
 	_left_scroll.add_child(content)
-	content.add_child(_journal_label("基础自动攻击\n仅用于检验清波节奏，不代表已确定的人物技能。", 28, FADED))
+	var slots: Array[Dictionary] = wave_session.get_run_skill_slots()
+	for slot in slots:
+		content.add_child(_journal_label("%s · Lv.%d / %d\n%s" % [slot.name, slot.level, slot.max_level, slot.description], 28))
 	content.add_child(_journal_label("当前第 %d 波\n已完成 %d 波 · 击败 %d 个敌人" % [wave_session.wave, wave_session.completed_waves, wave_session.kills], 28))
 	content.add_child(_journal_label("清波后直接休整，准备好后按 F 继续。", 25, FADED))
-	_text("技能槽暂时留空", Rect2(293, 906, 591, 44), 31, _left)
-	_text("本轮先验证战斗、清波、休整与结算。", Rect2(300, 991, 630, 34), 23, _left, FADED)
-	_count.text = "灰盒阶段"
+	_text("本局技能与等级", Rect2(293, 906, 591, 44), 31, _left)
+	_text("升级选择立即生效，无需重复学习或装配。", Rect2(300, 991, 630, 34), 23, _left, FADED)
+	_count.text = "%d 种技能" % slots.size()
 	_picture("controls/details.png", Rect2(1034, 326, 475, 568), _entries, true)
-	_text("技能与成长方案待讨论\n\n本阶段没有技能学习、强化选择或解锁进度。", Rect2(1080, 375, 390, 330), 28, _entries, FADED)
+	_text("本局技能来自实际战斗组件。\n\n后续继续扩充技能与增益；这里不免费学习目录技能。", Rect2(1080, 375, 390, 330), 28, _entries, FADED)
 	_session_skill_details()
 
 func _session_skill_details() -> void:
-	_detail_icon.texture = null
-	_detail_name.text = "后续讨论"
+	var slots: Array[Dictionary] = wave_session.get_run_skill_slots()
+	_detail_icon.texture = slots[0].icon if not slots.is_empty() else null
+	_detail_name.text = "%s · Lv.%d" % [slots[0].name, slots[0].level] if not slots.is_empty() else "暂无技能"
 	_detail_scroll.position.y = 579
 	_detail_scroll.size.y = 300
-	_description("后续再确定技能如何获得、怎样施放，以及成长如何改变打法。当前先检验基础攻击与波次循环。")
+	_description(slots[0].description if not slots.is_empty() else "后续技能通过本局获得与升级链路接入。")
 
 func _open_skill_from_hud(id: String) -> void:
 	selected_skill = id

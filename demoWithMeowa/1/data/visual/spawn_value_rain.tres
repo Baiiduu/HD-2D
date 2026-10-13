@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SpawnVisualPreset" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/spawn_visual_preset.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+title = "明暗层次 · 细雨"
+node_values = {
+"MapEffects/ArtDirection": {
+"moon_energy": 0.7,
+"ambient_energy": 0.85,
+"hemisphere_fill_enabled": true,
+"hemisphere_sky_color": Color(0.55, 0.65, 0.78, 1),
+"hemisphere_ground_color": Color(0.25, 0.30, 0.38, 1)
+}
+}

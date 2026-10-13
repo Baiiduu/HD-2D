@@ -9,6 +9,7 @@ const WATER_LIGHT_LAYER := 1 << 16 # Layer 17; beam accents use 18, mirrors use 
 ## 根据 TerrainData 生成分层地形：平台顶面、崖壁、坡道、水面、瀑布、桥与碰撞体。
 ## 生成的子节点不写入场景文件，每次加载时重新生成。
 
+@export_group("地形数据与材质")
 @export var data: TerrainData:
 	set(value):
 		if data and data.changed.is_connected(_queue_rebuild):

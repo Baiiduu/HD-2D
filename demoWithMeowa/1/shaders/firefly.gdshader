@@ -9,15 +9,25 @@ uniform float softness : hint_range(0.0, 1.0) = 0.7;
 uniform float pulse_strength : hint_range(0.0, 1.0) = 0.55;
 uniform float pulse_speed : hint_range(0.0, 2.0) = 0.35;
 
+#include "res://shaders/environment_dynamics.gdshaderinc"
+uniform vec4 ambient_region_fireflies = vec4(1.0);
+uniform float ambient_firefly_visibility = 1.0;
+uniform float ambient_firefly_size = 1.0;
+
 varying flat float pulse;
+varying flat float ambient_visibility;
 
 void vertex() {
+	VERTEX *= ambient_dynamics_enabled ? ambient_firefly_size : 1.0;
 	// Preserve random particle sizes when replacing the orientation for billboarding.
 	float scale = length(MODEL_MATRIX[0].xyz);
 	MODELVIEW_MATRIX = VIEW_MATRIX * mat4(INV_VIEW_MATRIX[0] * scale, INV_VIEW_MATRIX[1] * scale, INV_VIEW_MATRIX[2] * scale, MODEL_MATRIX[3]);
 	float seed = fract(sin(float(INSTANCE_ID) * 12.9898 + 0.37) * 43758.5453);
 	float wave = 0.5 + 0.5 * sin(TIME * TAU * pulse_speed * mix(0.8, 1.2, seed) + seed * TAU);
 	pulse = mix(1.0, 0.2 + 0.8 * wave * wave, pulse_strength);
+	float visibility = ambient_firefly_visibility * dot(ambient_region_weights(MODEL_MATRIX[3].xz), ambient_region_fireflies);
+	// A stable cohort fades in; the same particles remain instead of reshuffling every frame.
+	ambient_visibility = ambient_dynamics_enabled ? smoothstep(0.0, 0.08, visibility - seed) : 1.0;
 }
 
 void fragment() {
@@ -29,5 +39,5 @@ void fragment() {
 	float edge = 1.0 - smoothstep(0.75, 1.0, radius);
 	float halo_weight = softness * 0.22;
 	ALBEDO = glow_color.rgb * energy * pulse;
-	ALPHA = (core + halo * halo_weight) / (1.0 + halo_weight) * edge * COLOR.a * glow_color.a;
+	ALPHA = (core + halo * halo_weight) / (1.0 + halo_weight) * edge * COLOR.a * glow_color.a * ambient_visibility;
 }

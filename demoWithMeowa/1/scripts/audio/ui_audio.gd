@@ -11,7 +11,7 @@ signal cue_played(cue: StringName)
 			for voice in _voices: voice.stop()
 ## UI 单独的总增益，dB；不改变背景音乐、雨声或风声。
 @export_range(-40.0, 6.0, 0.5) var volume_db := -12.0
-@export var audio_bus: StringName = &"Master"
+@export var audio_bus: StringName = &"UI"
 ## 相同声音的最短触发间隔，防止双击或同帧回调重复堆叠。
 @export_range(0.0, 0.2, 0.01) var repeat_interval := 0.05
 

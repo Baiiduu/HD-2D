@@ -3,6 +3,7 @@ extends Node3D
 
 const ART := "res://assets/meowa/home/"
 const MATERIALS := ["plaster", "brick", "roof", "wood", "stone", "glass"]
+const LUMINA_SURFACE := preload("res://shaders/lumina_building.gdshader")
 
 @export_group("建筑尺寸")
 ## 主体宽度（米），正门位于本地 +Z 方向。
@@ -22,6 +23,12 @@ const MATERIALS := ["plaster", "brick", "roof", "wood", "stone", "glass"]
 	set(value): roof_thickness = value; _queue_build()
 
 @export_group("材质")
+## 使用现有纹理对应的独立法线；没有对应数据时保留原凹凸方式。
+@export var surface_normals_enabled := false:
+	set(value): surface_normals_enabled = value; _queue_visual_materials()
+## 独立法线的受光起伏，不改变颜色纹理或建筑形状。
+@export_range(0.0, 1.5, 0.05) var surface_normal_strength := 0.8:
+	set(value): surface_normal_strength = value; _queue_visual_materials()
 ## 一张材质铺满的物理长度（米）；越小，纹理越密。
 @export_range(0.5, 4.0, 0.1) var texture_meters := 2.0:
 	set(value): texture_meters = value; _queue_build()
@@ -33,7 +40,55 @@ const MATERIALS := ["plaster", "brick", "roof", "wood", "stone", "glass"]
 	set(value): roughness = value; _queue_build()
 @export_tool_button("导出当前建筑 GLB", "Save") var export_button = export_glb
 
+@export_group("像素材质覆盖")
+## 墙面材质样张；为空时使用原 Meowa 墙面，不改变建筑形状。
+@export var plaster_texture_override: Texture2D:
+	set(value): plaster_texture_override = value; _queue_build()
+## 屋瓦材质样张；为空时使用原 Meowa 屋瓦。
+@export var roof_texture_override: Texture2D:
+	set(value): roof_texture_override = value; _queue_build()
+## 5×4 有限色阶色板；第 2 行用于墙面、第 3 行用于屋瓦（从 0 开始）。
+## 仅作用于上方已覆盖的像素墙面和屋瓦，留空保持原颜色。
+@export var override_palette_texture: Texture2D:
+	set(value):
+		if override_palette_texture == value:
+			return
+		override_palette_texture = value
+		if is_inside_tree():
+			_refresh_palette_materials.call_deferred()
+## 覆盖纹理每块的物理长度（米）；64 像素 / 1.6 米约为 40 像素/米。
+@export_range(0.5, 4.0, 0.1) var override_texture_meters := 1.6:
+	set(value): override_texture_meters = value; _queue_build()
+## 覆盖纹理的凹凸邻域（原图像素）；原生像素素材通常设为 1。
+@export_range(1.0, 16.0, 1.0) var override_relief_sample_pixels := 1.0:
+	set(value): override_relief_sample_pixels = value; _queue_build()
+## 覆盖屋瓦的局部对比；1 保持原图，降低后深缝与亮边靠近平均色。
+@export_range(0.0, 1.2, 0.05) var override_roof_contrast := 1.0:
+	set(value): override_roof_contrast = value; _queue_build()
+
+@export_group("Lumina 材质样板")
+## 使用原 Meowa 纹理推导浅凹凸和亮暖暗冷色阶；关闭恢复既有材质。
+@export var lumina_relief_enabled := false:
+	set(value): lumina_relief_enabled = value; _queue_visual_materials()
+## 凹凸受光强度，不改变屋面、门廊或碰撞形状。
+@export_range(0.0, 1.5, 0.05) var lumina_relief_strength := 0.8:
+	set(value): lumina_relief_strength = value; _queue_visual_materials()
+## 原图暗部偏冷、亮部偏暖的轻微变化。
+@export_range(0.0, 0.25, 0.01) var lumina_tone_strength := 0.08:
+	set(value): lumina_tone_strength = value; _queue_visual_materials()
+## 哑光粗糙度下限；降低后高光更集中。
+@export_range(0.0, 1.0, 0.01) var lumina_matte_floor := 0.48:
+	set(value): lumina_matte_floor = value; _queue_visual_materials()
+## 仅使已有玻璃纹理发暖光，不新增灯具或碰撞。
+@export var window_glow_enabled := false:
+	set(value): window_glow_enabled = value; _queue_visual_materials()
+@export_range(0.0, 4.0, 0.05) var window_glow_energy := 0.8:
+	set(value): window_glow_energy = value; _queue_visual_materials()
+@export var window_glow_color := Color(1.0, 0.67, 0.32):
+	set(value): window_glow_color = value; _queue_visual_materials()
+
 var _queued := false
+var _visual_materials_queued := false
 var _streams: Dictionary = {}
 var _triangle_count := 0
 
@@ -45,6 +100,11 @@ func _queue_build() -> void:
 		return
 	_queued = true
 	build.call_deferred()
+
+func _queue_visual_materials() -> void:
+	if not is_inside_tree() or _visual_materials_queued: return
+	_visual_materials_queued = true
+	_refresh_palette_materials.call_deferred()
 
 func build() -> void:
 	_queued = false
@@ -100,14 +160,14 @@ func build() -> void:
 		var mesh := stream.commit()
 		var material := StandardMaterial3D.new()
 		material.resource_name = key
-		material.albedo_texture = load(ART + key + ".png") as Texture2D
+		material.albedo_texture = _surface_texture(key, ART)
 		material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS if pixel_filter else BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 		if key == "roof":
 			material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC if pixel_filter else BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 		material.texture_repeat = true
 		material.roughness = 0.3 if key == "glass" else roughness
 		material.metallic = 0.12 if key == "glass" else 0.0
-		mesh.surface_set_material(0, material)
+		mesh.surface_set_material(0, _lumina_material(material, key))
 		var instance := MeshInstance3D.new()
 		instance.name = key.capitalize()
 		instance.mesh = mesh
@@ -124,10 +184,87 @@ func build() -> void:
 		_collision(body, "Step%d" % step, Vector3(0, height * 0.5, half_depth + 1.63 + step * 0.3), Vector3(2.2, height, 0.3))
 	set_meta("triangle_count", _triangle_count)
 
+func _texture_override(key: String) -> Texture2D:
+	if key == "plaster":
+		return plaster_texture_override
+	if key == "roof":
+		return roof_texture_override
+	return null
+
+func _surface_texture(key: String, art_directory: String) -> Texture2D:
+	var replacement := _texture_override(key)
+	return replacement if replacement != null else load(art_directory + key + ".png") as Texture2D
+
+func _refresh_palette_materials() -> void:
+	_visual_materials_queued = false
+	# 色阶、受光和窗光只更新材质，保留网格、UV、碰撞与交互点。
+	var geometry := get_node_or_null("Geometry")
+	if not geometry: return
+	for child in geometry.get_children():
+		var instance := child as MeshInstance3D
+		if instance == null or instance.mesh == null: continue
+		var current: Material = instance.mesh.surface_get_material(0)
+		var base := current as StandardMaterial3D
+		if base == null and current is ShaderMaterial:
+			base = current.get_meta("base_surface_material", null) as StandardMaterial3D
+		if base != null:
+			instance.mesh.surface_set_material(0, _lumina_material(base, base.resource_name))
+
+func _lumina_material(base: StandardMaterial3D, key: String) -> Material:
+	if key == "glass":
+		base.emission_enabled = window_glow_enabled
+		base.albedo_color = Color.WHITE
+		if window_glow_enabled:
+			base.albedo_color = Color.WHITE.lerp(window_glow_color, 0.32)
+			base.emission_enabled = true
+			base.emission = window_glow_color
+			base.emission_texture = base.albedo_texture
+			base.emission_energy_multiplier = window_glow_energy
+		return base
+	var use_palette := override_palette_texture != null and _texture_override(key) != null
+	var normal := SurfaceNormalMaps.for_texture(base.albedo_texture) if surface_normals_enabled else null
+	if key == "metal" or (not lumina_relief_enabled and not use_palette and not normal):
+		return base
+	var material := ShaderMaterial.new()
+	material.resource_name = key
+	material.shader = LUMINA_SURFACE
+	material.set_meta("base_surface_material", base)
+	material.set_shader_parameter("surface_texture", base.albedo_texture)
+	material.set_shader_parameter("surface_texture_linear", base.albedo_texture)
+	material.set_shader_parameter("pixel_sampling", pixel_filter)
+	material.set_shader_parameter("surface_roughness", base.roughness)
+	material.set_shader_parameter("surface_normal_enabled", normal != null)
+	material.set_shader_parameter("surface_normal_texture", normal)
+	material.set_shader_parameter("surface_normal_strength", surface_normal_strength)
+	material.set_shader_parameter("lumina_relief_enabled", lumina_relief_enabled)
+	material.set_shader_parameter("lumina_relief_strength", lumina_relief_strength)
+	material.set_shader_parameter("lumina_tone_strength", lumina_tone_strength)
+	material.set_shader_parameter("lumina_matte_floor", lumina_matte_floor)
+	material.set_shader_parameter("pixel_palette_enabled", use_palette)
+	if use_palette:
+		material.set_shader_parameter("pixel_palette_texture", override_palette_texture)
+		material.set_shader_parameter("pixel_palette_row", 2 if key == "plaster" else 3)
+	material.set_shader_parameter("relief_sample_pixels", override_relief_sample_pixels if _texture_override(key) != null else 6.0)
+	material.set_shader_parameter("relief_height", 0.005 if key in ["plaster", "canvas", "leather"] else 0.012)
+	if key == "roof" and roof_texture_override != null and override_roof_contrast != 1.0:
+		material.set_shader_parameter("surface_contrast", override_roof_contrast)
+		material.set_shader_parameter("surface_contrast_center", _mean_texture_color(roof_texture_override))
+	return material
+
+func _mean_texture_color(texture: Texture2D) -> Color:
+	var image := texture.get_image()
+	var total := Color(0.0, 0.0, 0.0, 0.0)
+	# 与 source_color 纹理的线性色彩域一致，降低对比时保留平均亮度。
+	for y in image.get_height():
+		for x in image.get_width():
+			total += image.get_pixel(x, y).srgb_to_linear()
+	return (total / float(image.get_width() * image.get_height())).linear_to_srgb()
+
 func _face(points: Array[Vector3], key: String) -> void:
 	var stream: SurfaceTool = _streams[key]
 	var normal := -(points[1] - points[0]).cross(points[2] - points[0]).normalized()
-	var span := Vector2(points[0].distance_to(points[1]), points[0].distance_to(points[-1])) / texture_meters
+	var meters := override_texture_meters if _texture_override(key) != null else texture_meters
+	var span := Vector2(points[0].distance_to(points[1]), points[0].distance_to(points[-1])) / meters
 	var uvs := [Vector2.ZERO, Vector2(span.x, 0), span, Vector2(0, span.y)]
 	if key == "roof" and points.size() == 4:
 		uvs = [Vector2.ZERO, Vector2(0, span.x), Vector2(span.y, span.x), Vector2(span.y, 0)]

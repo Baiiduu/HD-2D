@@ -1,6 +1,7 @@
 class_name FollowCamera
 extends Camera3D
 
+@export_group("场景连接")
 ## 跟随目标（人物）
 @export var target: Node3D
 ## 可指定通用效果子场景的屏幕后处理；留空时使用同层 PostProcess/Screen。
@@ -9,6 +10,7 @@ extends Camera3D
 		if post_process != value:
 			post_process = value
 			_post_material = null
+@export_group("构图与跟随")
 ## 焦点相对目标原点的高度：对准人物贴图中心
 @export var focus_height: float = 0.75
 ## 相机到焦点的距离（米）
@@ -19,6 +21,7 @@ extends Camera3D
 @export var smoothing: float = 6.0
 ## 死区半径（米）：人物在焦点附近这个范围内移动时相机不动
 @export var dead_zone: float = 0.6
+@export_subgroup("地图边缘保护")
 ## 焦点距离地图东西两侧、南侧、北侧边缘的最小距离（米），避免画面露出太多地图外区域
 @export var bounds_margin_side: float = 5.0
 @export var bounds_margin_south: float = 4.0

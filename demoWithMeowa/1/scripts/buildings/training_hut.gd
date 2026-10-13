@@ -85,14 +85,14 @@ func build() -> void:
 		var mesh := stream.commit()
 		var material := StandardMaterial3D.new()
 		material.resource_name = key
-		material.albedo_texture = load((ART if key in MATERIALS else HUT_ART) + key + ".png")
+		material.albedo_texture = _surface_texture(key, ART if key in MATERIALS else HUT_ART)
 		material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS if pixel_filter else BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 		if key == "roof":
 			material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC if pixel_filter else BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 		material.texture_repeat = true
 		material.roughness = 0.35 if key in ["glass","metal"] else roughness
 		material.metallic = 0.65 if key == "metal" else 0.0
-		mesh.surface_set_material(0,material)
+		mesh.surface_set_material(0,_lumina_material(material,key))
 		var instance := MeshInstance3D.new()
 		instance.name = key.capitalize()
 		instance.mesh = mesh

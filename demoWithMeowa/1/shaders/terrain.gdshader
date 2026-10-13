@@ -2,6 +2,7 @@ shader_type spatial;
 
 #include "res://shaders/rain_surface.gdshaderinc"
 #include "res://shaders/terrain_surface.gdshaderinc"
+#include "res://shaders/lumina_surface.gdshaderinc"
 
 // 统一地形：区域底材 + Meowa dual-grid 过渡图集叠层。
 // 世界被划分为 cell_size 米的地形格，格子数据由 Terrain 节点以纹理形式传入
@@ -87,7 +88,10 @@ void fragment() {
 	vec2 ddy = dFdy(grid);
 	vec3 surface;
 	float grass;
-	vec3 color = albedo_at(location, ddx, ddy, surface, grass);
+	int palette_row;
+	vec3 normal_data;
+	vec3 color = albedo_normal_at(location, ddx, ddy, surface, grass, palette_row, normal_data);
+	float grass_surface = grass;
 	grass *= grass_lighting_enabled ? 1.0 : 0.0;
 
 	// 湿润：颜色变暗、粗糙度降低，灯光会在地面上拉出倒影
@@ -96,7 +100,13 @@ void fragment() {
 	// Sparse damp patches catch the real light; roots and most grass stay matte.
 	float damp_patch = smoothstep(1.0 - grass_sheen, 1.1 - grass_sheen, noise(location * 1.9 + vec2(11.3, 7.1)));
 	roughness = mix(roughness, 0.22, grass * damp_patch * smoothstep(0.015, 0.1, wet));
-	float stone_luma = dot(color, vec3(0.2126, 0.7152, 0.0722));
+	vec3 relief_color = color;
+	if ((pixel_stone_detail_strength < 1.0 && palette_row == 1) || (pixel_grass_contrast < 1.0 && palette_row == 0)) {
+		vec3 relief_surface;
+		float relief_grass;
+		relief_color = albedo_relief_at(location, ddx, ddy, relief_surface, relief_grass);
+	}
+	float stone_luma = dot(relief_color, vec3(0.2126, 0.7152, 0.0722));
 	float stone_face = smoothstep(0.1, 0.45, stone_luma);
 	float stone_surface = step(0.8, surface.z) * (1.0 - step(0.01, surface.y));
 	// Dark joints stay rough; irregular polished faces catch native specular light.
@@ -108,11 +118,34 @@ void fragment() {
 	vec3 r1 = cross(dpdy, NORMAL);
 	vec3 r2 = cross(NORMAL, dpdx);
 	float determinant = dot(dpdx, r1);
-	if (abs(determinant) > 0.000001 && relief > 0.0) {
+	if (normal_data.z > 0.5) {
+		NORMAL = lumina_bump(NORMAL,VERTEX,location,normal_data.xy * surface_normal_strength);
+	}
+	if (normal_data.z < 0.5 && !lumina_relief_enabled && abs(determinant) > 0.000001 && relief > 0.0) {
 		vec3 gradient = (r1 * dFdx(stone_luma) + r2 * dFdy(stone_luma)) * relief / determinant;
 		// Clamp relief on distant texels to avoid sparkling pixel edges.
 		gradient /= max(1.0, length(gradient) / 0.22);
 		NORMAL = normalize(NORMAL - gradient);
+	}
+	if (lumina_relief_enabled) {
+		if (normal_data.z < 0.5) {
+		// Sample the final composed surface: roads, custom brushes and dual-grid edges agree.
+		float step_meters = cell_size / max(texture_pixels, 1.0);
+		vec3 neighbor_surface;
+		float neighbor_grass;
+		float h = lumina_height(relief_color);
+		float hx = lumina_height(albedo_relief_at(location + vec2(step_meters, 0.0), ddx, ddy, neighbor_surface, neighbor_grass));
+		float hz = lumina_height(albedo_relief_at(location + vec2(0.0, step_meters), ddx, ddy, neighbor_surface, neighbor_grass));
+		float amplitude = mix(0.009, 0.004, grass) * lumina_relief_strength;
+		NORMAL = lumina_bump(NORMAL, VERTEX, location, vec2(hx - h, hz - h) * amplitude / step_meters);
+		}
+		color = lumina_tone(color);
+		roughness = max(roughness, lumina_matte_floor);
+	}
+	// Meadow colour belongs to the ground, independent of the lighting style.
+	color = meadow_color(color,location,grass_surface);
+	if (pixel_palette_enabled && palette_row >= 0) {
+		color = pixel_palette_map(color, pixel_palette_texture, palette_row);
 	}
 	color *= mix(1.0, wet_darkening, wet);
 	if (farming_enabled) {

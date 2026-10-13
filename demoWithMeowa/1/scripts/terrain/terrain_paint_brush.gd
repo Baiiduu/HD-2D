@@ -34,6 +34,11 @@ const MEOWA_TILES := [Vector2(0,3),Vector2(3,3),Vector2(0,0),Vector2(3,2),
 	set(value): corner_tiles = value; emit_changed()
 
 @export_group("表面")
+## 可选 OpenGL 法线；尺寸、图集布局与颜色纹理一致。留空可用已准备的对应法线。
+@export var normal_texture: Texture2D:
+	set(value): normal_texture = value; emit_changed()
+@export_range(0.0, 1.5, 0.05) var normal_strength := 1.0:
+	set(value): normal_strength = value; emit_changed()
 @export var tint := Color.WHITE:
 	set(value): tint = value; emit_changed()
 @export_range(0.0,1.0,0.01) var roughness := 0.9:
@@ -49,6 +54,7 @@ const MEOWA_TILES := [Vector2(0,3),Vector2(3,3),Vector2(0,0),Vector2(3,2),
 
 func validation_error() -> String:
 	if not texture: return "请选择纹理。"
+	if normal_texture and normal_texture.get_size() != texture.get_size(): return "法线图尺寸须与颜色纹理一致。"
 	if target == Target.PATH and mode != Mode.CORNER_ATLAS:
 		return "原道路画笔需要过渡图集；整张纹理或单块图集请使用自定义地表。"
 	if target == Target.GRASS and mode == Mode.CORNER_ATLAS:
@@ -81,6 +87,21 @@ func source_image() -> Image:
 
 func surface() -> Vector3:
 	return Vector3(roughness,metallic,wet_response)
+
+func normal_image() -> Image:
+	var source := normal_texture if normal_texture else SurfaceNormalMaps.for_texture(texture)
+	if not source: return null
+	var image := source.get_image()
+	if image.is_compressed(): image.decompress()
+	image.clear_mipmaps()
+	image.convert(Image.FORMAT_RGBA8)
+	if not normal_texture and texture is AtlasTexture:
+		var atlas := texture as AtlasTexture
+		if atlas.region.has_area(): image = image.get_region(Rect2i(atlas.region))
+	if mode == Mode.ATLAS_TILE:
+		var tile_size := Vector2i(image.get_size()) / atlas_grid
+		image = image.get_region(Rect2i(atlas_tile * tile_size, tile_size))
+	return image
 
 ## 一笔内只修改格子，完成整笔后由画笔发送一次 changed 并登记撤销。
 func stamp(data: TerrainData,index: int,erase: bool) -> Vector3i:

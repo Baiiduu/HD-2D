@@ -2,6 +2,14 @@ shader_type spatial;
 render_mode cull_disabled;
 
 uniform sampler2D sprite_texture : source_color, filter_nearest, repeat_disable;
+#include "res://shaders/pixel_palette.gdshaderinc"
+group_uniforms color_ramps;
+uniform bool color_ramps_enabled = false;
+uniform sampler2D color_palette : source_color, filter_nearest, repeat_disable;
+// 0 leaves, 1 dry grass, 2..7 petals; stems and green leaves use row 0.
+uniform int plant_palette_row = 0;
+uniform float detail_contrast : hint_range(0.0, 1.0) = 1.0;
+group_uniforms;
 uniform float root_uv = 0.9166667;
 // Visible plant height, excluding transparent canvas padding.
 uniform float visible_height_uv = 0.5;
@@ -11,6 +19,11 @@ uniform float wind_strength = 0.0;
 uniform float wind_speed = 1.6;
 uniform float gust_strength = 0.3;
 uniform float wind_time = 0.0;
+
+#include "res://shaders/environment_dynamics.gdshaderinc"
+uniform vec4 ambient_region_wind = vec4(1.0);
+uniform float ambient_wind_multiplier = 1.0;
+uniform float ambient_wind_time = 0.0;
 
 #include "res://shaders/blink_airflow.gdshaderinc"
 uniform float blink_plant_radius = 0.85;
@@ -27,6 +40,10 @@ uniform bool stable_shadows = true;
 uniform float normal_strength : hint_range(0.0, 1.0) = 0.35;
 uniform float root_occlusion : hint_range(0.0, 0.8) = 0.3;
 uniform float backlight_strength : hint_range(0.0, 0.5) = 0.12;
+uniform bool leaf_normals_enabled = false;
+uniform bool leaf_normal_available = false;
+uniform sampler2D leaf_normal_texture : filter_nearest, repeat_disable;
+uniform float leaf_normal_strength : hint_range(0.0, 1.0) = 0.55;
 varying vec3 clump_direction;
 varying float wind_lean;
 uniform bool farming_hide_enabled = false;
@@ -47,14 +64,18 @@ void vertex() {
 		forward = clump_direction;
 		right = cross(vec3(0.0, 1.0, 0.0), forward);
 	}
-	MODELVIEW_MATRIX = VIEW_MATRIX * mat4(vec4(right, 0.0), vec4(0.0, 1.0, 0.0, 0.0), vec4(forward, 0.0), MODEL_MATRIX[3]);
+	MODELVIEW_MATRIX = VIEW_MATRIX * mat4(vec4(right * length(MODEL_MATRIX[0].xyz), 0.0),
+		vec4(0.0, length(MODEL_MATRIX[1].xyz), 0.0, 0.0),
+		vec4(forward * length(MODEL_MATRIX[2].xyz), 0.0), MODEL_MATRIX[3]);
 	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);
 	float weight = pow(clamp((root_uv - UV.y) / root_uv, 0.0, 1.0), 1.8);
 	float phase = dot(origin, vec2(0.79, 1.37));
-	float gust = 1.0 + gust_strength * sin(wind_time * 0.47 + dot(origin, vec2(0.13, 0.19)));
-	float wave = sin(wind_time * wind_speed + phase) + 0.22 * sin(wind_time * wind_speed * 1.83 + phase * 2.1);
+	float clock = ambient_dynamics_enabled ? ambient_wind_time : wind_time;
+	float wind_scale = ambient_dynamics_enabled ? ambient_wind_multiplier * dot(ambient_region_weights(origin), ambient_region_wind) : 1.0;
+	float gust = 1.0 + gust_strength * sin(clock * 0.47 + dot(origin, vec2(0.13, 0.19)));
+	float wave = sin(clock * wind_speed + phase) + 0.22 * sin(clock * wind_speed * 1.83 + phase * 2.1);
 	vec3 wind = vec3(wind_direction.x, 0.0, wind_direction.y);
-	float bend = wave * gust * wind_strength * flexibility * weight;
+	float bend = wave * gust * wind_strength * wind_scale * flexibility * weight;
 	VERTEX.x += dot(wind, right) * bend;
 	VERTEX.z += dot(wind, forward) * bend * 0.4;
 	// Custom R stores the card center's height above its fixed ground anchor.
@@ -77,13 +98,23 @@ void vertex() {
 	VERTEX.x += dot(blink_bend, right);
 	VERTEX.z += dot(blink_bend, forward);
 	// The displayed card faces the camera; its lighting basis stays in the world.
-	wind_lean = wave * gust * wind_strength * flexibility * weight;
+	wind_lean = bend;
 }
 
 void fragment() {
 	if (farming_hide_enabled && all(greaterThanEqual(farming_uv, vec2(0.0))) && all(lessThan(farming_uv, vec2(1.0))) && texture(farming_map, farming_uv).r > 0.5) discard;
 	vec4 sprite = texture(sprite_texture, UV);
 	ALBEDO = sprite.rgb;
+	if (color_ramps_enabled) {
+		int row = plant_palette_row;
+		if (row >= 2) {
+			bool green = sprite.g > sprite.r * 1.04 && sprite.g > sprite.b * 1.04;
+			// Keep the darkest shared outline and green stems in the foliage family.
+			if (green || max(sprite.r, max(sprite.g, sprite.b)) < 0.025) row = 0;
+		}
+		vec3 center = texelFetch(color_palette, ivec2(2, row), 0).rgb;
+		ALBEDO = pixel_palette_map(mix(center, sprite.rgb, detail_contrast), color_palette, row);
+	}
 	ALPHA = sprite.a;
 	ALPHA_SCISSOR_THRESHOLD = 0.5;
 	ROUGHNESS = 1.0;
@@ -95,6 +126,10 @@ void fragment() {
 		vec3 world_normal = normalize(vec3(0.0, 1.0, 0.0)
 			+ normal_strength * (clump_direction * (0.35 + height * 0.25) + side * leaf)
 			+ wind * wind_lean * 0.5 + blink_bend * 0.5);
+		if (leaf_normals_enabled && leaf_normal_available) {
+			vec3 leaf_normal = texture(leaf_normal_texture,UV).rgb * 2.0 - 1.0;
+			world_normal = normalize(world_normal + (side * leaf_normal.x + clump_direction * leaf_normal.y) * leaf_normal_strength);
+		}
 		NORMAL = normalize(mat3(VIEW_MATRIX) * world_normal);
 		float root = 1.0 - smoothstep(0.0, 0.48, height);
 		ALBEDO *= 1.0 - root_occlusion * root * 0.45;

@@ -8,6 +8,7 @@ const ASSETS := "res://assets/meowa/dressing/assets.json"
 const CHUNK_SIZE := 8.0
 const CATEGORY_NAMES := ["grass", "flowers", "pebbles"]
 const WEIGHTS := {"grass": [18.0, 6.0, 1.0, 1.0, 3.0, 1.0], "flowers": [9.0, 8.0, 7.0, 0.4, 0.4, 0.4], "pebbles": [4.0, 4.0, 4.0, 3.0, 2.0, 1.0]}
+const LOW_GRASS_WEIGHTS := [24.0, 8.0, 0.6, 0.6, 1.0, 0.3]
 const WIND_SHADER := preload("res://shaders/vegetation_wind.gdshader")
 
 @export_group("地图连接")
@@ -42,6 +43,11 @@ const WIND_SHADER := preload("res://shaders/vegetation_wind.gdshader")
 ## 叶尖接收真实光源的背光程度；不使用自发光。
 @export_range(0.0, 0.5, 0.01) var backlight_strength := 0.12:
 	set(value): backlight_strength = value; _queue_lighting()
+## 独立法线补充叶片和花瓣的受光细节；世界朝向不随镜头转动。
+@export var leaf_normals_enabled := false:
+	set(value): leaf_normals_enabled = value; _queue_lighting()
+@export_range(0.0, 1.0, 0.05) var leaf_normal_strength := 0.55:
+	set(value): leaf_normal_strength = value; _queue_lighting()
 ## 草地现有纹理的细微受光凹凸；0 恢复平面，不影响道路、石板和水。
 @export_range(0.0, 0.02, 0.001) var ground_relief := 0.008:
 	set(value): ground_relief = value; _queue_lighting()
@@ -51,6 +57,22 @@ const WIND_SHADER := preload("res://shaders/vegetation_wind.gdshader")
 ## 湿草地中零散反光区域的覆盖量；0 关闭，不让整片草地变成镜面。
 @export_range(0.0, 0.6, 0.01) var ground_sheen := 0.35:
 	set(value): ground_sheen = value; _queue_lighting()
+
+@export_group("花草色阶")
+## 叶片、枯草和花瓣各选五档底色；原图、透明轮廓、受光与风摆保留。
+@export var color_ramps_enabled := false:
+	set(value): color_ramps_enabled = value; _queue_lighting()
+## 花瓣各保留自身颜色，所有绿色叶片共用叶色；修改资源立即刷新材质。
+@export var color_palette: FoliageColorPalette:
+	set(value):
+		if color_palette and color_palette.changed.is_connected(_queue_lighting):
+			color_palette.changed.disconnect(_queue_lighting)
+		color_palette = value
+		if color_palette: color_palette.changed.connect(_queue_lighting)
+		_queue_lighting()
+## 色阶选档前的细节对比；1 沿用原色对比，降低减弱碎亮点和内部暗线。
+@export_range(0.0, 1.0, 0.02) var detail_contrast := 1.0:
+	set(value): detail_contrast = value; _queue_lighting()
 
 @export_group("铺设密度")
 ## 每平方米的草丛数量；0 隐藏草。
@@ -85,6 +107,35 @@ const WIND_SHADER := preload("res://shaders/vegetation_wind.gdshader")
 	set(value):
 		minimum_spacing = clampf(value, 0.1, 2.0)
 		_queue_rebuild()
+
+@export_group("成簇地编（样板）")
+## 关闭完整恢复原随机分布、资源比例与大小；开启后低草打底，花集中在局部簇中。
+@export var clustered_distribution := false:
+	set(value): clustered_distribution = value; _queue_rebuild()
+## 草花斑块的空间尺度（米）；固定跟随 scatter_seed，不随镜头或时间移动。
+@export_range(1.0, 12.0, 0.1) var cluster_size := 4.8:
+	set(value): cluster_size = clampf(value, 1.0, 12.0); _queue_rebuild()
+## 0 为均匀位置，1 为明显疏密；各类总数量仍受原密度和可用空间约束。
+@export_range(0.0, 1.0, 0.05) var cluster_strength := 0.85:
+	set(value): cluster_strength = clampf(value, 0.0, 1.0); _queue_rebuild()
+## 花簇进入斑块的阈值；提高后花色集中，高花只在簇心出现。
+@export_range(0.3, 0.8, 0.01) var flower_patch_threshold := 0.64:
+	set(value): flower_patch_threshold = clampf(value, 0.3, 0.8); _queue_rebuild()
+## 同一斑块优先使用同类花色；0 沿用随机混色，1 为单一主花色。只在成簇模式生效。
+@export_range(0.0, 1.0, 0.05) var flower_color_grouping := 0.0:
+	set(value): flower_color_grouping = clampf(value, 0.0, 1.0); _queue_rebuild()
+## 簇心较饱满、簇边较低；0 保留原尺寸和资源权重。落点与数量保持。
+@export_range(0.0, 1.0, 0.05) var layered_growth_strength := 0.0:
+	set(value): layered_growth_strength = value; _queue_rebuild()
+## 同一簇内的固定尺寸变化；只改变实例比例，0 保留等大植株。
+@export_range(0.0, 0.3, 0.02) var scale_variation := 0.0:
+	set(value): scale_variation = value; _queue_rebuild()
+## 成簇模式的草尺寸倍率；只缩放显示，根部仍贴合原台地。
+@export_range(0.4, 1.2, 0.01) var grass_scale := 0.72:
+	set(value): grass_scale = clampf(value, 0.4, 1.2); _queue_rebuild()
+## 成簇模式的花尺寸倍率；不改动或重采样 Meowa 原图。
+@export_range(0.4, 1.2, 0.01) var flower_scale := 0.70:
+	set(value): flower_scale = clampf(value, 0.4, 1.2); _queue_rebuild()
 
 @export_group("选择资源")
 ## 多选允许铺设的草资源；全部取消会隐藏草层。
@@ -148,6 +199,7 @@ func apply_lighting() -> void:
 	if not is_instance_valid(_generated):
 		return
 	var applied: Array[ShaderMaterial] = []
+	var ramp := color_palette.palette_texture() if color_ramps_enabled and color_palette else null
 	for batch: MultiMeshInstance3D in _generated.find_children("*", "MultiMeshInstance3D", true, false):
 		var material := batch.multimesh.mesh.material as ShaderMaterial
 		if not material or applied.has(material):
@@ -158,6 +210,11 @@ func apply_lighting() -> void:
 		material.set_shader_parameter("normal_strength", normal_strength)
 		material.set_shader_parameter("root_occlusion", root_occlusion)
 		material.set_shader_parameter("backlight_strength", backlight_strength)
+		material.set_shader_parameter("leaf_normals_enabled", leaf_normals_enabled)
+		material.set_shader_parameter("leaf_normal_strength", leaf_normal_strength)
+		material.set_shader_parameter("color_ramps_enabled", ramp != null)
+		material.set_shader_parameter("color_palette", ramp)
+		material.set_shader_parameter("detail_contrast", detail_contrast)
 
 func _bake_root_map(placements: Array[Dictionary]) -> void:
 	# 一张固定世界坐标的低分辨率遮蔽图；只在重新撒布时生成。
@@ -167,10 +224,10 @@ func _bake_root_map(placements: Array[Dictionary]) -> void:
 	_root_bounds = Vector4(start.x, start.z, size.x, size.y)
 	var image := Image.create(512, 512, false, Image.FORMAT_R8)
 	image.fill(Color(0, 0, 0))
-	var radius := Vector2(0.3, 0.3) / size * 512.0
 	for placement in placements:
 		if String(placement["asset"]).begins_with("pebbles_"):
 			continue
+		var radius := Vector2(0.3, 0.3) * _category_scale(String(placement["asset"]).get_slice("_", 0)) * float(placement.get("scale",1.0)) / size * 512.0
 		var position := to_global(placement["point"])
 		var center := (Vector2(position.x, position.z) - Vector2(start.x, start.z)) / size * 512.0
 		for y in range(maxi(0, floori(center.y - radius.y)), mini(512, ceili(center.y + radius.y))):
@@ -293,14 +350,16 @@ func _rebuild() -> void:
 		var chunk := Vector2i(floori(point.x / CHUNK_SIZE), floori(point.z / CHUNK_SIZE))
 		var key := "%s_%d_%d" % [asset_id, chunk.x, chunk.y]
 		if not batches.has(key):
-			batches[key] = {"asset": asset_id, "category": category, "points": []}
+			batches[key] = {"asset": asset_id, "category": category, "points": [], "scales": []}
 		batches[key]["points"].append(point)
+		batches[key]["scales"].append(placement.get("scale",1.0))
 		instance_count += 1
 	for key in batches:
 		var batch: Dictionary = batches[key]
 		var item: Dictionary = assets[batch["asset"]]
 		var mesh := QuadMesh.new()
-		mesh.size = Vector2(item["canvas"][0], item["canvas"][1]) * float(item["pixel_size"])
+		var plant_scale := _category_scale(batch["category"])
+		mesh.size = Vector2(item["canvas"][0], item["canvas"][1]) * float(item["pixel_size"]) * plant_scale
 		if not materials.has(batch["asset"]):
 			materials[batch["asset"]] = _material_for(item, batch["category"])
 		mesh.material = materials[batch["asset"]]
@@ -313,10 +372,11 @@ func _rebuild() -> void:
 		multimesh.mesh = mesh
 		var points: Array = batch["points"]
 		multimesh.instance_count = points.size()
-		var anchor_height: float = (float(item["anchor"][1]) - float(item["canvas"][1]) * 0.5) * float(item["pixel_size"])
+		var anchor_height: float = (float(item["anchor"][1]) - float(item["canvas"][1]) * 0.5) * float(item["pixel_size"]) * plant_scale
 		for index in points.size():
-			multimesh.set_instance_transform(index, Transform3D(Basis.IDENTITY, points[index] + Vector3.UP * anchor_height))
-			multimesh.set_instance_custom_data(index, Color(anchor_height, 0.0, 0.0, 0.0))
+			var growth_scale: float = batch["scales"][index]
+			multimesh.set_instance_transform(index, Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * growth_scale), points[index] + Vector3.UP * anchor_height * growth_scale))
+			multimesh.set_instance_custom_data(index, Color(anchor_height * growth_scale, 0.0, 0.0, 0.0))
 		var instance := MultiMeshInstance3D.new()
 		instance.name = key
 		instance.multimesh = multimesh
@@ -331,9 +391,14 @@ func _material_for(item: Dictionary, category: String) -> Material:
 		var vegetation := ShaderMaterial.new()
 		vegetation.shader = WIND_SHADER
 		vegetation.set_shader_parameter("sprite_texture", load(item["texture"]))
+		var normal := SurfaceNormalMaps.for_texture(load(item["texture"]))
+		vegetation.set_shader_parameter("leaf_normal_texture", normal)
+		vegetation.set_shader_parameter("leaf_normal_available", normal != null)
 		vegetation.set_shader_parameter("root_uv", float(item["anchor"][1]) / float(item["canvas"][1]))
 		vegetation.set_shader_parameter("visible_height_uv", float(item["visible_size"][1]) / float(item["canvas"][1]))
 		vegetation.set_shader_parameter("flexibility", 0.055 if category == "grass" else 0.035)
+		var variant := int(String(item["id"]).get_slice("_", 1))
+		vegetation.set_shader_parameter("plant_palette_row", variant + 1 if category == "flowers" else 1 if variant == 6 else 0)
 		return vegetation
 	var stone := StandardMaterial3D.new()
 	stone.albedo_texture = load(item["texture"])
@@ -346,6 +411,13 @@ func _material_for(item: Dictionary, category: String) -> Material:
 	return stone
 
 func _placements() -> Array[Dictionary]:
+	var patch_noise: FastNoiseLite
+	if clustered_distribution:
+		patch_noise = FastNoiseLite.new()
+		patch_noise.seed = scatter_seed
+		patch_noise.frequency = 1.0 / cluster_size
+		patch_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+		patch_noise.fractal_type = FastNoiseLite.FRACTAL_NONE
 	var densities := {"grass": grass_density, "flowers": flower_density, "pebbles": pebble_density}
 	var masks := {"grass": grass_variants, "flowers": flower_variants, "pebbles": pebble_variants}
 	var choices: Dictionary = {}
@@ -387,13 +459,43 @@ func _placements() -> Array[Dictionary]:
 					u = 1.0 - u
 					v = 1.0 - v
 				var position_2d: Vector2 = triangle["a"] + (triangle["b"] - triangle["a"]) * u + (triangle["c"] - triangle["a"]) * v
+				var patch := 0.0
+				if clustered_distribution and category != "pebbles":
+					patch = clampf(patch_noise.get_noise_2d(position_2d.x, position_2d.y) * 1.5 + 0.5, 0.0, 1.0)
+					var acceptance := smoothstep(flower_patch_threshold, minf(1.0, flower_patch_threshold + 0.18), patch) if category == "flowers" else lerpf(0.1, 1.0, smoothstep(0.35, 0.7, patch))
+					if random.randf() > lerpf(1.0, acceptance, cluster_strength):
+						continue
+				var local_allowed := allowed
+				if clustered_distribution and category == "flowers" and patch < flower_patch_threshold + 0.08:
+					local_allowed = allowed.filter(func(variant: int) -> bool: return variant < 3)
+					if local_allowed.is_empty(): continue
 				if not _claim_point(position_2d, occupied):
 					continue
 				var point := to_local(_terrain.to_global(Vector3(position_2d.x, float(triangle["level"]) * _terrain.data.layer_height, position_2d.y)))
-				var variant := _pick_variant(allowed, WEIGHTS[category], variant_random)
-				result.append({"asset": "%s_%02d" % [category, variant + 1], "point": point})
+				var weights: Array = LOW_GRASS_WEIGHTS if clustered_distribution and category == "grass" else WEIGHTS[category]
+				var growth := smoothstep(0.32,0.82,patch)
+				if clustered_distribution and category == "grass" and layered_growth_strength > 0.0:
+					weights = weights.duplicate()
+					for index in weights.size(): weights[index] = lerpf(weights[index],WEIGHTS[category][index],growth * layered_growth_strength)
+				var variant := _pick_variant(local_allowed, weights, variant_random)
+				if clustered_distribution and category == "flowers" and flower_color_grouping > 0.0:
+					var flower_cell := Vector2i((position_2d / cluster_size).floor())
+					var flower_random := RandomNumberGenerator.new()
+					flower_random.seed = scatter_seed + ("flower_%d_%d" % [flower_cell.x, flower_cell.y]).hash()
+					if variant_random.randf() < flower_color_grouping:
+						variant = _pick_variant(local_allowed, weights, flower_random)
+				var growth_scale := 1.0
+				if clustered_distribution and category != "pebbles":
+					var variation := sin(position_2d.dot(Vector2(17.3,43.7))) * scale_variation
+					growth_scale = lerpf(1.0,lerpf(0.72,1.2,growth),layered_growth_strength) * (1.0+variation)
+				result.append({"asset": "%s_%02d" % [category, variant + 1], "point": point, "scale": growth_scale})
 				placed += 1
 	return result
+
+func _category_scale(category: String) -> float:
+	if not clustered_distribution:
+		return 1.0
+	return grass_scale if category == "grass" else (flower_scale if category == "flowers" else 1.0)
 
 func _paintable_cell(cell: Vector2i, level: int) -> bool:
 	var data := _terrain.data
@@ -418,9 +520,18 @@ func _region_surface(region: GroundDressingRegion) -> Array[Dictionary]:
 	var surface: Array[Dictionary] = []
 	var cumulative := 0.0
 	var data := _terrain.data
-	for z in data.size.y:
-		for x in data.size.x:
-			var cell := data.origin + Vector2i(x, z)
+	# 只扫描与区域包围盒可能相交的格子，保留原有 Z/X 顺序与随机分布。
+	# 多留一圈边界，覆盖旋转区域和格边浮点误差；精确裁切仍由下方完成。
+	var minimum := polygon[0]
+	var maximum := polygon[0]
+	for point in polygon:
+		minimum = minimum.min(point)
+		maximum = maximum.max(point)
+	var first := Vector2i(floori(minimum.x / data.cell_size - 0.5), floori(minimum.y / data.cell_size - 0.5)).max(data.origin)
+	var end_cell := Vector2i(ceili(maximum.x / data.cell_size + 0.5) + 1, ceili(maximum.y / data.cell_size + 0.5) + 1).min(data.origin + data.size)
+	for z in range(first.y, end_cell.y):
+		for x in range(first.x, end_cell.x):
+			var cell := Vector2i(x, z)
 			var level := data.get_level(cell)
 			if not _paintable_cell(cell, level):
 				continue

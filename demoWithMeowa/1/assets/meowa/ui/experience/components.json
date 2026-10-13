@@ -1,0 +1,50 @@
+[
+  {
+    "file": "assets/meowa/ui/experience/frame.png",
+    "width": 1916,
+    "height": 218,
+    "mode": "RGBA",
+    "alpha_min": 0,
+    "alpha_max": 254
+  },
+  {
+    "file": "assets/meowa/ui/experience/fill.png",
+    "width": 1897,
+    "height": 168,
+    "mode": "RGBA",
+    "alpha_min": 0,
+    "alpha_max": 254
+  },
+  {
+    "file": "assets/meowa/ui/experience/badge.png",
+    "width": 566,
+    "height": 303,
+    "mode": "RGBA",
+    "alpha_min": 0,
+    "alpha_max": 254
+  },
+  {
+    "file": "assets/meowa/ui/experience/glint.png",
+    "width": 409,
+    "height": 321,
+    "mode": "RGBA",
+    "alpha_min": 0,
+    "alpha_max": 253
+  },
+  {
+    "file": "assets/meowa/ui/experience/absorb.png",
+    "width": 320,
+    "height": 307,
+    "mode": "RGBA",
+    "alpha_min": 0,
+    "alpha_max": 253
+  },
+  {
+    "file": "assets/meowa/ui/experience/shadow.png",
+    "width": 1294,
+    "height": 141,
+    "mode": "RGBA",
+    "alpha_min": 0,
+    "alpha_max": 106
+  }
+]

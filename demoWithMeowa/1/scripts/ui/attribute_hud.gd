@@ -5,6 +5,7 @@ extends Control
 const FRAME_SHADER := preload("res://shaders/attribute_hud.gdshader")
 const REFERENCE_WIDTH := 320.0
 
+@export_group("人物连接")
 @export var player: Player:
 	set(value):
 		if player == value:

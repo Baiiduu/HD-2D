@@ -4,6 +4,7 @@ var scene: Node3D
 var wave: WavePrototype
 var player: Player
 var ui: LoadoutUI
+var fan: FanAutoAttack
 
 func _initialize() -> void:
 	create_timer(25.0).timeout.connect(func(): quit(2))
@@ -32,19 +33,24 @@ func enemy_at(offset: Vector3) -> WaveEnemy:
 	return enemy
 
 func clear_wave() -> void:
-	wave._pending = 0
+	wave._spawn_queue.clear()
 	if wave.enemies.is_empty(): enemy_at(Vector3(2, 0, 0))
 	for enemy in wave.enemies.duplicate(): enemy.take_damage(10000.0)
 	wave._physics_process(0.01)
 
 func run() -> void:
 	scene = load("res://scenes/world/world.tscn").instantiate()
+	scene.get_node("WavePrototype/RunGrowth").enabled = false
 	ui = scene.get_node("LoadoutUI")
 	ui.save_enabled = false
 	root.add_child(scene)
 	current_scene = scene
 	await settle(12)
 	wave = scene.get_node("WavePrototype")
+	wave.endless_mode = false
+	wave.waves.clear() # 本测试覆盖递增兼容模式；分区资源另由 test_wave_spawning 覆盖。
+	fan = wave.get_node("FanAutoAttack")
+	fan.set_physics_process(false)
 	assert(wave._path_ready and wave._spawn_points.size() > 10)
 	player = scene.get_node("Player")
 	player.set_physics_process(false)
@@ -55,17 +61,24 @@ func run() -> void:
 	key(KEY_F)
 	await settle()
 	assert(wave.phase == WavePrototype.Phase.BATTLE and wave.wave == 1 and not paused)
+	assert(wave._pending == 5 and not scene.get_node("Slime").visible)
 	assert(not wave.start_run())
 	ui.open_menu(1)
 	assert(not ui.menu_open and get_first_node_in_group(&"gameplay_input_blockers") == null)
 	var enemy := enemy_at(Vector3(2, 0, 0))
+	assert(enemy is SlimeEnemy and enemy.wave_mode and enemy.navigation == wave._path)
+	assert(enemy.get_node("Sprite").texture is AtlasTexture)
 	var other := enemy_at(Vector3(3, 0, 0))
 	var health_before := enemy.health
-	assert(wave._attack() and enemy.health < health_before and other.health == 500.0)
+	assert(fan.start_swing())
+	fan._physics_process(fan.windup_time + fan.sweep_time)
+	assert(enemy.health < health_before and other.health == 500.0)
 	var camera := scene.get_node("MapEffects/Camera3D") as FollowCamera
 	camera.yaw_degrees = 90.0
 	camera.snap_to_target()
-	assert(wave._nearest_target() == enemy)
+	assert(fan.nearest_target() == enemy)
+	fan.cancel_current()
+	fan._cooldown = 0.0
 	var wall := StaticBody3D.new()
 	var collision := CollisionShape3D.new()
 	var box := BoxShape3D.new()
@@ -76,18 +89,20 @@ func run() -> void:
 	wall.global_position = player.global_position + Vector3(1.0, 0.5, 0.0)
 	await settle()
 	health_before = enemy.health
-	assert(not wave._attack() and enemy.health == health_before)
+	assert(not fan.start_swing() and enemy.health == health_before)
 	wall.queue_free()
 	await settle()
 	enemy.global_position = player.global_position + Vector3(0.5, 0, 0)
-	wave._spawn_clock = 1000.0
-	wave._attack_clock = 1000.0
+	for job in wave._spawn_queue: job.due = 1000.0
+	fan.enabled = false
 	wave._hurt_clock = 0.0
 	health_before = player.current_health
 	wave._physics_process(0.01)
+	enemy._physics_process(0.01)
 	assert(player.current_health < health_before)
 	health_before = player.current_health
 	wave._physics_process(0.01)
+	enemy._physics_process(0.01)
 	assert(player.current_health == health_before)
 	player.take_damage(player.max_health)
 	wave._physics_process(0.01)
@@ -112,7 +127,8 @@ func run() -> void:
 	event.double_click = true
 	ui._skill_double_click(event, "lightning")
 	assert(ui.state.export_state() == legacy_state)
-	for id in ui._hud._slot_ids: assert(id.is_empty())
+	assert(ui._hud._slot_ids == ["fan_slash", "", "", ""], "HUD shows the real starting attack rather than legacy learned skills")
+	assert(ui._hud.get_child(0).get_node("Level").text == "Lv.1")
 	ui.close_menu()
 	await create_timer(0.5).timeout
 	assert(wave.start_next_wave() and wave.wave == 2)
@@ -124,6 +140,7 @@ func run() -> void:
 	assert(ui.state.export_state() == legacy_state)
 	wave.return_home()
 	assert(wave.phase == WavePrototype.Phase.READY and get_first_node_in_group(&"gameplay_input_blockers") == null)
+	assert(scene.get_node("Slime").visible and not scene.get_node("Slime").wave_mode)
 	player.global_position = wave.global_position
 	assert(wave.start_run())
 	player.global_position = Vector3(18, 0, 0)
@@ -133,7 +150,7 @@ func run() -> void:
 	clear_wave()
 	wave.retreat()
 	assert(wave.phase == WavePrototype.Phase.RESULT and wave.completed_waves == 1)
-	print("PASS: F start, generic nearest-target attack, wall occlusion, QE, real health/contact protection, defeat/retry, three-wave direct rest/victory, unlimited safe rest, Tab placeholder/empty HUD, legacy state unchanged, no skill/growth rewards and retreat")
+	print("PASS: F start, fan attack, wall occlusion, QE, real health/contact protection, defeat/retry, three-wave direct rest/victory, unlimited safe rest, actual A01 HUD, legacy state unchanged, isolated growth and retreat")
 	scene.queue_free()
 	await settle()
 	quit()

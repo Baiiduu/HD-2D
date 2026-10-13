@@ -1,0 +1,686 @@
+{
+  "res://assets/meowa/pixel_sample/grass.png": {
+    "normal": "res://assets/surface_normals/pixel_grass.png",
+    "kind": "grass",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "7b21c3d81d6b789d6a6150d2370282aa8632f207fad22c2ca08d326fa4384bff"
+  },
+  "res://assets/meowa/pixel_sample/cobble.png": {
+    "normal": "res://assets/surface_normals/pixel_cobble.png",
+    "kind": "stone",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "23c8d5601ee9509c167f93cf3bb054b10f21bf147eaca3f158f806f181a64a77"
+  },
+  "res://assets/meowa/pixel_sample/path.png": {
+    "normal": "res://assets/surface_normals/pixel_path.png",
+    "kind": "stone",
+    "grid": [
+      4,
+      4
+    ],
+    "source_sha256": "fd5705c7c56f992fee44c176a3671fc7d13d5228cce91c41a6edfd340f8c23d0"
+  },
+  "res://assets/meowa/pixel_sample/plaster.png": {
+    "normal": "res://assets/surface_normals/pixel_plaster.png",
+    "kind": "plaster",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "f759ae224895ac376a363a5a7070c759b14252591851e79d2b6a480e5c198cbb"
+  },
+  "res://assets/meowa/pixel_sample/roof.png": {
+    "normal": "res://assets/surface_normals/pixel_roof.png",
+    "kind": "roof",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "5aced0acddc10a8110714fa03efc4bd9761e57d62cda6694f5d00554a9700464"
+  },
+  "res://assets/meowa/home/brick.png": {
+    "normal": "res://assets/surface_normals/home_brick.png",
+    "kind": "stone",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "f2ccf96bfc550941fc8c991f422ba9a9c40ee83e3876ce7dacee0f0a5c7db319"
+  },
+  "res://assets/meowa/home/stone.png": {
+    "normal": "res://assets/surface_normals/home_stone.png",
+    "kind": "stone",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "d19f6ddf3d7e7491122055550092fd464a4ecf28f190d98a2c401b0d9bb1646e"
+  },
+  "res://assets/meowa/home/wood.png": {
+    "normal": "res://assets/surface_normals/home_wood.png",
+    "kind": "wood",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "2bf2a4fe3a3afe1576dce90d70c1465fbeeff12b546a8da53fff2e79519e3081"
+  },
+  "res://assets/meowa/home/plaster.png": {
+    "normal": "res://assets/surface_normals/home_plaster.png",
+    "kind": "plaster",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "7e54b4a1cedc2952a7b03c7bb1c1a997ec871b27f59354c5522a6c8e5d8f49dd"
+  },
+  "res://assets/meowa/home/roof.png": {
+    "normal": "res://assets/surface_normals/home_roof.png",
+    "kind": "roof",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "316b1b157bb5514c404d63c53b7f3526b81c2fb41526773bb1c37edaa7a3b716"
+  },
+  "res://assets/meowa/training/canvas.png": {
+    "normal": "res://assets/surface_normals/training_canvas.png",
+    "kind": "plaster",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "426ac470959e6dd061385744b5e911af5b478513d913247c0902588d130f1c4b"
+  },
+  "res://assets/meowa/training/leather.png": {
+    "normal": "res://assets/surface_normals/training_leather.png",
+    "kind": "plaster",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "efd8ef62becbfeb5e3535d8cb18ed8ed2fd180abcdf987806189549341eb9b5f"
+  },
+  "res://assets/ground/generated/cliff/Pixel_art_earthen_cliff_face_seen_from_the_side_horizontal_layered_rock_strata_in_warm_brown_and_gray_small_cracks/texture.png": {
+    "normal": "res://assets/surface_normals/cliff.png",
+    "kind": "cliff",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "72d3d23be0045577faf40ec5fd93ac4071f345ee35b96e7da1fc26da4db0e029"
+  },
+  "res://assets/meowa/player/air_00.png": {
+    "normal": "res://assets/surface_normals/player_air_00.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "e2af5e22e003e6d44a42dfc0f2d4078a9b0b6df7c87b954a6d1810f54ba120ec"
+  },
+  "res://assets/meowa/player/air_00_eye.png": {
+    "normal": "res://assets/surface_normals/player_air_00_eye.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "3ad413986bd11deeb3161338c3885482fad0847f57c2edf852aa0cbf3d7a0448"
+  },
+  "res://assets/meowa/player/air_02.png": {
+    "normal": "res://assets/surface_normals/player_air_02.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "28cfa6b6985dcdabcb4d5bd93e9e6e7f7fede58d2a487c7ead14ccf23ed4e88d"
+  },
+  "res://assets/meowa/player/air_03.png": {
+    "normal": "res://assets/surface_normals/player_air_03.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "711c929bed07eba1caa672ef673aa752b4050ca173e35dbc3fd9aab757ae5f96"
+  },
+  "res://assets/meowa/player/air_03_eye.png": {
+    "normal": "res://assets/surface_normals/player_air_03_eye.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "721fec78d524ea22f0a40c1e2077e01e523dec10fdcc619d7fe36c9fc7db998c"
+  },
+  "res://assets/meowa/player/air_04.png": {
+    "normal": "res://assets/surface_normals/player_air_04.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "a5dcb225eb7a2908c10ae8385e1d553b5a89f37073f878c92711c18730d713fc"
+  },
+  "res://assets/meowa/player/air_back_00.png": {
+    "normal": "res://assets/surface_normals/player_air_back_00.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "6150d0f8fea36360480710b3b10b7dc7ff139b2a4a074902ce172eb3e9cf4e5f"
+  },
+  "res://assets/meowa/player/air_back_02.png": {
+    "normal": "res://assets/surface_normals/player_air_back_02.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "5616e5c6b4ba374da443db3653b16c6e45f395cd383f5ab471610a8c298ec8a1"
+  },
+  "res://assets/meowa/player/air_back_03.png": {
+    "normal": "res://assets/surface_normals/player_air_back_03.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "dd08a6515312681fae22d1f41454a79a9eedb3234db15068686198237ec68da6"
+  },
+  "res://assets/meowa/player/air_back_04.png": {
+    "normal": "res://assets/surface_normals/player_air_back_04.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "e9a8b02f848045264efb101d2288293e69050d13e4272461c7a9014a369f3125"
+  },
+  "res://assets/meowa/player/air_back_05.png": {
+    "normal": "res://assets/surface_normals/player_air_back_05.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "3d4a21e03fa06294a650fea95ccde3eb493fdf89ca094c0b8faa15ae7b7cb3ea"
+  },
+  "res://assets/meowa/player/air_back_06.png": {
+    "normal": "res://assets/surface_normals/player_air_back_06.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "85263a936d6b99c7f7da06c02a5db41537de1ee66a11f0f2b87bf6f9f4a1dbc9"
+  },
+  "res://assets/meowa/player/hop_00.png": {
+    "normal": "res://assets/surface_normals/player_hop_00.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "e01fc2dca66a2760856bc3e0521974b6b706bb68c7007072e0fef802d498bf53"
+  },
+  "res://assets/meowa/player/hop_02.png": {
+    "normal": "res://assets/surface_normals/player_hop_02.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "579ed5ec66a33a32f04f374f92ba4d19d9cd1b4bace49fa95664ef5b3d52f55a"
+  },
+  "res://assets/meowa/player/hop_03.png": {
+    "normal": "res://assets/surface_normals/player_hop_03.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "d65df949723fecf6efbd6629d5abc9cc81a635edf26b74975c8a64589ed0387e"
+  },
+  "res://assets/meowa/player/hop_07.png": {
+    "normal": "res://assets/surface_normals/player_hop_07.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "e5270b3eb804968ef1d362e2b781dc694f265107bb067e6f39380f9bbd47b3f3"
+  },
+  "res://assets/meowa/player/idle_00.png": {
+    "normal": "res://assets/surface_normals/player_idle_00.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "6eb1aea9ced7f576fc498df731efc9196c84dce59fdc159bc8d13bc65de2eaa5"
+  },
+  "res://assets/meowa/player/idle_01.png": {
+    "normal": "res://assets/surface_normals/player_idle_01.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "62f67ed3801379dce565117da96d45dc6f3d51a17c3c09981aa2d5cf2f970368"
+  },
+  "res://assets/meowa/player/idle_02.png": {
+    "normal": "res://assets/surface_normals/player_idle_02.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "a6298e7cc78ecaa20a8a924ba3f97f472ddeffd9a95fdce259702b79a96c9678"
+  },
+  "res://assets/meowa/player/idle_03.png": {
+    "normal": "res://assets/surface_normals/player_idle_03.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "81bfb8f9faedc77442c5dac7ad065631cd232a7201b6a8979ca92356cfc00971"
+  },
+  "res://assets/meowa/player/idle_04.png": {
+    "normal": "res://assets/surface_normals/player_idle_04.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "17bee3d4110e19b4085e311c88bdfe8303f054ec1c3f306a37f5c154ab5dcc13"
+  },
+  "res://assets/meowa/player/idle_05.png": {
+    "normal": "res://assets/surface_normals/player_idle_05.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "d401b1917c0af0bfccd6e17769dcf2eb71400e6825be3cb1ce979f8757411182"
+  },
+  "res://assets/meowa/player/idle_06.png": {
+    "normal": "res://assets/surface_normals/player_idle_06.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "693701ce5f5883e3407c02853537fe3139e6bdbd48f61f36ad2438d3e4f0471f"
+  },
+  "res://assets/meowa/player/idle_07.png": {
+    "normal": "res://assets/surface_normals/player_idle_07.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "0689d6b1de3de57b78eb1d9d3468ccde2a8bdecc166eb6543ae0b9eff323a682"
+  },
+  "res://assets/meowa/player/idle_back_00.png": {
+    "normal": "res://assets/surface_normals/player_idle_back_00.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "9259084023b4112998e6d084ee8760768ca82691c42c5c59577ddf8895ead6ba"
+  },
+  "res://assets/meowa/player/idle_back_01.png": {
+    "normal": "res://assets/surface_normals/player_idle_back_01.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "82b5a479eb5c112639c6a4420e5ee8a2f38ddb870197aae8320f437b15c891d5"
+  },
+  "res://assets/meowa/player/run_00.png": {
+    "normal": "res://assets/surface_normals/player_run_00.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "70be4e6cf0350e276bfa5b68f85da7b9f6ee31bff2b3ed28e628a9e8f18b09b3"
+  },
+  "res://assets/meowa/player/run_01.png": {
+    "normal": "res://assets/surface_normals/player_run_01.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "2f4c1bc7a0f8c3fe9994f9431e667cd258e74a85ed2a4277f5e1f40afef02444"
+  },
+  "res://assets/meowa/player/run_02.png": {
+    "normal": "res://assets/surface_normals/player_run_02.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "05a8ca2790f04b18c26cfd6a7d30fcb22e79c00076f18b7bf1aa25d7330d1f91"
+  },
+  "res://assets/meowa/player/run_03.png": {
+    "normal": "res://assets/surface_normals/player_run_03.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "0af8a7b5c0b1d766d0b6affa2b586502528dc37598c90aff20558a338682c484"
+  },
+  "res://assets/meowa/player/run_04.png": {
+    "normal": "res://assets/surface_normals/player_run_04.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "2460a444546fea9a1d043ab61391343809328c5c4ce83997917b6538d5fb10e1"
+  },
+  "res://assets/meowa/player/run_05.png": {
+    "normal": "res://assets/surface_normals/player_run_05.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "6e08672e71f91cf3b98ab06cb8b1f6cfacc17f9591a0a6d394a1d58494a2c2ca"
+  },
+  "res://assets/meowa/player/run_06.png": {
+    "normal": "res://assets/surface_normals/player_run_06.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "1d06a89bc07862964475ed8e4a9f8c70a52a917ca48ebf0e519a90567430bd4c"
+  },
+  "res://assets/meowa/player/run_07.png": {
+    "normal": "res://assets/surface_normals/player_run_07.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "368c5f624b2f0d35aa71378ae3e12aa8fa3c2c9682ebeaa730f8a0f2785a24e1"
+  },
+  "res://assets/meowa/player/run_back_00.png": {
+    "normal": "res://assets/surface_normals/player_run_back_00.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "2aa6bd0805f903b287c4df8e877c099bd8bd4445471f434845d910fd4ba2d690"
+  },
+  "res://assets/meowa/player/run_back_01.png": {
+    "normal": "res://assets/surface_normals/player_run_back_01.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "178c60af1d5f5ceeeebcb04ed7f6d886afdc41c2a8294bf2ad2d9965b8760299"
+  },
+  "res://assets/meowa/player/run_back_02.png": {
+    "normal": "res://assets/surface_normals/player_run_back_02.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "3485105706f1bd88b8c9ee0a553de3f460ab727f251fc2306dd029c717aaa72d"
+  },
+  "res://assets/meowa/player/run_back_03.png": {
+    "normal": "res://assets/surface_normals/player_run_back_03.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "360f70aefb7d97a0d47aac42b32bc381c297590ce6c640ccc3c1f3a61470edfe"
+  },
+  "res://assets/meowa/player/run_back_04.png": {
+    "normal": "res://assets/surface_normals/player_run_back_04.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "76df9a0f7620105fba2d6fba5d1ac6236df4a0b0843cc85c44ee355f6427eb86"
+  },
+  "res://assets/meowa/player/run_back_05.png": {
+    "normal": "res://assets/surface_normals/player_run_back_05.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "185d005b6f6b4037af996a0f7c8f4e0ba5a983beff94fa192a0dfdc78770fd45"
+  },
+  "res://assets/meowa/player/run_back_06.png": {
+    "normal": "res://assets/surface_normals/player_run_back_06.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "4588f25af7647218363c3de2d6ff3454f685b03ca632391e7d454dedb313a733"
+  },
+  "res://assets/meowa/player/run_back_07.png": {
+    "normal": "res://assets/surface_normals/player_run_back_07.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "41da119350ebf34f8970f63a53c23be776eecf65bf7c9c214564685c22a5f408"
+  },
+  "res://assets/meowa/player/dodge/dodge_00.png": {
+    "normal": "res://assets/surface_normals/player_dodge_00.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "8c4c989be86f1dac192fb7b1489f874711cfc96f5bc0d106695e4ad7219facdb"
+  },
+  "res://assets/meowa/player/dodge/dodge_01.png": {
+    "normal": "res://assets/surface_normals/player_dodge_01.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "8c4c989be86f1dac192fb7b1489f874711cfc96f5bc0d106695e4ad7219facdb"
+  },
+  "res://assets/meowa/player/dodge/dodge_02.png": {
+    "normal": "res://assets/surface_normals/player_dodge_02.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "61adf07a72a28de923b72991d132ca33caa8d55918c6d3e4fb3ae21724eb52e0"
+  },
+  "res://assets/meowa/player/dodge/dodge_03.png": {
+    "normal": "res://assets/surface_normals/player_dodge_03.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "61adf07a72a28de923b72991d132ca33caa8d55918c6d3e4fb3ae21724eb52e0"
+  },
+  "res://assets/meowa/player/dodge/dodge_04.png": {
+    "normal": "res://assets/surface_normals/player_dodge_04.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "61adf07a72a28de923b72991d132ca33caa8d55918c6d3e4fb3ae21724eb52e0"
+  },
+  "res://assets/meowa/player/dodge/dodge_05.png": {
+    "normal": "res://assets/surface_normals/player_dodge_05.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "61adf07a72a28de923b72991d132ca33caa8d55918c6d3e4fb3ae21724eb52e0"
+  },
+  "res://assets/meowa/player/dodge/dodge_06.png": {
+    "normal": "res://assets/surface_normals/player_dodge_06.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "8c4c989be86f1dac192fb7b1489f874711cfc96f5bc0d106695e4ad7219facdb"
+  },
+  "res://assets/meowa/player/dodge/dodge_07.png": {
+    "normal": "res://assets/surface_normals/player_dodge_07.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "8c4c989be86f1dac192fb7b1489f874711cfc96f5bc0d106695e4ad7219facdb"
+  },
+  "res://assets/meowa/player/dodge/sheet.png": {
+    "normal": "res://assets/surface_normals/player_dodge_sheet.png",
+    "kind": "character",
+    "grid": [
+      4,
+      2
+    ],
+    "source_sha256": "72c57727f84821fa5c0bb7ac9a9a260a02eac3164a0b03aba331ef5ac18aa096"
+  },
+  "res://assets/meowa/dressing/flowers/flower_01.png": {
+    "normal": "res://assets/surface_normals/foliage_flower_01.png",
+    "kind": "foliage",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "95924b97894cb1482d4fe82df543c0e333870f03bf2fe2b549f6546ab344a536"
+  },
+  "res://assets/meowa/dressing/flowers/flower_02.png": {
+    "normal": "res://assets/surface_normals/foliage_flower_02.png",
+    "kind": "foliage",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "6ce7562f705f75781b57cbea9f3f58ab252a197eb18462674f751434c40ef63f"
+  },
+  "res://assets/meowa/dressing/flowers/flower_03.png": {
+    "normal": "res://assets/surface_normals/foliage_flower_03.png",
+    "kind": "foliage",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "99d4659f36b10d974f36860f8dc1b1e669dd382fb7ad98c0cfc77d2cf080f5bc"
+  },
+  "res://assets/meowa/dressing/flowers/flower_04.png": {
+    "normal": "res://assets/surface_normals/foliage_flower_04.png",
+    "kind": "foliage",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "727e620d2e7cc918b68d2abed6a408868edfbfcd9022beffb1535e7745b7333f"
+  },
+  "res://assets/meowa/dressing/flowers/flower_05.png": {
+    "normal": "res://assets/surface_normals/foliage_flower_05.png",
+    "kind": "foliage",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "e8ee321f867d9d44e36256d00d05a3ccb530e145fad43701280b7199b1b166ae"
+  },
+  "res://assets/meowa/dressing/flowers/flower_06.png": {
+    "normal": "res://assets/surface_normals/foliage_flower_06.png",
+    "kind": "foliage",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "b2719066da2beca105551d09f99a99153af91d52eddd226271d6b7d40a36cd43"
+  },
+  "res://assets/meowa/dressing/grass/grass_01.png": {
+    "normal": "res://assets/surface_normals/foliage_grass_01.png",
+    "kind": "foliage",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "ccf13be8cb2551af2063a00822fda5bafb8d1a04a60c0b6787d8fb7d9d5936a4"
+  },
+  "res://assets/meowa/dressing/grass/grass_02.png": {
+    "normal": "res://assets/surface_normals/foliage_grass_02.png",
+    "kind": "foliage",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "42eced24c3cf27f1cb4add1e40e0360b721dced379da85a226fa308c63b88385"
+  },
+  "res://assets/meowa/dressing/grass/grass_03.png": {
+    "normal": "res://assets/surface_normals/foliage_grass_03.png",
+    "kind": "foliage",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "9d56189aaf70ffb82b5290fb679e432c32616cc6b195ee5af67d738e5fe9254f"
+  },
+  "res://assets/meowa/dressing/grass/grass_04.png": {
+    "normal": "res://assets/surface_normals/foliage_grass_04.png",
+    "kind": "foliage",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "2b9368dc1a0e4935231fb9bc2c0cd4f8b20c438d1f365dafa6a391471c157541"
+  },
+  "res://assets/meowa/dressing/grass/grass_05.png": {
+    "normal": "res://assets/surface_normals/foliage_grass_05.png",
+    "kind": "foliage",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "2bf81838398feb61d36d2a019abca8c0abfb5cfa5d33779096305082217724bf"
+  },
+  "res://assets/meowa/dressing/grass/grass_06.png": {
+    "normal": "res://assets/surface_normals/foliage_grass_06.png",
+    "kind": "foliage",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "eba75023393d2670e7f3a11e43db6be00836fdd65db3966d3d6eab48599cfaf2"
+  }
+}
