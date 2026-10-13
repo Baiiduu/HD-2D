@@ -18,6 +18,8 @@
 [ext_resource type="Texture2D" uid="uid://dgthxbtp632a2" path="res://assets/ground/tilesets/dirt/tileset/tileset.png" id="17_jum6b"]
 [ext_resource type="Shader" uid="uid://vs810xu7skxb" path="res://shaders/night_sky.gdshader" id="17_tytul"]
 [ext_resource type="Script" uid="uid://bdd2dbd21i2nn" path="res://scripts/terrain/terrain_paint_palette.gd" id="18_l4ul6"]
+[ext_resource type="Texture2D" path="res://assets/ground/paving_smooth_v2/stone_preview_albedo.png" id="battle_preview"]
+[ext_resource type="Texture2D" path="res://assets/ground/paving_smooth_v2/stone_preview_normal_gl.png" id="battle_preview_normal"]
 [ext_resource type="Shader" uid="uid://fuoorj3rrv6c" path="res://shaders/post_process.gdshader" id="18_t634p"]
 [ext_resource type="Texture2D" uid="uid://duepna6tstt24" path="res://assets/meowa/pixel_sample/plaster.png" id="21_jum6b"]
 [ext_resource type="Texture2D" uid="uid://p7spc4ava83o" path="res://assets/meowa/pixel_sample/roof.png" id="22_l4ul6"]
@@ -164,9 +166,20 @@ corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1
 roughness = 0.96
 wet_response = 0.45
 
+[sub_resource type="Resource" id="battle_paving_brush"]
+script = ExtResource("6_cmg7y")
+label = "细磨青石广场"
+paint_id = 11
+texture = ExtResource("battle_preview")
+normal_texture = ExtResource("battle_preview_normal")
+normal_strength = 0.8
+atlas_grid = Vector2i(1, 1)
+roughness = 0.58
+wet_response = 0.85
+
 [sub_resource type="Resource" id="Resource_5aamg"]
 script = ExtResource("18_l4ul6")
-brushes = Array[ExtResource("6_cmg7y")]([SubResource("Resource_fqf7g"), SubResource("Resource_jum6b"), SubResource("Resource_l4ul6"), SubResource("Resource_q3hpu"), SubResource("Resource_j0rhc"), SubResource("Resource_4jq4u"), SubResource("Resource_sar2w"), SubResource("Resource_goy61"), SubResource("Resource_7rtjl"), SubResource("Resource_phx5y"), SubResource("Resource_554ci"), SubResource("Resource_hph6x")])
+brushes = Array[ExtResource("6_cmg7y")]([SubResource("Resource_fqf7g"), SubResource("Resource_jum6b"), SubResource("Resource_l4ul6"), SubResource("Resource_q3hpu"), SubResource("Resource_j0rhc"), SubResource("Resource_4jq4u"), SubResource("Resource_sar2w"), SubResource("Resource_goy61"), SubResource("Resource_7rtjl"), SubResource("Resource_phx5y"), SubResource("Resource_554ci"), SubResource("Resource_hph6x"), SubResource("battle_paving_brush")])
 
 [sub_resource type="Image" id="Image_kngxi"]
 data = {
@@ -694,6 +707,8 @@ wave_controller = NodePath("../WavePrototype")
 
 [node name="VisualSample" type="Node" parent="." unique_id=233758505]
 script = ExtResource("visual_sample")
+smooth_grass_enabled = true
+grass_variation_enabled = false
 grass_variation_strength = 0.19
 grass_variation_size = 3.0
 

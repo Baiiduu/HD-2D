@@ -12,6 +12,13 @@ uniform float pixel_grass_contrast : hint_range(0.0, 1.0, 0.02) = 1.0;
 uniform vec4 pixel_grass_center : source_color = vec4(0.4, 0.5, 0.3, 1.0);
 group_uniforms;
 
+group_uniforms smooth_grass;
+// The clean grass surface has independent material data, not leaf-shaped relief.
+uniform bool smooth_grass_enabled = false;
+uniform sampler2D smooth_grass_orm_dry : filter_nearest_mipmap, repeat_enable;
+uniform sampler2D smooth_grass_orm_wet : filter_nearest_mipmap, repeat_enable;
+group_uniforms;
+
 group_uniforms surface_normals;
 uniform bool surface_normals_enabled = false;
 uniform float surface_normal_strength : hint_range(0.0, 1.5, 0.05) = 0.8;
@@ -59,6 +66,17 @@ uniform sampler2D cultivation_texture : source_color, filter_nearest_mipmap, rep
 uniform sampler2D wild_texture : source_color, filter_nearest_mipmap, repeat_enable;
 uniform sampler2D path_atlas : source_color, filter_nearest_mipmap, repeat_disable;
 uniform sampler2D dirt_atlas : source_color, filter_nearest_mipmap, repeat_disable;
+
+group_uniforms battle_paving;
+// Fixed paint ID confines this authored layout to the existing battle cells.
+uniform bool battle_paving_enabled = false;
+uniform int battle_paving_paint_id = 11;
+uniform vec4 battle_paving_rect = vec4(-15.2, 29.6, 30.4, 30.4);
+uniform sampler2D battle_paving_albedo : source_color, filter_nearest_mipmap, repeat_disable;
+uniform sampler2D battle_paving_normal : filter_nearest_mipmap, repeat_disable;
+uniform sampler2D battle_paving_orm_dry : filter_nearest_mipmap, repeat_disable;
+uniform sampler2D battle_paving_orm_wet : filter_nearest_mipmap, repeat_disable;
+group_uniforms;
 
 // 以下三项由 Terrain 节点在运行时设置
 uniform sampler2D terrain_map : filter_nearest, repeat_disable;
@@ -164,7 +182,7 @@ vec4 sample_atlas(sampler2D atlas, int key, vec2 local, vec2 ddx, vec2 ddy, bool
 	return textureGrad(atlas,uv,ddx/grid,ddy/grid);
 }
 
-void apply_paint(int id,int key,vec2 local,vec2 ddx,vec2 ddy,inout vec3 color,inout vec3 surface,inout float grass,inout int palette_row,inout vec4 stone_sampling,inout vec3 normal_data,bool normals) {
+void apply_paint(int id,int key,vec2 local,vec2 location,vec2 ddx,vec2 ddy,inout vec3 color,inout vec3 surface,inout float grass,inout int palette_row,inout vec4 stone_sampling,inout vec3 normal_data,inout float paving,bool normals) {
 	vec4 config = paint_setting(id,0);
 	if (id == 0 || config.x < 0.5) return;
 	vec2 grid = int(config.y) == 2 ? config.zw : vec2(1.0);
@@ -173,6 +191,7 @@ void apply_paint(int id,int key,vec2 local,vec2 ddx,vec2 ddy,inout vec3 color,in
 	vec2 uv = (tile + clamp(local,margin,vec2(1.0)-margin)) / grid;
 	vec4 paint = textureGrad(paint_textures,vec3(uv,config.x-1.0),ddx/grid,ddy/grid);
 	if (paint.a > 0.5) {
+		paving = 0.0;
 		normal_data = vec3(0.0);
 		vec4 normal_config = paint_setting(id,3);
 		if (normals && normal_config.x > 0.5) {
@@ -186,6 +205,21 @@ void apply_paint(int id,int key,vec2 local,vec2 ddx,vec2 ddy,inout vec3 color,in
 		vec4 response = paint_setting(id,2);
 		surface = response.xyz;
 		grass = response.w;
+		vec2 paving_uv = (location-battle_paving_rect.xy)/battle_paving_rect.zw;
+		if (battle_paving_enabled && id == battle_paving_paint_id &&
+			all(greaterThanEqual(paving_uv,vec2(0.0))) && all(lessThanEqual(paving_uv,vec2(1.0)))) {
+			vec2 dx = ddx*cell_size/battle_paving_rect.zw;
+			vec2 dy = ddy*cell_size/battle_paving_rect.zw;
+			color = textureGrad(battle_paving_albedo,paving_uv,dx,dy).rgb * paint_setting(id,1).rgb;
+			normal_data = vec3(0.0);
+			if (normals) {
+				vec3 encoded = textureGrad(battle_paving_normal,paving_uv,dx,dy).rgb;
+				normal_data = vec3(normal_slope(encoded)*normal_config.y,1.0);
+			}
+			palette_row = -1;
+			stone_sampling.w = -1.0;
+			paving = 1.0;
+		}
 	}
 }
 
@@ -230,7 +264,7 @@ vec3 quiet_stone(vec3 color, vec4 sampling, vec2 ddx, vec2 ddy) {
 }
 
 // 某个世界位置的最终颜色（底材 → 泥土 → 道路），surface 输出粗糙度 / 金属度
-vec3 sample_surface_detail(vec2 location, vec2 ddx, vec2 ddy, bool map_palette, bool stone_details, bool normals, out vec3 surface, out float grass, out int palette_row, out vec3 normal_data) {
+vec3 sample_surface_detail(vec2 location, vec2 ddx, vec2 ddy, bool map_palette, bool stone_details, bool normals, out vec3 surface, out float grass, out int palette_row, out vec3 normal_data, out float paving) {
 	vec2 grid = location / cell_size;
 	// 地形格 n 的中心在 n * cell_size；显示格的四角正好落在四个地形格中心
 	ivec2 top_left = ivec2(floor(grid));
@@ -242,6 +276,7 @@ vec3 sample_surface_detail(vec2 location, vec2 ddx, vec2 ddy, bool map_palette, 
 	vec4 stone_sampling = vec4(0.0, 0.0, 0.0, -1.0);
 	vec3 color;
 	normal_data = vec3(0.0);
+	paving = 0.0;
 	if (zone == 0) {
 		color = textureGrad(city_texture, grid, ddx, ddy).rgb * city_tint.rgb;
 		surface = city_surface;
@@ -299,7 +334,7 @@ vec3 sample_surface_detail(vec2 location, vec2 ddx, vec2 ddy, bool map_palette, 
 	if (paint_enabled) {
 		int nearest = paint_id_at(ivec2(round(grid)));
 		if (nearest > 0 && int(paint_setting(nearest,0).y) != 2) {
-			apply_paint(nearest,15,fract(grid+0.5),ddx,ddy,color,surface,grass,palette_row,stone_sampling,normal_data,normals);
+			apply_paint(nearest,15,fract(grid+0.5),location,ddx,ddy,color,surface,grass,palette_row,stone_sampling,normal_data,paving,normals);
 		}
 		int ids[4] = int[](paint_id_at(top_left),paint_id_at(top_left+ivec2(0,1)),
 			paint_id_at(top_left+ivec2(1,0)),paint_id_at(top_left+ivec2(1,1)));
@@ -314,7 +349,7 @@ vec3 sample_surface_detail(vec2 location, vec2 ddx, vec2 ddy, bool map_palette, 
 			if (id == 0 || (i > 0 && id == ids[i-1]) || int(paint_setting(id,0).y) != 2) continue;
 			int mask=int(paint_id_at(top_left)==id)+int(paint_id_at(top_left+ivec2(0,1))==id)*2
 				+int(paint_id_at(top_left+ivec2(1,0))==id)*4+int(paint_id_at(top_left+ivec2(1,1))==id)*8;
-			apply_paint(id,mask,local,ddx,ddy,color,surface,grass,palette_row,stone_sampling,normal_data,normals);
+			apply_paint(id,mask,local,location,ddx,ddy,color,surface,grass,palette_row,stone_sampling,normal_data,paving,normals);
 		}
 	}
 	if (stone_details && pixel_stone_detail_strength < 1.0 && stone_sampling.w >= 0.0) {
@@ -323,17 +358,19 @@ vec3 sample_surface_detail(vec2 location, vec2 ddx, vec2 ddy, bool map_palette, 
 	if (stone_details && palette_row == 0 && pixel_grass_contrast < 1.0) {
 		color = mix(pixel_grass_center.rgb * wild_tint.rgb, color, pixel_grass_contrast);
 	}
-	if (map_palette && palette_row >= 0) color = pixel_palette_map(color, pixel_palette_texture, palette_row);
+	bool clean_grass = smooth_grass_enabled && palette_row == 0 && grass > 0.5;
+	if (map_palette && palette_row >= 0 && !clean_grass) color = pixel_palette_map(color, pixel_palette_texture, palette_row);
 	return color;
 }
 
 vec3 sample_surface(vec2 location, vec2 ddx, vec2 ddy, bool map_palette, bool stone_details, out vec3 surface, out float grass, out int palette_row) {
 	vec3 unused_normal;
-	return sample_surface_detail(location,ddx,ddy,map_palette,stone_details,false,surface,grass,palette_row,unused_normal);
+	float unused_paving;
+	return sample_surface_detail(location,ddx,ddy,map_palette,stone_details,false,surface,grass,palette_row,unused_normal,unused_paving);
 }
 
-vec3 albedo_normal_at(vec2 location,vec2 ddx,vec2 ddy,out vec3 surface,out float grass,out int palette_row,out vec3 normal_data) {
-	return sample_surface_detail(location,ddx,ddy,false,true,surface_normals_enabled,surface,grass,palette_row,normal_data);
+vec3 albedo_normal_at(vec2 location,vec2 ddx,vec2 ddy,out vec3 surface,out float grass,out int palette_row,out vec3 normal_data,out float paving) {
+	return sample_surface_detail(location,ddx,ddy,false,true,surface_normals_enabled,surface,grass,palette_row,normal_data,paving);
 }
 
 vec3 albedo_at(vec2 location, vec2 ddx, vec2 ddy, out vec3 surface, out float grass) {

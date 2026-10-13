@@ -80,12 +80,14 @@ bool has_land(vec2 point) {
 	return inside && (overlay & 4) == 0;
 }
 
-vec3 rim_color(vec2 point,vec2 ddx,vec2 ddy,out vec3 surface,out float grass) {
+vec3 rim_color(vec2 point,vec2 ddx,vec2 ddy,out vec3 surface,out float grass,out float paving) {
 	int row;
-	vec3 color = sample_surface(point,ddx,ddy,false,true,surface,grass,row);
+	vec3 unused_normal;
+	vec3 color = sample_surface_detail(point,ddx,ddy,false,true,false,surface,grass,row,unused_normal,paving);
 	if (lumina_relief_enabled) color = lumina_tone(color);
 	color = meadow_color(color,point,grass);
-	return pixel_palette_enabled && row >= 0 ? pixel_palette_map(color,pixel_palette_texture,row) : color;
+	bool clean_grass = smooth_grass_enabled && row == 0 && grass > 0.5;
+	return pixel_palette_enabled && row >= 0 && !clean_grass ? pixel_palette_map(color,pixel_palette_texture,row) : color;
 }
 
 void vertex() {
@@ -121,16 +123,24 @@ void fragment() {
 	vec2 edge_ddy = dFdy(folded_point / cell_size);
 	vec3 top_surface = vec3(roughness, 0.0, 0.0);
 	float top_grass = 1.0;
+	float top_paving = 0.0;
 	vec3 top_color = vec3(0.0);
 	bool land_edge = surface_edge_enabled && has_land(terrain_position.xz - wall_direction * texel);
 	if (land_edge && edge_depth <= max(grass_lip_pixels, surface_edge_lip_pixels) * texel + edge_width) {
 		// Share the exact atlas selection used on top: dirt ramps must not get a green rim.
-		top_color = edge_color_matching_enabled ? rim_color(folded_point,edge_ddx,edge_ddy,top_surface,top_grass) : albedo_at(folded_point, edge_ddx, edge_ddy, top_surface, top_grass);
+		if (edge_color_matching_enabled) {
+			top_color = rim_color(folded_point,edge_ddx,edge_ddy,top_surface,top_grass,top_paving);
+		} else {
+			int unused_row;
+			vec3 unused_normal;
+			top_color = sample_surface_detail(folded_point,edge_ddx,edge_ddy,pixel_palette_enabled,true,false,top_surface,top_grass,unused_row,unused_normal,top_paving);
+		}
 	}
 	bool grass_top = transition_enabled && has_grass(terrain_position.xz - wall_direction * texel);
 	float edge_roughness = roughness;
 	float edge_metallic = 0.0;
 	float rim_shade_cover = 0.0;
+	bool paved_rim = false;
 	if (land_edge && (top_grass < 0.5 || !has_grass(terrain_position.xz - wall_direction * texel))) {
 		float depth = floor(edge_depth / texel) * texel;
 		float lip = min(surface_edge_lip_pixels * texel, edge_span * 0.2);
@@ -145,6 +155,17 @@ void fragment() {
 		rim_shade_cover = weight * full_surface;
 		edge_roughness = mix(roughness, mix(top_surface.x, edge_wet_roughness, wet), weight);
 		edge_metallic = top_surface.y * weight;
+		if (top_paving > 0.5) {
+			vec2 uv = (folded_point-battle_paving_rect.xy)/battle_paving_rect.zw;
+			vec2 dx = edge_ddx*cell_size/battle_paving_rect.zw;
+			vec2 dy = edge_ddy*cell_size/battle_paving_rect.zw;
+			vec3 response = mix(textureGrad(battle_paving_orm_dry,uv,dx,dy).rgb,textureGrad(battle_paving_orm_wet,uv,dx,dy).rgb,wet);
+			float wall_roughness = lumina_relief_enabled ? max(roughness,lumina_matte_floor) : roughness;
+			edge_roughness = mix(wall_roughness,response.g,weight);
+			edge_metallic = response.b * weight;
+			AO = mix(1.0,response.r,weight);
+			paved_rim = true;
+		}
 		float fade = smoothstep(lip, lip + edge_width, depth);
 		color *= 1.0 - lip_shadow_strength * 4.0 * fade * (1.0 - fade);
 	} else if (grass_top) {
@@ -160,9 +181,9 @@ void fragment() {
 		vec2 grass_uv = (terrain_position.xz - wall_direction * (depth + texel * 0.5)) / cell_size;
 		vec3 grass = texture(grass_texture, grass_uv).rgb * grass_tint.rgb;
 		if (edge_color_matching_enabled) {
-			vec3 rim_surface; float rim_grass;
-			grass = rim_color(grass_uv * cell_size,edge_ddx,edge_ddy,rim_surface,rim_grass);
-		} else if (pixel_palette_enabled) grass = pixel_palette_map(grass, pixel_palette_texture, 0);
+			vec3 rim_surface; float rim_grass; float unused_paving;
+			grass = rim_color(grass_uv * cell_size,edge_ddx,edge_ddy,rim_surface,rim_grass,unused_paving);
+		} else if (pixel_palette_enabled && !smooth_grass_enabled) grass = pixel_palette_map(grass, pixel_palette_texture, 0);
 		float cover = 1.0 - smoothstep(lip, lip + width, depth);
 		float moss = moss_strength * smoothstep(0.25, 0.75, pattern);
 		float full_grass = 1.0 - smoothstep(max(0.0, lip - texel), lip + texel, depth);
@@ -174,9 +195,9 @@ void fragment() {
 			vec2 base_uv = (terrain_position.xz + wall_direction * (bottom + texel * 0.5)) / cell_size;
 			vec3 base_grass = texture(grass_texture, base_uv).rgb * grass_tint.rgb;
 			if (edge_color_matching_enabled) {
-				vec3 base_surface; float base_grass_amount;
-				base_grass = rim_color(base_uv * cell_size,edge_ddx,edge_ddy,base_surface,base_grass_amount);
-			} else if (pixel_palette_enabled) base_grass = pixel_palette_map(base_grass, pixel_palette_texture, 0);
+				vec3 base_surface; float base_grass_amount; float unused_paving;
+				base_grass = rim_color(base_uv * cell_size,edge_ddx,edge_ddy,base_surface,base_grass_amount,unused_paving);
+			} else if (pixel_palette_enabled && !smooth_grass_enabled) base_grass = pixel_palette_map(base_grass, pixel_palette_texture, 0);
 			float base_cover = 1.0 - smoothstep(0.0, min(base_blend_height, span * 0.25), bottom);
 			color = mix(color, base_grass, base_cover * moss_strength * (0.35 + pattern * 0.65));
 		}
@@ -198,6 +219,6 @@ void fragment() {
 	float normal_cover = land_edge ? 1.0 - smoothstep(0.0, max(texel, edge_width * 0.5), edge_depth) : 0.0;
 	NORMAL = normalize(mix(NORMAL, view_top_normal, normal_cover * surface_edge_normal_softening));
 	ALBEDO = (lumina_relief_enabled && !edge_color_matching_enabled ? lumina_tone(color) : color) * shade;
-	ROUGHNESS = lumina_relief_enabled ? max(edge_roughness, lumina_matte_floor) : edge_roughness;
+	ROUGHNESS = lumina_relief_enabled && !paved_rim ? max(edge_roughness,lumina_matte_floor) : edge_roughness;
 	METALLIC = edge_metallic;
 }

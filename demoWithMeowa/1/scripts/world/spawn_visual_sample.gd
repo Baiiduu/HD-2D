@@ -7,6 +7,7 @@ const DAY = preload("res://data/visual/spawn_lumina_day.tres")
 const RAIN = preload("res://data/visual/spawn_lumina_rain.tres")
 const NIGHT = preload("res://data/visual/spawn_lumina_night.tres")
 const PIXEL_SAMPLE_PATH := "res://assets/meowa/pixel_sample/"
+const SMOOTH_GRASS_PATH := "res://assets/ground/grass_smooth_v1/"
 const STYLE_NAMES := ["原始光影", "Lumina 黄金时段", "Lumina 细雨", "Lumina 夜晚"]
 signal style_changed(index: int, title: String)
 
@@ -46,6 +47,11 @@ signal style_changed(index: int, title: String)
 @export_range(0.0, 1.0, 0.02) var pixel_grass_contrast := 0.70:
 	set(value): pixel_grass_contrast = value; _queue_color_apply()
 @export_tool_button("应用草地与花草样板", "Reload") var vegetation_apply_button = apply_vegetation_sample
+
+@export_group("平滑草地底面")
+## 独立使用干净底色、浅法线和干湿 ORM；不改变草花铺设与草根接触阴影。
+@export var smooth_grass_enabled := false:
+	set(value): smooth_grass_enabled = value; _queue_pixel_apply()
 
 @export_group("草地深浅变化")
 ## 世界坐标固定的深浅斑块，独立于光影 Style、草地受光和像素材质开关。
@@ -184,6 +190,8 @@ func _ready() -> void:
 
 func _on_palette_applied() -> void:
 	# 画笔可在启动或编辑后延迟刷新；保留当前风格受光，避免覆盖回画笔默认色。
+	var terrain := get_parent().get_node_or_null("Homestead") as Terrain
+	if terrain: _ensure_smooth_grass_brush(terrain)
 	var preset: SpawnVisualPreset = [ORIGINAL, DAY, RAIN, NIGHT][style]
 	_palette(_merged_values(ORIGINAL.palette_values, preset.palette_values))
 	apply_grass_variation()
@@ -334,6 +342,7 @@ func _palette(values: Dictionary) -> void:
 		var settings: Dictionary = values[index]
 		terrain.top_material.set_shader_parameter(prefix + "_tint", settings.get("tint", brush.tint))
 		terrain.top_material.set_shader_parameter(prefix + "_surface", Vector3(settings.get("roughness", brush.roughness), settings.get("metallic", brush.metallic), settings.get("wet_response", brush.wet_response)))
+	_apply_smooth_grass_materials(terrain)
 	terrain._apply_grass_transition()
 
 func _isolate_palette(terrain: Terrain) -> void:
@@ -344,9 +353,13 @@ func _isolate_palette(terrain: Terrain) -> void:
 	var source: TerrainPaintPalette = load("res://data/spawn_paint_palette.tres")
 	for index in mini(terrain.paint_palette.brushes.size(), source.brushes.size()):
 		var brush := terrain.paint_palette.brushes[index]
-		if brush.texture and brush.texture.resource_path.begins_with(PIXEL_SAMPLE_PATH):
+		if brush.texture and (brush.texture.resource_path.begins_with(PIXEL_SAMPLE_PATH) or brush.texture.resource_path.begins_with(SMOOTH_GRASS_PATH)):
+			var restore_normal := brush.target == TerrainPaintBrush.Target.GRASS and brush.texture.resource_path.begins_with(SMOOTH_GRASS_PATH)
 			for property in ["texture", "mode", "atlas_grid", "atlas_tile", "corner_tiles"]:
 				brush.set(property, source.brushes[index].get(property))
+			if restore_normal:
+				brush.normal_texture = source.brushes[index].normal_texture
+				brush.normal_strength = source.brushes[index].normal_strength
 	for building in [get_parent().get_node("HouseSite/Home"), get_parent().get_node("TrainingHut")]:
 		for property in ["plaster_texture_override", "roof_texture_override"]:
 			var texture: Texture2D = building.get(property)
@@ -365,13 +378,19 @@ func _pixel_texture(filename: String) -> Texture2D:
 	var path := PIXEL_SAMPLE_PATH + filename + ".png"
 	return load(path) as Texture2D if ResourceLoader.exists(path) else null
 
+func _smooth_grass_texture(filename: String) -> Texture2D:
+	var path := SMOOTH_GRASS_PATH + filename + ".png"
+	return load(path) as Texture2D if ResourceLoader.exists(path) else null
+
 func _override_pixel_brush(brush: TerrainPaintBrush, texture: Texture2D, mode: TerrainPaintBrush.Mode) -> void:
 	if not texture: return
-	_pixel_brush_values[brush] = {
-		"texture": brush.texture, "mode": brush.mode, "tint": brush.tint,
-		"atlas_grid": brush.atlas_grid, "atlas_tile": brush.atlas_tile,
-		"corner_tiles": brush.corner_tiles.duplicate()
-	}
+	if not _pixel_brush_values.has(brush):
+		_pixel_brush_values[brush] = {
+			"texture": brush.texture, "normal_texture": brush.normal_texture,
+			"normal_strength": brush.normal_strength, "mode": brush.mode, "tint": brush.tint,
+			"atlas_grid": brush.atlas_grid, "atlas_tile": brush.atlas_tile,
+			"corner_tiles": brush.corner_tiles.duplicate()
+		}
 	brush.texture = texture
 	brush.mode = mode
 	brush.tint = Color.WHITE
@@ -380,8 +399,43 @@ func _override_pixel_brush(brush: TerrainPaintBrush, texture: Texture2D, mode: T
 	if mode == TerrainPaintBrush.Mode.CORNER_ATLAS:
 		brush.corner_tiles = PackedVector2Array(TerrainPaintBrush.MEOWA_TILES)
 
+func _ensure_smooth_grass_brush(terrain: Terrain) -> void:
+	if not smooth_grass_enabled or not terrain.paint_palette: return
+	_isolate_palette(terrain)
+	var albedo := _smooth_grass_texture("grass_albedo")
+	var normal := _smooth_grass_texture("grass_normal_gl")
+	if not albedo or not normal or albedo.get_size() != normal.get_size(): return
+	for brush in terrain.paint_palette.brushes:
+		if not brush or brush.target != TerrainPaintBrush.Target.GRASS: continue
+		# Resource setters queue a palette refresh. Only write changes so its callback settles.
+		if brush.texture != albedo or brush.mode != TerrainPaintBrush.Mode.TEXTURE or brush.tint != Color.WHITE:
+			_override_pixel_brush(brush, albedo, TerrainPaintBrush.Mode.TEXTURE)
+		elif not _pixel_brush_values.has(brush):
+			# Preserve explicit normals even when the albedo already matches the new sample.
+			_override_pixel_brush(brush, albedo, TerrainPaintBrush.Mode.TEXTURE)
+		if brush.normal_texture != normal: brush.normal_texture = normal
+		if brush.normal_strength != 1.0: brush.normal_strength = 1.0
+
+func _apply_smooth_grass_materials(terrain: Terrain) -> void:
+	var albedo := _smooth_grass_texture("grass_albedo") if smooth_grass_enabled else null
+	var normal := _smooth_grass_texture("grass_normal_gl") if smooth_grass_enabled else null
+	var dry := _smooth_grass_texture("grass_orm_dry") if smooth_grass_enabled else null
+	var wet := _smooth_grass_texture("grass_orm_wet") if smooth_grass_enabled else null
+	var enabled := smooth_grass_enabled and albedo != null and normal != null and dry != null and wet != null
+	for material in [terrain.top_material, terrain.wall_material]:
+		if not material: continue
+		if material.get_shader_parameter("smooth_grass_enabled") != enabled:
+			material.set_shader_parameter("smooth_grass_enabled", enabled)
+		if not enabled: continue
+		if material.get_shader_parameter("smooth_grass_orm_dry") != dry:
+			material.set_shader_parameter("smooth_grass_orm_dry", dry)
+		if material.get_shader_parameter("smooth_grass_orm_wet") != wet:
+			material.set_shader_parameter("smooth_grass_orm_wet", wet)
+		if material.get_shader_parameter("wild_tint") != Color.WHITE:
+			material.set_shader_parameter("wild_tint", Color.WHITE)
+
 func _apply_pixel_materials(terrain: Terrain) -> void:
-	if not pixel_art_enabled: return
+	if not pixel_art_enabled and not smooth_grass_enabled: return
 	var grass := _pixel_texture("grass")
 	var path := _pixel_texture("path")
 	var cobble := _pixel_texture("cobble")
@@ -390,11 +444,14 @@ func _apply_pixel_materials(terrain: Terrain) -> void:
 		if brush.target == TerrainPaintBrush.Target.PATH: original_path = brush.texture
 	for brush in terrain.paint_palette.brushes:
 		if brush.target == TerrainPaintBrush.Target.GRASS:
-			_override_pixel_brush(brush, grass, TerrainPaintBrush.Mode.TEXTURE)
-		elif brush.target == TerrainPaintBrush.Target.PATH:
+			if pixel_art_enabled and not smooth_grass_enabled:
+				_override_pixel_brush(brush, grass, TerrainPaintBrush.Mode.TEXTURE)
+		elif pixel_art_enabled and brush.target == TerrainPaintBrush.Target.PATH:
 			_override_pixel_brush(brush, path, TerrainPaintBrush.Mode.CORNER_ATLAS)
-		elif original_path and brush.texture == original_path and brush.mode == TerrainPaintBrush.Mode.ATLAS_TILE:
+		elif pixel_art_enabled and original_path and brush.texture == original_path and brush.mode == TerrainPaintBrush.Mode.ATLAS_TILE:
 			_override_pixel_brush(brush, cobble, TerrainPaintBrush.Mode.TEXTURE)
+	_ensure_smooth_grass_brush(terrain)
+	if not pixel_art_enabled: return
 	var plaster := _pixel_texture("plaster")
 	var roof := _pixel_texture("roof")
 	if not plaster and not roof: return
@@ -422,8 +479,9 @@ func _apply_color_ramps(terrain: Terrain) -> void:
 		material.set_shader_parameter("pixel_palette_enabled", enabled and ramp != null)
 		material.set_shader_parameter("pixel_palette_texture", ramp)
 		material.set_shader_parameter("pixel_stone_detail_strength", pixel_stone_detail_strength if pixel_art_enabled else 1.0)
-		material.set_shader_parameter("pixel_grass_contrast", pixel_grass_contrast if pixel_art_enabled and vegetation_sample_enabled else 1.0)
+		material.set_shader_parameter("pixel_grass_contrast", pixel_grass_contrast if pixel_art_enabled and vegetation_sample_enabled and not smooth_grass_enabled else 1.0)
 		material.set_shader_parameter("pixel_grass_center", _grass_color_center())
+	_apply_smooth_grass_materials(terrain)
 	apply_grass_variation()
 
 func apply_color_ramps() -> void:

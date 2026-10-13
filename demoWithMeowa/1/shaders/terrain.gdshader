@@ -90,8 +90,11 @@ void fragment() {
 	float grass;
 	int palette_row;
 	vec3 normal_data;
-	vec3 color = albedo_normal_at(location, ddx, ddy, surface, grass, palette_row, normal_data);
+	float paving;
+	vec3 color = albedo_normal_at(location, ddx, ddy, surface, grass, palette_row, normal_data, paving);
 	float grass_surface = grass;
+	bool clean_grass = smooth_grass_enabled && palette_row == 0 && grass_surface > 0.5;
+	float grass_material_ao = 1.0;
 	grass *= grass_lighting_enabled ? 1.0 : 0.0;
 
 	// 湿润：颜色变暗、粗糙度降低，灯光会在地面上拉出倒影
@@ -100,6 +103,13 @@ void fragment() {
 	// Sparse damp patches catch the real light; roots and most grass stay matte.
 	float damp_patch = smoothstep(1.0 - grass_sheen, 1.1 - grass_sheen, noise(location * 1.9 + vec2(11.3, 7.1)));
 	roughness = mix(roughness, 0.22, grass * damp_patch * smoothstep(0.015, 0.1, wet));
+	if (clean_grass) {
+		vec3 dry_material = textureGrad(smooth_grass_orm_dry, grid, ddx, ddy).rgb;
+		vec3 wet_material = textureGrad(smooth_grass_orm_wet, grid, ddx, ddy).rgb;
+		roughness = mix(dry_material.g, wet_material.g, wet);
+		grass_material_ao = mix(dry_material.r, wet_material.r, wet);
+		surface.y = 0.0;
+	}
 	vec3 relief_color = color;
 	if ((pixel_stone_detail_strength < 1.0 && palette_row == 1) || (pixel_grass_contrast < 1.0 && palette_row == 0)) {
 		vec3 relief_surface;
@@ -112,6 +122,18 @@ void fragment() {
 	// Dark joints stay rough; irregular polished faces catch native specular light.
 	float gloss = stone_gloss_variation * wet * stone_surface;
 	roughness = mix(roughness, mix(0.82, 0.2 + noise(location * 2.1) * 0.16, stone_face), gloss);
+	if (paving > 0.5) {
+		vec2 uv = (location-battle_paving_rect.xy)/battle_paving_rect.zw;
+		vec2 dx = ddx*cell_size/battle_paving_rect.zw;
+		vec2 dy = ddy*cell_size/battle_paving_rect.zw;
+		vec3 dry_data = textureGrad(battle_paving_orm_dry,uv,dx,dy).rgb;
+		vec3 wet_data = textureGrad(battle_paving_orm_wet,uv,dx,dy).rgb;
+		vec3 response = mix(dry_data,wet_data,wet);
+		AO = response.r;
+		AO_LIGHT_AFFECT = 0.0;
+		roughness = response.g;
+		surface.y = response.b;
+	}
 	float relief = stone_relief * stone_surface + grass_relief * grass;
 	vec3 dpdx = dFdx(VERTEX);
 	vec3 dpdy = dFdy(VERTEX);
@@ -121,14 +143,14 @@ void fragment() {
 	if (normal_data.z > 0.5) {
 		NORMAL = lumina_bump(NORMAL,VERTEX,location,normal_data.xy * surface_normal_strength);
 	}
-	if (normal_data.z < 0.5 && !lumina_relief_enabled && abs(determinant) > 0.000001 && relief > 0.0) {
+	if (paving < 0.5 && normal_data.z < 0.5 && !lumina_relief_enabled && abs(determinant) > 0.000001 && relief > 0.0) {
 		vec3 gradient = (r1 * dFdx(stone_luma) + r2 * dFdy(stone_luma)) * relief / determinant;
 		// Clamp relief on distant texels to avoid sparkling pixel edges.
 		gradient /= max(1.0, length(gradient) / 0.22);
 		NORMAL = normalize(NORMAL - gradient);
 	}
 	if (lumina_relief_enabled) {
-		if (normal_data.z < 0.5) {
+		if (paving < 0.5 && normal_data.z < 0.5) {
 		// Sample the final composed surface: roads, custom brushes and dual-grid edges agree.
 		float step_meters = cell_size / max(texture_pixels, 1.0);
 		vec3 neighbor_surface;
@@ -140,11 +162,11 @@ void fragment() {
 		NORMAL = lumina_bump(NORMAL, VERTEX, location, vec2(hx - h, hz - h) * amplitude / step_meters);
 		}
 		color = lumina_tone(color);
-		roughness = max(roughness, lumina_matte_floor);
+		if (paving < 0.5) roughness = max(roughness, lumina_matte_floor);
 	}
 	// Meadow colour belongs to the ground, independent of the lighting style.
 	color = meadow_color(color,location,grass_surface);
-	if (pixel_palette_enabled && palette_row >= 0) {
+	if (pixel_palette_enabled && palette_row >= 0 && !clean_grass) {
 		color = pixel_palette_map(color, pixel_palette_texture, palette_row);
 	}
 	color *= mix(1.0, wet_darkening, wet);
@@ -154,11 +176,12 @@ void fragment() {
 		color *= mix(1.0, farming_wet_darkening, watered);
 		roughness = mix(roughness, farming_wet_roughness, watered);
 	}
+	if (clean_grass) AO = grass_material_ao;
 	if (grass > 0.0 && grass_root_occlusion > 0.0) {
 		vec2 root_uv = (location - grass_root_bounds.xy) / grass_root_bounds.zw;
 		float roots = texture(grass_root_map, root_uv).r * grass_root_occlusion;
 		color *= 1.0 - roots * 0.3;
-		AO = 1.0 - roots;
+		AO *= 1.0 - roots;
 		AO_LIGHT_AFFECT = 0.2;
 	}
 	if (puddles && wet > 0.5 && is_puddle(location)) {

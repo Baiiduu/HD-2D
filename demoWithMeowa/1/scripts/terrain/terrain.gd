@@ -159,6 +159,8 @@ func _apply_grass_transition() -> void:
 	wall.set_shader_parameter("surface_edge_normal_softening", surface_edge_normal_softening)
 	for parameter in ["city_texture", "cyber_texture", "cultivation_texture", "wild_texture", "path_atlas", "dirt_atlas",
 			"path_grid", "path_tiles", "path_configured", "paint_enabled",
+			"battle_paving_enabled", "battle_paving_paint_id", "battle_paving_rect",
+			"battle_paving_albedo", "battle_paving_normal", "battle_paving_orm_dry", "battle_paving_orm_wet",
 			"city_tint", "cyber_tint", "cultivation_tint", "wild_tint", "path_tint", "dirt_tint",
 			"city_surface", "cyber_surface", "cultivation_surface", "wild_surface", "path_surface", "dirt_surface"]:
 		wall.set_shader_parameter(parameter, top_material.get_shader_parameter(parameter))

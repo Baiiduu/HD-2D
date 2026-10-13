@@ -1,4 +1,4 @@
-[gd_resource type="ShaderMaterial" load_steps=7 format=3]
+[gd_resource type="ShaderMaterial" load_steps=11 format=3]
 
 [ext_resource type="Shader" path="res://shaders/terrain.gdshader" id="ground_shader"]
 [ext_resource type="Texture2D" path="res://assets/ground/cultivation/精致像素风灰青色青石板地面材质_长方形石板规则错缝铺设_细而清晰的深色砖缝_40699501/texture.png" id="stone"]
@@ -6,6 +6,10 @@
 [ext_resource type="Texture2D" path="res://assets/ground/references/04_road_cobblestone.png" id="cobble"]
 [ext_resource type="Texture2D" path="res://assets/ground/tilesets/path/tileset/tileset.png" id="path"]
 [ext_resource type="Texture2D" path="res://assets/ground/tilesets/dirt/tileset/tileset.png" id="dirt"]
+[ext_resource type="Texture2D" path="res://assets/ground/battle_paving/battle_albedo.png" id="battle_color"]
+[ext_resource type="Texture2D" path="res://assets/ground/battle_paving/battle_normal_gl.png" id="battle_normal"]
+[ext_resource type="Texture2D" path="res://assets/ground/battle_paving/battle_orm_dry.png" id="battle_dry"]
+[ext_resource type="Texture2D" path="res://assets/ground/battle_paving/battle_orm_wet.png" id="battle_wet"]
 
 [resource]
 resource_local_to_scene = true
@@ -39,3 +43,10 @@ shader_parameter/grass_relief = 0.006
 shader_parameter/grass_wet_response = 0.12
 shader_parameter/grass_sheen = 0.2
 shader_parameter/texture_pixels = 64.0
+shader_parameter/battle_paving_enabled = true
+shader_parameter/battle_paving_paint_id = 11
+shader_parameter/battle_paving_rect = Vector4(-15.2, 29.6, 30.4, 30.4)
+shader_parameter/battle_paving_albedo = ExtResource("battle_color")
+shader_parameter/battle_paving_normal = ExtResource("battle_normal")
+shader_parameter/battle_paving_orm_dry = ExtResource("battle_dry")
+shader_parameter/battle_paving_orm_wet = ExtResource("battle_wet")

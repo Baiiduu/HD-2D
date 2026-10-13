@@ -1,0 +1,14 @@
+[gd_resource type="ORMMaterial3D" load_steps=4 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/ground/grass_smooth_v1/grass_albedo.png" id="color"]
+[ext_resource type="Texture2D" path="res://assets/ground/grass_smooth_v1/grass_normal_gl.png" id="normal"]
+[ext_resource type="Texture2D" path="res://assets/ground/grass_smooth_v1/grass_orm_dry.png" id="orm"]
+
+[resource]
+resource_name = "Clean grass dry"
+albedo_texture = ExtResource("color")
+orm_texture = ExtResource("orm")
+normal_enabled = true
+normal_texture = ExtResource("normal")
+normal_scale = 1.0
+texture_filter = 2
