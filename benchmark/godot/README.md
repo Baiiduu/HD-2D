@@ -35,7 +35,7 @@ Godot_v4.7.2-stable_win64_console.exe --path D:\Project\godot\games\benchmark\go
 |---|---|
 | `scripts/main.gd` | Reads the layout. Builds terrain, cliffs, water, waterfalls, bridges, layout meshes, lights, halos, fog volumes, particles, sprites, environment and post-processing. |
 | `scripts/terrain_data.gd` | Terrain grid plus queries: ramp direction, corner heights, water surface, bridge deck, walkable height, dual-grid flags. |
-| `scripts/player.gd`, `scripts/camera_rig.gd` | Grid-terrain character controller; follow camera with a dead zone. |
+| `scripts/player/player.gd`, `scripts/camera_rig.gd` | Grid-terrain character controller; follow camera with a dead zone. |
 | `scripts/backdrop.gd` | Distant scenery: lowland, hills, ridge mountains, forest silhouettes, far village lights, ground-mist sheet. |
 | `scripts/screenshot_runner.gd` | Unattended capture and FPS benchmark. |
 | `shaders/*.gdshader` | Terrain (biomes + dual-grid), cliff, water, waterfall, props, Y-billboard sprites, halos, fireflies, spray, sky, ground mist, post-processing. |

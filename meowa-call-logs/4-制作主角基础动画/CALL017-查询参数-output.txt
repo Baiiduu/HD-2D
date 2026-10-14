@@ -1,0 +1,65 @@
+usage: meowart_api.py meowa-animation-run [-h] [--output-dir OUTPUT_DIR]
+                                          --image-file IMAGE_FILE
+                                          [--last-image-file LAST_IMAGE_FILE]
+                                          --prompt PROMPT
+                                          [--style-mode {pixel,hd}]
+                                          [--resolution {480p,720p,1080p,1080p_full}]
+                                          [--alpha-mode {soft,sharp}]
+                                          [--output-frames {8,16,24,32}]
+                                          [--quality-mode {standard,medium,advanced}]
+                                          [--animation-mode {loop,non_loop}]
+                                          [--remove-bg-method {none,standard,advanced}]
+                                          [--remove-bg-batch-size {2,4,8,16}]
+                                          [--background-color BACKGROUND_COLOR]
+                                          [--high-frame-rate]
+                                          [--auto-scale-to-input]
+                                          [--optimize-prompt]
+                                          [--no-optimize-prompt]
+                                          [--padding PADDING]
+                                          [--padding-alignment {top-left,top,top-right,left,center,right,bottom-left,bottom,bottom-right}]
+
+options:
+  -h, --help            show this help message and exit
+  --output-dir, --output_dir OUTPUT_DIR
+                        Output root; the runner creates one task subdirectory
+  --image-file IMAGE_FILE
+  --last-image-file LAST_IMAGE_FILE
+                        Optional exact last frame; when set, loop mode is
+                        ignored and an omitted --output-frames defaults to 24
+                        (3 s)
+  --prompt PROMPT
+  --style-mode {pixel,hd}
+  --resolution {480p,720p,1080p,1080p_full}
+                        Pixel and HD: 480p, 720p, 1080p fast (30/35 credits at
+                        1–2s, 35/40 at 3–4s), or 1080p_full original pipeline
+                        (40/45 at 1–2s, 45/50 at 3–4s)
+  --alpha-mode {soft,sharp}
+                        Preserve translucent regions with soft, or binarize
+                        alpha with sharp
+  --output-frames {8,16,24,32}
+                        8/16/24/32 frames = 1-4 s; defaults to 24 when --last-
+                        image-file is set
+  --quality-mode {standard,medium,advanced}
+                        Standard or Detailed; Ultimate is visible but still in
+                        development
+  --animation-mode {loop,non_loop}
+  --remove-bg-method {none,standard,advanced}
+                        Background removal: none or standard (advanced is
+                        temporarily unavailable); defaults to none at 1080p,
+                        standard otherwise
+  --remove-bg-batch-size {2,4,8,16}
+                        Frames per removal (highest to lowest quality); each
+                        batch costs 5 credits
+  --background-color BACKGROUND_COLOR
+                        Source background color; defaults to #00b140 when
+                        removal is none
+  --high-frame-rate     Keep every generated frame in the output WebP instead
+                        of sampling to 8fps. Defaults removal off and fill to
+                        #00b140.
+  --auto-scale-to-input
+                        HD only: smoothly restore the input size; keep the
+                        original animation as a second output
+  --optimize-prompt
+  --no-optimize-prompt
+  --padding PADDING
+  --padding-alignment {top-left,top,top-right,left,center,right,bottom-left,bottom,bottom-right}

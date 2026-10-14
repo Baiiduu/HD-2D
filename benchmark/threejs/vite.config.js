@@ -4,9 +4,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
-// Prefer the original shared pack; the Godot benchmark bundles the same extracted assets.
-const sharedAssets = path.resolve(root, '../../Asserts');
-const ASSETS = fs.existsSync(sharedAssets) ? sharedAssets : path.resolve(root, '../godot/assets');
 
 // Small dev/preview endpoint so the page itself can save screenshots into ./screenshots
 function screenshotSaver() {
@@ -33,7 +30,7 @@ function screenshotSaver() {
 }
 
 export default defineConfig({
-  publicDir: ASSETS,
+  publicDir: path.join(root, 'public'),
   server: { port: 5199, strictPort: true },
   preview: { port: 5198, strictPort: true },
   plugins: [screenshotSaver()],

@@ -1,0 +1,64 @@
+{
+  "status": "complete",
+  "actual_network_call_count": 9,
+  "calls": [
+    {
+      "id": "CALL001",
+      "tool": "Meowa CLI / music-submit / HTTP POST",
+      "purpose": "生成音乐：当前四境 HD-2D 的空灵探索 BGM 与低存在感风声",
+      "status": "success"
+    },
+    {
+      "id": "CALL002",
+      "tool": "Meowa CLI / sound-submit / HTTP POST",
+      "purpose": "生成风声：当前四境 HD-2D 的空灵探索 BGM 与低存在感风声",
+      "status": "success"
+    },
+    {
+      "id": "CALL003",
+      "tool": "Meowa CLI / music-poll / HTTP GET",
+      "purpose": "查询音乐：当前四境 HD-2D 的空灵探索 BGM 与低存在感风声",
+      "status": "success"
+    },
+    {
+      "id": "CALL004",
+      "tool": "Meowa CLI / music-poll / HTTP GET",
+      "purpose": "下载音乐：当前四境 HD-2D 的空灵探索 BGM 与低存在感风声",
+      "status": "success"
+    },
+    {
+      "id": "CALL005",
+      "tool": "Meowa CLI / music-submit / HTTP POST",
+      "purpose": "生成音乐：当前四境 HD-2D 的空灵探索 BGM 与低存在感风声",
+      "status": "success"
+    },
+    {
+      "id": "CALL006",
+      "tool": "Meowa CLI / sound-poll / HTTP GET",
+      "purpose": "查询风声：当前四境 HD-2D 的空灵探索 BGM 与低存在感风声",
+      "status": "success"
+    },
+    {
+      "id": "CALL007",
+      "tool": "Meowa CLI / sound-poll / HTTP GET",
+      "purpose": "下载风声：当前四境 HD-2D 的空灵探索 BGM 与低存在感风声",
+      "status": "success"
+    },
+    {
+      "id": "CALL008",
+      "tool": "Meowa CLI / music-poll / HTTP GET",
+      "purpose": "查询音乐：当前四境 HD-2D 的空灵探索 BGM 与低存在感风声",
+      "status": "success"
+    },
+    {
+      "id": "CALL009",
+      "tool": "Meowa CLI / music-poll / HTTP GET",
+      "purpose": "下载音乐：当前四境 HD-2D 的空灵探索 BGM 与低存在感风声",
+      "status": "success"
+    }
+  ],
+  "delivered": "One current exploration BGM and one soft wind loop, with three auditions. First BGM preserved.",
+  "manifest": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\audio\\final_outputs.json",
+  "validation": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\audio\\audio-validation.json",
+  "configuration": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\audio\\README.md"
+}

@@ -35,6 +35,10 @@ func run() -> void:
 	current_scene = world
 	for frame in 12: await physics_frame
 	var wave: WavePrototype = world.get_node("WavePrototype")
+	# 保留旧控制器曲线的兼容验证；正式 128 档与生命成长由 test_wave_health_growth 覆盖。
+	wave.population_rules = null
+	wave.health_growth_rules = null
+	wave.max_active_enemies = 24
 	var growth: RunGrowth = wave.get_node("RunGrowth")
 	var fan: FanAutoAttack = wave.get_node("FanAutoAttack")
 	var player: Player = world.get_node("Player")
@@ -45,8 +49,15 @@ func run() -> void:
 	fan.set_physics_process(false)
 	fan.audio_enabled = false
 	growth.choice_ui.open_duration = 0.0
+	# Isolate wave persistence from random offers; draft sampling is tested separately.
+	growth.cards_per_draw = 100
+	var skills: RunSkills = wave.get_node("RunSkills")
+	skills.initial_choice.open_duration = 0.0
+	skills.initial_cards_per_draw = 100
 	player.global_position = wave._path.ground_position(wave.global_position) + Vector3.UP * 0.03
 	check(wave.endless_mode and wave.start_run(), "Production starts an endless challenge")
+	skills.initial_choice.select_option(&"initial:fan_slash")
+	skills.initial_choice.confirm_selection()
 	check(wave.is_endless() and wave.wave_count() == 0 and wave.get_run_state().endless, "State explicitly distinguishes an unbounded wave count")
 	player.global_position = world.get_node("BattleArea").global_position + Vector3.UP * 0.03
 	(world.get_node("MapEffects/Camera3D") as FollowCamera).snap_to_target()
@@ -98,6 +109,7 @@ func run() -> void:
 				check(growth.choice_ui.is_open and wave.completed_waves == number - 1, "Wave clear waits for every real experience choice")
 				if not growth.choice_ui.is_open: break
 				if growth.choice_ui.select_option(&"P01"): picked += 1
+				else: growth.choice_ui.select_option(growth.choice_options[0].id)
 				growth.choice_ui.confirm_selection()
 			else:
 				wave._physics_process(0.4)
@@ -138,6 +150,8 @@ func run() -> void:
 	wave.retreat()
 	check(wave.phase == WavePrototype.Phase.RESULT and wave.outcome == WavePrototype.Outcome.RETREAT and wave.completed_waves == 7, "Endless challenge can be ended by retreat")
 	wave.retry()
+	skills.initial_choice.select_option(&"initial:fan_slash")
+	skills.initial_choice.confirm_selection()
 	check(wave.is_endless() and wave.wave == 1 and wave._pending == 18 and wave.kills == 0 and growth.state.level == 1 and wave.combat_modifiers.levels.is_empty(), "Retry starts a clean endless run at wave one")
 	player.take_damage(player.max_health)
 	wave._physics_process(0.01)
@@ -145,14 +159,20 @@ func run() -> void:
 	wave.return_home()
 	wave.endless_max_enemies = 30
 	player.global_position = wave.global_position + Vector3.UP * 0.03
-	check(not wave.start_run() and wave.outcome == WavePrototype.Outcome.ERROR, "Invalid count cap fails before entering a broken run")
+	wave.start_run()
+	skills.initial_choice.select_option(&"initial:fan_slash")
+	skills.initial_choice.confirm_selection()
+	check(wave.phase == WavePrototype.Phase.RESULT and wave.outcome == WavePrototype.Outcome.ERROR, "Invalid count cap fails before entering a broken run")
 	check(wave._pending == 0 and not wave.combat_frozen, "Invalid config leaves no queue or freeze")
 	wave.return_home()
 	wave.waves.clear()
 	wave.endless_max_enemies = 160
 	wave.total_waves = 0 # 无尽不依赖有限总波数。
 	player.global_position = wave.global_position + Vector3.UP * 0.03
-	check(wave.start_run() and wave._pending == 5, "Empty opening list builds one fallback endless template")
+	wave.start_run()
+	skills.initial_choice.select_option(&"initial:fan_slash")
+	skills.initial_choice.confirm_selection()
+	check(wave.phase == WavePrototype.Phase.BATTLE and wave._pending == 5, "Empty opening list builds one fallback endless template")
 	check(total(wave._definition_for_wave(2)) == 13 and wave._run_waves.size() == 1, "Fallback opening uses the same endless growth and bounded template storage")
 	wave.retreat()
 	world.free()

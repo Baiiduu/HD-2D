@@ -19,6 +19,8 @@ func frames(count := 8) -> void:
 
 func run() -> void:
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
+	# This test checks golden-hour startup; the formal map may default to original light.
+	world.get_node("VisualSample").style = 1
 	world.get_node("LoadoutUI").save_enabled = false
 	root.add_child(world)
 	current_scene = world

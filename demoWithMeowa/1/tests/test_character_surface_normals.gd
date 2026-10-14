@@ -63,13 +63,13 @@ func run() -> void:
 	sun.light_color = Color(1.0,0.85,0.7)
 	sun.light_energy = 1.4
 	viewport.add_child(sun)
-	sprite = load("res://scripts/character_lighting.gd").new()
+	sprite = load("res://scripts/rendering/character_lighting.gd").new()
 	sprite.pixel_size = 0.0234375
 	sprite.set("occlusion_outline_enabled",false)
 	viewport.add_child(sprite)
 	sprite.call("apply_lighting")
 	var shader := Shader.new()
-	var code := FileAccess.get_file_as_string("res://shaders/character_lighting.gdshader").replace("\r\n","\n")
+	var code := FileAccess.get_file_as_string("res://shaders/character/character_lighting.gdshader").replace("\r\n","\n")
 	code = code.replace("uniform vec4 tint", "uniform bool normal_debug = false;\nuniform vec4 tint")
 	code = code.replace("\n}\n\nvoid light()", "\nif (normal_debug) EMISSION = NORMAL * 0.5 + 0.5;\nif (normal_debug) ALBEDO = vec3(0.0);\n}\n\nvoid light()")
 	shader.code = code

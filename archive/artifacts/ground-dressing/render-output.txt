@@ -1,0 +1,7 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+D3D12 12_0 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 3050
+
+Dressing preview: 18 sprites, original character pixel size, nearest sampling
+Dressing preview saved: flowers error=0
+Dressing preview saved: grass error=0
+Dressing preview saved: pebbles error=0

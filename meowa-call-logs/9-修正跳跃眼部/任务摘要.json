@@ -1,0 +1,20 @@
+{
+  "task": "9-修正跳跃眼部",
+  "cliRunsBackfilled": 2,
+  "newMeowaRuns": 0,
+  "adoptedOutputs": 0,
+  "jobs": [
+    {
+      "call": "CALL001",
+      "index": 0,
+      "job_id": "job_6032cc4b19b44da1b8176f09bdc5e6cc"
+    },
+    {
+      "call": "CALL002",
+      "index": 3,
+      "job_id": "job_c2f03dd77ca14dff9cc2d836e4514a69"
+    }
+  ],
+  "recordedBeijingTime": "2026-10-12T12:34:12.756121+08:00",
+  "futureAutomaticCallLogging": "仅补记用户指定的本次任务；后续自动调用记录仍保持暂停。"
+}

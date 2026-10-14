@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/buildings/ricochet_prop.gd" id="prop"]
+
+[node name="ObtuseWall" type="Node3D"]
+script = ExtResource("prop")
+kind = 5
+dimensions = Vector3(3.6, 1.35, 2.6)
+layout_variant = 2
+turn_angle_degrees = 45.0

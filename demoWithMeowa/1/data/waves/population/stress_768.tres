@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WavePopulationRules" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/wave_population_rules.gd" id="rules"]
+
+[resource]
+script = ExtResource("rules")
+resource_name = "压力验证 768 · 非平衡档位"
+first_active_limit = 768
+active_growth_per_wave = 0
+max_active = 768
+max_population_cost = 1152
+role_limits = PackedInt32Array(768, 72, 18, 2)
+max_wave_enemies = 2304

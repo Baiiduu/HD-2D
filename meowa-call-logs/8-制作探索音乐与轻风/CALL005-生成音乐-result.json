@@ -1,0 +1,22 @@
+{
+  "status": "success",
+  "beijingTime": "2026-10-10T18:52:25+08:00",
+  "httpStatus": 200,
+  "headers": {
+    "Alt-Svc": "h3=\":443\"; ma=2592000",
+    "Content-Length": "146",
+    "Content-Type": "application/json",
+    "Date": "Sat, 10 Oct 2026 10:52:23 GMT",
+    "Server": "uvicorn",
+    "Vary": "Origin",
+    "Via": "1.1 Caddy"
+  },
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "returnedData": {
+    "job_id": "job_7a4d36f7c937404390a98b8cf6e0c66a",
+    "jobs_url": "http://api.meowa.ai/api/jobs/job_7a4d36f7c937404390a98b8cf6e0c66a",
+    "status": "queued"
+  }
+}

@@ -1,0 +1,11 @@
+usage: meowart_api.py texture-gen-run [-h] [--output-dir OUTPUT_DIR]
+                                      --prompt PROMPT [--self-loop]
+                                      [--no-self-loop]
+
+options:
+  -h, --help            show this help message and exit
+  --output-dir, --output_dir OUTPUT_DIR
+                        Output root; the runner creates one task subdirectory
+  --prompt PROMPT       Describe the required 64x64 seamless texture
+  --self-loop
+  --no-self-loop

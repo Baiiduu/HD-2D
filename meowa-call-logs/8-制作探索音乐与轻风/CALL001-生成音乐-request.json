@@ -1,0 +1,44 @@
+{
+  "id": "CALL001",
+  "task": "8-制作探索音乐与轻风",
+  "asset": "music",
+  "beijingTime": "2026-10-10T18:47:11+08:00",
+  "purpose": "生成音乐：当前四境 HD-2D 的空灵探索 BGM 与低存在感风声",
+  "tool": "Meowa CLI / music-submit / HTTP POST",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "arguments": [
+    "music-submit",
+    "--prompt",
+    "An instrumental exploration soundtrack for a pixel-art HD-2D world of rainy lantern-lit streets, cool neon, a quiet eastern courtyard and woodland. Gentle felt piano carries a sparse memorable melody over soft electronic pads, with occasional delicate guzheng plucks and breathy wooden flute. Calm, spacious and quietly curious, around 76 BPM, warm against a cool nighttime atmosphere. Keep the arrangement restrained and the dynamics even so game actions remain clear. No vocals, prominent drums or dramatic swells. About three minutes, suitable for continuous background looping, with a gentle transition between the ending and beginning.",
+    "--output-mode",
+    "pro",
+    "--output-dir",
+    "D:\\.codexfile\\work\\ambient-audio\\music"
+  ],
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "actualRequest": {
+    "method": "POST",
+    "url": "https://api.meowa.ai/api/workflows/music_generator/run",
+    "headers": {
+      "User-Agent": "MeowaGameAssets/2026.10.08.2",
+      "X-Meowa-Skill-Name": "game-assets",
+      "X-Meowa-Skill-Version": "2026.10.08.2",
+      "Authorization": "[REDACTED]"
+    },
+    "params": null,
+    "data": {
+      "prompt": "An instrumental exploration soundtrack for a pixel-art HD-2D world of rainy lantern-lit streets, cool neon, a quiet eastern courtyard and woodland. Gentle felt piano carries a sparse memorable melody over soft electronic pads, with occasional delicate guzheng plucks and breathy wooden flute. Calm, spacious and quietly curious, around 76 BPM, warm against a cool nighttime atmosphere. Keep the arrangement restrained and the dynamics even so game actions remain clear. No vocals, prominent drums or dramatic swells. About three minutes, suitable for continuous background looping, with a gentle transition between the ending and beginning.",
+      "audio_generate": "true",
+      "demo": "false"
+    },
+    "files": null,
+    "json": null,
+    "timeout": 240,
+    "verify": true
+  },
+  "prompt": "An instrumental exploration soundtrack for a pixel-art HD-2D world of rainy lantern-lit streets, cool neon, a quiet eastern courtyard and woodland. Gentle felt piano carries a sparse memorable melody over soft electronic pads, with occasional delicate guzheng plucks and breathy wooden flute. Calm, spacious and quietly curious, around 76 BPM, warm against a cool nighttime atmosphere. Keep the arrangement restrained and the dynamics even so game actions remain clear. No vocals, prominent drums or dramatic swells. About three minutes, suitable for continuous background looping, with a gentle transition between the ending and beginning.",
+  "negativePrompt": null,
+  "referenceResources": [],
+  "relatedJob": null,
+  "status": "pending"
+}

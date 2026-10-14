@@ -1,0 +1,48 @@
+{
+  "status": "success",
+  "startedAt": "2026-10-10T13:06:38+08:00",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "endedAt": "2026-10-10T13:07:26+08:00",
+  "exitCode": 0,
+  "output": "[INFO] planned_output_dir=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run\\黄衣青年保持朝右的三分之四视角_原地轻跑_双腿交替迈步_手臂自然摆动_身体只有_1158b885\n[INFO] submitted api_job_id=job_315e1606d15e49069aea89f4ef5f3e9b\n[INFO] status=running stage=queued progress=处理中:50%\n[INFO] status=running stage=queued progress=处理中:50%\n[INFO] status=running stage=queued progress=处理中:50%\n[INFO] status=queued stage=queued progress=排队中:?%\n[INFO] status=running stage=queued progress=处理中:50%\n[INFO] status=running stage=queued progress=处理中:50%\n[INFO] status=running stage=queued progress=处理中:50%\n[INFO] status=running stage=finalizing progress=处理中:50%\n[INFO] status=running stage=finalizing progress=处理中:50%\n[INFO] status=running stage=finalizing progress=处理中:50%\n[INFO] status=running stage=finalizing progress=处理中:50%\n[INFO] status=running stage=finalizing progress=处理中:50%\n[INFO] status=running stage=finalizing progress=处理中:50%\n[INFO] status=success stage=completed progress=已完成:100%\n[INFO] downloading_outputs count=7 to=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run\\黄衣青年保持朝右的三分之四视角_原地轻跑_双腿交替迈步_手臂自然摆动_身体只有_1158b885\n[INFO] downloaded=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run\\黄衣青年保持朝右的三分之四视角_原地轻跑_双腿交替迈步_手臂自然摆动_身体只有_1158b885\\result_output_url.webp\n[INFO] downloaded=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run\\黄衣青年保持朝右的三分之四视角_原地轻跑_双腿交替迈步_手臂自然摆动_身体只有_1158b885\\result_output_transparent_output_urls_gif.gif\n[INFO] downloaded=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run\\黄衣青年保持朝右的三分之四视角_原地轻跑_双腿交替迈步_手臂自然摆动_身体只有_1158b885\\result_output_transparent_output_urls_png.png\n[INFO] saved_dir=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run\\黄衣青年保持朝右的三分之四视角_原地轻跑_双腿交替迈步_手臂自然摆动_身体只有_1158b885\n{\n  \"job_id\": \"job_315e1606d15e49069aea89f4ef5f3e9b\",\n  \"job_type\": \"animate\",\n  \"status\": \"success\",\n  \"next_poll_after_seconds\": 0,\n  \"animation_type\": \"run\",\n  \"queue\": {\n    \"position\": 0,\n    \"estimated_wait_seconds\": 0\n  },\n  \"progress\": {\n    \"label\": \"已完成\",\n    \"percent\": 100\n  },\n  \"result\": {\n    \"id\": \"job_315e1606d15e49069aea89f4ef5f3e9b\",\n    \"api_job_id\": \"job_315e1606d15e49069aea89f4ef5f3e9b\",\n    \"status\": \"success\",\n    \"error\": null,\n    \"error_code\": null,\n    \"animation_type\": \"run\",\n    \"final_prompt\": \"The young man in the yellow hoodie and dark pants performs a stationary jogging cycle in a three-quarter right-facing view. His legs alternate striding and his arms swing naturally at his sides while his torso exhibits a rhythmic, light vertical bobbing motion. The character remains in place without translating across the canvas, maintaining a steady running cycle with a fixed camera.\",\n    \"output\": {\n      \"transparent_output_urls\": {},\n      \"download_urls\": {},\n      \"frame_count\": 8,\n      \"output_frames\": 8\n    }\n  },\n  \"outputs\": [],\n  \"error\": null,\n  \"error_code\": null,\n  \"error_id\": null,\n  \"credit_refund\": {\n    \"refunded\": false,\n    \"amount\": 0\n  }\n}\n",
+  "returnedData": {
+    "job_id": "job_315e1606d15e49069aea89f4ef5f3e9b",
+    "job_type": "animate",
+    "status": "success",
+    "next_poll_after_seconds": 0,
+    "animation_type": "run",
+    "queue": {
+      "position": 0,
+      "estimated_wait_seconds": 0
+    },
+    "progress": {
+      "label": "已完成",
+      "percent": 100
+    },
+    "result": {
+      "id": "job_315e1606d15e49069aea89f4ef5f3e9b",
+      "api_job_id": "job_315e1606d15e49069aea89f4ef5f3e9b",
+      "status": "success",
+      "error": null,
+      "error_code": null,
+      "animation_type": "run",
+      "final_prompt": "The young man in the yellow hoodie and dark pants performs a stationary jogging cycle in a three-quarter right-facing view. His legs alternate striding and his arms swing naturally at his sides while his torso exhibits a rhythmic, light vertical bobbing motion. The character remains in place without translating across the canvas, maintaining a steady running cycle with a fixed camera.",
+      "output": {
+        "transparent_output_urls": {},
+        "download_urls": {},
+        "frame_count": 8,
+        "output_frames": 8
+      }
+    },
+    "outputs": [],
+    "error": null,
+    "error_code": null,
+    "error_id": null,
+    "credit_refund": {
+      "refunded": false,
+      "amount": 0
+    }
+  }
+}

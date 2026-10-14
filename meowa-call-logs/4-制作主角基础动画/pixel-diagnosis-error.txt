@@ -1,0 +1,4 @@
+WARNING: Loaded resource as image file, this will not work on export: 'res://assets/meowa/player/idle_00.png'. Instead, import the image file as an Image resource and load it normally as a resource.
+   at: load_from_file (core/io/image.cpp:2780)
+   GDScript backtrace (most recent call first):
+       [0] _run (D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/diagnose_pixels.gd:29)

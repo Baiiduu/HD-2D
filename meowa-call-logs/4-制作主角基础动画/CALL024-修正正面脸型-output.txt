@@ -1,0 +1,68 @@
+[INFO] planned_output_dir=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\front-face-taper\修改这个正面青年的脸型_让脸明显更瘦长_脸颊总宽度减少两个像素_下颌向下收窄_3ca1bb35
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=success stage=completed progress=已完成:100%
+[INFO] downloading_outputs count=2 to=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\front-face-taper\修改这个正面青年的脸型_让脸明显更瘦长_脸颊总宽度减少两个像素_下颌向下收窄_3ca1bb35
+[INFO] downloaded=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\front-face-taper\修改这个正面青年的脸型_让脸明显更瘦长_脸颊总宽度减少两个像素_下颌向下收窄_3ca1bb35\edited.png
+[INFO] saved_dir=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\front-face-taper\修改这个正面青年的脸型_让脸明显更瘦长_脸颊总宽度减少两个像素_下颌向下收窄_3ca1bb35
+{
+  "job_id": "job_d8470debdd2449ec895b3a3e68ed5375",
+  "job_type": "workflow",
+  "status": "success",
+  "next_poll_after_seconds": 0,
+  "animation_type": null,
+  "queue": {
+    "position": 0,
+    "estimated_wait_seconds": 0
+  },
+  "progress": {
+    "label": "已完成",
+    "percent": 100
+  },
+  "result": {
+    "job_name": "054822_image_edit_image_edit",
+    "edited_path": "https://media.meowa.ai/public/image-edit/output/2026-10-10/05%3A49%3A49-workflow-999a42c8604e4fdeb0df064c/edited.png",
+    "url": "https://media.meowa.ai/public/image-edit/output/2026-10-10/05%3A49%3A49-workflow-999a42c8604e4fdeb0df064c/edited.png"
+  },
+  "outputs": [
+    {
+      "output_key": "primary",
+      "media_type": "image",
+      "mime_type": null,
+      "asset_id": null,
+      "thumb_url": null,
+      "width": null,
+      "height": null,
+      "byte_size": null
+    }
+  ],
+  "error": null,
+  "error_code": null,
+  "error_id": null,
+  "credit_refund": {
+    "refunded": false,
+    "amount": 0
+  }
+}

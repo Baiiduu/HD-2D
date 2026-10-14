@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "beijingTime": "2026-10-10T18:50:24+08:00",
+  "httpStatus": 200,
+  "headers": {
+    "Alt-Svc": "h3=\":443\"; ma=2592000",
+    "Content-Encoding": "zstd",
+    "Content-Type": "application/json",
+    "Date": "Sat, 10 Oct 2026 10:50:23 GMT",
+    "Server": "uvicorn",
+    "Vary": "Origin, Accept-Encoding",
+    "Via": "1.1 Caddy",
+    "Transfer-Encoding": "chunked"
+  },
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "returnedData": {
+    "job_id": "job_261574c790b84e9793fef6c6059e7972",
+    "job_type": "workflow",
+    "status": "success",
+    "stage": "completed",
+    "next_poll_after_seconds": 0,
+    "animation_type": null,
+    "queue": {
+      "position": 0,
+      "estimated_wait_seconds": 0
+    },
+    "progress": {
+      "label": "已完成",
+      "percent": 100
+    },
+    "result": {
+      "job_name": "104754_default_An_instrumental_exploration_soundtrack_for_a_pixel_art_HD_2D_wor",
+      "name": "Lantern Rain and Neon Courtyard",
+      "summary": "A 3-minute atmospheric exploration BGM in D minor at 76 BPM in 4/4, featuring delicate felt piano, breathy wooden flute, sparse guzheng plucks, soft ambient synth pads, and subtle rain textures for a calm HD-2D nighttime setting. Instrumental only, no vocals.",
+      "timestamps_detail": "[0:00 - 0:30] Intro: Intensity: 2/10.\nAn atmospheric and intimate opening evoking quiet nocturnal exploration in an HD-2D rain-soaked town. A delicate, close-mic'd felt piano introduces a sparse, contemplative 4-bar motif in D minor, showcasing the warmth of felt hammers and mechanical pedal noise. Beneath the piano, a gentle layer of natural rain ambience and distant tape hiss mingles with a warm, low-pass filtered analog synth pad. The rhythm is unhurried and fluid without explicit percussion. The mood is calm, solitary, and gently curious.\n\n[0:30 - 1:15] Section A - Lantern-Lit Street: Intensity: 3/10.\nThe primary exploration theme gently unfolds with subtle layer additions. The felt piano continues carrying the main melodic voice, defined by spacious pauses and gentle phrasing. Delicate, resonant guzheng plucks enter gracefully, adding crystalline pentatonic accents and brief ornamental bends that evoke an eastern courtyard aesthetic. A warm, round sub-bass pulse softly anchors the downbeats, accompanied by faint wooden clicks and soft acoustic shakers that maintain the steady 76 BPM pulse without disturbing the calm atmosphere. The harmony remains open, warm, and meditative.\n\n[1:15 - 2:00] Section B - Bamboo Grove & Mist: Intensity: 3.5/10.\nA gentle expansion of texture as the scene transitions toward a quiet woodland garden. A breathy, organic wooden flute (xiao) enters softly to deliver a graceful, yearning melodic counter-line, its expressive vibrato and airy overtones floating over the arrangement. The felt piano shifts to gentle rolling arpeggios while shimmering ambient bells and subtle warm synth glimmers evoke neon reflections on wet stones. The rhythm remains extremely minimal and relaxed, ensuring gameplay audio and sound effects remain completely unobscured.\n\n[2:00 - 2:40] Section C - Neon Reflections: Intensity: 3/10.\nThe instrumentation converges in an understated, harmonious counterpoint. The felt piano, wooden flute, and delicate guzheng trade small conversational phrases over sustained, lush electronic pads. A quiet, warm sine pluck subtly reinforces the harmonic changes. Dynamics stay strictly controlled and even, avoiding any dramatic swells or sudden drops to preserve an immersive, peaceful background state suitable for deep focus and exploration.\n\n[2:40 - 3:00] Loop Outro - Lingering Drizzle: Intensity: 2/10.\nA seamless reduction of layers designed for an unnoticeable loop back to the beginning. The wooden flute and guzheng gently fade into the background reverb tail, leaving only the felt piano returning to its initial sparse 4-bar introductory motif. The soothing sound of rain and the warm ambient synth pad softly linger on an open D minor chord, creating a smooth and natural transition point for infinite loop playback.",
+      "audio_path": "https://media.meowa.ai/public/music-generator/output/2026-10-10/10%3A49%3A02-workflow-c0fb7335cae844e0b2d2c764/Lantern%20Rain%20and%20Neon%20Courtyard.mp3",
+      "audio_paths": [
+        "https://media.meowa.ai/public/music-generator/output/2026-10-10/10%3A49%3A02-workflow-c0fb7335cae844e0b2d2c764/Lantern%20Rain%20and%20Neon%20Courtyard.mp3"
+      ],
+      "audios": [
+        {
+          "type": "music",
+          "label": "Lantern Rain and Neon Courtyard",
+          "name": "Lantern Rain and Neon Courtyard",
+          "path": "https://media.meowa.ai/public/music-generator/output/2026-10-10/10%3A49%3A02-workflow-c0fb7335cae844e0b2d2c764/Lantern%20Rain%20and%20Neon%20Courtyard.mp3",
+          "content_type": "audio/mpeg",
+          "duration_seconds": 175
+        }
+      ],
+      "url": "https://media.meowa.ai/public/music-generator/output/2026-10-10/10%3A49%3A02-workflow-c0fb7335cae844e0b2d2c764/Lantern%20Rain%20and%20Neon%20Courtyard.mp3"
+    },
+    "outputs": [
+      {
+        "output_key": "primary",
+        "url": "https://media.meowa.ai/public/music-generator/output/2026-10-10/10%3A49%3A02-workflow-c0fb7335cae844e0b2d2c764/Lantern%20Rain%20and%20Neon%20Courtyard.mp3",
+        "media_type": "audio",
+        "mime_type": null,
+        "asset_id": null,
+        "thumb_url": null,
+        "width": null,
+        "height": null,
+        "byte_size": null
+      }
+    ],
+    "error": null,
+    "error_code": null,
+    "error_id": null,
+    "credit_refund": {
+      "refunded": false,
+      "amount": 0,
+      "reference_id": "job_261574c790b84e9793fef6c6059e7972"
+    }
+  }
+}

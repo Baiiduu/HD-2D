@@ -1,0 +1,1295 @@
+{
+  "image_size": [
+    414,
+    311
+  ],
+  "component_count": 98,
+  "parameters": {
+    "alpha_threshold": 8,
+    "background_tolerance": 8,
+    "connectivity": 8,
+    "min_component_area": 8,
+    "padding_px": 0,
+    "merge_contained_fragments": true,
+    "fragment_max_area": 256,
+    "fragment_max_area_ratio": 0.02
+  },
+  "warnings": [],
+  "components": [
+    {
+      "id": "component_001",
+      "file": "component_001.png",
+      "bbox": [
+        294,
+        52,
+        324,
+        90
+      ],
+      "width": 30,
+      "height": 38,
+      "pixel_count": 947
+    },
+    {
+      "id": "component_002",
+      "file": "component_002.png",
+      "bbox": [
+        251,
+        58,
+        286,
+        90
+      ],
+      "width": 35,
+      "height": 32,
+      "pixel_count": 872
+    },
+    {
+      "id": "component_003",
+      "file": "component_003.png",
+      "bbox": [
+        45,
+        59,
+        80,
+        90
+      ],
+      "width": 35,
+      "height": 31,
+      "pixel_count": 851
+    },
+    {
+      "id": "component_004",
+      "file": "component_004.png",
+      "bbox": [
+        127,
+        56,
+        160,
+        90
+      ],
+      "width": 33,
+      "height": 34,
+      "pixel_count": 842
+    },
+    {
+      "id": "component_005",
+      "file": "component_005.png",
+      "bbox": [
+        169,
+        58,
+        201,
+        90
+      ],
+      "width": 32,
+      "height": 32,
+      "pixel_count": 817
+    },
+    {
+      "id": "component_006",
+      "file": "component_006.png",
+      "bbox": [
+        85,
+        59,
+        120,
+        90
+      ],
+      "width": 35,
+      "height": 31,
+      "pixel_count": 772
+    },
+    {
+      "id": "component_007",
+      "file": "component_007.png",
+      "bbox": [
+        250,
+        10,
+        286,
+        44
+      ],
+      "width": 36,
+      "height": 34,
+      "pixel_count": 728
+    },
+    {
+      "id": "component_008",
+      "file": "component_008.png",
+      "bbox": [
+        210,
+        63,
+        244,
+        90
+      ],
+      "width": 34,
+      "height": 27,
+      "pixel_count": 700
+    },
+    {
+      "id": "component_009",
+      "file": "component_009.png",
+      "bbox": [
+        333,
+        10,
+        366,
+        44
+      ],
+      "width": 33,
+      "height": 34,
+      "pixel_count": 673
+    },
+    {
+      "id": "component_010",
+      "file": "component_010.png",
+      "bbox": [
+        334,
+        52,
+        366,
+        90
+      ],
+      "width": 32,
+      "height": 38,
+      "pixel_count": 669
+    },
+    {
+      "id": "component_011",
+      "file": "component_011.png",
+      "bbox": [
+        210,
+        101,
+        244,
+        134
+      ],
+      "width": 34,
+      "height": 33,
+      "pixel_count": 643
+    },
+    {
+      "id": "component_012",
+      "file": "component_012.png",
+      "bbox": [
+        116,
+        231,
+        147,
+        261
+      ],
+      "width": 31,
+      "height": 30,
+      "pixel_count": 632
+    },
+    {
+      "id": "component_013",
+      "file": "component_013.png",
+      "bbox": [
+        250,
+        231,
+        283,
+        260
+      ],
+      "width": 33,
+      "height": 29,
+      "pixel_count": 631
+    },
+    {
+      "id": "component_014",
+      "file": "component_014.png",
+      "bbox": [
+        177,
+        147,
+        209,
+        175
+      ],
+      "width": 32,
+      "height": 28,
+      "pixel_count": 608
+    },
+    {
+      "id": "component_015",
+      "file": "component_015.png",
+      "bbox": [
+        376,
+        10,
+        405,
+        44
+      ],
+      "width": 29,
+      "height": 34,
+      "pixel_count": 590
+    },
+    {
+      "id": "component_016",
+      "file": "component_016.png",
+      "bbox": [
+        376,
+        55,
+        404,
+        90
+      ],
+      "width": 28,
+      "height": 35,
+      "pixel_count": 584
+    },
+    {
+      "id": "component_017",
+      "file": "component_017.png",
+      "bbox": [
+        338,
+        100,
+        363,
+        134
+      ],
+      "width": 25,
+      "height": 34,
+      "pixel_count": 577
+    },
+    {
+      "id": "component_018",
+      "file": "component_018.png",
+      "bbox": [
+        300,
+        273,
+        329,
+        303
+      ],
+      "width": 29,
+      "height": 30,
+      "pixel_count": 569
+    },
+    {
+      "id": "component_019",
+      "file": "component_019.png",
+      "bbox": [
+        82,
+        191,
+        110,
+        217
+      ],
+      "width": 28,
+      "height": 26,
+      "pixel_count": 563
+    },
+    {
+      "id": "component_020",
+      "file": "component_020.png",
+      "bbox": [
+        214,
+        148,
+        244,
+        176
+      ],
+      "width": 30,
+      "height": 28,
+      "pixel_count": 556
+    },
+    {
+      "id": "component_021",
+      "file": "component_021.png",
+      "bbox": [
+        46,
+        106,
+        77,
+        134
+      ],
+      "width": 31,
+      "height": 28,
+      "pixel_count": 544
+    },
+    {
+      "id": "component_022",
+      "file": "component_022.png",
+      "bbox": [
+        48,
+        11,
+        77,
+        44
+      ],
+      "width": 29,
+      "height": 33,
+      "pixel_count": 534
+    },
+    {
+      "id": "component_023",
+      "file": "component_023.png",
+      "bbox": [
+        215,
+        233,
+        245,
+        260
+      ],
+      "width": 30,
+      "height": 27,
+      "pixel_count": 533
+    },
+    {
+      "id": "component_024",
+      "file": "component_024.png",
+      "bbox": [
+        46,
+        147,
+        76,
+        176
+      ],
+      "width": 30,
+      "height": 29,
+      "pixel_count": 531
+    },
+    {
+      "id": "component_025",
+      "file": "component_025.png",
+      "bbox": [
+        183,
+        233,
+        212,
+        258
+      ],
+      "width": 29,
+      "height": 25,
+      "pixel_count": 524
+    },
+    {
+      "id": "component_026",
+      "file": "component_026.png",
+      "bbox": [
+        298,
+        235,
+        328,
+        257
+      ],
+      "width": 30,
+      "height": 22,
+      "pixel_count": 522
+    },
+    {
+      "id": "component_027",
+      "file": "component_027.png",
+      "bbox": [
+        251,
+        274,
+        280,
+        302
+      ],
+      "width": 29,
+      "height": 28,
+      "pixel_count": 519
+    },
+    {
+      "id": "component_028",
+      "file": "component_028.png",
+      "bbox": [
+        251,
+        192,
+        285,
+        215
+      ],
+      "width": 34,
+      "height": 23,
+      "pixel_count": 515
+    },
+    {
+      "id": "component_029",
+      "file": "component_029.png",
+      "bbox": [
+        184,
+        189,
+        209,
+        219
+      ],
+      "width": 25,
+      "height": 30,
+      "pixel_count": 503
+    },
+    {
+      "id": "component_030",
+      "file": "component_030.png",
+      "bbox": [
+        9,
+        11,
+        35,
+        44
+      ],
+      "width": 26,
+      "height": 33,
+      "pixel_count": 501
+    },
+    {
+      "id": "component_031",
+      "file": "component_031.png",
+      "bbox": [
+        152,
+        230,
+        179,
+        261
+      ],
+      "width": 27,
+      "height": 31,
+      "pixel_count": 497
+    },
+    {
+      "id": "component_032",
+      "file": "component_032.png",
+      "bbox": [
+        129,
+        11,
+        157,
+        44
+      ],
+      "width": 28,
+      "height": 33,
+      "pixel_count": 495
+    },
+    {
+      "id": "component_033",
+      "file": "component_033.png",
+      "bbox": [
+        116,
+        195,
+        147,
+        214
+      ],
+      "width": 31,
+      "height": 19,
+      "pixel_count": 491
+    },
+    {
+      "id": "component_034",
+      "file": "component_034.png",
+      "bbox": [
+        4,
+        70,
+        37,
+        90
+      ],
+      "width": 33,
+      "height": 20,
+      "pixel_count": 484
+    },
+    {
+      "id": "component_035",
+      "file": "component_035.png",
+      "bbox": [
+        84,
+        273,
+        109,
+        303
+      ],
+      "width": 25,
+      "height": 30,
+      "pixel_count": 480
+    },
+    {
+      "id": "component_036",
+      "file": "component_036.png",
+      "bbox": [
+        89,
+        12,
+        117,
+        44
+      ],
+      "width": 28,
+      "height": 32,
+      "pixel_count": 479
+    },
+    {
+      "id": "component_037",
+      "file": "component_037.png",
+      "bbox": [
+        253,
+        144,
+        284,
+        177
+      ],
+      "width": 31,
+      "height": 33,
+      "pixel_count": 479
+    },
+    {
+      "id": "component_038",
+      "file": "component_038.png",
+      "bbox": [
+        339,
+        191,
+        363,
+        217
+      ],
+      "width": 24,
+      "height": 26,
+      "pixel_count": 476
+    },
+    {
+      "id": "component_039",
+      "file": "component_039.png",
+      "bbox": [
+        255,
+        102,
+        283,
+        134
+      ],
+      "width": 28,
+      "height": 32,
+      "pixel_count": 472
+    },
+    {
+      "id": "component_040",
+      "file": "component_040.png",
+      "bbox": [
+        217,
+        273,
+        242,
+        302
+      ],
+      "width": 25,
+      "height": 29,
+      "pixel_count": 465
+    },
+    {
+      "id": "component_041",
+      "file": "component_041.png",
+      "bbox": [
+        152,
+        193,
+        178,
+        216
+      ],
+      "width": 26,
+      "height": 23,
+      "pixel_count": 463
+    },
+    {
+      "id": "component_042",
+      "file": "component_042.png",
+      "bbox": [
+        155,
+        271,
+        179,
+        303
+      ],
+      "width": 24,
+      "height": 32,
+      "pixel_count": 454
+    },
+    {
+      "id": "component_043",
+      "file": "component_043.png",
+      "bbox": [
+        174,
+        12,
+        197,
+        45
+      ],
+      "width": 23,
+      "height": 33,
+      "pixel_count": 453
+    },
+    {
+      "id": "component_044",
+      "file": "component_044.png",
+      "bbox": [
+        80,
+        232,
+        112,
+        259
+      ],
+      "width": 32,
+      "height": 27,
+      "pixel_count": 452
+    },
+    {
+      "id": "component_045",
+      "file": "component_045.png",
+      "bbox": [
+        374,
+        276,
+        406,
+        300
+      ],
+      "width": 32,
+      "height": 24,
+      "pixel_count": 451
+    },
+    {
+      "id": "component_046",
+      "file": "component_046.png",
+      "bbox": [
+        6,
+        275,
+        36,
+        300
+      ],
+      "width": 30,
+      "height": 25,
+      "pixel_count": 442
+    },
+    {
+      "id": "component_047",
+      "file": "component_047.png",
+      "bbox": [
+        337,
+        276,
+        367,
+        300
+      ],
+      "width": 30,
+      "height": 24,
+      "pixel_count": 442
+    },
+    {
+      "id": "component_048",
+      "file": "component_048.png",
+      "bbox": [
+        9,
+        151,
+        34,
+        176
+      ],
+      "width": 25,
+      "height": 25,
+      "pixel_count": 441
+    },
+    {
+      "id": "component_049",
+      "file": "component_049.png",
+      "bbox": [
+        171,
+        109,
+        200,
+        134
+      ],
+      "width": 29,
+      "height": 25,
+      "pixel_count": 439
+    },
+    {
+      "id": "component_050",
+      "file": "component_050.png",
+      "bbox": [
+        378,
+        191,
+        402,
+        217
+      ],
+      "width": 24,
+      "height": 26,
+      "pixel_count": 421
+    },
+    {
+      "id": "component_051",
+      "file": "component_051.png",
+      "bbox": [
+        91,
+        103,
+        115,
+        134
+      ],
+      "width": 24,
+      "height": 31,
+      "pixel_count": 419
+    },
+    {
+      "id": "component_052",
+      "file": "component_052.png",
+      "bbox": [
+        376,
+        102,
+        404,
+        134
+      ],
+      "width": 28,
+      "height": 32,
+      "pixel_count": 411
+    },
+    {
+      "id": "component_053",
+      "file": "component_053.png",
+      "bbox": [
+        293,
+        191,
+        328,
+        217
+      ],
+      "width": 35,
+      "height": 26,
+      "pixel_count": 408
+    },
+    {
+      "id": "component_054",
+      "file": "component_054.png",
+      "bbox": [
+        214,
+        195,
+        245,
+        214
+      ],
+      "width": 31,
+      "height": 19,
+      "pixel_count": 405
+    },
+    {
+      "id": "component_055",
+      "file": "component_055.png",
+      "bbox": [
+        83,
+        148,
+        111,
+        175
+      ],
+      "width": 28,
+      "height": 27,
+      "pixel_count": 373
+    },
+    {
+      "id": "component_056",
+      "file": "component_056.png",
+      "bbox": [
+        118,
+        150,
+        143,
+        174
+      ],
+      "width": 25,
+      "height": 24,
+      "pixel_count": 373
+    },
+    {
+      "id": "component_057",
+      "file": "component_057.png",
+      "bbox": [
+        296,
+        20,
+        321,
+        44
+      ],
+      "width": 25,
+      "height": 24,
+      "pixel_count": 370
+    },
+    {
+      "id": "component_058",
+      "file": "component_058.png",
+      "bbox": [
+        119,
+        275,
+        139,
+        298
+      ],
+      "width": 20,
+      "height": 23,
+      "pixel_count": 364
+    },
+    {
+      "id": "component_059",
+      "file": "component_059.png",
+      "bbox": [
+        132,
+        106,
+        155,
+        134
+      ],
+      "width": 23,
+      "height": 28,
+      "pixel_count": 362
+    },
+    {
+      "id": "component_060",
+      "file": "component_060.png",
+      "bbox": [
+        214,
+        13,
+        240,
+        44
+      ],
+      "width": 26,
+      "height": 31,
+      "pixel_count": 351
+    },
+    {
+      "id": "component_061",
+      "file": "component_061.png",
+      "bbox": [
+        337,
+        146,
+        364,
+        177
+      ],
+      "width": 27,
+      "height": 31,
+      "pixel_count": 348
+    },
+    {
+      "id": "component_062",
+      "file": "component_062.png",
+      "bbox": [
+        11,
+        110,
+        33,
+        134
+      ],
+      "width": 22,
+      "height": 24,
+      "pixel_count": 333
+    },
+    {
+      "id": "component_063",
+      "file": "component_063.png",
+      "bbox": [
+        294,
+        102,
+        323,
+        134
+      ],
+      "width": 29,
+      "height": 32,
+      "pixel_count": 308
+    },
+    {
+      "id": "component_064",
+      "file": "component_064.png",
+      "bbox": [
+        336,
+        231,
+        366,
+        261
+      ],
+      "width": 30,
+      "height": 30,
+      "pixel_count": 306
+    },
+    {
+      "id": "component_065",
+      "file": "component_065.png",
+      "bbox": [
+        378,
+        147,
+        402,
+        175
+      ],
+      "width": 24,
+      "height": 28,
+      "pixel_count": 305
+    },
+    {
+      "id": "component_066",
+      "file": "component_066.png",
+      "bbox": [
+        184,
+        276,
+        210,
+        297
+      ],
+      "width": 26,
+      "height": 21,
+      "pixel_count": 287
+    },
+    {
+      "id": "component_067",
+      "file": "component_067.png",
+      "bbox": [
+        45,
+        280,
+        75,
+        300
+      ],
+      "width": 30,
+      "height": 20,
+      "pixel_count": 275
+    },
+    {
+      "id": "component_068",
+      "file": "component_068.png",
+      "bbox": [
+        45,
+        231,
+        73,
+        260
+      ],
+      "width": 28,
+      "height": 29,
+      "pixel_count": 269
+    },
+    {
+      "id": "component_069",
+      "file": "component_069.png",
+      "bbox": [
+        9,
+        233,
+        35,
+        259
+      ],
+      "width": 26,
+      "height": 26,
+      "pixel_count": 219
+    },
+    {
+      "id": "component_070",
+      "file": "component_070.png",
+      "bbox": [
+        13,
+        197,
+        31,
+        211
+      ],
+      "width": 18,
+      "height": 14,
+      "pixel_count": 199
+    },
+    {
+      "id": "component_071",
+      "file": "component_071.png",
+      "bbox": [
+        284,
+        275,
+        297,
+        299
+      ],
+      "width": 13,
+      "height": 24,
+      "pixel_count": 190
+    },
+    {
+      "id": "component_072",
+      "file": "component_072.png",
+      "bbox": [
+        311,
+        150,
+        324,
+        174
+      ],
+      "width": 13,
+      "height": 24,
+      "pixel_count": 177
+    },
+    {
+      "id": "component_073",
+      "file": "component_073.png",
+      "bbox": [
+        285,
+        228,
+        295,
+        262
+      ],
+      "width": 10,
+      "height": 34,
+      "pixel_count": 171
+    },
+    {
+      "id": "component_074",
+      "file": "component_074.png",
+      "bbox": [
+        151,
+        149,
+        163,
+        174
+      ],
+      "width": 12,
+      "height": 25,
+      "pixel_count": 161
+    },
+    {
+      "id": "component_075",
+      "file": "component_075.png",
+      "bbox": [
+        295,
+        163,
+        312,
+        176
+      ],
+      "width": 17,
+      "height": 13,
+      "pixel_count": 143
+    },
+    {
+      "id": "component_076",
+      "file": "component_076.png",
+      "bbox": [
+        46,
+        191,
+        60,
+        204
+      ],
+      "width": 14,
+      "height": 13,
+      "pixel_count": 140
+    },
+    {
+      "id": "component_077",
+      "file": "component_077.png",
+      "bbox": [
+        295,
+        147,
+        309,
+        161
+      ],
+      "width": 14,
+      "height": 14,
+      "pixel_count": 127
+    },
+    {
+      "id": "component_078",
+      "file": "component_078.png",
+      "bbox": [
+        162,
+        156,
+        172,
+        174
+      ],
+      "width": 10,
+      "height": 18,
+      "pixel_count": 114
+    },
+    {
+      "id": "component_079",
+      "file": "component_079.png",
+      "bbox": [
+        62,
+        199,
+        73,
+        209
+      ],
+      "width": 11,
+      "height": 10,
+      "pixel_count": 85
+    },
+    {
+      "id": "component_080",
+      "file": "component_080.png",
+      "bbox": [
+        50,
+        206,
+        61,
+        216
+      ],
+      "width": 11,
+      "height": 10,
+      "pixel_count": 85
+    },
+    {
+      "id": "component_081",
+      "file": "component_081.png",
+      "bbox": [
+        339,
+        165,
+        351,
+        175
+      ],
+      "width": 12,
+      "height": 10,
+      "pixel_count": 77
+    },
+    {
+      "id": "component_082",
+      "file": "component_082.png",
+      "bbox": [
+        107,
+        122,
+        116,
+        134
+      ],
+      "width": 9,
+      "height": 12,
+      "pixel_count": 67
+    },
+    {
+      "id": "component_083",
+      "file": "component_083.png",
+      "bbox": [
+        390,
+        243,
+        404,
+        250
+      ],
+      "width": 14,
+      "height": 7,
+      "pixel_count": 63
+    },
+    {
+      "id": "component_084",
+      "file": "component_084.png",
+      "bbox": [
+        44,
+        276,
+        54,
+        283
+      ],
+      "width": 10,
+      "height": 7,
+      "pixel_count": 51
+    },
+    {
+      "id": "component_085",
+      "file": "component_085.png",
+      "bbox": [
+        56,
+        275,
+        64,
+        282
+      ],
+      "width": 8,
+      "height": 7,
+      "pixel_count": 47
+    },
+    {
+      "id": "component_086",
+      "file": "component_086.png",
+      "bbox": [
+        381,
+        243,
+        389,
+        251
+      ],
+      "width": 8,
+      "height": 8,
+      "pixel_count": 45
+    },
+    {
+      "id": "component_087",
+      "file": "component_087.png",
+      "bbox": [
+        377,
+        237,
+        386,
+        244
+      ],
+      "width": 9,
+      "height": 7,
+      "pixel_count": 41
+    },
+    {
+      "id": "component_088",
+      "file": "component_088.png",
+      "bbox": [
+        65,
+        293,
+        73,
+        299
+      ],
+      "width": 8,
+      "height": 6,
+      "pixel_count": 38
+    },
+    {
+      "id": "component_089",
+      "file": "component_089.png",
+      "bbox": [
+        357,
+        293,
+        365,
+        299
+      ],
+      "width": 8,
+      "height": 6,
+      "pixel_count": 34
+    },
+    {
+      "id": "component_090",
+      "file": "component_090.png",
+      "bbox": [
+        137,
+        296,
+        145,
+        301
+      ],
+      "width": 8,
+      "height": 5,
+      "pixel_count": 34
+    },
+    {
+      "id": "component_091",
+      "file": "component_091.png",
+      "bbox": [
+        25,
+        296,
+        32,
+        301
+      ],
+      "width": 7,
+      "height": 5,
+      "pixel_count": 31
+    },
+    {
+      "id": "component_092",
+      "file": "component_092.png",
+      "bbox": [
+        387,
+        235,
+        392,
+        243
+      ],
+      "width": 5,
+      "height": 8,
+      "pixel_count": 29
+    },
+    {
+      "id": "component_093",
+      "file": "component_093.png",
+      "bbox": [
+        376,
+        250,
+        383,
+        257
+      ],
+      "width": 7,
+      "height": 7,
+      "pixel_count": 29
+    },
+    {
+      "id": "component_094",
+      "file": "component_094.png",
+      "bbox": [
+        395,
+        235,
+        402,
+        241
+      ],
+      "width": 7,
+      "height": 6,
+      "pixel_count": 28
+    },
+    {
+      "id": "component_095",
+      "file": "component_095.png",
+      "bbox": [
+        388,
+        251,
+        395,
+        257
+      ],
+      "width": 7,
+      "height": 6,
+      "pixel_count": 28
+    },
+    {
+      "id": "component_096",
+      "file": "component_096.png",
+      "bbox": [
+        141,
+        287,
+        147,
+        293
+      ],
+      "width": 6,
+      "height": 6,
+      "pixel_count": 27
+    },
+    {
+      "id": "component_097",
+      "file": "component_097.png",
+      "bbox": [
+        197,
+        295,
+        202,
+        300
+      ],
+      "width": 5,
+      "height": 5,
+      "pixel_count": 19
+    },
+    {
+      "id": "component_098",
+      "file": "component_098.png",
+      "bbox": [
+        399,
+        252,
+        403,
+        256
+      ],
+      "width": 4,
+      "height": 4,
+      "pixel_count": 14
+    }
+  ],
+  "elapsed_ms": 96.666
+}

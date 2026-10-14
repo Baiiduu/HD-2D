@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/previews/prism_ricochet_preview.gd" id="preview"]
+[ext_resource type="PackedScene" path="res://scenes/world/world.tscn" id="world"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/variants/short_wall.tscn" id="wall"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/variants/angled_wall.tscn" id="angled"]
+
+[node name="PrismRicochetPreview" type="Node3D"]
+script = ExtResource("preview")
+
+[node name="CurrentWorld" parent="." instance=ExtResource("world")]
+
+[node name="RicochetSamples" type="Node3D" parent="CurrentWorld"]
+
+[node name="Corner" parent="CurrentWorld/RicochetSamples" instance=ExtResource("wall")]
+position = Vector3(1, 0, 42)
+rotation = Vector3(0, 0.785398, 0)
+dimensions = Vector3(4, 1.1, 0.45)
+
+[node name="ReturnWall" parent="CurrentWorld/RicochetSamples" instance=ExtResource("wall")]
+position = Vector3(0, 0, 38)
+dimensions = Vector3(5, 1.1, 0.45)
+
+[node name="SideWall" parent="CurrentWorld/RicochetSamples" instance=ExtResource("angled")]
+position = Vector3(-6, 0, 40)
+rotation = Vector3(0, 1.570796, 0)

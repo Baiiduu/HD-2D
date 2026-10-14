@@ -13,7 +13,7 @@ func run() -> void:
 	var scene := Node3D.new()
 	var terrain := Terrain.new()
 	terrain.name = "Homestead"
-	terrain.data = load("res://data/spawn_terrain.tres").duplicate(true)
+	terrain.data = load("res://data/world/spawn_terrain.tres").duplicate(true)
 	scene.add_child(terrain)
 	var player := Node3D.new()
 	player.name = "Player"

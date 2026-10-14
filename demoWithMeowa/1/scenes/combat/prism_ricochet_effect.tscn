@@ -1,0 +1,13 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/prism_ricochet_effect.gd" id="effect"]
+[ext_resource type="Texture2D" path="res://assets/meowa/combat/prism_ricochet/shard.png" id="head"]
+[ext_resource type="Texture2D" path="res://assets/meowa/combat/light_pierce/trail.png" id="trail"]
+[ext_resource type="PackedScene" path="res://scenes/combat/prism_contact_effect.tscn" id="feedback"]
+
+[node name="PrismRicochetEffect" type="Node3D"]
+script = ExtResource("effect")
+head_texture = ExtResource("head")
+trail_texture = ExtResource("trail")
+feedback_scene = ExtResource("feedback")
+head_width = 0.75

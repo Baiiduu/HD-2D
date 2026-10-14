@@ -21,7 +21,7 @@ class SkillProbe extends Node:
 	var applied := 0
 	func get_skill_definition() -> CombatSkillDefinition: return definition
 	func apply_skill_level(level: int) -> bool:
-		if not definition.level_data(level): return false
+		if level != 0 and not definition.level_data(level): return false
 		applied = level
 		return true
 	func describe_skill_upgrade(from: int, to: int) -> String: return "%d → %d" % [from, to]
@@ -74,6 +74,16 @@ func run() -> void:
 	world.get_node("LoadoutUI").save_enabled = false
 	# 隔离技能成长；正式场景的增益配置保持原样，叠加另行验证。
 	world.get_node("WavePrototype/RunBuffs").definitions.clear()
+	world.get_node("WavePrototype/RunSkills").skill_paths.clear()
+	world.get_node("WavePrototype/RunSkills").skill_paths.append(NodePath("../FanAutoAttack"))
+	# 独立验证攻击成长，挡墙在下方显式加入，不依赖可移动地编的摆放。
+	var props := world.get_node("WorldDetails")
+	world.remove_child(props)
+	props.free()
+	for prop in world.get_children():
+		if prop is PlazaProp:
+			world.remove_child(prop)
+			prop.free()
 	root.add_child(world)
 	current_scene = world
 	await settle(12)
@@ -87,11 +97,17 @@ func run() -> void:
 	fan.set_physics_process(false)
 	growth.set_physics_process(false)
 	growth.choice_ui.open_duration = 0.0
+	growth.cards_per_draw = 100
+	skills.initial_choice.open_duration = 0.0
 	growth.choice_ui.hover_duration = 0.0
 	fan.knockback_distance = 0.0
 	fan.audio_enabled = false
 	player.global_position = wave._path.ground_position(wave.global_position) + Vector3.UP * 0.03
 	check(wave.start_run(), "The existing challenge starts with skill progression")
+	check(skills.get_slots().is_empty() and skills.initial_choice.is_open, "A01 is not granted before initial choice")
+	skills.initial_choice.select_option(&"initial:fan_slash")
+	skills.initial_choice.confirm_selection()
+	fan.set_physics_process(false)
 	wave._spawn_queue.clear()
 	player.global_position = world.get_node("BattleArea").global_position + Vector3.UP * 0.03
 	check(skills.get_level(&"fan_slash") == 1 and fan.skill_level == 1, "Each run starts with actual level-one A01")
@@ -101,6 +117,7 @@ func run() -> void:
 	growth.drop_experience(player.global_position, 10)
 	growth.collect_all()
 	check(wave.combat_frozen and growth.choice_ui.is_open, "Experience opens the existing upgrade UI before effects apply")
+	growth.choice_ui.select_option(&"skill:fan_slash:2")
 	var option := growth.choice_ui.get_selected_option()
 	check(option.id == &"skill:fan_slash:2" and option.description.contains("10") and option.description.contains("12"), "Card shows the real next level and damage values")
 	check(skills.get_level(&"fan_slash") == 1, "Previewing a card does not grant it")
@@ -114,6 +131,7 @@ func run() -> void:
 	growth.collect_all()
 	check(growth.state.pending_choices == 6, "A large pickup preserves each pending choice")
 	for next_level in range(3, 9):
+		growth.choice_ui.select_option(StringName("skill:fan_slash:%d" % next_level))
 		check(growth.choice_ui.get_selected_option().id == StringName("skill:fan_slash:%d" % next_level), "Each consecutive card uses the updated skill level")
 		growth.choice_ui.confirm_selection()
 		check(skills.get_level(&"fan_slash") == next_level and wave.combat_frozen == (next_level < 8), "Skills apply before the next card, with no combat gap")
@@ -217,11 +235,15 @@ func run() -> void:
 	wave._finish("test retry", WavePrototype.Outcome.RETREAT)
 	check(not fan._spinning and not fan._mesh.visible, "Result clears ongoing continuous attacks")
 	wave.retry()
+	check(skills.get_level(&"fan_slash") == 0 and skills.initial_choice.is_open, "Retry clears A01 and asks for the initial skill again")
+	skills.initial_choice.select_option(&"initial:fan_slash")
+	skills.initial_choice.confirm_selection()
+	fan.set_physics_process(false)
 	check(skills.get_level(&"fan_slash") == 1 and fan.skill_level == 1 and fan.get_attack_stats().damage == 10.0, "Retry restores the baseline rather than multiplying it again")
 	check(fan._mesh.transform == Transform3D.IDENTITY, "Returning from rotation leaves no rotated child transform")
 	wave._finish("test home", WavePrototype.Outcome.RETREAT)
 	wave.return_home()
-	check(skills.get_level(&"fan_slash") == 1, "Returning home clears local skill growth")
+	check(skills.get_level(&"fan_slash") == 0, "Returning home clears all local skill learning")
 	world.free()
 	await settle()
 	await multiple_skills()
@@ -252,22 +274,32 @@ func multiple_skills() -> void:
 	local_growth.set_physics_process(false)
 	local_growth.choice_ui.open_duration = 0.0
 	check(controller.candidates().size() == 2, "A second component participates through the same framework")
-	controller._choose(2, &"skill:first:2")
-	check(controller.get_level(&"first") == 1, "Inactive runs cannot apply a previewed upgrade")
+	controller._choose(2, &"skill:first:1")
+	check(controller.get_level(&"first") == 0, "Inactive runs cannot learn a previewed skill")
 	session.run_started.emit()
 	local_growth.state.add_experience(10)
+	local_growth.choice_ui.select_option(&"skill:first:1")
+	local_growth.choice_ui.confirm_selection()
+	check(controller.get_level(&"first") == 1 and controller.get_level(&"second") == 0, "Learning grants only the selected skill")
+	local_growth.state.add_experience(15)
+	local_growth.choice_ui.select_option(&"skill:second:1")
+	local_growth.choice_ui.confirm_selection()
+	local_growth.state.add_experience(20)
 	local_growth.choice_ui.select_option(&"skill:second:2")
 	local_growth.choice_ui.confirm_selection()
 	check(controller.get_level(&"first") == 1 and controller.get_level(&"second") == 2, "Choosing another skill upgrades only its component")
 	check(controller.candidates().size() == 1 and controller.candidates()[0].id == &"skill:first:2", "A maxed skill is filtered while another still has upgrades")
-	local_growth.state.add_experience(15)
+	local_growth.state.add_experience(25)
+	local_growth.choice_ui.select_option(&"skill:first:2")
 	local_growth.choice_ui.confirm_selection()
 	local_growth.state.add_experience(100)
 	check(controller.candidates().is_empty() and local_growth.state.pending_choices == 0 and not session.combat_frozen, "An exhausted multi-skill pool also releases the existing choice flow")
+	session.run_ended.emit("new preparation")
+	session.phase_changed.emit(SessionProbe.Phase.READY)
 	session.run_started.emit()
 	local_growth.state.add_experience(10)
 	session.run_ended.emit("cancel pending choice")
-	controller._choose(2, &"skill:first:2")
-	check(controller.get_level(&"first") == 1 and not session.combat_frozen, "Run end invalidates pending skill callbacks and releases the modal")
+	controller._choose(2, &"skill:first:1")
+	check(controller.get_level(&"first") == 0 and not session.combat_frozen, "Run end invalidates pending skill callbacks and releases the modal")
 	session.free()
 	await settle()

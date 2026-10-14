@@ -1,0 +1,29 @@
+{
+  "id": "CALL004",
+  "task": "6-制作细雨环境音",
+  "beijingTime": "2026-10-10T17:20:10+08:00",
+  "purpose": "下载：当前细雨天气的循环环境音",
+  "tool": "Meowa CLI / sound-poll / HTTP GET",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "arguments": [
+    "sound-poll",
+    "--job-id",
+    "job_0159da1a7a9e4491bf3f3a2f8feb4344",
+    "--output-dir",
+    "D:\\.codexfile\\work\\rain-audio\\recovered"
+  ],
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "actualRequest": {
+    "method": "GET",
+    "url": "https://media.meowa.ai/public/elevenlabs-generator/output/2026-10-10/09%3A18%3A54-workflow-91f5cce542cb4b81af5450c9/Gentle_Fine_Rain_Loop.mp3",
+    "params": null,
+    "timeout": 240,
+    "verify": true,
+    "headers": null
+  },
+  "prompt": null,
+  "negativePrompt": null,
+  "referenceResources": [],
+  "relatedCall": "CALL003",
+  "status": "pending"
+}

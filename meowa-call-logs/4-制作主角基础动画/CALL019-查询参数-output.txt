@@ -1,0 +1,31 @@
+usage: meowart_api.py remove-background-run [-h] [--output-dir OUTPUT_DIR]
+                                            --image-file IMAGE_FILE
+                                            [--mode {pixel,hd}]
+                                            [--quality {standard,advanced}]
+                                            [--source-background-color SOURCE_BACKGROUND_COLOR]
+                                            [--remove-bg-batch-size {2,4,8,16}]
+                                            [--preserve-translucency | --no-preserve-translucency]
+
+options:
+  -h, --help            show this help message and exit
+  --output-dir, --output_dir OUTPUT_DIR
+                        Output root; the runner creates one task subdirectory
+  --image-file IMAGE_FILE
+                        Image or MP4 input; GIF, WebP and MP4 return lossless
+                        WebP (no audio)
+  --mode {pixel,hd}     Source artwork type
+  --quality {standard,advanced}
+                        Pixel: standard general (default), advanced complex
+                        (max 32 frames). HD: standard budget (2
+                        credits/batch), advanced general (default, 5
+                        credits/batch). Pixel animation frames must be at most
+                        256x256; static images have no 256x256 restriction.
+  --source-background-color SOURCE_BACKGROUND_COLOR
+                        Solid source background color used by Pixel advanced;
+                        defaults to white
+  --remove-bg-batch-size {2,4,8,16}
+                        Frames per removal call; HD recommends 4; ignored for
+                        Pixel advanced
+  --preserve-translucency, --no-preserve-translucency
+                        Keep soft alpha in Pixel removal; HD always keeps soft
+                        alpha; no extra credits

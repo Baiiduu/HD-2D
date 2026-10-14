@@ -1,0 +1,11 @@
+{
+	"batches": 48,
+	"categories": {
+		"flowers": 35,
+		"grass": 68,
+		"pebbles": 0
+	},
+	"failures": [],
+	"half_density_count": 46,
+	"total": 103
+}

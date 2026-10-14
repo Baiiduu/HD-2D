@@ -1,0 +1,40 @@
+{
+  "id": "CALL023",
+  "task": "4-制作主角基础动画",
+  "beijingTime": "2026-10-10T13:46:45.000+08:00",
+  "purpose": "保持正面朝向的脸颊局部修正",
+  "tool": "Meowa CLI / image-edit-run",
+  "executionPython": "C:/Users/PC/AppData/Local/Programs/Python/Python314/python.exe",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "arguments": [
+    "image-edit-run",
+    "--reference-image",
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/front-pose/让同一个黄衣青年正面朝向观众站立_双脚自然落地_保留原来的耳机_发型_黄衣_深蓝_9db4b23f/remove_bg.png",
+    "--prompt",
+    "Keep this exact front-facing standing character. Narrow only the cheeks by one pixel on each side. Keep the hair, headphones, facial features, body, clothing, pose and size unchanged. The head and body must still face straight toward the viewer.",
+    "--mode",
+    "pixel",
+    "--strict",
+    "--generation-model",
+    "nano-banana",
+    "--resolution",
+    "1K",
+    "--generation-speed",
+    "normal",
+    "--remove-bg-method",
+    "standard",
+    "--output-dir",
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/front-face-slim-retry"
+  ],
+  "prompt": "Keep this exact front-facing standing character. Narrow only the cheeks by one pixel on each side. Keep the hair, headphones, facial features, body, clothing, pose and size unchanged. The head and body must still face straight toward the viewer.",
+  "negativePrompt": null,
+  "referenceImages": [
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/front-pose/让同一个黄衣青年正面朝向观众站立_双脚自然落地_保留原来的耳机_发型_黄衣_深蓝_9db4b23f/remove_bg.png"
+  ],
+  "status": "pending",
+  "relatedCall": "CALL022",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回"
+}

@@ -4,8 +4,13 @@
 
 | 地图 | 场景 |
 | --- | --- |
-| 视觉预览 | `res://scenes/four_realms.tscn` |
+| 视觉预览 | `res://scenes/previews/four_realms.tscn` |
 | 正式连续地图 | `res://scenes/world/world.tscn` |
+| 树池建筑预览 | `res://scenes/previews/tree_planter_preview.tscn` |
+| 广场路灯与环球雕塑预览 | `res://scenes/previews/plaza_landmarks_preview.tscn` |
+| 六种弹射障碍物预览 | `res://scenes/previews/ricochet_props_preview.tscn` |
+| 弹射建筑变种预览 | `res://scenes/previews/ricochet_variants_preview.tscn` |
+| 城镇细节物件预览 | `res://scenes/previews/town_details_preview.tscn` |
 
 选择地图后，可以使用：
 

@@ -1,0 +1,47 @@
+{
+  "status": "success",
+  "startedAt": "2026-10-10T14:47:50+08:00",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "endedAt": "2026-10-10T14:49:46+08:00",
+  "exitCode": 0,
+  "output": "[INFO] submitted api_job_id=job_43e44336f13648e5a7ab7cafc8103e5f\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=success stage=completed progress=已完成:100%\n[INFO] downloading_outputs count=2 to=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\final-front-run\\黄衣青年保持当前斜正面朝向_向观众原地小步轻跑_双腿交替迈步_手臂小幅摆动_头_dc92e959\n[INFO] downloaded=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\final-front-run\\黄衣青年保持当前斜正面朝向_向观众原地小步轻跑_双腿交替迈步_手臂小幅摆动_头_dc92e959\\meowa_animation.webp\n[INFO] saved_dir=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\final-front-run\\黄衣青年保持当前斜正面朝向_向观众原地小步轻跑_双腿交替迈步_手臂小幅摆动_头_dc92e959\n{\n  \"job_id\": \"job_43e44336f13648e5a7ab7cafc8103e5f\",\n  \"job_type\": \"workflow\",\n  \"status\": \"success\",\n  \"next_poll_after_seconds\": 0,\n  \"animation_type\": null,\n  \"queue\": {\n    \"position\": 0,\n    \"estimated_wait_seconds\": 0\n  },\n  \"progress\": {\n    \"label\": \"已完成\",\n    \"percent\": 100\n  },\n  \"result\": {\n    \"job_name\": \"workflow-ba3ffa0975aa4c85b6004826\"\n  },\n  \"outputs\": [\n    {\n      \"output_key\": \"primary\",\n      \"media_type\": \"image\",\n      \"mime_type\": null,\n      \"asset_id\": null,\n      \"thumb_url\": null,\n      \"width\": null,\n      \"height\": null,\n      \"byte_size\": null\n    }\n  ],\n  \"error\": null,\n  \"error_code\": null,\n  \"error_id\": null,\n  \"credit_refund\": {\n    \"refunded\": false,\n    \"amount\": 0\n  }\n}\n",
+  "returnedData": {
+    "job_id": "job_43e44336f13648e5a7ab7cafc8103e5f",
+    "job_type": "workflow",
+    "status": "success",
+    "next_poll_after_seconds": 0,
+    "animation_type": null,
+    "queue": {
+      "position": 0,
+      "estimated_wait_seconds": 0
+    },
+    "progress": {
+      "label": "已完成",
+      "percent": 100
+    },
+    "result": {
+      "job_name": "workflow-ba3ffa0975aa4c85b6004826"
+    },
+    "outputs": [
+      {
+        "output_key": "primary",
+        "media_type": "image",
+        "mime_type": null,
+        "asset_id": null,
+        "thumb_url": null,
+        "width": null,
+        "height": null,
+        "byte_size": null
+      }
+    ],
+    "error": null,
+    "error_code": null,
+    "error_id": null,
+    "credit_refund": {
+      "refunded": false,
+      "amount": 0
+    }
+  }
+}

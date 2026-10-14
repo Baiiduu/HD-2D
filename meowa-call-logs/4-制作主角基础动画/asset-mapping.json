@@ -1,0 +1,446 @@
+{
+  "idle": {
+    "source": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\idle\\黄衣青年原地待机_轻微呼吸和衣服摆动_脚底位置稳定_保持原图的朝向_外形_配色和_10a5ded3\\result_output_url.webp",
+    "source_kind": "animation",
+    "related_call": null,
+    "source_frame_order": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "runtime": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\player\\idle.webp",
+    "sha256": "6c17fe09760e766a6019944143987d9e35d952d00916a1a1b0b123cc044bbd81",
+    "canvas": [
+      80,
+      80
+    ],
+    "frames": 8,
+    "bounds": [
+      [
+        28,
+        11,
+        51,
+        69
+      ],
+      [
+        28,
+        11,
+        51,
+        69
+      ],
+      [
+        28,
+        12,
+        51,
+        69
+      ],
+      [
+        28,
+        12,
+        51,
+        69
+      ],
+      [
+        28,
+        13,
+        51,
+        69
+      ],
+      [
+        28,
+        12,
+        51,
+        69
+      ],
+      [
+        28,
+        12,
+        51,
+        69
+      ],
+      [
+        28,
+        11,
+        51,
+        69
+      ]
+    ],
+    "playback_fps": 8.0,
+    "runtime_processing": "WebP byte copy; PNG decoded losslessly"
+  },
+  "run": {
+    "source": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run-side-fixed\\把动画每一帧的黄衣青年身材恢复成参考图的比例_保持同样的头部大小_肩宽_躯干_db941573\\sprite_sheet.png",
+    "source_kind": "horizontal_sheet",
+    "related_call": "CALL025",
+    "source_frame_order": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "runtime": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\player\\run.webp",
+    "sha256": "fe7b2e59bfc9b7daeb811f5b5f393a9b11bbde6d8df71138d4e61da294a0506c",
+    "canvas": [
+      80,
+      80
+    ],
+    "frames": 8,
+    "bounds": [
+      [
+        22,
+        11,
+        57,
+        69
+      ],
+      [
+        26,
+        12,
+        54,
+        70
+      ],
+      [
+        25,
+        11,
+        56,
+        70
+      ],
+      [
+        23,
+        9,
+        59,
+        68
+      ],
+      [
+        23,
+        11,
+        58,
+        69
+      ],
+      [
+        25,
+        12,
+        57,
+        70
+      ],
+      [
+        26,
+        11,
+        54,
+        70
+      ],
+      [
+        23,
+        10,
+        52,
+        69
+      ]
+    ],
+    "playback_fps": 12.0,
+    "runtime_processing": "native PNG sheet cells; preview WebP assembled losslessly"
+  },
+  "idle_front": {
+    "source": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\idle-front-fixed\\让动画每一帧的正面黄衣青年匹配参考图的清瘦脸型和身材比例_保持相同的脸颊宽_bf41e9f0\\sprite_sheet.png",
+    "source_kind": "horizontal_sheet",
+    "related_call": "CALL028",
+    "source_frame_order": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      4,
+      3,
+      2
+    ],
+    "runtime": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\player\\idle_front.webp",
+    "sha256": "6e535edae40f14cfdb31c85def8ac29d3a31ea8b400a4fa624194efdf3853014",
+    "canvas": [
+      80,
+      80
+    ],
+    "frames": 8,
+    "bounds": [
+      [
+        27,
+        11,
+        52,
+        69
+      ],
+      [
+        27,
+        11,
+        52,
+        69
+      ],
+      [
+        27,
+        11,
+        52,
+        69
+      ],
+      [
+        27,
+        11,
+        52,
+        69
+      ],
+      [
+        27,
+        12,
+        52,
+        69
+      ],
+      [
+        27,
+        11,
+        52,
+        69
+      ],
+      [
+        27,
+        11,
+        52,
+        69
+      ],
+      [
+        27,
+        11,
+        52,
+        69
+      ]
+    ],
+    "playback_fps": 8.0,
+    "runtime_processing": "native PNG sheet cells; preview WebP assembled losslessly"
+  },
+  "run_front": {
+    "source": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run-front-fixed\\让动画每一帧的正面黄衣青年匹配参考图的清瘦脸型和身材比例_保持相同的脸颊宽_bf41e9f0\\sprite_sheet.png",
+    "source_kind": "horizontal_sheet",
+    "related_call": "CALL027",
+    "source_frame_order": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "runtime": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\player\\run_front.webp",
+    "sha256": "52fd5a44583cc53d44d0374fcfb127452a8160939bb867f7a47708c1621be6b0",
+    "canvas": [
+      80,
+      80
+    ],
+    "frames": 8,
+    "bounds": [
+      [
+        24,
+        11,
+        54,
+        69
+      ],
+      [
+        24,
+        11,
+        54,
+        68
+      ],
+      [
+        25,
+        10,
+        54,
+        66
+      ],
+      [
+        27,
+        10,
+        55,
+        69
+      ],
+      [
+        27,
+        11,
+        56,
+        69
+      ],
+      [
+        26,
+        11,
+        55,
+        67
+      ],
+      [
+        25,
+        10,
+        54,
+        67
+      ],
+      [
+        24,
+        11,
+        53,
+        68
+      ]
+    ],
+    "playback_fps": 12.0,
+    "runtime_processing": "native PNG sheet cells; preview WebP assembled losslessly"
+  },
+  "idle_back": {
+    "source": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\idle_back\\黄衣青年背对观众原地待机_轻微呼吸_双脚位置稳定_保持后脑勺_耳机和黄衣背后的_04dc1b8c\\result_output_url.webp",
+    "source_kind": "animation",
+    "related_call": null,
+    "source_frame_order": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "runtime": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\player\\idle_back.webp",
+    "sha256": "7059aa77b7c8ea3d1e1aa8821f545b2775783031183a3dfe152a5a916fb50cf5",
+    "canvas": [
+      80,
+      80
+    ],
+    "frames": 8,
+    "bounds": [
+      [
+        26,
+        12,
+        53,
+        69
+      ],
+      [
+        26,
+        12,
+        53,
+        69
+      ],
+      [
+        26,
+        13,
+        53,
+        69
+      ],
+      [
+        26,
+        13,
+        53,
+        69
+      ],
+      [
+        26,
+        13,
+        53,
+        69
+      ],
+      [
+        26,
+        13,
+        53,
+        69
+      ],
+      [
+        26,
+        12,
+        53,
+        69
+      ],
+      [
+        26,
+        12,
+        53,
+        69
+      ]
+    ],
+    "playback_fps": 8.0,
+    "runtime_processing": "WebP byte copy; PNG decoded losslessly"
+  },
+  "run_back": {
+    "source": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run-back-fixed\\把动画每一帧的黄衣青年身材恢复成参考图的比例_保持同样的头部大小_肩宽_躯干_db941573\\sprite_sheet.png",
+    "source_kind": "horizontal_sheet",
+    "related_call": "CALL026",
+    "source_frame_order": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "runtime": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\player\\run_back.webp",
+    "sha256": "f191b5c64f06ebdbc3a67ea00deb590421f1e43408f594c65d4cc2f767c34455",
+    "canvas": [
+      80,
+      80
+    ],
+    "frames": 8,
+    "bounds": [
+      [
+        23,
+        13,
+        55,
+        69
+      ],
+      [
+        26,
+        11,
+        57,
+        70
+      ],
+      [
+        27,
+        10,
+        55,
+        68
+      ],
+      [
+        25,
+        12,
+        56,
+        64
+      ],
+      [
+        24,
+        13,
+        57,
+        67
+      ],
+      [
+        22,
+        11,
+        53,
+        70
+      ],
+      [
+        23,
+        10,
+        52,
+        68
+      ],
+      [
+        21,
+        12,
+        54,
+        64
+      ]
+    ],
+    "playback_fps": 12.0,
+    "runtime_processing": "native PNG sheet cells; preview WebP assembled losslessly"
+  }
+}

@@ -9,8 +9,8 @@
 - absorb.png：吸收闪光。
 - shadow.png：柔和落地阴影。
 
-source.png 为返回的 RGBA 总图。组件从原始总图裁切，保留低 alpha 边缘；尺寸见 components.json。素材外部透明，内部暗槽接近不透明，可用已有 `shaders/attribute_hud.gdshader` 的 background_opacity 单独淡化暗底，避免金属边框一起变淡。
+source.png 为返回的 RGBA 总图。组件从原始总图裁切，保留低 alpha 边缘；尺寸见 components.json。素材外部透明，内部暗槽接近不透明，可用已有 `shaders/ui/attribute_hud.gdshader` 的 background_opacity 单独淡化暗底，避免金属边框一起变淡。
 
 已通过 `scenes/ui/experience_hud.tscn` 接入正式地图的成长节点。订阅 `RunGrowth.state.changed` 获取 level、experience、required_experience()；拾取脉冲监听 `experience_collected(amount)`。低进度、满进度、MAX 和重置都复用同一套外框与填充；数字、比例与卡片数量不写进图片。
 
-默认放在血蓝条下方，跟随属性条位置和菜单显示状态，也支持独立位置；宽度、间距、暗槽透明度及光效强度可调。具体参数与实际运行截图见项目 `docs/experience-visuals.md`。
+默认放在血蓝条下方，跟随属性条位置和菜单显示状态，也支持独立位置；宽度、间距、暗槽透明度及光效强度可调。具体参数与实际运行截图见项目 `docs/ui/experience-visuals.md`。

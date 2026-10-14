@@ -1,0 +1,17 @@
+{
+  "stone": {
+    "file": "opening/stone.png",
+    "width": 64,
+    "height": 64
+  },
+  "details": {
+    "file": "opening/details.png",
+    "width": 1024,
+    "height": 768
+  },
+  "vista": {
+    "file": "opening/vista.png",
+    "width": 1024,
+    "height": 768
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "total_credits": 1364,
+  "paid_credits": 1354,
+  "subscription_credits": 0,
+  "trial_credits": 10,
+  "next_trial_credit_expires_at": "2026-10-10T16:00:00Z",
+  "next_subscription_credit_expires_at": null
+}

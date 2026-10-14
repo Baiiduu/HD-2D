@@ -1,0 +1,56 @@
+{
+  "front": {
+    "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\characters\\八个同一精致像素画风的全身游戏角色_现代城市青年_咖啡店店员_赛博朋克女黑客_fb335224\\sprite_00.png",
+    "canvas": [
+      64,
+      64
+    ],
+    "view": "original three-quarter front",
+    "status": "user proposed original as front"
+  },
+  "back": {
+    "source": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\turn-review\\frame-15.png",
+    "related_call": "CALL030",
+    "zero_based_frame": 15,
+    "canvas": [
+      80,
+      80
+    ],
+    "status": "user selected Back15; background removal pending"
+  },
+  "side": {
+    "source": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\side-view\\将同一个黄衣青年改为完全朝右的侧面站姿_头部_身体和双脚都朝右_保留原图的侧_bdaa25bd\\edited.png",
+    "related_call": "CALL032",
+    "canvas": [
+      64,
+      64
+    ],
+    "left_uses_runtime_flip_h": true,
+    "sha256": "3524a9b12e666de9afae4ee3a87b4885df3e1a0e57376550812993bb24164e10",
+    "status": "prepared; art review pending"
+  },
+  "runtime_integrated": false,
+  "reference_pixels_changed": false,
+  "user_confirmation": "用户确认原图 front、CALL032 真侧面镜像、CALL030 frame15 背面，并授权制作待机跑动后接入",
+  "back_preparation": {
+    "call": "CALL033",
+    "source": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\back-base-clean\\back\\output.png",
+    "crop": [
+      8,
+      8,
+      72,
+      72
+    ],
+    "size": [
+      64,
+      64
+    ],
+    "resampled": false,
+    "bounds_before_crop": [
+      28,
+      11,
+      52,
+      69
+    ]
+  }
+}

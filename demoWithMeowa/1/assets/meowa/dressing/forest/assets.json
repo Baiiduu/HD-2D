@@ -1,0 +1,200 @@
+{
+  "source": "Meowa",
+  "count": 8,
+  "template": "精致像素简约植物",
+  "catalog_size": [
+    64,
+    64
+  ],
+  "delivered_size": [
+    32,
+    32
+  ],
+  "processing": "Returned native PNGs copied unchanged. Matching lighting data generated from source; no resampling or pixelation.",
+  "assets": [
+    {
+      "id": "grass_07",
+      "name": "展开羽叶蕨",
+      "texture": "res://assets/meowa/dressing/forest/plant_01.png",
+      "normal_texture": "res://assets/meowa/dressing/forest/normals/plant_01.png",
+      "canvas": [
+        32,
+        32
+      ],
+      "visible_size": [
+        32,
+        23
+      ],
+      "anchor": [
+        16,
+        27
+      ],
+      "pixel_size": 0.0234375,
+      "subdivide_depth": 31,
+      "palette_row": 0,
+      "layer": 0,
+      "sha256": "8136e51dc710841636f1a8fa1f33ba9fbd330629c3cc1b775ca6a8fbe5bd058f"
+    },
+    {
+      "id": "grass_08",
+      "name": "双层羽叶蕨",
+      "texture": "res://assets/meowa/dressing/forest/plant_02.png",
+      "normal_texture": "res://assets/meowa/dressing/forest/normals/plant_02.png",
+      "canvas": [
+        32,
+        32
+      ],
+      "visible_size": [
+        32,
+        23
+      ],
+      "anchor": [
+        16,
+        27
+      ],
+      "pixel_size": 0.0234375,
+      "subdivide_depth": 31,
+      "palette_row": 0,
+      "layer": 1,
+      "sha256": "e814c0a408c953451a657adcae5a7e8f8c678f9dd75fc7eab3220b475f3f189e"
+    },
+    {
+      "id": "grass_09",
+      "name": "低垂弯叶蕨",
+      "texture": "res://assets/meowa/dressing/forest/plant_03.png",
+      "normal_texture": "res://assets/meowa/dressing/forest/normals/plant_03.png",
+      "canvas": [
+        32,
+        32
+      ],
+      "visible_size": [
+        32,
+        22
+      ],
+      "anchor": [
+        16,
+        27
+      ],
+      "pixel_size": 0.0234375,
+      "subdivide_depth": 31,
+      "palette_row": 0,
+      "layer": 0,
+      "sha256": "c084ef35c925a777e8ae2d4f5fa9962be0778313eddf969992a47857db83ae75"
+    },
+    {
+      "id": "grass_10",
+      "name": "紧凑弯叶蕨",
+      "texture": "res://assets/meowa/dressing/forest/plant_04.png",
+      "normal_texture": "res://assets/meowa/dressing/forest/normals/plant_04.png",
+      "canvas": [
+        32,
+        32
+      ],
+      "visible_size": [
+        30,
+        24
+      ],
+      "anchor": [
+        16,
+        28
+      ],
+      "pixel_size": 0.0234375,
+      "subdivide_depth": 7,
+      "palette_row": 0,
+      "layer": 1,
+      "sha256": "96c10148bca8fc5a94135ea26faeb3da3f930e1a9ee29639c18c04d392267fb5"
+    },
+    {
+      "id": "grass_11",
+      "name": "宽圆叶丛",
+      "texture": "res://assets/meowa/dressing/forest/plant_05.png",
+      "normal_texture": "res://assets/meowa/dressing/forest/normals/plant_05.png",
+      "canvas": [
+        32,
+        32
+      ],
+      "visible_size": [
+        29,
+        24
+      ],
+      "anchor": [
+        16,
+        28
+      ],
+      "pixel_size": 0.0234375,
+      "subdivide_depth": 7,
+      "palette_row": 0,
+      "layer": 1,
+      "sha256": "13c1141d5ee994b3887a960088414ccf8dac9d7cb116d430c7ed15960ed6b405"
+    },
+    {
+      "id": "grass_12",
+      "name": "尖叶簇",
+      "texture": "res://assets/meowa/dressing/forest/plant_06.png",
+      "normal_texture": "res://assets/meowa/dressing/forest/normals/plant_06.png",
+      "canvas": [
+        32,
+        32
+      ],
+      "visible_size": [
+        28,
+        24
+      ],
+      "anchor": [
+        16,
+        28
+      ],
+      "pixel_size": 0.0234375,
+      "subdivide_depth": 7,
+      "palette_row": 0,
+      "layer": 0,
+      "sha256": "38634aeaa6a99230fee2a362c6c262c56d70a9dd05789512126e5ea11f79f54d"
+    },
+    {
+      "id": "grass_13",
+      "name": "细长草簇",
+      "texture": "res://assets/meowa/dressing/forest/plant_07.png",
+      "normal_texture": "res://assets/meowa/dressing/forest/normals/plant_07.png",
+      "canvas": [
+        32,
+        32
+      ],
+      "visible_size": [
+        26,
+        26
+      ],
+      "anchor": [
+        16,
+        29
+      ],
+      "pixel_size": 0.0234375,
+      "subdivide_depth": 31,
+      "palette_row": 0,
+      "layer": 2,
+      "sha256": "c6d0f12e2d26226d2f7e206b6682129191b1a1961bba5117e0fc92be57d3a090"
+    },
+    {
+      "id": "grass_14",
+      "name": "饱满长草簇",
+      "texture": "res://assets/meowa/dressing/forest/plant_08.png",
+      "normal_texture": "res://assets/meowa/dressing/forest/normals/plant_08.png",
+      "canvas": [
+        32,
+        32
+      ],
+      "visible_size": [
+        29,
+        25
+      ],
+      "anchor": [
+        16,
+        28
+      ],
+      "pixel_size": 0.0234375,
+      "subdivide_depth": 7,
+      "palette_row": 0,
+      "layer": 2,
+      "sha256": "2e5c1ba6fc7b6b97d0cd60ef9746d163b945c33a19a6ca8c48c6693885d2f5d1"
+    }
+  ]
+}

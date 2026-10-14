@@ -1,0 +1,78 @@
+{
+  "status": "success",
+  "beijingTime": "2026-10-10T18:36:13+08:00",
+  "httpStatus": 200,
+  "headers": {
+    "Alt-Svc": "h3=\":443\"; ma=2592000",
+    "Content-Encoding": "zstd",
+    "Content-Type": "application/json",
+    "Date": "Sat, 10 Oct 2026 10:36:12 GMT",
+    "Server": "uvicorn",
+    "Vary": "Origin, Accept-Encoding",
+    "Via": "1.1 Caddy",
+    "Content-Length": "771"
+  },
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "returnedData": {
+    "job_id": "job_858f7983347346b498e4a9ca90457ebf",
+    "job_type": "workflow",
+    "status": "success",
+    "stage": "completed",
+    "next_poll_after_seconds": 0,
+    "animation_type": null,
+    "queue": {
+      "position": 0,
+      "estimated_wait_seconds": 0
+    },
+    "progress": {
+      "label": "已完成",
+      "percent": 100
+    },
+    "result": {
+      "job_name": "103530_default_A_seamless_loop_of_very_light_gentle_drizzle_in_the_open_air_hea",
+      "audio_path": "https://media.meowa.ai/public/elevenlabs-generator/output/2026-10-10/10%3A35%3A38-workflow-e9777ae37ed646c5a75a7bf6/Soft_Light_Rain_Ambience.mp3",
+      "audio_paths": [
+        "https://media.meowa.ai/public/elevenlabs-generator/output/2026-10-10/10%3A35%3A38-workflow-e9777ae37ed646c5a75a7bf6/Soft_Light_Rain_Ambience.mp3"
+      ],
+      "audios": [
+        {
+          "type": "sound_effect",
+          "label": "Soft Light Rain Ambience",
+          "name": "Soft Light Rain Ambience",
+          "path": "https://media.meowa.ai/public/elevenlabs-generator/output/2026-10-10/10%3A35%3A38-workflow-e9777ae37ed646c5a75a7bf6/Soft_Light_Rain_Ambience.mp3",
+          "content_type": "audio/mpeg",
+          "prompt": "Soft continuous wash of gentle distant drizzle calm even light rain ambient background noise with no heavy drops or splashes",
+          "loop": true,
+          "duration_seconds": 10,
+          "normalized": true,
+          "raw_path": "https://storage.googleapis.com/meowart-bucket/elevenlabs-generator/output/2026-10-10/10:35:38-workflow-e9777ae37ed646c5a75a7bf6/steps/raw_audio/Soft_Light_Rain_Ambience.mp3"
+        }
+      ],
+      "character_cost": 121.0,
+      "url": "https://media.meowa.ai/public/elevenlabs-generator/output/2026-10-10/10%3A35%3A38-workflow-e9777ae37ed646c5a75a7bf6/Soft_Light_Rain_Ambience.mp3"
+    },
+    "outputs": [
+      {
+        "output_key": "primary",
+        "url": "https://media.meowa.ai/public/elevenlabs-generator/output/2026-10-10/10%3A35%3A38-workflow-e9777ae37ed646c5a75a7bf6/Soft_Light_Rain_Ambience.mp3",
+        "media_type": "audio",
+        "mime_type": null,
+        "asset_id": null,
+        "thumb_url": null,
+        "width": null,
+        "height": null,
+        "byte_size": null
+      }
+    ],
+    "error": null,
+    "error_code": null,
+    "error_id": null,
+    "credit_refund": {
+      "refunded": false,
+      "amount": 0,
+      "reference_id": "job_858f7983347346b498e4a9ca90457ebf"
+    }
+  }
+}

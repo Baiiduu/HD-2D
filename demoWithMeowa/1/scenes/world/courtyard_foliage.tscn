@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/world/ground_dressing_region.gd" id="region"]
+
+[node name="CourtyardForestSample" type="Node3D"]
+script = ExtResource("region")
+area_size = Vector2(6.4, 6.4)
+categories = 2
+density_multiplier = 0.3
+flower_variants = 7
+extra_asset_manifest = "res://assets/meowa/dressing/forest/assets.json"
+extra_density = 3.2

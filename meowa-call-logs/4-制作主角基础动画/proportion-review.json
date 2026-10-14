@@ -1,0 +1,326 @@
+{
+  "run_front": [
+    {
+      "label": "standing",
+      "bounds": [
+        27,
+        11,
+        52,
+        69
+      ],
+      "head_top_region": [
+        29,
+        11,
+        51,
+        27
+      ],
+      "first_yellow_y": 27
+    },
+    {
+      "label": "edited-start",
+      "bounds": [
+        24,
+        11,
+        54,
+        69
+      ],
+      "head_top_region": [
+        28,
+        11,
+        51,
+        27
+      ],
+      "first_yellow_y": 27
+    },
+    {
+      "label": "frame-0",
+      "bounds": [
+        24,
+        11,
+        54,
+        69
+      ],
+      "head_top_region": [
+        28,
+        11,
+        51,
+        27
+      ],
+      "first_yellow_y": 27
+    },
+    {
+      "label": "frame-1",
+      "bounds": [
+        24,
+        11,
+        54,
+        68
+      ],
+      "head_top_region": [
+        28,
+        11,
+        51,
+        27
+      ],
+      "first_yellow_y": 27
+    },
+    {
+      "label": "frame-2",
+      "bounds": [
+        25,
+        10,
+        54,
+        66
+      ],
+      "head_top_region": [
+        28,
+        10,
+        51,
+        26
+      ],
+      "first_yellow_y": 26
+    },
+    {
+      "label": "frame-3",
+      "bounds": [
+        27,
+        10,
+        55,
+        69
+      ],
+      "head_top_region": [
+        28,
+        10,
+        51,
+        26
+      ],
+      "first_yellow_y": 26
+    },
+    {
+      "label": "frame-4",
+      "bounds": [
+        27,
+        11,
+        56,
+        69
+      ],
+      "head_top_region": [
+        28,
+        11,
+        51,
+        27
+      ],
+      "first_yellow_y": 27
+    },
+    {
+      "label": "frame-5",
+      "bounds": [
+        26,
+        11,
+        55,
+        67
+      ],
+      "head_top_region": [
+        28,
+        11,
+        51,
+        27
+      ],
+      "first_yellow_y": 27
+    },
+    {
+      "label": "frame-6",
+      "bounds": [
+        25,
+        10,
+        54,
+        67
+      ],
+      "head_top_region": [
+        28,
+        10,
+        50,
+        26
+      ],
+      "first_yellow_y": 26
+    },
+    {
+      "label": "frame-7",
+      "bounds": [
+        24,
+        11,
+        53,
+        68
+      ],
+      "head_top_region": [
+        28,
+        11,
+        51,
+        27
+      ],
+      "first_yellow_y": 27
+    }
+  ],
+  "run_back": [
+    {
+      "label": "standing",
+      "bounds": [
+        26,
+        12,
+        53,
+        69
+      ],
+      "head_top_region": [
+        28,
+        12,
+        51,
+        28
+      ],
+      "first_yellow_y": 28
+    },
+    {
+      "label": "edited-start",
+      "bounds": [
+        23,
+        13,
+        55,
+        69
+      ],
+      "head_top_region": [
+        27,
+        13,
+        51,
+        29
+      ],
+      "first_yellow_y": 29
+    },
+    {
+      "label": "frame-0",
+      "bounds": [
+        23,
+        13,
+        55,
+        69
+      ],
+      "head_top_region": [
+        27,
+        13,
+        51,
+        29
+      ],
+      "first_yellow_y": 29
+    },
+    {
+      "label": "frame-1",
+      "bounds": [
+        26,
+        11,
+        57,
+        70
+      ],
+      "head_top_region": [
+        27,
+        11,
+        51,
+        27
+      ],
+      "first_yellow_y": 27
+    },
+    {
+      "label": "frame-2",
+      "bounds": [
+        27,
+        10,
+        55,
+        68
+      ],
+      "head_top_region": [
+        27,
+        10,
+        51,
+        26
+      ],
+      "first_yellow_y": 26
+    },
+    {
+      "label": "frame-3",
+      "bounds": [
+        25,
+        12,
+        56,
+        64
+      ],
+      "head_top_region": [
+        27,
+        12,
+        51,
+        29
+      ],
+      "first_yellow_y": 29
+    },
+    {
+      "label": "frame-4",
+      "bounds": [
+        24,
+        13,
+        57,
+        67
+      ],
+      "head_top_region": [
+        27,
+        13,
+        51,
+        29
+      ],
+      "first_yellow_y": 29
+    },
+    {
+      "label": "frame-5",
+      "bounds": [
+        22,
+        11,
+        53,
+        70
+      ],
+      "head_top_region": [
+        27,
+        11,
+        51,
+        27
+      ],
+      "first_yellow_y": 27
+    },
+    {
+      "label": "frame-6",
+      "bounds": [
+        23,
+        10,
+        52,
+        68
+      ],
+      "head_top_region": [
+        27,
+        10,
+        51,
+        26
+      ],
+      "first_yellow_y": 26
+    },
+    {
+      "label": "frame-7",
+      "bounds": [
+        21,
+        12,
+        54,
+        64
+      ],
+      "head_top_region": [
+        27,
+        12,
+        51,
+        28
+      ],
+      "first_yellow_y": 28
+    }
+  ]
+}

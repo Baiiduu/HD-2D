@@ -1,0 +1,40 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/bell_frog.gd" id="actor"]
+[ext_resource type="Script" path="res://scripts/rendering/character_lighting.gd" id="lighting"]
+[ext_resource type="SpriteFrames" path="res://assets/meowa/enemies/bell_frog/animations.tres" id="frames"]
+[ext_resource type="Texture2D" path="res://assets/meowa/enemies/bell_frog/frames/idle_front.png" id="texture"]
+[ext_resource type="AudioStream" path="res://assets/meowa/enemies/bell_frog/attack.mp3" id="sound"]
+
+[sub_resource type="CapsuleShape3D" id="body"]
+radius = 0.24
+height = 0.7
+
+[sub_resource type="AtlasTexture" id="first"]
+atlas = ExtResource("texture")
+region = Rect2(0, 0, 80, 80)
+
+[node name="BellFrog" type="CharacterBody3D"]
+floor_snap_length = 0.25
+script = ExtResource("actor")
+animations = ExtResource("frames")
+body_radius = 0.24
+body_height = 0.7
+attack_sound = ExtResource("sound")
+
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.35, 0)
+shape = SubResource("body")
+
+[node name="Sprite" type="Sprite3D" parent="."]
+process_priority = 1
+position = Vector3(0, 0.384, 0)
+pixel_size = 0.016
+billboard = 2
+shaded = true
+alpha_cut = 1
+texture_filter = 0
+texture = SubResource("first")
+script = ExtResource("lighting")
+occlusion_outline_color = Color(1, 0.75, 0.4, 1)

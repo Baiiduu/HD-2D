@@ -1,0 +1,5 @@
+{
+  "beijingTime": "2026-10-10T17:19:34.4988850+08:00",
+  "reason": "服务返回 HTTP 轮询地址；未发送认证信息，改用 sound-poll 按原任务 ID 从 HTTPS 恢复",
+  "status": "not_called"
+}

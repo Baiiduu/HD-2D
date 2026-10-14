@@ -5,6 +5,7 @@ var wave: WavePrototype
 var player: Player
 var fan: FanAutoAttack
 var checks := 0
+var failures := 0
 
 func _initialize() -> void:
 	create_timer(40.0).timeout.connect(func(): quit(2))
@@ -12,7 +13,9 @@ func _initialize() -> void:
 
 func check(condition: bool, message: String) -> void:
 	checks += 1
-	assert(condition, message)
+	if not condition:
+		failures += 1
+		push_error(message)
 
 func settle(count := 5) -> void:
 	for frame in count: await physics_frame
@@ -43,6 +46,14 @@ func strike(step := 1.0 / 60.0) -> void:
 func run() -> void:
 	scene = load("res://scenes/world/world.tscn").instantiate()
 	scene.get_node("WavePrototype/RunGrowth").enabled = false
+	# 布局可变；攻击夹具只保留地形，随后用真实碰撞墙验证阻挡。
+	var props := scene.get_node("WorldDetails")
+	scene.remove_child(props)
+	props.free()
+	for prop in scene.get_children():
+		if prop is PlazaProp:
+			scene.remove_child(prop)
+			prop.free()
 	scene.get_node("LoadoutUI").save_enabled = false
 	scene.get_node("WavePrototype/RunGrowth").enabled = false
 	root.add_child(scene)
@@ -56,7 +67,16 @@ func run() -> void:
 	wave.set_physics_process(false)
 	fan.set_physics_process(false)
 	player.global_position = wave.global_position + Vector3.UP * 0.03
+	var skills: RunSkills = wave.get_node("RunSkills")
+	# 动作夹具需要固定 A01；抽三张的随机规则由成长测试覆盖。
+	skills.initial_cards_per_draw = skills.skill_paths.size()
 	check(wave.start_run(), "New battlefield entrance starts the wave")
+	skills.initial_choice.open_duration = 0.0
+	# 重新呈现已抽到的同一组卡，让动作测试立即可选择。
+	skills.initial_choice.present_choices(skills._initial_cards)
+	check(skills.initial_choice.select_option(&"initial:fan_slash"), "A01 is selected through the actual initial choice")
+	skills.initial_choice.confirm_selection()
+	fan.set_physics_process(false)
 	wave._spawn_queue.clear()
 	player.global_position = scene.get_node("BattleArea").global_position + Vector3.UP * 0.03
 	fan.knockback_distance = 0.0
@@ -177,8 +197,8 @@ func run() -> void:
 	check(wave.phase == WavePrototype.Phase.RESULT and not fan._swinging and not fan._mesh.visible, "Failure cancels a pending swing")
 	wave.retry()
 	check(fan._cooldown == 0.0 and not fan._swinging, "Retry does not resume old damage or effects")
-	print("PASS: A01 fan attack, %d checks; group sweep, direction lock, range/angle/height, wall clipping, frame independence, parameters, movement, blink, knockback, two-hit kill and phase cleanup" % checks)
+	print("A01 fan attack: %d checks, %d failures" % [checks, failures])
 	scene.queue_free()
 	await settle()
 	await create_timer(0.3).timeout
-	quit()
+	quit(1 if failures else 0)

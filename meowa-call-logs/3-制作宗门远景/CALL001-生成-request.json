@@ -1,0 +1,37 @@
+{
+  "id": "CALL001",
+  "task": "3-制作宗门远景",
+  "beijingTime": "2026-10-10T12:37:57.000+08:00",
+  "purpose": "按已确认的宗门灯火与山谷层次方向制作三层远景图集",
+  "tool": "Meowa CLI / general-image-run",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "arguments": [
+    "general-image-run",
+    "--generation-model",
+    "image-2.5",
+    "--prompt",
+    "为东方幻想 HD-2D 像素游戏制作一张远景分层素材表，参考图只用于夜间宗门山谷的画风、配色和建筑风格。\n整张图为等高的上中下三行，每行是一条横向展开的独立山谷全景，宽度铺满，各行之间有清晰透明间隔。每行山峰上方透明，山体下部完整；山脉左右边缘在高度和颜色上自然衔接，适合环绕远景。不要天空底色、月亮、文字或边框。\n上行：较近的深青灰山壁与少量暗色树冠，轮廓清晰，岩层简洁，不放建筑。\n中行：起伏的青蓝山峰、峭壁上的几座很小的东方宗门楼阁，稀疏暖金色窗灯，建筑只占山体很小比例，留出开阔山谷。\n下行：很远的淡青蓝山峰剪影，柔和且低对比，没有建筑。\n采用统一的清晰像素簇与有限色阶，山体冷色、窗灯暖色，留出安静的暗部，让远处灯火成为视觉焦点。只画远景，不画广场、人物、近景道具或可交互大建筑。",
+    "--resolution",
+    "1K",
+    "--aspect-ratio",
+    "4:3",
+    "--quality",
+    "detailed",
+    "--remove-bg-method",
+    "standard",
+    "--reference-image",
+    "C:/Users/PC/AppData/Local/Temp/codex-clipboard-17018820-62f9-4ab1-be39-cf940a392242.png",
+    "--output-dir",
+    "D:/Project/HD-2DMap/benchmark/threejs/assets/meowa/vista"
+  ],
+  "prompt": "为东方幻想 HD-2D 像素游戏制作一张远景分层素材表，参考图只用于夜间宗门山谷的画风、配色和建筑风格。\n整张图为等高的上中下三行，每行是一条横向展开的独立山谷全景，宽度铺满，各行之间有清晰透明间隔。每行山峰上方透明，山体下部完整；山脉左右边缘在高度和颜色上自然衔接，适合环绕远景。不要天空底色、月亮、文字或边框。\n上行：较近的深青灰山壁与少量暗色树冠，轮廓清晰，岩层简洁，不放建筑。\n中行：起伏的青蓝山峰、峭壁上的几座很小的东方宗门楼阁，稀疏暖金色窗灯，建筑只占山体很小比例，留出开阔山谷。\n下行：很远的淡青蓝山峰剪影，柔和且低对比，没有建筑。\n采用统一的清晰像素簇与有限色阶，山体冷色、窗灯暖色，留出安静的暗部，让远处灯火成为视觉焦点。只画远景，不画广场、人物、近景道具或可交互大建筑。",
+  "negativePrompt": null,
+  "referenceImages": [
+    "C:/Users/PC/AppData/Local/Temp/codex-clipboard-17018820-62f9-4ab1-be39-cf940a392242.png"
+  ],
+  "status": "pending",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回"
+}

@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/buildings/ricochet_prop.gd" id="prop"]
+
+[node name="BarrelCluster" type="Node3D"]
+script = ExtResource("prop")
+kind = 3
+dimensions = Vector3(2.4, 1.25, 1.8)

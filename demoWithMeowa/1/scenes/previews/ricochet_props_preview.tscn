@@ -1,0 +1,45 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/previews/ricochet_props_preview.gd" id="preview"]
+[ext_resource type="PackedScene" path="res://scenes/world/world.tscn" id="world"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/low_wall.tscn" id="wall"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/iron_fence.tscn" id="fence"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/crate_stack.tscn" id="crates"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/barrel_cluster.tscn" id="barrels"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/stone_pillar.tscn" id="pillar"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/corner_wall.tscn" id="corner"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/plaza_streetlamp.tscn" id="lamp"]
+
+[node name="RicochetPropsPreview" type="Node3D"]
+script = ExtResource("preview")
+
+[node name="CurrentWorld" parent="." instance=ExtResource("world")]
+
+[node name="RicochetSamples" type="Node3D" parent="CurrentWorld"]
+position = Vector3(-52, 0, 0)
+
+[node name="LowStoneWall" parent="CurrentWorld/RicochetSamples" instance=ExtResource("wall")]
+position = Vector3(49, 0, 40.8)
+
+[node name="IronFence" parent="CurrentWorld/RicochetSamples" instance=ExtResource("fence")]
+position = Vector3(54.5, 0, 40.8)
+
+[node name="StonePillar" parent="CurrentWorld/RicochetSamples" instance=ExtResource("pillar")]
+position = Vector3(60, 0, 40.8)
+
+[node name="CrateStack" parent="CurrentWorld/RicochetSamples" instance=ExtResource("crates")]
+position = Vector3(49, 0, 45.4)
+
+[node name="BarrelCluster" parent="CurrentWorld/RicochetSamples" instance=ExtResource("barrels")]
+position = Vector3(54.5, 0, 45.4)
+
+[node name="CornerWall" parent="CurrentWorld/RicochetSamples" instance=ExtResource("corner")]
+position = Vector3(60, 0, 45.4)
+
+[node name="PreviewLampLeft" parent="CurrentWorld/RicochetSamples" instance=ExtResource("lamp")]
+position = Vector3(45.8, 0, 43)
+
+[node name="PreviewLampRight" parent="CurrentWorld/RicochetSamples" instance=ExtResource("lamp")]
+position = Vector3(63.2, 0, 43)
+
+[editable path="CurrentWorld"]

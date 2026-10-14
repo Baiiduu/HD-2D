@@ -1,0 +1,6 @@
+{
+  "run": {"directory": "run-side-fixed", "source_kind": "horizontal_sheet", "related_call": "CALL025"},
+  "run_back": {"directory": "run-back-fixed", "source_kind": "horizontal_sheet", "related_call": "CALL026"},
+  "run_front": {"directory": "run-front-fixed", "source_kind": "horizontal_sheet", "related_call": "CALL027"},
+  "idle_front": {"directory": "idle-front-fixed", "source_kind": "horizontal_sheet", "related_call": "CALL028", "frame_order": [1, 2, 3, 4, 5, 4, 3, 2]}
+}

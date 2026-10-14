@@ -1,0 +1,14 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/prism_ricochet_auto_attack.gd" id="attack"]
+[ext_resource type="Resource" path="res://data/skills/prism_ricochet.tres" id="skill"]
+[ext_resource type="PackedScene" path="res://scenes/combat/prism_ricochet_effect.tscn" id="effect"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/combat/hit_01.wav" id="hit1"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/combat/hit_02.wav" id="hit2"]
+
+[node name="PrismRicochetAutoAttack" type="Node3D"]
+script = ExtResource("attack")
+skill_definition = ExtResource("skill")
+effect_scene = ExtResource("effect")
+hit_sounds = Array[AudioStream]([ExtResource("hit1"), ExtResource("hit2")])
+bounce_sounds = Array[AudioStream]([ExtResource("hit2")])

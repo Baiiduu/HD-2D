@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" path="res://assets/meowa/ui/upgrade/card.png" id="normal"]
 [ext_resource type="Texture2D" path="res://assets/meowa/ui/upgrade/card-selected.png" id="selected"]
 [ext_resource type="Texture2D" path="res://assets/meowa/ui/upgrade/icon-slot.png" id="socket"]
-[ext_resource type="Shader" path="res://shaders/growth_choice_card.gdshader" id="shader"]
+[ext_resource type="Shader" path="res://shaders/ui/growth_choice_card.gdshader" id="shader"]
 
 [sub_resource type="StyleBoxEmpty" id="empty"]
 
@@ -61,6 +61,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
 text_overrun_behavior = 3
+autowrap_mode = 3
 
 [node name="Description" type="Label" parent="."]
 visible = false
@@ -68,4 +69,14 @@ mouse_filter = 2
 theme_override_colors/font_color = Color(0.14, 0.17, 0.12, 1)
 autowrap_mode = 3
 clip_text = true
-max_lines_visible = 6
+max_lines_visible = 7
+
+[node name="Category" type="Label" parent="."]
+mouse_filter = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Shortcut" type="Label" parent="."]
+mouse_filter = 2
+horizontal_alignment = 1
+vertical_alignment = 1

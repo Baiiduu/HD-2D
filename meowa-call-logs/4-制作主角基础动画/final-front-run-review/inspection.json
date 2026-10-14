@@ -1,0 +1,140 @@
+{
+  "source": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\final-front-run\\黄衣青年保持当前斜正面朝向_向观众原地小步轻跑_双腿交替迈步_手臂小幅摆动_头_dc92e959\\meowa_animation.webp",
+  "canvas": [
+    80,
+    80
+  ],
+  "frames": 8,
+  "duration_ms": 1000,
+  "frame_details": [
+    {
+      "frame": 0,
+      "bounds": [
+        28,
+        11,
+        51,
+        69
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "alpha_values": [
+        255
+      ]
+    },
+    {
+      "frame": 1,
+      "bounds": [
+        28,
+        12,
+        51,
+        69
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "alpha_values": [
+        255
+      ]
+    },
+    {
+      "frame": 2,
+      "bounds": [
+        27,
+        11,
+        52,
+        69
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "alpha_values": [
+        255
+      ]
+    },
+    {
+      "frame": 3,
+      "bounds": [
+        26,
+        9,
+        53,
+        69
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "alpha_values": [
+        255
+      ]
+    },
+    {
+      "frame": 4,
+      "bounds": [
+        25,
+        10,
+        55,
+        69
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "alpha_values": [
+        255
+      ]
+    },
+    {
+      "frame": 5,
+      "bounds": [
+        26,
+        12,
+        54,
+        69
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "alpha_values": [
+        255
+      ]
+    },
+    {
+      "frame": 6,
+      "bounds": [
+        26,
+        10,
+        53,
+        69
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "alpha_values": [
+        255
+      ]
+    },
+    {
+      "frame": 7,
+      "bounds": [
+        28,
+        8,
+        51,
+        69
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "alpha_values": [
+        255
+      ]
+    }
+  ],
+  "art_acceptance": "pending visual review"
+}

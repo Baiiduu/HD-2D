@@ -4,7 +4,7 @@ extends Node3D
 signal dressing_rebuilt
 
 ## 小院低矮植被：使用原生 Meowa 像素素材，地形与道路留空由父节点决定。
-const WIND_SHADER := preload("res://shaders/vegetation_wind.gdshader")
+const WIND_SHADER := preload("res://shaders/environment/vegetation_wind.gdshader")
 const TEXTURES := [
 	"res://assets/meowa/dressing/grass/grass_01.png",
 	"res://assets/meowa/dressing/grass/grass_02.png",

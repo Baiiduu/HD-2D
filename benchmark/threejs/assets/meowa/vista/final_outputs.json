@@ -1,0 +1,11 @@
+{
+  "status": "success",
+  "job_id": "job_b5e20bd4df434daa990768d60ea8ba7a",
+  "outputs": [
+    {
+      "type": "media",
+      "path": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\vista\\vista.png",
+      "mime_type": "image/png"
+    }
+  ]
+}

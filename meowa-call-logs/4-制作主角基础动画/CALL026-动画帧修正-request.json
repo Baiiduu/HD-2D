@@ -1,0 +1,38 @@
+{
+  "id": "CALL026",
+  "task": "4-制作主角基础动画",
+  "beijingTime": "2026-10-10T13:48:52.000+08:00",
+  "purpose": "背面跑动比例修复",
+  "tool": "Meowa CLI / animation-edit-run",
+  "executionPython": "C:/Users/PC/AppData/Local/Programs/Python/Python314/python.exe",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "arguments": [
+    "animation-edit-run",
+    "--animation-file",
+    "D:/Project/HD-2DMap/demoWithMeowa/1/assets/meowa/player/run_back.webp",
+    "--reference-image",
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/back-pose-retry/把人物转身180度_画出他完全背对观众的后视图_看到后脑勺_耳机头梁和黄色连帽衫_c56d39b7/remove_bg.png",
+    "--prompt",
+    "把动画每一帧的黄衣青年身材恢复成参考图的比例，保持同样的头部大小、肩宽、躯干长度和腿长，衣身不要膨胀。保留原来的轻跑动作、朝向、帧位置和透明背景。",
+    "--mode",
+    "pixel",
+    "--generation-speed",
+    "normal",
+    "--remove-bg-method",
+    "advanced",
+    "--output-dir",
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/run-back-fixed"
+  ],
+  "prompt": "把动画每一帧的黄衣青年身材恢复成参考图的比例，保持同样的头部大小、肩宽、躯干长度和腿长，衣身不要膨胀。保留原来的轻跑动作、朝向、帧位置和透明背景。",
+  "negativePrompt": null,
+  "referenceImages": [
+    "D:/Project/HD-2DMap/demoWithMeowa/1/assets/meowa/player/run_back.webp",
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/back-pose-retry/把人物转身180度_画出他完全背对观众的后视图_看到后脑勺_耳机头梁和黄色连帽衫_c56d39b7/remove_bg.png"
+  ],
+  "status": "pending",
+  "relatedCall": "CALL016",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回"
+}

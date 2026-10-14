@@ -2,7 +2,7 @@
 class_name AttributeHUD
 extends Control
 
-const FRAME_SHADER := preload("res://shaders/attribute_hud.gdshader")
+const FRAME_SHADER := preload("res://shaders/ui/attribute_hud.gdshader")
 const REFERENCE_WIDTH := 320.0
 
 @export_group("人物连接")

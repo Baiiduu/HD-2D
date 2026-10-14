@@ -1,0 +1,14 @@
+{
+	"default_plants": 957,
+	"density_10_plants": 957,
+	"density_2_pebbles": 40,
+	"density_2_plants": 206,
+	"failures": [
+		"Default scene no longer has the original 103 plants",
+		"Density above 1 did not add plants",
+		"Restoring density 1 did not exactly restore the original layout",
+		"Choosing resources altered the baseline quantity",
+		"Restoring the original selection did not restore the layout"
+	],
+	"selected_resources_plants": 103
+}

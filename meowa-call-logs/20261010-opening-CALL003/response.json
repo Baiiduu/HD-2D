@@ -1,0 +1,10 @@
+{
+  "status": "success",
+  "startedAt": "2026-10-10T11:41:05+08:00",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "endedAt": "2026-10-10T11:41:05+08:00",
+  "exitCode": 0,
+  "output": "usage: meowart_api.py texture-gen-run [-h] [--output-dir OUTPUT_DIR]\n                                      --prompt PROMPT [--self-loop]\n                                      [--no-self-loop]\n\noptions:\n  -h, --help            show this help message and exit\n  --output-dir, --output_dir OUTPUT_DIR\n                        Output root; the runner creates one task subdirectory\n  --prompt PROMPT       Describe the required 64x64 seamless texture\n  --self-loop\n  --no-self-loop\n"
+}

@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="WavePopulationRules" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/wave_population_rules.gd" id="rules"]
+
+[resource]
+script = ExtResource("rules")
+resource_name = "怪潮 512 · 渐进容量"

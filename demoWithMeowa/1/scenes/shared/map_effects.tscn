@@ -1,17 +1,17 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://scripts/map_effects.gd" id="map_effects"]
-[ext_resource type="PackedScene" path="res://scenes/shared/game_audio.tscn" id="game_audio"]
+[ext_resource type="Script" path="res://scripts/world/map_effects.gd" id="map_effects"]
+[ext_resource type="PackedScene" path="res://scenes/audio/game_audio.tscn" id="game_audio"]
 
-[ext_resource type="Script" uid="uid://srckk3f4b30t" path="res://scripts/art_direction.gd" id="art_direction"]
-[ext_resource type="Script" path="res://scripts/atmospheric_light.gd" id="atmospheric_light"]
-[ext_resource type="Script" uid="uid://yq5plellwbbv" path="res://scripts/bgm.gd" id="bgm"]
-[ext_resource type="Script" uid="uid://cehtfiwluxpej" path="res://scripts/daylight_preview.gd" id="daylight_preview"]
-[ext_resource type="Script" uid="uid://c4p56r7qm7y5b" path="res://scripts/follow_camera.gd" id="follow_camera"]
-[ext_resource type="Shader" uid="uid://fuoorj3rrv6c" path="res://shaders/post_process.gdshader" id="post_shader"]
-[ext_resource type="Shader" uid="uid://vs810xu7skxb" path="res://shaders/night_sky.gdshader" id="sky_shader"]
-[ext_resource type="Script" uid="uid://ce7x51clpltsu" path="res://scripts/planar_water_reflection.gd" id="water_reflection"]
-[ext_resource type="Script" uid="uid://coc5io4jx6oy3" path="res://scripts/weather.gd" id="weather"]
+[ext_resource type="Script" uid="uid://srckk3f4b30t" path="res://scripts/world/art_direction.gd" id="art_direction"]
+[ext_resource type="Script" path="res://scripts/world/atmospheric_light.gd" id="atmospheric_light"]
+[ext_resource type="Script" uid="uid://yq5plellwbbv" path="res://scripts/audio/bgm.gd" id="bgm"]
+[ext_resource type="Script" uid="uid://cehtfiwluxpej" path="res://scripts/world/daylight_preview.gd" id="daylight_preview"]
+[ext_resource type="Script" uid="uid://c4p56r7qm7y5b" path="res://scripts/camera/follow_camera.gd" id="follow_camera"]
+[ext_resource type="Shader" uid="uid://fuoorj3rrv6c" path="res://shaders/post/post_process.gdshader" id="post_shader"]
+[ext_resource type="Shader" uid="uid://vs810xu7skxb" path="res://shaders/environment/night_sky.gdshader" id="sky_shader"]
+[ext_resource type="Script" uid="uid://ce7x51clpltsu" path="res://scripts/rendering/planar_water_reflection.gd" id="water_reflection"]
+[ext_resource type="Script" uid="uid://coc5io4jx6oy3" path="res://scripts/world/weather.gd" id="weather"]
 [sub_resource type="ShaderMaterial" id="Sky_material"]
 resource_local_to_scene = true
 shader = ExtResource("sky_shader")
@@ -121,8 +121,6 @@ script = ExtResource("map_effects")
 [node name="ArtDirection" type="Node" parent="." node_paths=PackedStringArray("world_environment", "moon", "post_process", "water_reflection")]
 script = ExtResource("art_direction")
 world_environment = NodePath("../WorldEnvironment")
-
-[node name="GameAudio" parent="." instance=ExtResource("game_audio")]
 moon = NodePath("../Moon")
 post_process = NodePath("../PostProcess/Screen")
 water_reflection = NodePath("../WaterReflection")
@@ -140,6 +138,8 @@ fog_end = 99.0
 fog_amount = 0.0
 low_fog = 0.06
 wetness = 0.6
+
+[node name="GameAudio" parent="." instance=ExtResource("game_audio")]
 
 [node name="DaylightPreview" type="Node3D" parent="." node_paths=PackedStringArray("art_direction")]
 process_priority = 30

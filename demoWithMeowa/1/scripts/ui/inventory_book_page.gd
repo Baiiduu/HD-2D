@@ -33,7 +33,7 @@ func build(host: CanvasLayer) -> void:
 		var paper := _image(load(ART+"page-paper.png"))
 		paper.stretch_mode = TextureRect.STRETCH_SCALE
 		paper.material = ShaderMaterial.new()
-		(paper.material as ShaderMaterial).shader = load("res://shaders/inventory_paper.gdshader")
+		(paper.material as ShaderMaterial).shader = load("res://shaders/ui/inventory_paper.gdshader")
 		_at(paper,rect)
 	_at(_label("背包",52),Rect2(235,185,260,70))
 	search = LineEdit.new()

@@ -1,0 +1,11 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/mirror_projectile_effect.gd" id="effect"]
+[ext_resource type="Texture2D" path="res://assets/meowa/combat/mirror_mark/projectile.png" id="art"]
+[ext_resource type="PackedScene" path="res://scenes/combat/mirror_mark_effect.tscn" id="mark"]
+
+[node name="MirrorProjectileEffect" type="Node3D"]
+script = ExtResource("effect")
+head_texture = ExtResource("art")
+mark_scene = ExtResource("mark")
+fade_time = 0.09

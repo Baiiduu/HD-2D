@@ -1,0 +1,19 @@
+usage: meowart_api.py animation-edit-run [-h] [--output-dir OUTPUT_DIR]
+                                         --animation-file ANIMATION_FILE
+                                         [--reference-image REFERENCE_IMAGE]
+                                         --prompt PROMPT [--mode {pixel,hd}]
+                                         [--remove-bg-method {none,standard,advanced}]
+                                         [--generation-speed {normal,fast}]
+
+options:
+  -h, --help            show this help message and exit
+  --output-dir, --output_dir OUTPUT_DIR
+                        Output root; the runner creates one task subdirectory
+  --animation-file ANIMATION_FILE
+                        Animated GIF or WebP input
+  --reference-image REFERENCE_IMAGE
+                        Optional visual reference; repeat up to 8 times
+  --prompt PROMPT       Describe the requested animation edit
+  --mode {pixel,hd}
+  --remove-bg-method {none,standard,advanced}
+  --generation-speed {normal,fast}

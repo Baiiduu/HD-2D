@@ -28,8 +28,20 @@ export function buildLights(world, scene) {
       light.userData = { name: L.name, wantsShadow: L.shadows };
       group.add(light);
       points.push(light);
+      if (L.placeholder) {
+        const marker = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.22, 0.18),
+          new THREE.MeshStandardMaterial({ color: 0xd8d4ca, emissive: color, emissiveIntensity: 1.5, roughness: 0.8 }));
+        marker.name = L.name + '/Placeholder'; marker.position.copy(p);
+        const stem = new THREE.Mesh(new THREE.BoxGeometry(0.055, p.y - world.yoff - 0.11, 0.055),
+          new THREE.MeshStandardMaterial({ color: 0x666978, roughness: 0.85 }));
+        stem.position.set(p.x, (p.y - 0.11 + world.yoff) / 2, p.z);
+        stem.castShadow = stem.receiveShadow = true;
+        marker.receiveShadow = true;
+        light.userData.marker = marker;
+        group.add(marker, stem);
+      }
       // which lights have a visible source body (wash / spirit / glade lights are ambient fills)
-      const hasBody = /Lantern|StreetLight/.test(L.name);
+      const hasBody = L.placeholder || /Lantern|StreetLight/.test(L.name);
       const isFill = /Wash|Spirit|Glade/.test(L.name);
       const redLantern = /Cultivation\/Lantern/.test(L.name);
       scatter.push({
@@ -39,13 +51,13 @@ export function buildLights(world, scene) {
       });
       emitters.push({ a: p, b: p, color, strength: L.energy * (isFill ? 0.55 : 0.32), radius: L.range * 1.1, wrap: 1.0 });
       if (hasBody) {
-        const size = /StreetLight/.test(L.name) ? 1.6 : /Cultivation/.test(L.name) ? 1.5 : 1.15;
+        const size = L.placeholder ? 0.4 : /StreetLight/.test(L.name) ? 1.6 : /Cultivation/.test(L.name) ? 1.5 : 1.15;
         const glowColor = /Cultivation/.test(L.name) ? new THREE.Color(1.0, 0.22, 0.08).multiplyScalar(0.45) : color;
         const glow = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), glowMat.clone());
         glow.material.uniforms.uColor.value = glowColor.clone().multiplyScalar(L.energy * 0.55);
         glow.material.uniforms.uSize.value = size;
         glow.material.uniforms.uTime = GI.uTime;
-        glow.material.uniforms.uSeed.value = Math.random() * 10;
+        glow.material.uniforms.uSeed.value = L.placeholder ? points.length : Math.random() * 10;
         glow.position.copy(p);
         // lanterns hang slightly above their omni light; centre the glow on the body
         if (/Cultivation/.test(L.name)) glow.position.set(p.x, 2.35, p.z - 0.1);
@@ -53,6 +65,7 @@ export function buildLights(world, scene) {
         glow.frustumCulled = false;
         glow.renderOrder = 5;
         group.add(glow);
+        if (L.placeholder) light.userData.glow = glow;
       }
     } else if (L.type === 'SpotLight3D') {
       const light = new THREE.SpotLight(color, L.energy * LIGHT_SCALE * 1.6, L.range * 1.2, THREE.MathUtils.degToRad(L.angle_deg), 0.6, 1.5);

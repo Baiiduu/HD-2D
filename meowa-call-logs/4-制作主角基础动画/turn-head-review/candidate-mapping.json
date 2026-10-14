@@ -1,0 +1,17 @@
+{
+  "source_animation": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\turn-v2-head\\人物保持站姿和身体比例不变_原地居中缓慢旋转360_所有方向保持原图的侧分斜刘海_7e0120de\\meowa_animation.webp",
+  "related_call": "CALL031",
+  "canvas": [
+    80,
+    80
+  ],
+  "frame_indices_zero_based": {
+    "front": 29,
+    "back": 15,
+    "right": 7,
+    "left": 24
+  },
+  "processing": "Native frames only; no resampling, repainting or background removal",
+  "art_acceptance": "pending user review",
+  "runtime_integrated": false
+}

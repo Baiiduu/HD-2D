@@ -1,0 +1,16 @@
+{
+  "status": "success",
+  "job_id": "job_0b19a67970dd492cbeff946f574c8f87",
+  "outputs": [
+    {
+      "type": "media",
+      "path": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\idle-front-fixed\\让动画每一帧的正面黄衣青年匹配参考图的清瘦脸型和身材比例_保持相同的脸颊宽_bf41e9f0\\frames_edit.webp",
+      "mime_type": "image/webp"
+    },
+    {
+      "type": "media",
+      "path": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\idle-front-fixed\\让动画每一帧的正面黄衣青年匹配参考图的清瘦脸型和身材比例_保持相同的脸颊宽_bf41e9f0\\sprite_sheet.png",
+      "mime_type": "image/png"
+    }
+  ]
+}

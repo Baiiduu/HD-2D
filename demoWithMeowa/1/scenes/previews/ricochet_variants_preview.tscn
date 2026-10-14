@@ -1,0 +1,75 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://scripts/previews/ricochet_variants_preview.gd" id="preview"]
+[ext_resource type="PackedScene" path="res://scenes/world/world.tscn" id="world"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/variants/short_wall.tscn" id="short_wall"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/variants/angled_wall.tscn" id="angled_wall"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/variants/fence_passage.tscn" id="fence_passage"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/variants/folded_fence.tscn" id="folded_fence"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/variants/diagonal_crate.tscn" id="diagonal_crate"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/variants/crate_row.tscn" id="crate_row"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/variants/single_barrel.tscn" id="single_barrel"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/variants/barrel_row.tscn" id="barrel_row"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/variants/round_pillar.tscn" id="round_pillar"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/variants/octagonal_pillar.tscn" id="octagonal_pillar"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/variants/u_wall.tscn" id="u_wall"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/variants/obtuse_wall.tscn" id="obtuse_wall"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/plaza_streetlamp.tscn" id="lamp"]
+
+[node name="RicochetVariantsPreview" type="Node3D"]
+script = ExtResource("preview")
+
+[node name="CurrentWorld" parent="." instance=ExtResource("world")]
+
+[node name="RicochetVariantSamples" type="Node3D" parent="CurrentWorld"]
+position = Vector3(-52, 0, 0)
+
+[node name="ShortWall" parent="CurrentWorld/RicochetVariantSamples" instance=ExtResource("short_wall")]
+position = Vector3(42.8, 0, 35)
+
+[node name="AngledWall" parent="CurrentWorld/RicochetVariantSamples" instance=ExtResource("angled_wall")]
+position = Vector3(57.3, 0, 35)
+
+[node name="FencePassage" parent="CurrentWorld/RicochetVariantSamples" instance=ExtResource("fence_passage")]
+position = Vector3(47.2, 0, 35)
+
+[node name="FoldedFence" parent="CurrentWorld/RicochetVariantSamples" instance=ExtResource("folded_fence")]
+position = Vector3(61.7, 0, 35)
+
+[node name="DiagonalCrate" parent="CurrentWorld/RicochetVariantSamples" instance=ExtResource("diagonal_crate")]
+position = Vector3(45, 0, 39)
+
+[node name="CrateRow" parent="CurrentWorld/RicochetVariantSamples" instance=ExtResource("crate_row")]
+position = Vector3(59.5, 0, 39)
+
+[node name="SingleBarrel" parent="CurrentWorld/RicochetVariantSamples" instance=ExtResource("single_barrel")]
+position = Vector3(47.2, 0, 50)
+
+[node name="BarrelRow" parent="CurrentWorld/RicochetVariantSamples" instance=ExtResource("barrel_row")]
+position = Vector3(61.7, 0, 50)
+
+[node name="RoundPillar" parent="CurrentWorld/RicochetVariantSamples" instance=ExtResource("round_pillar")]
+position = Vector3(42.8, 0, 50)
+
+[node name="OctagonalPillar" parent="CurrentWorld/RicochetVariantSamples" instance=ExtResource("octagonal_pillar")]
+position = Vector3(57.3, 0, 50)
+
+[node name="UWall" parent="CurrentWorld/RicochetVariantSamples" instance=ExtResource("u_wall")]
+position = Vector3(45, 0, 54)
+
+[node name="ObtuseWall" parent="CurrentWorld/RicochetVariantSamples" instance=ExtResource("obtuse_wall")]
+position = Vector3(59.5, 0, 54)
+
+[node name="GalleryLamp0" parent="CurrentWorld/RicochetVariantSamples" instance=ExtResource("lamp")]
+position = Vector3(40, 0, 37.5)
+
+[node name="GalleryLamp1" parent="CurrentWorld/RicochetVariantSamples" instance=ExtResource("lamp")]
+position = Vector3(65, 0, 37.5)
+
+[node name="GalleryLamp2" parent="CurrentWorld/RicochetVariantSamples" instance=ExtResource("lamp")]
+position = Vector3(40, 0, 52.5)
+
+[node name="GalleryLamp3" parent="CurrentWorld/RicochetVariantSamples" instance=ExtResource("lamp")]
+position = Vector3(65, 0, 52.5)
+
+[editable path="CurrentWorld"]

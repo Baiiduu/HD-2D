@@ -1,0 +1,60 @@
+# 远景光束、辉光与体积散射
+
+正式地图当前关闭 AtmosphericLight 总开关，以方向光与环境光承担基础照明，停用自动地面光斑、远景装饰灯和配套光束；路灯与窗户等有明确来源的局部光保留。旧参数及以下说明保留作对照，详见 [地图局部光斑](map-accent-light.md)。总开关独立于 Style；三个固定补光仍对应视觉预览地图与关闭地图点缀模式时的行为。
+
+可见光束现在位于地图北侧的远景中，与可玩区域的受光分开。前景补光的体积雾能量始终为零；新增雾体也排除整张地图及周围 8 米。光束轮廓使用正常深度遮挡，人物、花草、建筑和道路会挡住后面的光束。地表柔和受光、原有路灯金色颗粒和水面表现保留。
+
+实机预览：[正向](../media/distant-atmosphere-preview/front.png) · [Q 45°](../media/distant-atmosphere-preview/q45.png) · [E 45°](../media/distant-atmosphere-preview/e45.png) · [侧面 90°](../media/distant-atmosphere-preview/side90.png) · [背面 180°](../media/distant-atmosphere-preview/back180.png) · [街区](../media/distant-atmosphere-preview/city.png) · [下雨](../media/distant-atmosphere-preview/rain.png)。
+
+远景光位固定在世界中。转向其他方位时，光束会自然移出视野；不会为了保持可见而移动到人物前方。Position 控制地表补光中心和三组远景光位的横向分布，远景纵向距离由地图北侧边缘计算。
+
+## Godot 调节
+
+选择主场景 **AtmosphericLight**。远景空气光与地表补光分别调节，支持 Inspector 恢复默认值，运行时使用 Remote Inspector。
+
+| 参数 | 默认 | 含义 |
+| --- | --- | --- |
+| Enabled | 开 | 总开关 |
+| Distant Enabled | 开 | 单独开关远景光束、辉光与体积雾，地表补光保留 |
+| Beam Definition | 0.07 | 远景光束形态的可见程度，0 仅保留远处雾内散射 |
+| Halo Strength | 0.3 | 远处薄雾中的柔和辉光，不提高全局泛光 |
+| Scattering | 12 | 远景空气的原生灯光散射强度 |
+| Haze Density | 0.014 | 远景雾体密度；0 关闭新增雾体 |
+| Upper Air Gain | 1.8 | 上方空气的密度增益 |
+| Background Scattering | 1 | 原生体积雾影响背景天空的程度 |
+| Distant Distance | 28 米 | 从地图北侧边缘到远景落点的距离；过小时自动保留安全距离 |
+| Distant Height / Width | 22 / 7 米 | 远景光源高度与光束半宽 |
+| Distant Fog Length | 80 米 | 远景启用时的体积雾计算距离 |
+| Texture Strength / Moving | 0.3 / 开 | 雾纹变化与缓慢流动，编辑器静止 |
+| Light Color | 暖金 | 远景空气光和地表补光的颜色 |
+| Azimuth / Elevation | -24° / 38° | 世界光向，不随 QE 旋转 |
+| Surface Energy | 2.2 | 实际地表受光强度；不会生成场景内的空气光束 |
+| Breakup Strength | 0.7 | 地表亮斑和远景光束的明暗缺口 |
+| Source Height / Beam Width | 12 / 4.2 米 | 地表补光的光源高度与半宽 |
+| Spacing | 11 米 | 三组光位的横向间隔 |
+| Shadows Enabled / Shadow Softness | 开 / 0.25 米 | 地表原生阴影与柔化程度；与 H 键同步 |
+
+建议先调远景的 Beam Definition、Halo Strength 和 Scattering，再用 Distance、Height、Width 选择远景中的位置与覆盖。Surface Energy 只调实际场景受光，不会连带增加空气散射。F 关闭远景空气效果，地表照明保留。
+
+**ArtDirection → Volumetric Length** 是基础体积雾计算距离，默认 40 米。远景启用时临时延长到 80 米，关闭远景或总开关时恢复基础值。增加计算距离会降低单位距离内的雾采样细节；当前使用宽而低密度的远景雾，不增加项目的雾体分辨率。
+
+**World / GroundDressing → Ground Sheen** 默认 0.35，控制湿草地中零散反光区域的覆盖；0 关闭。反光来自实际灯光，不使用金色自发光。
+
+## 实现与验证
+
+三个场景内 SpotLight3D 只产生柔和受光与阴影，其 Volumetric Fog Energy 固定为零。另有三个不投影的远景聚光灯、一个远景 FogVolume 和三个远景透明光束轮廓；它们独立于前景补光。远景灯仅影响隔离的 Layer 16 和体积雾，不照亮场景几何。
+
+远景距离根据光源方向和范围球自动留出至少 10 米北侧安全距离；光束轮廓的完整包围盒也位于地图外。雾着色器对地图及周围 8 米写入零密度和零辉光，因此改变镜头方向不会把这些效果拉回地图。轮廓在场景交接处按深度渐隐。旧场景内的 ShaftAir / ShaftShape 辅助节点在脚本重载时会替换为远景节点。
+
+原有水面倒影视图继续接收实际受光，省略远景光束轮廓和体积雾；没有新增反射摄像机、提高全局曝光或更换天空素材。
+
+按 [Godot 体积雾文档](https://docs.godotengine.org/en/4.7/tutorials/3d/volumetric_fog.html)，灯光体积雾能量设为零可关闭该灯的空气散射，雾内辉光不会照亮其他表面。远景主散射使用原生体积雾，宽光晕含少量艺术化雾内辉光。地表斑驳仍使用原生灯光投影；H 关闭阴影时该地表投影也会消失，远景光束保留。
+
+已在 D3D12 / Forward+ 实际编译与渲染验证：
+
+- 9 个世界朝向（-180° 至 180°）的光位和区域隔离，极端光向及最大宽度仍在地图外。
+- 按场景深度区分前景与背景，对比远景开关后的画面；显著变化集中在背景，前景仅有原生逐帧采样差异，没有新的斜向光带覆盖。
+- 地表强度与远景散射独立，零值、H/F、总开关、节点移动、重复应用、旧辅助节点迁移、保存重开及雾距离恢复。
+- 远景灯不增加阴影渲染，场景内仍为原有三组柔影；未提供未经稳定测量的性能百分比。
+
+预览暂停人物动画、雾纹流动和景深；雨景开启原天气并关闭镜头水滴，便于观察。正式场景保留既有天气和镜头效果。

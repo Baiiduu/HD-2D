@@ -5,6 +5,7 @@ extends CanvasLayer
 signal selection_changed(option_id: StringName)
 signal choice_confirmed(option_id: StringName)
 signal cancelled
+signal reroll_requested
 
 const CARD := preload("res://scenes/ui/growth_choice_card.tscn")
 
@@ -23,7 +24,7 @@ const CARD := preload("res://scenes/ui/growth_choice_card.tscn")
 
 @export_group("视觉与文字")
 ## 只淡化卡片内页，青铜边框与光边保持清晰；0 透出世界，1 保留原底纹。
-@export_range(0.0, 1.0, 0.05) var background_opacity := 0.72:
+@export_range(0.0, 1.0, 0.05) var background_opacity := 0.86:
 	set(value): background_opacity = value; _update_presentation()
 ## 选中态素材的混合强度；0 使用普通态，1 使用 Meowa 完整选中态。
 @export_range(0.0, 1.0, 0.05) var selection_strength := 1.0:
@@ -35,6 +36,8 @@ const CARD := preload("res://scenes/ui/growth_choice_card.tscn")
 	set(value): title = value; _update_presentation()
 @export var confirm_text := "确认":
 	set(value): confirm_text = value; _update_presentation()
+@export var choice_hint := "本次领取一张":
+	set(value): choice_hint = value; _update_presentation()
 @export_range(24, 56, 1) var title_font_size := 40:
 	set(value): title_font_size = value; _update_presentation()
 @export_range(14, 28, 1) var content_font_size := 20:
@@ -64,12 +67,18 @@ var selected_index := -1
 var _options: Array[GrowthChoiceOption] = []
 var _cards: Array[GrowthChoiceCard] = []
 var _opening: Tween
+var _dealing: Tween
+var cards_revealed := true
+var _rerolls_left := 0
+var _can_reroll := false
 
 @onready var _root: Control = $Root
 @onready var _content: Control = $Root/Content
 @onready var _rows: Control = $Root/Content/Cards
 @onready var _confirm: Button = $Root/Content/Confirm
 @onready var _audio: UIAudio = $UIAudio
+@onready var _reroll: Button = $Root/Content/Reroll
+@onready var _hint: Label = $Root/Content/Hint
 
 func _ready() -> void:
 	var font := SystemFont.new()
@@ -79,6 +88,7 @@ func _ready() -> void:
 	_root.theme = ui_theme
 	get_viewport().size_changed.connect(_update_presentation)
 	_confirm.pressed.connect(confirm_selection)
+	_reroll.pressed.connect(request_reroll)
 	if Engine.is_editor_hint():
 		_build_cards(preview_options)
 		_root.show()
@@ -100,6 +110,7 @@ func present_choices(options: Array[GrowthChoiceOption]) -> bool:
 		selectable = selectable or option.enabled
 	if not selectable: return false
 	_build_cards(options)
+	_can_reroll = false
 	is_open = true
 	add_to_group(&"gameplay_input_blockers")
 	_root.show()
@@ -109,9 +120,51 @@ func present_choices(options: Array[GrowthChoiceOption]) -> bool:
 		_opening = create_tween()
 		_opening.tween_property(_content, "modulate:a", 1.0, open_duration)
 	_audio.play(&"journal_open")
+	_deal_cards()
 	return true
 
+func set_draw_status(remaining: int, available: bool) -> void:
+	_rerolls_left = remaining
+	_can_reroll = available
+	_update_presentation()
+
+func request_reroll() -> void:
+	if not is_open or not cards_revealed or not _can_reroll or _rerolls_left <= 0: return
+	reroll_requested.emit()
+
+func _deal_cards() -> void:
+	if _dealing: _dealing.kill()
+	cards_revealed = open_duration <= 0.0
+	for card in _cards: card.set_revealed(cards_revealed)
+	if cards_revealed:
+		_refresh_selection()
+		return
+	_dealing = create_tween().set_parallel()
+	for index in _cards.size():
+		var card := _cards[index]
+		var delay := index * 0.05
+		_dealing.tween_property(card, "scale:x", 0.04, open_duration * 0.5).from(1.0).set_delay(delay)
+		_dealing.tween_callback(card.set_revealed.bind(true)).set_delay(delay + open_duration * 0.5)
+		_dealing.tween_property(card, "scale:x", 1.0, open_duration * 0.5).from(0.04).set_delay(delay + open_duration * 0.5)
+	_dealing.finished.connect(func(): cards_revealed = true; _refresh_selection())
+	_refresh_selection()
+
+func reveal_now() -> void:
+	if not is_open: return
+	if _dealing:
+		_dealing.kill()
+		_dealing = null
+	cards_revealed = true
+	for card in _cards:
+		card.scale = Vector2.ONE
+		card.set_revealed(true)
+	_refresh_selection()
+
 func close() -> void:
+	if _dealing:
+		_dealing.kill()
+		_dealing = null
+	cards_revealed = false
 	if _opening:
 		_opening.kill()
 		_opening = null
@@ -120,7 +173,7 @@ func close() -> void:
 	if is_instance_valid(_root): _root.hide()
 
 func select_option(option_id: StringName) -> bool:
-	if not is_open: return false
+	if not is_open or not cards_revealed: return false
 	for index in _options.size():
 		if _options[index].id == option_id and _options[index].enabled:
 			if selected_index == index: return true
@@ -135,6 +188,7 @@ func get_selected_option() -> GrowthChoiceOption:
 	return _options[selected_index] if is_open and selected_index >= 0 else null
 
 func confirm_selection() -> void:
+	if not cards_revealed: return
 	var option := get_selected_option()
 	if not option or not option.enabled: return
 	var id := option.id
@@ -152,17 +206,36 @@ func _exit_tree() -> void:
 	close()
 
 func _input(event: InputEvent) -> void:
-	if not is_open or Engine.is_editor_hint() or not event is InputEventKey: return
+	if not is_open or Engine.is_editor_hint(): return
+	if not cards_revealed and event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		reveal_now()
+		get_viewport().set_input_as_handled()
+		return
+	if not event is InputEventKey: return
 	# 在 GUI 与游戏的未处理按键之前接管按键，避免 Tab 打开背包。
 	get_viewport().set_input_as_handled()
 	if not event.pressed or event.echo: return
 	var code: Key = event.physical_keycode if event.physical_keycode else event.keycode
+	if not cards_revealed and (code in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE] or (code >= KEY_1 and code <= KEY_9)):
+		reveal_now()
+		return
 	if code in [KEY_LEFT, KEY_UP]: _move_selection(-1)
 	elif code in [KEY_RIGHT, KEY_DOWN]: _move_selection(1)
 	elif code in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE]: confirm_selection()
 	elif code == KEY_ESCAPE: cancel()
+	elif code == KEY_R: request_reroll()
+	elif code >= KEY_1 and code <= KEY_9:
+		var index := int(code - KEY_1)
+		if index < _options.size(): select_option(_options[index].id)
 
 func _move_selection(direction: int) -> void:
+	if selected_index < 0:
+		var start := 0 if direction > 0 else _options.size() - 1
+		for step in _options.size():
+			var index := posmod(start + direction * step, _options.size())
+			if _options[index].enabled:
+				select_option(_options[index].id)
+				return
 	for step in range(1, _options.size() + 1):
 		var index := posmod(selected_index + direction * step, _options.size())
 		if _options[index].enabled:
@@ -170,6 +243,9 @@ func _move_selection(direction: int) -> void:
 			return
 
 func _build_cards(options: Array[GrowthChoiceOption]) -> void:
+	if _dealing:
+		_dealing.kill()
+		_dealing = null
 	for card in _cards:
 		_rows.remove_child(card)
 		card.queue_free()
@@ -185,13 +261,14 @@ func _build_cards(options: Array[GrowthChoiceOption]) -> void:
 		_rows.add_child(card)
 		_cards.append(card)
 		card.pressed.connect(select_option.bind(option.id))
-		if selected_index < 0 and option.enabled: selected_index = index
+		card.set_selection_key(index + 1)
 	_update_presentation()
 	_refresh_selection()
 
 func _refresh_selection() -> void:
 	for index in _cards.size(): _cards[index].set_selected(index == selected_index)
-	_confirm.disabled = selected_index < 0
+	_confirm.disabled = selected_index < 0 or not cards_revealed
+	_reroll.disabled = not _can_reroll or _rerolls_left <= 0 or not cards_revealed
 
 func _update_presentation() -> void:
 	if not is_node_ready(): return
@@ -220,10 +297,25 @@ func _update_presentation() -> void:
 	var divider: TextureRect = header.get_node("Divider")
 	divider.position = Vector2((width - 276) * 0.5, 64)
 	divider.size = Vector2(276, 39)
+	_hint.position = Vector2(0, _rows.position.y + card_height + 6)
+	_hint.size = Vector2(width, 42)
+	var hint_backing: Panel = _content.get_node("HintBacking")
+	hint_backing.position = _hint.position - Vector2(0, 2)
+	hint_backing.size = _hint.size + Vector2(0, 4)
+	_hint.add_theme_font_size_override("font_size", 18)
+	_hint.text = "%s\n数字键 / 方向键选择 · Enter 确认" % choice_hint
+	if _rerolls_left == 0: _hint.text += " · 重抽次数已用完"
+	elif not _can_reroll: _hint.text += " · 当前池已全部展示"
+	else: _hint.text += " · R 重抽"
 	_confirm.text = confirm_text
 	_confirm.add_theme_font_size_override("font_size", confirm_font_size)
 	_confirm.size = Vector2(button_width, button_width * 186.0 / 588.0)
-	_confirm.position = Vector2((width - button_width) * 0.5, _rows.position.y + card_height + 20)
+	_confirm.position = Vector2(width * 0.5 + 12, _rows.position.y + card_height + 54)
+	_reroll.text = "重抽 · %d 次" % _rerolls_left
+	_reroll.add_theme_font_size_override("font_size", confirm_font_size - 6)
+	_reroll.size = _confirm.size
+	_reroll.position = Vector2(width * 0.5 - button_width - 12, _confirm.position.y)
+	_refresh_selection()
 	_content.size = Vector2(width, _confirm.position.y + _confirm.size.y)
 	($Root/Shade as ColorRect).color = Color(0, 0, 0, world_dim_opacity)
 	var viewport := get_viewport().get_visible_rect().size

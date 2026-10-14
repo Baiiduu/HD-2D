@@ -1,0 +1,12 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+D3D12 12_0 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 3050
+
+{"default_on":true,"editable_properties":8,"editor_hint":true,"lens_transients_not_created_in_editor":true,"live_update":true,"passed":true,"playing":false,"preview_off":true,"wind_animated":true}
+ERROR: 7 RID allocations of type 'N10RendererRD12LightStorage11ShadowAtlasE' were leaked at exit.
+ERROR: 1 RID allocations of type 'N10RendererRD12LightStorage15ReflectionAtlasE' were leaked at exit.
+ERROR: 6 RID allocations of type 'N10RendererRD14TextureStorage12RenderTargetE' were leaked at exit.
+ERROR: 15 RID allocations of type 'N10RendererRD14TextureStorage7TextureE' were leaked at exit.
+ERROR: 6 RID allocations of type 'N16RendererViewport8ViewportE' were leaked at exit.
+ERROR: 1 RID allocations of type 'N17RendererSceneCull8ScenarioE' were leaked at exit.
+ERROR: 83 RID allocations of type 'PN18TextServerAdvanced22ShapedTextDataAdvancedE' were leaked at exit.
+ERROR: 1 RID allocations of type 'PN18TextServerAdvanced12FontAdvancedE' were leaked at exit.

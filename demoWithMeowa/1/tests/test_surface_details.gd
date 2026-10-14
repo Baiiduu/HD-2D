@@ -98,7 +98,7 @@ func run() -> void:
 	var expected := Vector4(16.0/frame.atlas.get_width(),8.0/frame.atlas.get_height(),16.0/frame.atlas.get_width(),24.0/frame.atlas.get_height())
 	check(sprite.get("_material").get_shader_parameter("sprite_region") == expected,"Character normal sampling uses the actual atlas frame")
 	var mirror := ShaderMaterial.new()
-	mirror.shader = load("res://shaders/character_lighting.gdshader")
+	mirror.shader = load("res://shaders/character/character_lighting.gdshader")
 	sprite.call("apply_lighting_to",mirror,true)
 	check(mirror.get_shader_parameter("normal_mapping_enabled") and mirror.get_shader_parameter("sprite_region") == expected,"Reflection receives the same frame and normal data")
 	var brush := TerrainPaintBrush.new()

@@ -1,0 +1,19 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+D3D12 12_0 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 3050
+
+PASS: Only side and back idle/run slots exist
+PASS: Original side idle loops all eight frames
+PASS: Native 80px canvas remains unchanged
+PASS: Right movement loops original side run without mirroring
+PASS: Left movement mirrors side run
+PASS: Down movement keeps the last side facing
+PASS: Stopping downward movement keeps side idle
+PASS: Up movement loops eight new back run frames
+PASS: Stopping upward movement loops the two curated back idle poses
+PASS: Down after back restores the remembered left side
+PASS: Diagonal movement prefers horizontal facing
+PASS: Stopping diagonal movement keeps left side idle
+PASS: Holding movement into the map boundary stays idle
+PASS: Holding movement into a physical wall stays idle
+PASS: Water reflection tracks current frame and native canvas
+Animation validation finished: 0 failures

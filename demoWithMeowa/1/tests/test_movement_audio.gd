@@ -31,7 +31,7 @@ func _floor(parent: Node3D, position: Vector3, size: Vector3, surface: int) -> S
 	return body
 
 func _run() -> void:
-	var bank: MovementSoundBank = load("res://data/movement_sounds.tres")
+	var bank: MovementSoundBank = load("res://data/audio/movement_sounds.tres")
 	for surface in GroundAudioSampler.SURFACE_COUNT:
 		assert(not bank.clips(surface).is_empty())
 		for clip in bank.clips(surface):
@@ -56,7 +56,7 @@ func _run() -> void:
 	collision.position.y = shape.height * 0.5
 	collision.shape = shape
 	player.add_child(collision)
-	var audio: PlayerMovementAudio = load("res://scenes/shared/player_movement_audio.tscn").instantiate()
+	var audio: PlayerMovementAudio = load("res://scenes/audio/player_movement_audio.tscn").instantiate()
 	player.add_child(audio)
 	player.jumped.connect(func(): _jump_count += 1)
 	player.landed.connect(func(_speed: float): _land_count += 1)

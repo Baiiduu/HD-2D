@@ -1,0 +1,8 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+D3D12 12_0 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 3050
+
+{"batches":32,"categories":{"flowers":12,"grass":27,"pebbles":20},"failures":[],"half_density_count":30,"total":59}
+Saved start.png player=(0.0, 0.020486, 1.4)
+Saved grass.png player=(6.4, 0.020486, 4.5)
+Saved grass-before.png player=(6.4, 0.020486, 4.5)
+Saved path-edge.png player=(2.4, 0.020486, 5.8)

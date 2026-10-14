@@ -1,0 +1,11 @@
+{
+  "status": "success",
+  "job_id": "job_f13e5b706586497b860e41d69d06d7e6",
+  "outputs": [
+    {
+      "type": "media",
+      "path": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\stone-2\\stone.png",
+      "mime_type": "image/png"
+    }
+  ]
+}

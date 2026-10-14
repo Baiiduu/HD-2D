@@ -1,0 +1,78 @@
+{
+  "status": "success",
+  "beijingTime": "2026-10-10T17:20:10+08:00",
+  "httpStatus": 200,
+  "headers": {
+    "Alt-Svc": "h3=\":443\"; ma=2592000",
+    "Content-Encoding": "zstd",
+    "Content-Type": "application/json",
+    "Date": "Sat, 10 Oct 2026 09:20:09 GMT",
+    "Server": "uvicorn",
+    "Vary": "Origin, Accept-Encoding",
+    "Via": "1.1 Caddy",
+    "Content-Length": "750"
+  },
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "returnedData": {
+    "job_id": "job_0159da1a7a9e4491bf3f3a2f8feb4344",
+    "job_type": "workflow",
+    "status": "success",
+    "stage": "completed",
+    "next_poll_after_seconds": 0,
+    "animation_type": null,
+    "queue": {
+      "position": 0,
+      "estimated_wait_seconds": 0
+    },
+    "progress": {
+      "label": "已完成",
+      "percent": 100
+    },
+    "result": {
+      "job_name": "091844_default_A_seamless_continuous_loop_of_gentle_fine_rain_outdoors_Soft_eve",
+      "audio_path": "https://media.meowa.ai/public/elevenlabs-generator/output/2026-10-10/09%3A18%3A54-workflow-91f5cce542cb4b81af5450c9/Gentle_Fine_Rain_Loop.mp3",
+      "audio_paths": [
+        "https://media.meowa.ai/public/elevenlabs-generator/output/2026-10-10/09%3A18%3A54-workflow-91f5cce542cb4b81af5450c9/Gentle_Fine_Rain_Loop.mp3"
+      ],
+      "audios": [
+        {
+          "type": "sound_effect",
+          "label": "Gentle Fine Rain Loop",
+          "name": "Gentle Fine Rain Loop",
+          "path": "https://media.meowa.ai/public/elevenlabs-generator/output/2026-10-10/09%3A18%3A54-workflow-91f5cce542cb4b81af5450c9/Gentle_Fine_Rain_Loop.mp3",
+          "content_type": "audio/mpeg",
+          "prompt": "Seamless loop of gentle fine rain falling softly on leaves and soil with calm even ambient drops outdoors",
+          "loop": true,
+          "duration_seconds": 10,
+          "normalized": true,
+          "raw_path": "https://storage.googleapis.com/meowart-bucket/elevenlabs-generator/output/2026-10-10/09:18:54-workflow-91f5cce542cb4b81af5450c9/steps/raw_audio/Gentle_Fine_Rain_Loop.mp3"
+        }
+      ],
+      "character_cost": 121.0,
+      "url": "https://media.meowa.ai/public/elevenlabs-generator/output/2026-10-10/09%3A18%3A54-workflow-91f5cce542cb4b81af5450c9/Gentle_Fine_Rain_Loop.mp3"
+    },
+    "outputs": [
+      {
+        "output_key": "primary",
+        "url": "https://media.meowa.ai/public/elevenlabs-generator/output/2026-10-10/09%3A18%3A54-workflow-91f5cce542cb4b81af5450c9/Gentle_Fine_Rain_Loop.mp3",
+        "media_type": "audio",
+        "mime_type": null,
+        "asset_id": null,
+        "thumb_url": null,
+        "width": null,
+        "height": null,
+        "byte_size": null
+      }
+    ],
+    "error": null,
+    "error_code": null,
+    "error_id": null,
+    "credit_refund": {
+      "refunded": false,
+      "amount": 0,
+      "reference_id": "job_0159da1a7a9e4491bf3f3a2f8feb4344"
+    }
+  }
+}

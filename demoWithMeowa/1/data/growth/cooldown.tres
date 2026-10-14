@@ -1,12 +1,18 @@
-[gd_resource type="Resource" script_class="GrowthBuffDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="GrowthBuffDefinition" format=3 uid="uid://ktdo1w3q7jfi"]
 
-[ext_resource type="Script" path="res://scripts/growth/growth_buff_definition.gd" id="buff"]
+[ext_resource type="Script" uid="uid://6cmgrb0pgn4m" path="res://scripts/growth/growth_buff_definition.gd" id="buff"]
+[ext_resource type="Texture2D" uid="uid://dbuee1s076b7k" path="res://assets/meowa/ui/upgrade/cooldown.png" id="icon"]
+
+[sub_resource type="AtlasTexture" id="clock_face"]
+atlas = ExtResource("icon")
+region = Rect2(0, 274, 336, 344)
 
 [resource]
 script = ExtResource("buff")
-id = &"P02"
-title = "冷却缩短"
 attribute = 1
 bonus_per_level = 0.1
-max_level = 3
 bonus_cap = 0.5
+id = &"P02"
+title = "冷却缩短"
+icon = SubResource("clock_face")
+category = 3

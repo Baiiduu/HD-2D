@@ -1,0 +1,30 @@
+{
+  "id": "CALL002",
+  "task": "5-测试Meowa接口",
+  "beijingTime": "2026-10-10T14:56:13.000+08:00",
+  "purpose": "查询已完成的 V2 动画任务，验证任务接口的当前认证与可用性，不生成、不重新提交、不下载",
+  "tool": "Meowa API / poll_job",
+  "executionPython": "C:/Users/PC/AppData/Local/Programs/Python/Python314/python.exe",
+  "runner": "D:/Project/HD-2DMap/meowa-call-logs/5-测试Meowa接口/query_existing_job.py",
+  "underlyingRunner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "arguments": [
+    "--job-id",
+    "job_43e44336f13648e5a7ab7cafc8103e5f"
+  ],
+  "apiRequest": {
+    "method": "GET",
+    "url": "https://api.meowa.ai/api/jobs/job_43e44336f13648e5a7ab7cafc8103e5f",
+    "timeout": 20,
+    "verify": true,
+    "authentication": "本地认证由官方 runner 读取；凭据不写入记录"
+  },
+  "prompt": null,
+  "negativePrompt": null,
+  "referenceImages": [],
+  "status": "pending",
+  "relatedCall": "4-制作主角基础动画/CALL034；5-测试Meowa接口/CALL001",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回"
+}

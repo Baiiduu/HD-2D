@@ -60,7 +60,7 @@ func _ready() -> void:
 	_cursor.mesh = plane
 	_cursor.name = "TargetCell"
 	_cursor.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_cursor_material.shader = preload("res://shaders/farming_target.gdshader")
+	_cursor_material.shader = preload("res://shaders/terrain/farming_target.gdshader")
 	_cursor.material_override = _cursor_material
 	add_child(_cursor)
 	_seeds.name = "SownSeeds"

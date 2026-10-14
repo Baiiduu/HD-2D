@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="SpawnVisualPreset" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/spawn_visual_preset.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+title = "原始光影 · 修复前实际灯光"
+node_values = {
+"MapEffects/ArtDirection": {
+"moon_color": Color(1, 0.71, 0.4, 1),
+"moon_energy": 1.65,
+"moon_azimuth": -112.0,
+"moon_elevation": 28.0,
+"moon_softness": 1.4,
+"moon_shadow_opacity": 0.72
+},
+"MapEffects/AtmosphericLight": {
+"follow_global_direction": false
+}
+}

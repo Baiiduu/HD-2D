@@ -1,13 +1,15 @@
 [gd_resource type="Resource" script_class="WaveDefinition" format=3 uid="uid://orhpbkem853w"]
 
 [ext_resource type="Script" uid="uid://i1xql6e8gpsr" path="res://scripts/combat/wave_spawn_entry.gd" id="entry"]
-[ext_resource type="Resource" path="res://data/wave_slime.tres" id="slime"]
+[ext_resource type="Resource" path="res://data/enemies/lantern_spitter.tres" id="flower"]
+[ext_resource type="Resource" path="res://data/enemies/leaf_charger.tres" id="leaf"]
+[ext_resource type="Resource" uid="uid://d2jynhqktqji0" path="res://data/enemies/wave_slime.tres" id="slime"]
 [ext_resource type="Script" uid="uid://caklrlj8ospwr" path="res://scripts/combat/wave_definition.gd" id="wave"]
 
 [sub_resource type="Resource" id="west"]
 script = ExtResource("entry")
 enemy = ExtResource("slime")
-count = 8
+count = 6
 start_delay = 0.6
 interval = 0.55
 spawn_zone_ids = PackedStringArray("WestNorth", "WestSouth")
@@ -15,7 +17,7 @@ spawn_zone_ids = PackedStringArray("WestNorth", "WestSouth")
 [sub_resource type="Resource" id="east"]
 script = ExtResource("entry")
 enemy = ExtResource("slime")
-count = 12
+count = 8
 start_delay = 9.0
 interval = 0.35
 spawn_zone_ids = PackedStringArray("EastNorth", "EastSouth")
@@ -23,12 +25,28 @@ spawn_zone_ids = PackedStringArray("EastNorth", "EastSouth")
 [sub_resource type="Resource" id="south"]
 script = ExtResource("entry")
 enemy = ExtResource("slime")
-count = 8
+count = 6
 start_delay = 18.0
 interval = 0.45
 spawn_zone_ids = PackedStringArray("SouthWest", "SouthEast")
 
+[sub_resource type="Resource" id="chargers"]
+script = ExtResource("entry")
+enemy = ExtResource("leaf")
+count = 4
+start_delay = 8.0
+interval = 3.2
+spawn_zone_ids = PackedStringArray("WestNorth", "EastSouth")
+
+[sub_resource type="Resource" id="flowers"]
+script = ExtResource("entry")
+enemy = ExtResource("flower")
+count = 4
+start_delay = 12.0
+interval = 4.0
+spawn_zone_ids = PackedStringArray("EastNorth", "SouthWest")
+
 [resource]
 script = ExtResource("wave")
-description = "28 只：西侧试探 8 → 东侧密集推进 12 → 南侧增援 8"
-entries = Array[ExtResource("entry")]([SubResource("west"), SubResource("east"), SubResource("south")])
+description = "28 只：20 只史莱姆、4 只卷叶冲锋虫、4 只灯囊花兽"
+entries = Array[ExtResource("entry")]([SubResource("west"), SubResource("east"), SubResource("south"), SubResource("chargers"), SubResource("flowers")])

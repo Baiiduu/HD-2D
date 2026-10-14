@@ -5,7 +5,7 @@ extends Node3D
 signal strike_started(direction: Vector3)
 signal hit_landed(enemy: WaveEnemy, damage: float)
 
-const SLASH_SHADER := preload("res://shaders/fan_slash.gdshader")
+const SLASH_SHADER := preload("res://shaders/combat/fan_slash.gdshader")
 const ART_HALF_ANGLE := deg_to_rad(50.0)
 const ART_RADIUS := 0.38
 const ART_INNER_RADIUS := 0.20
@@ -92,9 +92,11 @@ func get_skill_definition() -> CombatSkillDefinition:
 	return skill_definition
 
 func apply_skill_level(level: int) -> bool:
-	if not skill_definition or not skill_definition.level_data(level): return false
+	if not skill_definition or (level != 0 and not skill_definition.level_data(level)): return false
 	cancel_current()
+	var was_unlearned := skill_level == 0
 	skill_level = level
+	if level == 0 or was_unlearned: set_physics_process(level > 0)
 	return true
 
 func get_attack_stats(level := -1, modifiers: RunCombatModifiers = null) -> Dictionary:
@@ -124,7 +126,7 @@ func get_attack_stats(level := -1, modifiers: RunCombatModifiers = null) -> Dict
 
 ## 成长卡读取真实收益；后续武器只回传自己支持的属性键。
 func get_combat_stats(modifiers: RunCombatModifiers = null) -> Dictionary:
-	if not enabled: return {}
+	if not enabled or skill_level <= 0: return {}
 	if not modifiers and session: modifiers = session.combat_modifiers
 	var stats := get_attack_stats(skill_level, modifiers)
 	var shortest: float = windup_time + stats.sweeps * (sweep_time + fade_time) + (stats.sweeps - 1) * stats.gap
@@ -135,6 +137,8 @@ func describe_skill_upgrade(from_level: int, to_level: int) -> String:
 	var modifiers: RunCombatModifiers = session.combat_modifiers if session else null
 	var before := get_attack_stats(from_level, modifiers)
 	var after := get_attack_stats(to_level, modifiers)
+	if from_level == 0:
+		return "自动攻击近处敌人\n伤害 %s\n范围 %.1f 米\n%s" % [str(snappedf(after.damage, 0.1)), after.range, skill_definition.level_data(to_level).description]
 	var lines := PackedStringArray([
 		"伤害 %s → %s" % [str(snappedf(before.damage, 0.1)), str(snappedf(after.damage, 0.1))],
 		"范围 %.1f → %.1f 米" % [before.range, after.range]])
@@ -208,7 +212,7 @@ func cancel_current() -> void:
 	for effect in _extra_meshes: effect.visible = false
 
 func _active() -> bool:
-	return enabled and session and session.combat_active() and session._path_ready and is_instance_valid(_player)
+	return enabled and skill_level > 0 and session and session.combat_active() and session._path_ready and is_instance_valid(_player)
 
 func _origin() -> Vector3:
 	return session._path.ground_position(_player.global_position)
@@ -229,13 +233,14 @@ func nearest_target() -> WaveEnemy:
 	if not _active(): return null
 	var origin := _origin()
 	var nearest: WaveEnemy
-	var distance: float = get_attack_stats().range
+	var stats := get_attack_stats()
+	var distance: float = stats.range
 	for enemy: WaveEnemy in session.enemies:
-		if not _can_reach(enemy, origin): continue
+		if not is_instance_valid(enemy) or enemy.dead or enemy.spawn_delay > 0.0: continue
 		var gap := TerrainPath.horizontal_distance(origin, enemy.global_position)
-		if gap <= distance:
-			nearest = enemy
-			distance = gap
+		if gap > distance or not _can_reach(enemy, origin, stats): continue
+		nearest = enemy
+		distance = gap
 	return nearest
 
 func start_swing() -> bool:
@@ -449,20 +454,20 @@ func _update_texture(progress: float, opacity: float, effect: MeshInstance3D = n
 	effect.visible = true
 
 ## 沿角度裁切墙体、断层和水面，网格逐环贴合坡面。
-func _surface_limit(origin: Vector3, angle: float, range_limit := -1.0) -> float:
+func _surface_limit(origin: Vector3, angle: float, range_limit := -1.0, flat_ground := false) -> float:
 	var navigation: TerrainPath = session._path
 	var terrain: Terrain = session.terrain
 	var heading := _locked_basis * Vector3(sin(angle), 0.0, -cos(angle))
 	var limit: float = maxf(range_limit if range_limit >= 0.0 else get_attack_stats().range, 0.01)
 	var steps := maxi(1, ceili(limit / 0.25))
-	for step in range(1, steps + 1):
+	for step in range(1, 1 if flat_ground else steps + 1):
 		var distance := limit * float(step) / steps
 		var point := navigation.ground_position(origin + heading * distance)
 		var cell := terrain.data.world_to_cell(terrain.to_local(point))
 		if not terrain.data.has_cell(cell) or absf(point.y - origin.y) > height_tolerance or (terrain.data.has_overlay(cell, TerrainData.OVERLAY_WATER) and not terrain.data.has_overlay(cell, TerrainData.OVERLAY_BRIDGE)):
 			limit = limit * float(step - 1) / steps
 			break
-	var end := navigation.ground_position(origin + heading * limit)
+	var end := origin + heading * limit if flat_ground else navigation.ground_position(origin + heading * limit)
 	var query := PhysicsRayQueryParameters3D.create(origin + Vector3.UP * 0.45, end + Vector3.UP * 0.45, 1, [_player.get_rid()])
 	var hit := get_world_3d().direct_space_state.intersect_ray(query)
 	if not hit.is_empty(): limit = minf(limit, maxf(0.0, TerrainPath.horizontal_distance(origin, hit.position) - 0.05))
@@ -484,14 +489,18 @@ func _update_mesh(origin: Vector3, effect: MeshInstance3D = null, basis := Basis
 	if flat_surface and _flat_mesh and key == _flat_mesh_key:
 		if effect.mesh != _flat_mesh: effect.mesh = _flat_mesh
 		return
-	var mesh := _build_effect_mesh(origin, basis, stats, flat_surface)
+	var reusable := effect.get_meta(&"clipped_mesh") as ArrayMesh if not flat_surface and effect.has_meta(&"clipped_mesh") else null
+	var mesh := _build_effect_mesh(origin, basis, stats, flat_surface, reusable)
 	if flat_surface:
 		_flat_mesh = mesh
 		_flat_mesh_key = key
-	effect.mesh = mesh
+	elif mesh != reusable:
+		effect.set_meta(&"clipped_mesh", mesh)
+	if effect.mesh != mesh: effect.mesh = mesh
 
-func _build_effect_mesh(origin: Vector3, basis: Basis, stats: Dictionary, flat_surface: bool) -> ArrayMesh:
+func _build_effect_mesh(origin: Vector3, basis: Basis, stats: Dictionary, flat_surface: bool, mesh: ArrayMesh = null) -> ArrayMesh:
 	var navigation: TerrainPath = session._path
+	var flat_ground: bool = flat_surface or _surface_query.flat_ground(origin, stats.range)
 	var half := deg_to_rad(stats.angle * 0.5)
 	var previous_basis := _locked_basis
 	_locked_basis = basis
@@ -499,7 +508,7 @@ func _build_effect_mesh(origin: Vector3, basis: Basis, stats: Dictionary, flat_s
 	var uvs := PackedVector2Array()
 	var limits := PackedFloat32Array()
 	for index in ANGLE_STEPS + 1:
-		limits.append(stats.range if flat_surface else _surface_limit(origin, lerpf(-half, half, float(index) / ANGLE_STEPS), stats.range))
+		limits.append(stats.range if flat_surface else _surface_limit(origin, lerpf(-half, half, float(index) / ANGLE_STEPS), stats.range, flat_ground))
 	_locked_basis = previous_basis
 	# 相邻三角形共享 25×5 个顶点；地形采样从每刃 576 次减少至 125 次。
 	for index in ANGLE_STEPS + 1:
@@ -511,16 +520,25 @@ func _build_effect_mesh(origin: Vector3, basis: Basis, stats: Dictionary, flat_s
 		for ring in RADIAL_STEPS + 1:
 			var radius := limits[index] * float(ring) / RADIAL_STEPS
 			var local := heading * radius
-			local.y = effect_height if flat_surface else navigation.ground_position(origin + basis * local).y - origin.y + effect_height
+			local.y = effect_height if flat_ground else navigation.ground_position(origin + basis * local).y - origin.y + effect_height
 			vertices.append(local)
 			# 展开原斩光的径向拖尾，既看得清外缘，也能表现近身命中。
 			var art_radius := lerpf(ART_INNER_RADIUS, ART_RADIUS, radius / maxf(stats.range, 0.01))
 			uvs.append(Vector2(0.5, 0.5) + art_heading * art_radius)
-	var arrays := []
-	arrays.resize(Mesh.ARRAY_MAX)
-	arrays[Mesh.ARRAY_VERTEX] = vertices
-	arrays[Mesh.ARRAY_TEX_UV] = uvs
-	arrays[Mesh.ARRAY_INDEX] = _mesh_indices
-	var mesh := ArrayMesh.new()
-	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	if mesh and DisplayServer.get_name() != "headless":
+		# 顶点与 UV 每帧精确更新，索引和 GPU 缓冲保持；每刃独立，不写共享平地网格。
+		mesh.surface_update_vertex_region(0, 0, vertices.to_byte_array())
+		mesh.surface_update_attribute_region(0, 0, uvs.to_byte_array())
+		var bounds := AABB(vertices[0], Vector3.ZERO)
+		for vertex in vertices: bounds = bounds.expand(vertex)
+		mesh.custom_aabb = bounds
+	else:
+		# Dummy 渲染器不实现缓冲更新；无渲染验证保留可读取的精确数组。
+		var arrays := []
+		arrays.resize(Mesh.ARRAY_MAX)
+		arrays[Mesh.ARRAY_VERTEX] = vertices
+		arrays[Mesh.ARRAY_TEX_UV] = uvs
+		arrays[Mesh.ARRAY_INDEX] = _mesh_indices
+		mesh = ArrayMesh.new()
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays, [], {}, Mesh.ARRAY_FLAG_USE_DYNAMIC_UPDATE)
 	return mesh

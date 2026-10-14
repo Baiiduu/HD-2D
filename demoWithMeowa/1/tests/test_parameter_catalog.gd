@@ -27,12 +27,17 @@ func run() -> void:
 	required.append("WavePrototype/RunBuffs → definitions[0]:bonus_per_level")
 	required.append("WavePrototype/RunBuffs → definitions[1]:bonus_cap")
 	required.append("WavePrototype/RunBuffs → definitions[2]:max_level")
+	for property in ["damage", "attack_interval", "mark_duration", "reflection_limit", "match_player_pixel_density"]:
+		required.append("WavePrototype/MirrorMarkAutoAttack:" + property)
 	var failures: Array[String] = []
 	for name in required:
 		if not found.has(name): failures.append(name)
 	for category in catalog.CATEGORIES:
 		if not categories.has(category): failures.append(category)
 	if found.has("WavePrototype/FanAutoAttack:damage") and not found["WavePrototype/FanAutoAttack:damage"].common: failures.append("damage must be common")
+	if found.has("WavePrototype/MirrorMarkAutoAttack:mark_duration"):
+		var mirror_entry: Dictionary = found["WavePrototype/MirrorMarkAutoAttack:mark_duration"]
+		if not mirror_entry.common or mirror_entry.category != "战斗与成长": failures.append("mirror values must be common combat parameters")
 	if found.has("MapEffects/GameAudio:max_voices"):
 		var audio_entry: Dictionary = found["MapEffects/GameAudio:max_voices"]
 		if not audio_entry.common or audio_entry.category != "声音": failures.append("global voice budget must be a common sound parameter")

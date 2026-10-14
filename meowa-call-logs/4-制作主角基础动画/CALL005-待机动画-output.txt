@@ -1,0 +1,58 @@
+[INFO] planned_output_dir=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\idle\黄衣青年原地待机_轻微呼吸和衣服摆动_脚底位置稳定_保持原图的朝向_外形_配色和_10a5ded3
+[INFO] submitted api_job_id=job_9f6a43af016949629c4ee99b2e6036e1
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=queued stage=queued progress=排队中:?%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=finalizing progress=处理中:50%
+[INFO] status=running stage=finalizing progress=处理中:50%
+[INFO] status=running stage=finalizing progress=处理中:50%
+[INFO] status=running stage=finalizing progress=处理中:50%
+[INFO] status=running stage=finalizing progress=处理中:50%
+[INFO] status=success stage=completed progress=已完成:100%
+[INFO] downloading_outputs count=7 to=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\idle\黄衣青年原地待机_轻微呼吸和衣服摆动_脚底位置稳定_保持原图的朝向_外形_配色和_10a5ded3
+[INFO] downloaded=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\idle\黄衣青年原地待机_轻微呼吸和衣服摆动_脚底位置稳定_保持原图的朝向_外形_配色和_10a5ded3\result_output_url.webp
+[INFO] downloaded=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\idle\黄衣青年原地待机_轻微呼吸和衣服摆动_脚底位置稳定_保持原图的朝向_外形_配色和_10a5ded3\result_output_transparent_output_urls_gif.gif
+[INFO] downloaded=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\idle\黄衣青年原地待机_轻微呼吸和衣服摆动_脚底位置稳定_保持原图的朝向_外形_配色和_10a5ded3\result_output_transparent_output_urls_png.png
+[INFO] saved_dir=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\idle\黄衣青年原地待机_轻微呼吸和衣服摆动_脚底位置稳定_保持原图的朝向_外形_配色和_10a5ded3
+{
+  "job_id": "job_9f6a43af016949629c4ee99b2e6036e1",
+  "job_type": "animate",
+  "status": "success",
+  "next_poll_after_seconds": 0,
+  "animation_type": "idle",
+  "queue": {
+    "position": 0,
+    "estimated_wait_seconds": 0
+  },
+  "progress": {
+    "label": "已完成",
+    "percent": 100
+  },
+  "result": {
+    "id": "job_9f6a43af016949629c4ee99b2e6036e1",
+    "api_job_id": "job_9f6a43af016949629c4ee99b2e6036e1",
+    "status": "success",
+    "error": null,
+    "error_code": null,
+    "animation_type": "idle",
+    "final_prompt": "The young man in the yellow hoodie and blue jeans stands in a relaxed idle pose with his hands in his pockets. He performs a gentle breathing cycle, causing his torso to subtly rise and fall while his dark hair and headset remain stable. His feet stay firmly planted in place as the idle animation loops seamlessly.",
+    "output": {
+      "transparent_output_urls": {},
+      "download_urls": {},
+      "frame_count": 8,
+      "output_frames": 8
+    }
+  },
+  "outputs": [],
+  "error": null,
+  "error_code": null,
+  "error_id": null,
+  "credit_refund": {
+    "refunded": false,
+    "amount": 0
+  }
+}

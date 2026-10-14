@@ -1,0 +1,16 @@
+{
+  "id": "CALL001",
+  "beijingTime": "2026-10-10 11:40:18 +08:00",
+  "purpose": "验证用户刚配置的 Meowa 账户认证与可用积分",
+  "tool": "Meowa CLI / credits-balance",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "arguments": [
+    "credits-balance"
+  ],
+  "prompt": null,
+  "negativePrompt": null,
+  "referenceImages": [],
+  "status": "pending",
+  "relatedCall": null
+}

@@ -13,6 +13,21 @@ var _config_button: Button
 var _palette: TerrainPaintPalette
 var _dirty_palettes: Dictionary[TerrainPaintPalette,String] = {}
 var _size: SpinBox
+var _size_label: Label
+var _drawing_mode: OptionButton
+var _angle: SpinBox
+var _scale: SpinBox
+var _snap: CheckBox
+var _hover_point := Vector3.ZERO
+var _last_point := Vector2.ZERO
+var _stroke_mode := 2
+var _stroke_order := 0
+var _surface_before: Dictionary = {}
+var _stamps_before: Array[TerrainSurfaceStamp] = []
+var _surface_tracked: Dictionary[TerrainSurfaceData,String] = {}
+var _surface_dirty: Dictionary[TerrainSurfaceData,String] = {}
+var _preview_texture: Texture2D
+var _preview_brush: TerrainPaintBrush
 var _save_button: Button
 var _status: Label
 var _terrain: Terrain
@@ -65,7 +80,7 @@ func _enter_tree() -> void:
 	_paint_button.toggled.connect(_toggle_paint)
 	column.add_child(_paint_button)
 	_brush = OptionButton.new()
-	_brush.item_selected.connect(func(_index: int): _finish_stroke(); _update_brush_config())
+	_brush.item_selected.connect(func(_index: int): _finish_stroke(); _choose_drawing_mode())
 	column.add_child(_brush)
 	var actions := HBoxContainer.new()
 	column.add_child(actions)
@@ -88,19 +103,49 @@ func _enter_tree() -> void:
 	for text in ["整张纹理","图集中的单块","四角过渡图集"]: _mode.add_item(text)
 	_mode.item_selected.connect(_change_mode)
 	column.add_child(_mode)
-	var size_label := Label.new()
-	size_label.text = "画笔尺寸（格）"
-	column.add_child(size_label)
+	_drawing_mode = OptionButton.new()
+	for text in ["连续涂刷", "完整图块放置", "旧地形格绘制"]: _drawing_mode.add_item(text)
+	_drawing_mode.item_selected.connect(_change_drawing_mode)
+	column.add_child(_drawing_mode)
+	_size_label = Label.new()
+	_size_label.text = "涂刷直径（米）"
+	column.add_child(_size_label)
 	_size = SpinBox.new()
-	_size.min_value = 1
-	_size.max_value = 9
-	_size.step = 2
-	_size.value = 1
-	_size.tooltip_text = "1 格为精细绘制；3、5、7、9 格为更宽的方形画笔。当前每格 1.6 米。"
+	_size.min_value = 0.1
+	_size.max_value = 16
+	_size.step = 0.1
+	_size.value = 1.6
+	_size.tooltip_text = "只改变覆盖范围，纹理颗粒和重复尺寸保持不变。"
 	_size.value_changed.connect(_change_size)
 	column.add_child(_size)
+	var angle_label := Label.new()
+	angle_label.text = "图块旋转（度）"
+	column.add_child(angle_label)
+	_angle = SpinBox.new()
+	_angle.min_value = -360
+	_angle.max_value = 360
+	_angle.step = 1
+	_angle.value_changed.connect(func(_value: float): update_overlays())
+	column.add_child(_angle)
+	var scale_label := Label.new()
+	scale_label.text = "图块比例（1 为原生尺寸）"
+	column.add_child(scale_label)
+	_scale = SpinBox.new()
+	_scale.min_value = 0.25
+	_scale.max_value = 4
+	_scale.step = 0.05
+	_scale.value = 1
+	_scale.tooltip_text = "图块比例独立于涂刷直径；默认按 40 原图像素／米放置。"
+	_scale.value_changed.connect(func(_value: float): update_overlays())
+	column.add_child(_scale)
+	_snap = CheckBox.new()
+	_snap.text = "吸附到 0.8 米砖格"
+	_snap.button_pressed = true
+	_snap.tooltip_text = "涂刷覆盖完整砖格；图块按砖格、90 度旋转与整数比例对齐。关闭可自由绘制。"
+	_snap.toggled.connect(_change_snap)
+	column.add_child(_snap)
 	var help := Label.new()
-	help.text = "选中 Homestead，选择画笔后启用。\n新增画笔后选择纹理；图集格子在「编辑画笔 / 图集」设置。\n左键拖动绘制；Shift + 左键擦除选中地表。\nCtrl+Z 撤销；Ctrl+Shift+Z 重做。"
+	help.text = "连续涂刷：左键拖动；直径只控制覆盖范围。\n图块放置：点击放一个完整图案，可旋转和调比例；Shift + 点击移除所选类型的整块图案。\nShift + 拖动擦除自由涂刷，恢复下层。\nCtrl+Z 撤销；Ctrl+Shift+Z 重做。"
 	help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(help)
 	_save_button = Button.new()
@@ -119,6 +164,8 @@ func _exit_tree() -> void:
 	if _palette: _palette.changed.disconnect(_on_palette_changed)
 	for data in _tracked:
 		data.changed.disconnect(_on_data_changed.bind(data))
+	for data in _surface_tracked:
+		data.changed.disconnect(_on_free_surface_changed.bind(data))
 	scene_saved.disconnect(_on_scene_saved)
 	remove_dock(_dock)
 	_dock.queue_free()
@@ -139,6 +186,10 @@ func _edit(object: Object) -> void:
 		_tracked[_terrain.data] = scene.scene_file_path if scene else ""
 		_terrain.data.changed.connect(_on_data_changed.bind(_terrain.data))
 	_bind_palette()
+	_track_free_surface()
+	_snap.set_pressed_no_signal(_terrain.surface_data.brush_snap_enabled if is_instance_valid(_terrain) and _terrain.surface_data else true)
+	_sync_snap_controls()
+	_choose_drawing_mode()
 	_update_panel()
 	update_overlays()
 
@@ -158,15 +209,36 @@ func _toggle_paint(enabled: bool) -> void:
 	update_overlays()
 
 func _change_size(value: float) -> void:
-	# 手动输入时也保持 1、3、5、7、9 格，使尺寸与实际预览一致。
-	_size.set_value_no_signal(clampi(int(value) | 1, 1, 9))
+	if _drawing_mode.selected == 2:
+		_size.set_value_no_signal(clampi(int(value) | 1, 1, 9))
+	update_overlays()
+
+func _choose_drawing_mode() -> void:
+	var brush := _selected_brush()
+	if _drawing_mode.selected != 2:
+		_drawing_mode.select(1 if brush and (brush.underlay_paint_id > 0 or brush.paint_id == 14) else 0)
+	_change_drawing_mode(_drawing_mode.selected)
+	_update_brush_config()
+
+func _change_drawing_mode(index: int) -> void:
+	_finish_stroke()
+	var legacy := index == 2
+	_size_label.text = "画笔尺寸（格）" if legacy else "涂刷直径（米）"
+	_size.min_value = 1.0 if legacy else 0.1
+	_size.max_value = 9.0 if legacy else 16.0
+	_size.step = 2.0 if legacy else 0.1
+	if legacy: _size.set_value_no_signal(clampi(int(_size.value) | 1, 1, 9))
+	_angle.editable = index == 1
+	_scale.editable = index == 1
+	_size.editable = index != 1
 	update_overlays()
 
 func _update_panel() -> void:
 	var valid := is_instance_valid(_terrain) and _terrain.data != null
 	_paint_button.disabled = not valid
 	_brush.disabled = not valid
-	_size.editable = valid
+	_size.editable = valid and _drawing_mode.selected != 1
+	_drawing_mode.disabled = not valid
 	_save_button.disabled = not valid
 	_palette_picker.editable = valid
 	_palette_picker.edited_resource = _palette
@@ -176,6 +248,7 @@ func _update_panel() -> void:
 	if valid:
 		_target_label.text = "%s\n%s" % [_terrain.name, _terrain.data.resource_path]
 		_status.text = "地表有未保存的修改。" if _dirty.has(_terrain.data) else "地表已保存。"
+		if _terrain.surface_data and _surface_dirty.has(_terrain.surface_data): _status.text = "自由地表有未保存的修改。"
 		if _palette and _dirty_palettes.has(_palette): _status.text = "画笔配置有未保存的修改。"
 	_update_brush_config()
 
@@ -187,23 +260,35 @@ func _bind_palette() -> void:
 	_update_panel()
 
 func _refresh_brushes() -> void:
-	var selected := _brush.selected
+	var selected := _brush.get_selected_id()
 	_brush.clear()
 	if _palette:
-		for brush in _palette.brushes:
-			_brush.add_item(brush.label if brush else "未配置画笔")
+		for index in _palette.brushes.size():
+			var brush := _palette.brushes[index]
+			if brush and not brush.show_in_painter: continue
+			_brush.add_item(brush.label if brush else "未配置画笔", index)
 	else:
 		_brush.add_item("草地")
 		_brush.add_item("卵石道路")
-	if _brush.item_count > 0: _brush.select(clampi(selected,0,_brush.item_count-1))
+	if _brush.item_count > 0: _brush.select(maxi(_brush.get_item_index(selected),0))
 
 func _selected_brush() -> TerrainPaintBrush:
-	if _palette and _brush.selected >= 0 and _brush.selected < _palette.brushes.size():
-		return _palette.brushes[_brush.selected]
+	var index := _brush.get_selected_id()
+	if _palette and index >= 0 and index < _palette.brushes.size():
+		return _palette.brushes[index]
 	return null
 
 func _update_brush_config() -> void:
 	var brush := _selected_brush()
+	if brush != _preview_brush:
+		_preview_brush = brush
+		_preview_texture = null
+		if brush and brush.validation_error().is_empty():
+			var image := brush.source_image()
+			if brush.mode == TerrainPaintBrush.Mode.CORNER_ATLAS:
+				var tile_size := Vector2i(image.get_size()) / brush.atlas_grid
+				image = image.get_region(Rect2i(Vector2i(brush.corner_tiles[15]) * tile_size, tile_size))
+			_preview_texture = ImageTexture.create_from_image(image)
 	_texture_picker.edited_resource = brush.texture if brush else null
 	_texture_picker.editable = brush != null
 	_mode.disabled = brush == null
@@ -220,6 +305,7 @@ func _update_brush_config() -> void:
 			_paint_button.disabled = not is_instance_valid(_terrain) or not _terrain.data
 
 func _on_palette_changed() -> void:
+	_preview_brush = null
 	_finish_stroke()
 	var scene := EditorInterface.get_edited_scene_root()
 	_dirty_palettes[_palette] = scene.scene_file_path if scene else ""
@@ -293,7 +379,7 @@ func _add_brush() -> void:
 	history.add_do_property(_palette,"brushes",after)
 	history.add_undo_property(_palette,"brushes",before)
 	history.commit_action()
-	_brush.select(after.size()-1)
+	_brush.select(_brush.get_item_index(after.size()-1))
 	_update_panel()
 	EditorInterface.edit_resource(brush)
 
@@ -319,6 +405,7 @@ func _forward_3d_gui_input(camera: Camera3D, event: InputEvent) -> int:
 	var hit := _pick(camera, event.position)
 	_has_hover = not hit.is_empty()
 	if _has_hover:
+		_hover_point = hit.position
 		_hover_cell = _terrain.data.world_to_cell(hit.position)
 	update_overlays()
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
@@ -326,19 +413,28 @@ func _forward_3d_gui_input(camera: Camera3D, event: InputEvent) -> int:
 			_stroking = true
 			_stroke_erase = event.shift_pressed
 			_stroke_brush = _selected_brush()
+			_stroke_mode = _drawing_mode.selected if _stroke_brush else 2
 			_stroke_target = _stroke_brush.target if _stroke_brush else (TerrainPaintBrush.Target.GRASS if _brush.selected == 0 else TerrainPaintBrush.Target.PATH)
 			if not _stroke_brush:
 				_stroke_brush = TerrainPaintBrush.new()
 				_stroke_brush.target = _stroke_target
 			_before.clear()
+			_surface_before.clear()
 			_has_last_cell = false
-			_paint_to(_hover_cell)
+			if _stroke_mode == 2:
+				_paint_to(_hover_cell)
+			else:
+				_ensure_free_surface()
+				_stroke_order = _terrain.surface_data.reserve_order()
+				_stamps_before = _terrain.surface_data.stamps.duplicate()
+				_paint_free_surface()
 		elif not event.pressed:
 			_finish_stroke()
 		return AFTER_GUI_INPUT_STOP
 	if event is InputEventMouseMotion:
 		if _stroking and _has_hover:
-			_paint_to(_hover_cell)
+			if _stroke_mode == 2: _paint_to(_hover_cell)
+			elif _stroke_mode == 0 or _stroke_erase: _paint_free_surface()
 		elif not _has_hover:
 			_has_last_cell = false
 		return AFTER_GUI_INPUT_STOP if _stroking else AFTER_GUI_INPUT_PASS
@@ -359,6 +455,111 @@ func _pick(camera: Camera3D, position: Vector2) -> Dictionary:
 		# 地形数据的格子坐标以 Terrain 本地坐标为准。
 		hit.position = _terrain.to_local(top.to_global(hit.position))
 	return hit
+
+func _free_point() -> Vector2:
+	var point := Vector2(_hover_point.x, _hover_point.z)
+	if not _snap.button_pressed: return point
+	var data := _terrain.surface_data
+	if not data: data = TerrainSurfaceData.new()
+	var brush := _stroke_brush if _stroking else _selected_brush()
+	var mode := _stroke_mode if _stroking else _drawing_mode.selected
+	if mode == 1 and brush:
+		return data.snap_stamp_point(point, _stamp_size(brush), _stamp_angle(), brush.snap_pivot_offset * _scale.value)
+	return data.snap_brush_point(point)
+
+func _stamp_angle() -> float:
+	return roundf(_angle.value / 90.0) * 90.0 if _snap.button_pressed else _angle.value
+
+func _change_snap(enabled: bool) -> void:
+	_finish_stroke()
+	_sync_snap_controls()
+	if is_instance_valid(_terrain) and _terrain.surface_data:
+		_terrain.surface_data.brush_snap_enabled = enabled
+		_terrain.surface_data.emit_changed()
+	update_overlays()
+
+func _sync_snap_controls() -> void:
+	var enabled := _snap.button_pressed
+	_angle.step = 90 if enabled else 1
+	_scale.min_value = 1 if enabled else 0.25
+	_scale.step = 1 if enabled else 0.05
+	if enabled:
+		_angle.set_value_no_signal(_stamp_angle())
+		_scale.set_value_no_signal(maxf(1, roundf(_scale.value)))
+
+func _stamp_size(brush: TerrainPaintBrush) -> Vector2:
+	var size := Vector2(brush.texture.get_size()) / 40.0
+	if brush.mode != TerrainPaintBrush.Mode.TEXTURE: size /= Vector2(brush.atlas_grid)
+	if brush.texture_meters.x > 0.0 and brush.texture_meters.y > 0.0: size = brush.texture_meters
+	return size * _scale.value
+
+func _track_free_surface() -> void:
+	if not is_instance_valid(_terrain) or not _terrain.surface_data: return
+	var data := _terrain.surface_data
+	if _surface_tracked.has(data): return
+	var scene := EditorInterface.get_edited_scene_root()
+	_surface_tracked[data] = scene.scene_file_path if scene else ""
+	data.changed.connect(_on_free_surface_changed.bind(data))
+
+func _ensure_free_surface() -> void:
+	if not _terrain.surface_data: _terrain.surface_data = TerrainSurfaceData.new()
+	_track_free_surface()
+
+func _paint_free_surface() -> void:
+	var data := _terrain.surface_data
+	var point := _free_point()
+	var code := data.code_for_brush(_stroke_brush)
+	if _stroke_mode == 1:
+		var stamps: Array[TerrainSurfaceStamp] = data.stamps.duplicate()
+		if _stroke_erase:
+			for index in range(stamps.size()-1, -1, -1):
+				if stamps[index].code == code and stamps[index].contains_point(point):
+					stamps.remove_at(index)
+					break
+		else:
+			var stamp := TerrainSurfaceStamp.new()
+			stamp.code = code
+			stamp.position = point
+			stamp.size_meters = _stamp_size(_stroke_brush)
+			stamp.rotation_degrees = _stamp_angle()
+			stamp.layer_order = data.reserve_order()
+			stamps.append(stamp)
+		data.replace_stamps(stamps)
+	else:
+		var start := _last_point if _has_last_cell else point
+		var before := data.paint_segment(start, point, _size.value*0.5, code, _stroke_erase, _stroke_order, _snap.button_pressed)
+		for key in before:
+			if not _surface_before.has(key): _surface_before[key] = before[key]
+	_last_point = point
+	_has_last_cell = true
+
+func _on_free_surface_changed(data: TerrainSurfaceData) -> void:
+	_surface_dirty[data] = _surface_tracked.get(data, "")
+	_update_panel()
+
+func _finish_free_stroke() -> void:
+	if not is_instance_valid(_terrain) or not _terrain.surface_data: return
+	var data := _terrain.surface_data
+	var history := get_undo_redo()
+	if _stroke_mode == 1:
+		if data.stamps == _stamps_before: return
+		history.create_action("放置地表图块", UndoRedo.MERGE_DISABLE, _terrain)
+		history.add_do_method(data, "replace_stamps", data.stamps.duplicate())
+		history.add_undo_method(data, "replace_stamps", _stamps_before.duplicate())
+	else:
+		if _surface_before.is_empty(): return
+		var after := {}
+		for key in _surface_before:
+			after[key] = data.chunks[key].duplicate() if data.chunks.has(key) else null
+		history.create_action("自由绘制地表", UndoRedo.MERGE_DISABLE, _terrain)
+		history.add_do_method(data, "apply_chunk_patch", after)
+		history.add_undo_method(data, "apply_chunk_patch", _surface_before.duplicate())
+	history.add_do_method(_terrain, "notify_free_surface_committed")
+	history.add_undo_method(_terrain, "notify_free_surface_committed")
+	history.commit_action(false)
+	_terrain.notify_free_surface_committed()
+	_surface_before.clear()
+	_stamps_before.clear()
 
 func _brush_cells(center: Vector2i) -> Array[Vector2i]:
 	var cells: Array[Vector2i] = []
@@ -397,6 +598,9 @@ func _finish_stroke() -> void:
 		return
 	_stroking = false
 	_has_last_cell = false
+	if _stroke_mode != 2:
+		_finish_free_stroke()
+		return
 	if _before.is_empty() or not is_instance_valid(_terrain) or not _terrain.data:
 		_before.clear()
 		return
@@ -422,7 +626,7 @@ func _finish_stroke() -> void:
 	history.add_undo_method(data,"apply_surface_patch",indices,old_biomes,old_overlays,old_paints)
 	history.commit_action(false)
 	_before.clear()
-	data.emit_changed()
+	data.notify_surface_changed(indices)
 
 func _on_data_changed(data: TerrainData) -> void:
 	_dirty[data] = _tracked[data]
@@ -435,6 +639,41 @@ func _forward_3d_draw_over_viewport(overlay: Control) -> void:
 	var selected := _selected_brush()
 	var grass := selected.is_grass if selected else _brush.selected == 0
 	var color := Color(0.45,1.0,0.55,0.9) if grass else Color(1.0,0.8,0.3,0.9)
+	if _drawing_mode.selected != 2 and selected:
+		var point := _free_point()
+		if _drawing_mode.selected == 0 and _snap.button_pressed:
+			var data := _terrain.surface_data
+			if not data: data = TerrainSurfaceData.new()
+			for cell in data.covered_bricks(point, point, _size.value * 0.5):
+				var rect := data.brick_rect(cell)
+				var brick := PackedVector2Array()
+				for corner in [rect.position, Vector2(rect.end.x, rect.position.y), rect.end, Vector2(rect.position.x, rect.end.y)]:
+					var world := _terrain.to_global(Vector3(corner.x, _hover_point.y+0.025, corner.y))
+					if _camera.is_position_behind(world): return
+					brick.append(_camera.unproject_position(world))
+				overlay.draw_colored_polygon(brick, Color(color, 0.12))
+				brick.append(brick[0])
+				overlay.draw_polyline(brick, color, 1.0, true)
+			return
+		var offsets := PackedVector2Array()
+		if _drawing_mode.selected == 1:
+			var half := _stamp_size(selected) * 0.5
+			for corner in [Vector2(-half.x,-half.y), Vector2(half.x,-half.y), half, Vector2(-half.x,half.y)]:
+				offsets.append(corner.rotated(deg_to_rad(_stamp_angle())))
+		else:
+			for step in 48: offsets.append(Vector2.from_angle(float(step)*TAU/48.0) * _size.value*0.5)
+		var polygon := PackedVector2Array()
+		for offset in offsets:
+			var world := _terrain.to_global(Vector3(point.x+offset.x, _hover_point.y+0.025, point.y+offset.y))
+			if _camera.is_position_behind(world): return
+			polygon.append(_camera.unproject_position(world))
+		if _drawing_mode.selected == 1 and _preview_texture:
+			overlay.draw_polygon(polygon, PackedColorArray([Color(1,1,1,0.75)]),
+				PackedVector2Array([Vector2.ZERO,Vector2(1,0),Vector2.ONE,Vector2(0,1)]), _preview_texture)
+		else: overlay.draw_colored_polygon(polygon, Color(color, 0.12))
+		polygon.append(polygon[0])
+		overlay.draw_polyline(polygon, color, 2.0, true)
+		return
 	for cell in _brush_cells(_hover_cell):
 		var points := _terrain._corner_points(cell)
 		var heights := _terrain._corner_heights(cell)
@@ -454,6 +693,7 @@ func _save_current() -> void:
 	_finish_stroke()
 	if is_instance_valid(_terrain) and _terrain.data:
 		if _palette and not _save_palette(_palette): return
+		if _terrain.surface_data and not _save_free_surface(_terrain.surface_data): return
 		if not _terrain.data.resource_path.is_empty() and not "::" in _terrain.data.resource_path:
 			_save_data(_terrain.data)
 		var error := EditorInterface.save_scene()
@@ -475,7 +715,20 @@ func _save_external_data() -> void:
 	_finish_stroke()
 	for data in _dirty.keys():
 		_save_data(data)
+	for data in _surface_dirty.keys(): _save_free_surface(data)
 	for palette in _dirty_palettes.keys(): _save_palette(palette)
+
+func _save_free_surface(data: TerrainSurfaceData) -> bool:
+	if data.resource_path.is_empty() or "::" in data.resource_path: return true
+	var uid := ResourceLoader.get_resource_uid(data.resource_path)
+	var error := ResourceSaver.save(data, data.resource_path)
+	if error == OK and uid != ResourceUID.INVALID_ID: error = ResourceSaver.set_uid(data.resource_path, uid)
+	if error != OK:
+		_status.text = "自由地表保存失败：" + error_string(error)
+		return false
+	_surface_dirty.erase(data)
+	_update_panel()
+	return true
 
 func _save_palette(palette: TerrainPaintPalette) -> bool:
 	if palette.resource_path.is_empty() or "::" in palette.resource_path:
@@ -499,6 +752,10 @@ func _apply_changes() -> void:
 	_finish_stroke()
 
 func _on_scene_saved(path: String) -> void:
+	for data in _surface_dirty.keys():
+		if _surface_dirty[data] == path:
+			if data.resource_path.is_empty() or "::" in data.resource_path: _surface_dirty.erase(data)
+			else: _save_free_surface(data)
 	for data in _dirty.keys():
 		if _dirty[data] == path and (data.resource_path.is_empty() or "::" in data.resource_path):
 			_dirty.erase(data)
@@ -511,8 +768,10 @@ func _on_scene_saved(path: String) -> void:
 	_update_panel()
 
 func _get_unsaved_status(for_scene: String) -> String:
-	if _stroking and not _before.is_empty():
+	if _stroking and (not _before.is_empty() or not _surface_before.is_empty()):
 		return "地表画笔有未保存的修改。"
+	for data in _surface_dirty:
+		if for_scene.is_empty() or _surface_dirty[data] == for_scene: return "自由地表有未保存的修改。"
 	for data in _dirty:
 		if for_scene.is_empty() or _dirty[data] == for_scene:
 			return "地表画笔有未保存的修改。"

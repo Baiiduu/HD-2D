@@ -1,10 +1,10 @@
 class_name LightPierceEffect
 extends Node3D
 
-## A02 青金贯穿的独立视觉组件；发射和命中由调用方传入，不结算伤害。
+## 可复用的贯穿视觉组件；发射和命中由调用方传入，不结算伤害。
 signal finished
 
-const EFFECT_SHADER := preload("res://shaders/light_pierce.gdshader")
+const EFFECT_SHADER := preload("res://shaders/combat/light_pierce.gdshader")
 const TRAIL_SEGMENTS := 20
 static var _ribbon_mesh: ArrayMesh
 
@@ -20,12 +20,19 @@ static var _ribbon_mesh: ArrayMesh
 ## 发射位置相对于地面抬高的距离。
 @export_range(0.05, 2.0, 0.05, "suffix:m") var flight_height := 0.65
 @export_range(0.2, 4.0, 0.05, "suffix:m") var head_width := 2.45
+## 雷刺前端在贴图中的水平位置；定位到真实弹道，转镜头时尖端不会漂移。
+@export_range(0.0, 1.0, 0.01) var head_tip_anchor := 0.5
 @export_group("光丝拖尾")
 ## 只保留枪锋后方这段轨迹，离开后逐渐消退。
 @export_range(0.5, 8.0, 0.1, "suffix:m") var trail_length := 6.0
 ## 包含透明辉光的整体宽度；光丝主体比这个值细。
 @export_range(0.1, 2.0, 0.05, "suffix:m") var trail_width := 1.25
 @export_range(0.05, 0.8, 0.01, "suffix:s") var trail_fade_time := 0.28
+## 原生像素尾迹按固定世界长度采样，起手时裁切已行进部分，不压缩整条贴图。
+@export var preserve_trail_pixel_scale := false:
+	set(value):
+		preserve_trail_pixel_scale = value
+		if is_node_ready(): _configure_pixel_sampling()
 @export_group("命中星芒")
 @export_range(0.2, 3.0, 0.05, "suffix:m") var impact_width := 2.7
 @export_range(0.08, 0.8, 0.01, "suffix:s") var impact_duration := 0.4
@@ -33,6 +40,8 @@ static var _ribbon_mesh: ArrayMesh
 @export_group("辉光与映照")
 @export_range(0.0, 1.0, 0.05) var effect_opacity := 0.85
 @export_range(0.0, 4.0, 0.05) var effect_energy := 1.3
+## 单独加强细尾迹的辉光，保留雷刺与命中闪光的亮度。
+@export_range(0.0, 4.0, 0.05) var trail_energy_multiplier := 1.0
 ## 一盏无阴影的短时光源随枪锋移动，给近处草地少量映照。
 @export var ground_light_enabled := true
 @export var ground_light_color := Color(0.52, 0.81, 1.0)
@@ -45,6 +54,8 @@ var _direction := Vector3.RIGHT
 var _distance := 0.0
 var _age := 0.0
 var _flying := false
+var _manual_flight := false
+var _flight_ended := false
 var _head: MeshInstance3D
 var _trail: MeshInstance3D
 var _light: OmniLight3D
@@ -56,6 +67,7 @@ var _impact_pool: Array[Dictionary] = []
 func _ready() -> void:
 	_head_material = _material(head_texture)
 	_trail_material = _material(trail_texture)
+	_configure_pixel_sampling()
 	_head = _quad(_head_material)
 	_head.name = "CrystalHead"
 	_trail = MeshInstance3D.new()
@@ -70,7 +82,7 @@ func _ready() -> void:
 	add_child(_light)
 	stop()
 
-func launch(origin: Vector3, direction: Vector3, distance: float) -> void:
+func launch(origin: Vector3, direction: Vector3, distance: float, manual_flight := false) -> void:
 	if not is_node_ready(): return
 	stop()
 	_origin = origin + Vector3.UP * flight_height
@@ -79,11 +91,23 @@ func launch(origin: Vector3, direction: Vector3, distance: float) -> void:
 	travelled = 0.0
 	_age = 0.0
 	_flying = true
+	_manual_flight = manual_flight
+	_flight_ended = false
 	_head_material.set_shader_parameter("effect_texture", head_texture)
 	_trail_material.set_shader_parameter("effect_texture", trail_texture)
 	_head.visible = head_texture != null
 	_trail.visible = trail_texture != null
 	set_process(true)
+	_update_flight(get_viewport().get_camera_3d())
+
+## 实战由物理扫掠传入位置；渲染只更新朝向、完整命中动画与末端消退。
+func advance_flight(distance: float, ended := false) -> void:
+	if not _flying or not _manual_flight or _flight_ended: return
+	travelled = clampf(distance, 0.0, _distance)
+	_age = travelled / maxf(flight_speed, 0.01)
+	if ended:
+		_distance = travelled
+		_flight_ended = true
 	_update_flight(get_viewport().get_camera_3d())
 
 func show_hit(ground_position: Vector3) -> void:
@@ -123,8 +147,8 @@ func stop() -> void:
 func _process(delta: float) -> void:
 	var camera := get_viewport().get_camera_3d()
 	if _flying:
-		_age += delta
-		travelled = minf(_age * flight_speed, _distance)
+		if not _manual_flight or _flight_ended: _age += delta
+		if not _manual_flight: travelled = minf(_age * flight_speed, _distance)
 		_update_flight(camera)
 		if _age >= _distance / maxf(flight_speed, 0.01) + trail_fade_time:
 			_flying = false
@@ -163,17 +187,26 @@ func _update_flight(camera: Camera3D) -> void:
 	var position_on_path := _origin + _direction * travelled
 	var flight_time := _distance / maxf(flight_speed, 0.01)
 	var fade := 1.0 - clampf((_age - flight_time) / maxf(trail_fade_time, 0.01), 0.0, 1.0)
-	_head.global_position = position_on_path
 	_head.visible = head_texture != null and _age < flight_time
 	if head_texture: _set_size(_head, head_width, head_texture.get_size())
 	if camera:
-		var right := camera.global_basis.x
-		var up := camera.global_basis.y
-		var angle := atan2(_direction.dot(up), _direction.dot(right))
-		_head.global_basis = Basis(right * cos(angle) + up * sin(angle),
-			up * cos(angle) - right * sin(angle), camera.global_basis.z)
+		if preserve_trail_pixel_scale:
+			# 长轴留在真实弹道上，Q/E 转到纵深方向时自然透视缩短。
+			var side := camera.global_basis.z.cross(_direction).normalized()
+			if side.is_zero_approx(): side = camera.global_basis.y
+			_head.global_basis = Basis(_direction, side, _direction.cross(side))
+		else:
+			var right := camera.global_basis.x
+			var up := camera.global_basis.y
+			var angle := atan2(_direction.dot(up), _direction.dot(right))
+			_head.global_basis = Basis(right * cos(angle) + up * sin(angle),
+				up * cos(angle) - right * sin(angle), camera.global_basis.z)
+	_head.global_position = position_on_path - _head.global_basis.x * (head_tip_anchor - 0.5) * head_width
+	# 起手只露出真正行进过的雷刺，避免长贴图伸到人物后方。
+	var projected_travel := travelled * maxf(_direction.dot(_head.global_basis.x), 0.0)
+	_head_material.set_shader_parameter("clip_start", clampf(head_tip_anchor - projected_travel / maxf(head_width, 0.01), 0.0, head_tip_anchor) if preserve_trail_pixel_scale else 0.0)
 	_style(_head_material, minf(_age / 0.035, 1.0))
-	_style(_trail_material, fade * minf(travelled / 0.8, 1.0))
+	_style(_trail_material, fade * minf(travelled / 0.8, 1.0), trail_energy_multiplier)
 	_update_trail(camera)
 	_light.global_position = position_on_path
 	_light.visible = ground_light_enabled and fade > 0.0
@@ -181,8 +214,13 @@ func _update_flight(camera: Camera3D) -> void:
 	_light.light_energy = ground_light_energy * fade
 	_light.omni_range = ground_light_range
 
+func head_tip_position() -> Vector3:
+	return _head.global_position + _head.global_basis.x * (head_tip_anchor - 0.5) * head_width
+
 func _update_trail(camera: Camera3D) -> void:
-	var length := minf(trail_length, travelled)
+	# 像素残影从雷刺后缘开始，保留三段间隙，避免最亮的一段被主体盖住。
+	var trail_travelled := maxf(travelled - head_tip_anchor * head_width, 0.0) if preserve_trail_pixel_scale and head_texture else travelled
+	var length := minf(trail_length, trail_travelled)
 	if length < 0.01:
 		_trail.visible = false
 		return
@@ -192,8 +230,18 @@ func _update_trail(camera: Camera3D) -> void:
 		side = camera.global_basis.z.cross(_direction).normalized()
 		if side.is_zero_approx(): side = camera.global_basis.y
 	# 顶点与 UV 固定；长度、宽度、镜头朝向只改变实例变换。
-	_trail.global_position = _origin + _direction * (travelled - length)
+	_trail.global_position = _origin + _direction * (trail_travelled - length)
 	_trail.global_basis = Basis(_direction * length, side * trail_width, _direction.cross(side))
+	if preserve_trail_pixel_scale:
+		var visible_fraction := length / maxf(trail_length, 0.01)
+		_trail_material.set_shader_parameter("frame_rect", Vector4(1.0 - visible_fraction, 0, visible_fraction, 1))
+
+func _configure_pixel_sampling() -> void:
+	if not _head_material or not _trail_material: return
+	var edge := 0.0 if preserve_trail_pixel_scale else 0.06
+	_head_material.set_shader_parameter("edge_fade", edge)
+	_trail_material.set_shader_parameter("edge_fade", edge)
+	_trail_material.set_shader_parameter("frame_rect", Vector4(0, 0, 1, 1))
 
 static func _shared_ribbon_mesh() -> ArrayMesh:
 	if _ribbon_mesh: return _ribbon_mesh
@@ -241,9 +289,9 @@ func _set_size(mesh: MeshInstance3D, width: float, texture_size: Vector2) -> voi
 	var size := Vector2(width, width * texture_size.y / maxf(texture_size.x, 1.0))
 	if (mesh.mesh as QuadMesh).size != size: (mesh.mesh as QuadMesh).size = size
 
-func _style(material: ShaderMaterial, fade: float) -> void:
+func _style(material: ShaderMaterial, fade: float, energy_multiplier := 1.0) -> void:
 	material.set_shader_parameter("opacity", effect_opacity * fade)
-	material.set_shader_parameter("energy", effect_energy)
+	material.set_shader_parameter("energy", effect_energy * energy_multiplier)
 	material.set_shader_parameter("tint", effect_tint)
 
 func _set_frame(material: ShaderMaterial, texture: Texture2D) -> void:

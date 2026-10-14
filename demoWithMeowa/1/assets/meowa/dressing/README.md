@@ -19,9 +19,9 @@
 
 ## Godot 验看
 
-打开 `res://scenes/dressing_preview.tscn` 并按 F6 运行。按 **1 / 2 / 3** 分别查看花、草、小石子。每类六个变种与静态人物比例尺处于同一深度，使用当前四境场景的相机俯角与光影。
+打开 `res://scenes/previews/dressing_preview.tscn` 并按 F6 运行。按 **1 / 2 / 3** 分别查看花、草、小石子。每类六个变种与静态人物比例尺处于同一深度，使用当前四境场景的相机俯角与光影。
 
-主场景 `res://scenes/four_realms.tscn` 已接入铺设，**打开场景的 3D 编辑视图即可看到花草，不需要运行**。按 F5 也可从出生点向右侧草地走查看游戏效果。素材验看场景单独隐藏主地图的铺设，便于比较六个变种。
+主场景 `res://scenes/previews/four_realms.tscn` 已接入铺设，**打开场景的 3D 编辑视图即可看到花草，不需要运行**。按 F5 也可从出生点向右侧草地走查看游戏效果。素材验看场景单独隐藏主地图的铺设，便于比较六个变种。
 
 ## 区域内随机铺设
 
@@ -57,7 +57,7 @@
 
 石子当前默认关闭；若之后需要使用，同时提高父节点 Pebble Density 并在目标区域的 Categories 中勾选碎石。
 
-旧的 `data/dressing_layout.json` 与项目根目录 `artifacts/dressing-layout/build_layout.py` 保留为历史铺设记录；当前生成器使用区域节点，不读取旧的固定落点。
+旧的 `data/world/dressing_layout.json` 与项目根目录 `archive\\artifacts/dressing-layout/build_layout.py` 保留为历史铺设记录；当前生成器使用区域节点，不读取旧的固定落点。
 
 ## 天气与花草风摆
 
@@ -95,4 +95,4 @@
 - 在实际 3D 编辑视口验证未运行游戏时显示花草、区域移动、资源选择、密度即时更新、预览开关和刷新按钮；关闭编辑器预览不影响游戏铺设。范围框和生成批次不写入场景配置。
 - 天气完成实机与编辑器检查：雨量/风向即时更新、晴雨切换、水滴生命周期、人物保护区、资源重建后的风摆、配置保存，以及风摆时根部落点稳定。水滴淡出后画面恢复，现有地编位置和相机参数保持一致。
 
-素材来源均为 Meowa。`assets.json` 提供选定素材与本地源文件的对应关系，原始输出保存在项目根目录 `artifacts/ground-dressing/outputs/`。
+素材来源均为 Meowa。`assets.json` 提供选定素材与本地源文件的对应关系，原始输出保存在项目根目录 `archive\\artifacts/ground-dressing/outputs/`。

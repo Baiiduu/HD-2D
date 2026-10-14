@@ -1,0 +1,51 @@
+[gd_resource type="Resource" script_class="CombatSkillDefinition" format=3 uid="uid://cgokxja82v2tw"]
+
+[ext_resource type="Texture2D" uid="uid://qsxnqgt3kox3" path="res://assets/meowa/combat/light_pierce/pixel/head.png" id="art"]
+[ext_resource type="Script" uid="uid://dgnmk10av1ee6" path="res://scripts/combat/combat_skill_level.gd" id="level"]
+[ext_resource type="Script" uid="uid://bys5inomsbf0o" path="res://scripts/combat/combat_skill_definition.gd" id="skill"]
+
+[sub_resource type="AtlasTexture" id="icon"]
+atlas = ExtResource("art")
+region = Rect2(0, 0, 48, 16)
+
+[sub_resource type="Resource" id="lv1"]
+script = ExtResource("level")
+description = "雷光直线穿过敌群，每发对同一只敌人命中一次。"
+
+[sub_resource type="Resource" id="lv2"]
+script = ExtResource("level")
+description = "贯穿更多敌人，适合清理长队。"
+parameters = Dictionary[String, float]({
+"damage_multiplier": 1.2,
+"extra_targets": 2.0
+})
+
+[sub_resource type="Resource" id="lv3"]
+script = ExtResource("level")
+description = "雷刺延伸并加速，覆盖更远的敌群。"
+parameters = Dictionary[String, float]({
+"damage_multiplier": 1.45,
+"distance_multiplier": 1.25,
+"extra_targets": 2.0,
+"speed_multiplier": 1.4
+})
+
+[sub_resource type="Resource" id="lv4"]
+script = ExtResource("level")
+description = "贯穿轨迹拓宽，断续电光与命中电弧同步展开。"
+parameters = Dictionary[String, float]({
+"damage_multiplier": 1.7,
+"distance_multiplier": 1.25,
+"extra_targets": 2.0,
+"speed_multiplier": 1.4,
+"visual_width_multiplier": 1.35,
+"width_multiplier": 1.666667
+})
+
+[resource]
+script = ExtResource("skill")
+id = &"light_pierce"
+display_name = "雷光贯穿"
+description = "自动向最近的有效目标发射青白雷刺，沿固定直线贯穿敌群，墙体阻挡。"
+icon = SubResource("icon")
+levels = Array[ExtResource("level")]([SubResource("lv1"), SubResource("lv2"), SubResource("lv3"), SubResource("lv4")])

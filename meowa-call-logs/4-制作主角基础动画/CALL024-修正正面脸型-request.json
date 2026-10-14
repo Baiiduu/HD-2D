@@ -1,0 +1,40 @@
+{
+  "id": "CALL024",
+  "task": "4-制作主角基础动画",
+  "beijingTime": "2026-10-10T13:48:14.000+08:00",
+  "purpose": "瘦长脸与收窄下颌的正面修正",
+  "tool": "Meowa CLI / image-edit-run",
+  "executionPython": "C:/Users/PC/AppData/Local/Programs/Python/Python314/python.exe",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "arguments": [
+    "image-edit-run",
+    "--reference-image",
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/front-pose/让同一个黄衣青年正面朝向观众站立_双脚自然落地_保留原来的耳机_发型_黄衣_深蓝_9db4b23f/remove_bg.png",
+    "--prompt",
+    "修改这个正面青年的脸型，让脸明显更瘦长，脸颊总宽度减少两个像素，下颌向下收窄。头和身体始终正面朝向观众。只修改脸部轮廓，头发、耳机、五官风格、身体、衣服、站姿、人物大小和位置保持原样。",
+    "--mode",
+    "pixel",
+    "--strict",
+    "--generation-model",
+    "image-2.5",
+    "--resolution",
+    "1K",
+    "--quality",
+    "ultimate",
+    "--remove-bg-method",
+    "standard",
+    "--output-dir",
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/front-face-taper"
+  ],
+  "prompt": "修改这个正面青年的脸型，让脸明显更瘦长，脸颊总宽度减少两个像素，下颌向下收窄。头和身体始终正面朝向观众。只修改脸部轮廓，头发、耳机、五官风格、身体、衣服、站姿、人物大小和位置保持原样。",
+  "negativePrompt": null,
+  "referenceImages": [
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/front-pose/让同一个黄衣青年正面朝向观众站立_双脚自然落地_保留原来的耳机_发型_黄衣_深蓝_9db4b23f/remove_bg.png"
+  ],
+  "status": "pending",
+  "relatedCall": "CALL023",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回"
+}

@@ -22,9 +22,9 @@
 
 在正式地图的 `MapEffects/Weather → 雨声音效 → Rain Sound` 中，可选择 `drizzle.wav`、`drizzle_alt.wav` 或旧版 `rain.wav`。修改 `Rain Volume Db` 可继续微调响度；原素材均保留，切换不会影响视觉雨水。
 
-- [新雨声：Godot 游戏音量录音](../../../../../docs/weather-preview/rain-natural.wav)
-- [新雨声与现有 BGM、风声的混音录音](../../../../../docs/weather-preview/rain-natural-mix.wav)
-- [旧雨声试听，保留比较](../../../../../docs/weather-preview/rain-soft.wav)
+- [新雨声：Godot 游戏音量录音](../../../../../docs/media/weather-preview/rain-natural.wav)
+- [新雨声与现有 BGM、风声的混音录音](../../../../../docs/media/weather-preview/rain-natural-mix.wav)
+- [旧雨声试听，保留比较](../../../../../docs/media/weather-preview/rain-soft.wav)
 
 前两份录音来自 Godot 音频混音器，包含当前播放增益，适合比较在游戏中的相对响度。生成素材本身的响度与最终游戏响度不同。
 
@@ -52,7 +52,7 @@ Godot 完成 16 项检查，覆盖新音源绑定、PCM 导入、两次实际循
 
 验证：原生 Godot 实机的独立图案检查中，关闭模糊和轮廓高光后，仍有 3852 个像素因折射改变；灯光响应改变 377 个亮部像素，暗处水滴没有额外发光。8 滴随机形状滑落后保持稳定，人物保护区改变 0 像素，水滴消失后画面与基准逐像素相同。
 
-[镜头折射预览](../../../../../docs/weather-preview/lens-optics.gif) 使用当前相机配置，把测试水滴放在窗灯与霓虹附近以展示折射、灯光响应和消失过程；这些测试落点没有保存到场景。
+[镜头折射预览](../../../../../docs/media/weather-preview/lens-optics.gif) 使用当前相机配置，把测试水滴放在窗灯与霓虹附近以展示折射、灯光响应和消失过程；这些测试落点没有保存到场景。
 
 ## 水面与地表反馈
 
@@ -74,4 +74,4 @@ Godot 完成 16 项检查，覆盖新音源绑定、PCM 导入、两次实际循
 
 验证：实机检查了水面/地面的独立开关、密度即时更新、停雨后恢复，以及镜头水滴淡出无残留；镜头水滴测试中人物保护区域的像素没有变化。14 个新增 Inspector 字段和编辑器预览开关、动画时钟、材质更新均通过检查。
 
-[效果预览](../../../../../docs/weather-preview/rain-feedback.gif) 使用临时俯视角便于检查水面反馈，且固定了一个镜头水滴的位置以展示完整消失过程；没有保存这些测试覆盖值。
+[效果预览](../../../../../docs/media/weather-preview/rain-feedback.gif) 使用临时俯视角便于检查水面反馈，且固定了一个镜头水滴的位置以展示完整消失过程；没有保存这些测试覆盖值。

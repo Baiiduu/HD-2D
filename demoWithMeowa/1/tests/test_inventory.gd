@@ -17,7 +17,7 @@ func settle() -> void:
 	for frame in 6: await process_frame
 
 func run() -> void:
-	var catalog: LoadoutCatalog = load("res://data/loadout_catalog.tres")
+	var catalog: LoadoutCatalog = load("res://data/rpg/loadout_catalog.tres")
 	check(catalog.validation_errors().is_empty(),"Inventory catalog is valid")
 	var state := LoadoutState.new(catalog)
 	check(state.add_item("tomato_seed",20) and state.add_item("hoe"),"Add a stack and a non-stackable tool")

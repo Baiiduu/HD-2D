@@ -2,7 +2,7 @@
 class_name EnvironmentDynamics
 extends Node3D
 
-const HOME_DATA = preload("res://data/spawn_terrain.tres")
+const HOME_DATA = preload("res://data/world/spawn_terrain.tres")
 
 @export_group("环境动态")
 ## 只调节自然风与装饰光点；关闭恢复原自然风，新增战区光点隐藏。

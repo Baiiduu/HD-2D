@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="WaveEnemyCatalog" format=3 uid="uid://chkog48k1b5tw"]
+
+[ext_resource type="Script" uid="uid://d2524gamvbrg7" path="res://scripts/combat/wave_enemy_catalog.gd" id="catalog"]
+[ext_resource type="Script" uid="uid://dug8id31t33xe" path="res://scripts/combat/wave_enemy_definition.gd" id="definition"]
+[ext_resource type="Resource" path="res://data/enemies/lantern_spitter.tres" id="flower"]
+[ext_resource type="Resource" path="res://data/enemies/bell_frog.tres" id="frog"]
+[ext_resource type="Resource" path="res://data/enemies/leaf_charger.tres" id="leaf"]
+[ext_resource type="Resource" path="res://data/enemies/mini_slime.tres" id="mini"]
+[ext_resource type="Resource" path="res://data/enemies/pot_brood.tres" id="pot"]
+[ext_resource type="Resource" uid="uid://d2jynhqktqji0" path="res://data/enemies/wave_slime.tres" id="slime"]
+
+[resource]
+script = ExtResource("catalog")
+enemies = Array[ExtResource("definition")]([ExtResource("slime"), ExtResource("leaf"), ExtResource("flower"), ExtResource("pot"), ExtResource("frog"), ExtResource("mini")])

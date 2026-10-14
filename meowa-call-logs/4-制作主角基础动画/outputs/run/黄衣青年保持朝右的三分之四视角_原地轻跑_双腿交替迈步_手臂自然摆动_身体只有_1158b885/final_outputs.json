@@ -1,0 +1,21 @@
+{
+  "status": "success",
+  "job_id": "job_315e1606d15e49069aea89f4ef5f3e9b",
+  "outputs": [
+    {
+      "type": "media",
+      "path": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run\\黄衣青年保持朝右的三分之四视角_原地轻跑_双腿交替迈步_手臂自然摆动_身体只有_1158b885\\result_output_url.webp",
+      "mime_type": "image/webp"
+    },
+    {
+      "type": "media",
+      "path": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run\\黄衣青年保持朝右的三分之四视角_原地轻跑_双腿交替迈步_手臂自然摆动_身体只有_1158b885\\result_output_transparent_output_urls_gif.gif",
+      "mime_type": "image/gif"
+    },
+    {
+      "type": "media",
+      "path": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run\\黄衣青年保持朝右的三分之四视角_原地轻跑_双腿交替迈步_手臂自然摆动_身体只有_1158b885\\result_output_transparent_output_urls_png.png",
+      "mime_type": "image/png"
+    }
+  ]
+}

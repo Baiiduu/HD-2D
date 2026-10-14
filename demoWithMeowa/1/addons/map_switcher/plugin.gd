@@ -4,13 +4,43 @@ extends EditorPlugin
 const MAPS: Array[Dictionary] = [
 	{
 		"name": "视觉预览",
-		"path": "res://scenes/four_realms.tscn",
+		"path": "res://scenes/previews/four_realms.tscn",
 		"description": "现有视觉效果测试地图。",
 	},
 	{
 		"name": "正式连续地图",
 		"path": "res://scenes/world/world.tscn",
-		"description": "独立连续地图入口。\n默认接入预览光影、相机、天气和音乐；地图内容独立搭建。",
+		"description": "正式主场景，当前只保留战斗区与外围绕行带。\n复用手绘地表、分隔带、小型弹射障碍、人物和无尽波次。",
+	},
+	{
+		"name": "树池建筑预览",
+		"path": "res://scenes/previews/tree_planter_preview.tscn",
+		"description": "当前正式世界中的独立树池样板。\n完整 2D 树与花草、3D 花坛和长椅；保留 Q/E 与 R。",
+	},
+	{
+		"name": "广场路灯与环球雕塑预览",
+		"path": "res://scenes/previews/plaza_landmarks_preview.tscn",
+		"description": "参考图的双头金属路灯与黄铜环球雕塑。\n当前世界光照和镜头；两个独立道具可拖入正式地图。",
+	},
+	{
+		"name": "六种弹射障碍物预览",
+		"path": "res://scenes/previews/ricochet_props_preview.tscn",
+		"description": "矮石墙、铁艺围栏、木箱堆、木桶组、方形石柱和 L 形挡墙。\n独立场景、实际碰撞，保留当前世界光影与 Q/E。",
+	},
+	{
+		"name": "弹射建筑变种预览",
+		"path": "res://scenes/previews/ricochet_variants_preview.tscn",
+		"description": "十二种同风格变形，分四组陈列于当前广场。\n斜面、通行开口、圆面与多面转角；保留实际镜头与 Q/E。",
+	},
+	{
+		"name": "棱光弹射技能预览",
+		"path": "res://scenes/previews/prism_ricochet_preview.tscn",
+		"description": "真实墙面反射、青金棱晶与折线拖尾。\n根节点可选 1–8 级，保留实际镜头与 Q/E。",
+	},
+	{
+		"name": "城镇细节物件预览",
+		"path": "res://scenes/previews/town_details_preview.tscn",
+		"description": "长椅、花车、告示牌、陶盆、水钵、垃圾桶、货运托盘和麻袋。\n独立可放置场景，保留实际形状碰撞与当前世界镜头。",
 	},
 ]
 
@@ -29,9 +59,16 @@ func _enter_tree() -> void:
 	for side in ["left", "top", "right", "bottom"]:
 		margin.add_theme_constant_override("margin_" + side, 8)
 	_dock.add_child(margin)
+	# 隐藏页签的最小尺寸也参与编辑器布局；说明文字只能撑大滚动内容。
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	margin.add_child(scroll)
 	var column := VBoxContainer.new()
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	column.add_theme_constant_override("separation", 8)
-	margin.add_child(column)
+	scroll.add_child(column)
 
 	_selector = OptionButton.new()
 	_selector.name = "MapSelector"

@@ -1,0 +1,49 @@
+{
+  "status": "success",
+  "startedAt": "2026-10-10T13:45:05+08:00",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "endedAt": "2026-10-10T13:45:44+08:00",
+  "exitCode": 0,
+  "output": "[INFO] planned_output_dir=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\front-face-slim\\只修改第一张图的正面脸型_脸颊左右各收窄一个像素_让脸更清瘦_接近第二张原角_e541145d\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=finalizing progress=处理中:50%\n[INFO] status=success stage=completed progress=已完成:100%\n[INFO] downloading_outputs count=2 to=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\front-face-slim\\只修改第一张图的正面脸型_脸颊左右各收窄一个像素_让脸更清瘦_接近第二张原角_e541145d\n[INFO] downloaded=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\front-face-slim\\只修改第一张图的正面脸型_脸颊左右各收窄一个像素_让脸更清瘦_接近第二张原角_e541145d\\remove_bg.png\n[INFO] saved_dir=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\front-face-slim\\只修改第一张图的正面脸型_脸颊左右各收窄一个像素_让脸更清瘦_接近第二张原角_e541145d\n{\n  \"job_id\": \"job_900909936cf94ffdb353ca715cedd8ea\",\n  \"job_type\": \"workflow\",\n  \"status\": \"success\",\n  \"next_poll_after_seconds\": 0,\n  \"animation_type\": null,\n  \"queue\": {\n    \"position\": 0,\n    \"estimated_wait_seconds\": 0\n  },\n  \"progress\": {\n    \"label\": \"已完成\",\n    \"percent\": 100\n  },\n  \"result\": {\n    \"job_name\": \"054507_image_edit_image_edit\",\n    \"remove_bg_path\": \"https://media.meowa.ai/public/image-edit/output/2026-10-10/05%3A45%3A40-workflow-e946401aa33b4e728edb76ae/remove_bg.png\",\n    \"url\": \"https://media.meowa.ai/public/image-edit/output/2026-10-10/05%3A45%3A40-workflow-e946401aa33b4e728edb76ae/remove_bg.png\"\n  },\n  \"outputs\": [\n    {\n      \"output_key\": \"primary\",\n      \"media_type\": \"image\",\n      \"mime_type\": null,\n      \"asset_id\": null,\n      \"thumb_url\": null,\n      \"width\": null,\n      \"height\": null,\n      \"byte_size\": null\n    }\n  ],\n  \"error\": null,\n  \"error_code\": null,\n  \"error_id\": null,\n  \"credit_refund\": {\n    \"refunded\": false,\n    \"amount\": 0\n  }\n}\n",
+  "returnedData": {
+    "job_id": "job_900909936cf94ffdb353ca715cedd8ea",
+    "job_type": "workflow",
+    "status": "success",
+    "next_poll_after_seconds": 0,
+    "animation_type": null,
+    "queue": {
+      "position": 0,
+      "estimated_wait_seconds": 0
+    },
+    "progress": {
+      "label": "已完成",
+      "percent": 100
+    },
+    "result": {
+      "job_name": "054507_image_edit_image_edit",
+      "remove_bg_path": "https://media.meowa.ai/public/image-edit/output/2026-10-10/05%3A45%3A40-workflow-e946401aa33b4e728edb76ae/remove_bg.png",
+      "url": "https://media.meowa.ai/public/image-edit/output/2026-10-10/05%3A45%3A40-workflow-e946401aa33b4e728edb76ae/remove_bg.png"
+    },
+    "outputs": [
+      {
+        "output_key": "primary",
+        "media_type": "image",
+        "mime_type": null,
+        "asset_id": null,
+        "thumb_url": null,
+        "width": null,
+        "height": null,
+        "byte_size": null
+      }
+    ],
+    "error": null,
+    "error_code": null,
+    "error_id": null,
+    "credit_refund": {
+      "refunded": false,
+      "amount": 0
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "id": "CALL025",
+  "task": "4-制作主角基础动画",
+  "beijingTime": "2026-10-10T13:48:46.000+08:00",
+  "purpose": "侧向跑动比例修复",
+  "tool": "Meowa CLI / animation-edit-run",
+  "executionPython": "C:/Users/PC/AppData/Local/Programs/Python/Python314/python.exe",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "arguments": [
+    "animation-edit-run",
+    "--animation-file",
+    "D:/Project/HD-2DMap/demoWithMeowa/1/assets/meowa/player/run.webp",
+    "--reference-image",
+    "D:/Project/HD-2DMap/demoWithMeowa/1/assets/meowa/characters/八个同一精致像素画风的全身游戏角色_现代城市青年_咖啡店店员_赛博朋克女黑客_fb335224/sprite_00.png",
+    "--prompt",
+    "把动画每一帧的黄衣青年身材恢复成参考图的比例，保持同样的头部大小、肩宽、躯干长度和腿长，衣身不要膨胀。保留原来的轻跑动作、朝向、帧位置和透明背景。",
+    "--mode",
+    "pixel",
+    "--generation-speed",
+    "normal",
+    "--remove-bg-method",
+    "advanced",
+    "--output-dir",
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/run-side-fixed"
+  ],
+  "prompt": "把动画每一帧的黄衣青年身材恢复成参考图的比例，保持同样的头部大小、肩宽、躯干长度和腿长，衣身不要膨胀。保留原来的轻跑动作、朝向、帧位置和透明背景。",
+  "negativePrompt": null,
+  "referenceImages": [
+    "D:/Project/HD-2DMap/demoWithMeowa/1/assets/meowa/player/run.webp",
+    "D:/Project/HD-2DMap/demoWithMeowa/1/assets/meowa/characters/八个同一精致像素画风的全身游戏角色_现代城市青年_咖啡店店员_赛博朋克女黑客_fb335224/sprite_00.png"
+  ],
+  "status": "pending",
+  "relatedCall": "CALL007",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回"
+}

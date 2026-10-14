@@ -43,7 +43,49 @@ float mapOutside(vec2 p){
 // ---------------------------------------------------------------------------
 // Terrain top surfaces (map + margin) and distant land share one material
 // ---------------------------------------------------------------------------
+// The opening study uses its own foundation, independent of the benchmark biomes.
+function makeOpeningGroundMaterial(world, slate, cellTex) {
+  const variation = { value: 0.08 };
+  const material = patchMaterial(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.76, metalness: 0 }), {
+    key: 'opening-stone-foundation',
+    uniforms: {
+      uCells: { value: cellTex },
+      uExt: { value: new THREE.Vector4(world.eox, world.eoz, world.ew, world.eh) },
+      uMapRect: { value: new THREE.Vector4(world.minX, world.minZ, world.maxX, world.maxZ) },
+      uSlate: { value: slate },
+      uStoneVariation: variation,
+    },
+    vertHead: 'attribute float aKind; varying float vKind;',
+    vertPre: 'vKind = aKind;',
+    fragHead: `${GLSL_CELLS}\nvarying float vKind; uniform sampler2D uSlate; uniform float uStoneVariation;`,
+    frag: `
+{
+  vec2 p = vWPos.xz;
+  uvec4 cell = cellAt(ivec2(floor(p / 1.6 + 0.5)));
+  bool paved = cell.r == 2u && mapOutside(p) < 0.01 && vKind < 0.5;
+  vec3 col = vec3(0.22, 0.24, 0.28); // untextured whitebox outside the paving
+  if (paved) {
+    // The inspected texture has roughly 16×8 px slabs: 3.2 m repeat yields 0.8×0.4 m paving.
+    col = texPixel(uSlate, vec2(p.x, -p.y) / 3.2, vec2(64.0)).rgb;
+    // Match the source's staggered 16×8 px brick grid; one stable value per slab.
+    float row = floor(-p.y / 0.4);
+    vec2 slab = vec2(floor(p.x / 0.8 + mod(row, 2.0) * 0.5), row);
+    float shade = fract(sin(dot(slab, vec2(127.1, 311.7))) * 43758.5453);
+    col *= 1.0 + (shade * 2.0 - 1.0) * uStoneVariation;
+    gRough = 0.76;
+    gWet = 0.0;
+    gReflN = vec3(0.0, 1.0, 0.0);
+  } else if (vKind > 0.5) col *= 0.45;
+  gAO = boxAO(vWPos, vec3(0.0, 1.0, 0.0));
+  diffuseColor.rgb = col;
+}`,
+  });
+  material.userData.stoneVariation = variation;
+  return material;
+}
+
 export function makeTerrainMaterial(world, tex, cellTex) {
+  if (world.json.opening) return makeOpeningGroundMaterial(world, tex.slate, cellTex);
   const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, metalness: 0.0 });
   const uniforms = {
     uCells: { value: cellTex },
@@ -169,6 +211,7 @@ vec4 dualGrid(sampler2D atlas, uint bit, vec2 p){
 // Cliff walls: rock strata texture, grass lip on top, dark foot, lit crest
 // ---------------------------------------------------------------------------
 export function makeCliffMaterial(world, tex, cellTex) {
+  if (world.json.opening) return patchMaterial(new THREE.MeshStandardMaterial({ color: 0x626873, roughness: 0.95 }), { key: 'opening-whitebox-cliff' });
   const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.92, metalness: 0 });
   patchMaterial(mat, {
     key: 'cliff',
@@ -219,6 +262,16 @@ vec4 biomeTex(int b, vec2 uv){
 // ---------------------------------------------------------------------------
 export function buildTerrain(world, tex) {
   const cellTex = buildCellTexture(world);
+  if (world.json.opening) {
+    const geo = new THREE.PlaneGeometry(world.maxX - world.minX, world.maxZ - world.minZ);
+    geo.rotateX(-Math.PI / 2);
+    geo.translate((world.minX + world.maxX) / 2, world.yoff, (world.minZ + world.maxZ) / 2);
+    geo.setAttribute('aKind', new THREE.Float32BufferAttribute(new Float32Array(geo.attributes.position.count), 1));
+    const terrainMat = makeTerrainMaterial(world, tex, cellTex);
+    const topMesh = new THREE.Mesh(geo, terrainMat);
+    topMesh.name = 'Plaza'; topMesh.receiveShadow = true;
+    return { topMesh, cellTex, terrainMat };
+  }
   const cs = world.cs;
   const tops = { pos: [], nrm: [], kind: [], idx: [] };
   const walls = { pos: [], nrm: [], wall: [], idx: [] };

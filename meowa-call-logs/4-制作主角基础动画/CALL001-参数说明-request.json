@@ -1,0 +1,21 @@
+{
+  "id": "CALL001",
+  "task": "4-制作主角基础动画",
+  "beijingTime": "2026-10-10T13:03:20.000+08:00",
+  "purpose": "读取animate-run当前公开参数",
+  "tool": "Meowa CLI / animate-run --help",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "arguments": [
+    "animate-run",
+    "--help"
+  ],
+  "prompt": null,
+  "negativePrompt": null,
+  "referenceImages": [],
+  "status": "pending",
+  "relatedCall": null,
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回"
+}

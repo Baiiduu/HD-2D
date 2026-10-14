@@ -1,0 +1,44 @@
+{
+  "note": "Original Meowa image bytes, unchanged.",
+  "assets": [
+    {
+      "name": "stone",
+      "source": "assets/meowa/stone/stone.png",
+      "file": "opening/stone.png",
+      "dimensions": [
+        64,
+        64
+      ],
+      "meowaCall": [
+        "1-制作广场石板地表/CALL002-修正铺装"
+      ],
+      "sha256": "8aa6257c66ab9490f44a3f83cccb86f45fb16de15ceef254b04c4801fa2e11bc"
+    },
+    {
+      "name": "details",
+      "source": "assets/meowa/details/details.png",
+      "file": "opening/details.png",
+      "dimensions": [
+        1024,
+        768
+      ],
+      "meowaCall": [
+        "2-制作石板细节/CALL001-生成"
+      ],
+      "sha256": "939bb9ff4f6d17b448cd4a73a4c9d67d062076b0c7a4bcd56eb5fff250da2af3"
+    },
+    {
+      "name": "vista",
+      "source": "assets/meowa/vista/vista.png",
+      "file": "opening/vista.png",
+      "dimensions": [
+        1024,
+        768
+      ],
+      "meowaCall": [
+        "3-制作宗门远景/CALL001-生成"
+      ],
+      "sha256": "63b2debf3b48089b58fd0083eaaf954f32eede7af1da334935001a967d5f6530"
+    }
+  ]
+}

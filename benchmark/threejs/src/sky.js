@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { GLSL_COMMON, FOG } from './shaderlib.js';
+import { GLSL_COMMON, FOG, GI } from './shaderlib.js';
 import { fbm2 } from './terrain.js';
 
 // Night sky: horizon matches the fog colour so the world dissolves into it; stars and a
@@ -8,31 +8,36 @@ export function makeSky() {
   const geo = new THREE.SphereGeometry(900, 48, 24);
   const mat = new THREE.ShaderMaterial({
     side: THREE.BackSide, depthWrite: false, fog: false,
-    uniforms: { uFog: { value: FOG.color }, uTime: { value: 0 } },
+    uniforms: {
+      uFog: { value: FOG.color }, uTime: GI.uTime,
+      uMid: { value: new THREE.Color(0.075, 0.07, 0.11) },
+      uZenith: { value: new THREE.Color(0.02, 0.025, 0.06) },
+      uGlowColor: { value: new THREE.Color(0.09, 0.055, 0.035) },
+      uGlowStrength: { value: 1.0 }, uStars: { value: 1.0 }, uMilky: { value: 1.0 },
+    },
     vertexShader: `varying vec3 vDir; void main(){ vDir = normalize(position); vec4 p = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_Position = p.xyww; }`,
     fragmentShader: `
-      uniform vec3 uFog; uniform float uTime; varying vec3 vDir;
+      uniform vec3 uFog, uMid, uZenith, uGlowColor;
+      uniform float uTime, uGlowStrength, uStars, uMilky; varying vec3 vDir;
       ${GLSL_COMMON}
       void main(){
         vec3 d = normalize(vDir);
         float h = d.y;
         vec3 horizon = uFog * vec3(0.9, 0.92, 1.1);
-        vec3 mid = vec3(0.075, 0.07, 0.11);
-        vec3 zen = vec3(0.02, 0.025, 0.06);
-        vec3 c = mix(horizon, mid, smoothstep(0.0, 0.16, h));
-        c = mix(c, zen, smoothstep(0.16, 0.7, h));
+        vec3 c = mix(horizon, uMid, smoothstep(0.0, 0.16, h));
+        c = mix(c, uZenith, smoothstep(0.16, 0.7, h));
         // warm haze glow hugging the horizon
-        c += vec3(0.09, 0.055, 0.035) * exp(-abs(h) * 18.0);
+        c += uGlowColor * uGlowStrength * exp(-abs(h) * 18.0);
         // stars
         vec2 sp = vec2(atan(d.z, d.x) * 180.0, h * 260.0);
         vec2 cell = floor(sp);
         float s = hash12(cell);
         float star = step(0.985, s) * smoothstep(0.03, 0.2, h);
         float tw = 0.6 + 0.4 * sin(uTime * (1.0 + s * 3.0) + s * 50.0);
-        c += vec3(0.95, 0.9, 0.85) * star * tw * (s - 0.985) * 60.0 * 0.6;
+        c += vec3(0.95, 0.9, 0.85) * star * tw * (s - 0.985) * 60.0 * 0.6 * uStars;
         // milky band
         float band = exp(-pow((d.x * 0.6 + h - 0.5) * 3.0, 2.0)) * fbm(d.xz * 6.0) * smoothstep(0.08, 0.3, h);
-        c += vec3(0.06, 0.055, 0.07) * band;
+        c += vec3(0.06, 0.055, 0.07) * band * uMilky;
         gl_FragColor = vec4(c, 1.0);
       }`,
   });
@@ -71,13 +76,16 @@ export function makeMountains(center) {
     geo.setIndex(idx);
     const mat = new THREE.ShaderMaterial({
       side: THREE.DoubleSide, fog: false, depthWrite: true,
-      uniforms: { uFog: { value: FOG.color }, uHaze: { value: L.haze }, uLayer: { value: li } },
+      uniforms: {
+        uFog: { value: FOG.color }, uHaze: { value: L.haze }, uLayer: { value: li },
+        uHazeScale: { value: 1.0 }, uRock: { value: new THREE.Color(0.028, 0.03, 0.042) },
+      },
       vertexShader: `attribute float aTop; varying float vTop; varying vec3 vW;
         void main(){ vTop = aTop; vec4 w = modelMatrix * vec4(position,1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
-      fragmentShader: `uniform vec3 uFog; uniform float uHaze; uniform float uLayer; varying float vTop; varying vec3 vW;
+      fragmentShader: `uniform vec3 uFog, uRock; uniform float uHaze, uLayer, uHazeScale; varying float vTop; varying vec3 vW;
         ${GLSL_COMMON}
         void main(){
-          vec3 rock = vec3(0.028, 0.03, 0.042);
+          vec3 rock = uRock;
           // moonlit faces and forest texture
           float n = fbm(vW.xz * 0.05 + vW.y * 0.1);
           rock *= 0.8 + 0.5 * n;
@@ -85,7 +93,7 @@ export function makeMountains(center) {
           vec3 c = rock + vec3(0.12, 0.12, 0.13) * rim;
           // valley mist: lower parts sink into the haze
           float low = 1.0 - smoothstep(-10.0, 6.0 + uLayer * 6.0, vW.y);
-          float haze = clamp(uHaze + low * 0.22, 0.0, 1.0);
+          float haze = clamp((uHaze + low * 0.22) * uHazeScale, 0.0, 1.0);
           c = mix(c, uFog * vec3(0.9, 0.92, 1.1), haze);
           gl_FragColor = vec4(c, 1.0);
         }`,

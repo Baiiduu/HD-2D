@@ -3,9 +3,9 @@ import { patchMaterial } from './materials.js';
 import { loadPixelTex } from './materials.js';
 
 // Y-axis billboard character sprites (64x64 px -> 1.5 m), pixel-AA sampled, lit by the scene.
-export function makeCharacter(url, renderer) {
+export function makeCharacter(url, renderer, { size = [1.5, 1.5], pixels = [64, 64], emissive = 0.16 } = {}) {
   const tex = loadPixelTex(url, renderer, { repeat: false });
-  const geo = new THREE.PlaneGeometry(1.5, 1.5);
+  const geo = new THREE.PlaneGeometry(...size);
   // normals tilted upward so overhead lamps light the sprite's face as well as the moon
   const n = geo.attributes.normal;
   const v = new THREE.Vector3(0, 0.55, 1).normalize();
@@ -16,16 +16,16 @@ export function makeCharacter(url, renderer) {
   const uFlip = { value: 0 };
   patchMaterial(mat, {
     key: 'sprite',
-    uniforms: { uFlip },
-    fragHead: 'uniform float uFlip;',
+    uniforms: { uFlip, uPixelSize: { value: new THREE.Vector2(...pixels) }, uSpriteEmission: { value: emissive } },
+    fragHead: 'uniform float uFlip; uniform vec2 uPixelSize; uniform float uSpriteEmission;',
     frag: `
 {
   vec2 suv = vMapUv;
   if (uFlip > 0.5) suv.x = 1.0 - suv.x;
-  vec4 s = texPixel(map, suv, vec2(64.0));
+  vec4 s = texPixel(map, suv, uPixelSize);
   diffuseColor = vec4(diffuse, opacity) * s;
 }`,
-    emissive: `totalEmissiveRadiance += diffuseColor.rgb * 0.16;`,
+    emissive: `totalEmissiveRadiance += diffuseColor.rgb * uSpriteEmission;`,
     gi: 1.2,
   });
   const mesh = new THREE.Mesh(geo, mat);

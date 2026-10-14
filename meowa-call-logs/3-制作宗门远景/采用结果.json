@@ -1,0 +1,25 @@
+{
+  "status": "adopted-for-first-vista-review",
+  "reviewTime": "2026-10-10T12:46:47.931568+08:00",
+  "source": "benchmark/threejs/assets/meowa/vista/vista.png",
+  "runtime": "benchmark/threejs/public/opening/vista.png",
+  "width": 1024,
+  "height": 768,
+  "sha256": "63b2debf3b48089b58fd0083eaaf954f32eede7af1da334935001a967d5f6530",
+  "preview": "docs/opening-environment-preview/plaza-vista.jpg",
+  "checks": [
+    "npm run build: PASS",
+    "Native source/runtime byte equality: PASS",
+    "Three depth layers, UV bounds and controls: PASS",
+    "Browser yaw 22 and 140: background visible; no console errors; displayed 60 FPS",
+    "Far-window independent restore and composition button operated"
+  ],
+  "limitations": [
+    "2.5D background; mountains and temples are not explorable 3D models",
+    "Waterfalls and clouds in the art are static",
+    "Courtyard-to-valley terrain transition remains unfinished"
+  ],
+  "invocations": 1,
+  "costCredits": 7,
+  "cliInternalOperations": "Submission, polling and download are preserved verbatim in CALL001-生成-output.txt; internal HTTP request bodies were not exposed by CLI."
+}

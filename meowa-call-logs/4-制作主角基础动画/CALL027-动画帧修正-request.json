@@ -1,0 +1,38 @@
+{
+  "id": "CALL027",
+  "task": "4-制作主角基础动画",
+  "beijingTime": "2026-10-10T13:51:11.000+08:00",
+  "purpose": "正面跑动脸型与比例统一",
+  "tool": "Meowa CLI / animation-edit-run",
+  "executionPython": "C:/Users/PC/AppData/Local/Programs/Python/Python314/python.exe",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "arguments": [
+    "animation-edit-run",
+    "--animation-file",
+    "D:/Project/HD-2DMap/demoWithMeowa/1/assets/meowa/player/run_front.webp",
+    "--reference-image",
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/front-face-taper/修改这个正面青年的脸型_让脸明显更瘦长_脸颊总宽度减少两个像素_下颌向下收窄_3ca1bb35/edited.png",
+    "--prompt",
+    "让动画每一帧的正面黄衣青年匹配参考图的清瘦脸型和身材比例，保持相同的脸颊宽度、下颌轮廓、头部大小、肩宽、躯干长度和腿长。保留原来的动作、正面朝向、帧位置和透明背景。",
+    "--mode",
+    "pixel",
+    "--generation-speed",
+    "normal",
+    "--remove-bg-method",
+    "advanced",
+    "--output-dir",
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/run-front-fixed"
+  ],
+  "prompt": "让动画每一帧的正面黄衣青年匹配参考图的清瘦脸型和身材比例，保持相同的脸颊宽度、下颌轮廓、头部大小、肩宽、躯干长度和腿长。保留原来的动作、正面朝向、帧位置和透明背景。",
+  "negativePrompt": null,
+  "referenceImages": [
+    "D:/Project/HD-2DMap/demoWithMeowa/1/assets/meowa/player/run_front.webp",
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/front-face-taper/修改这个正面青年的脸型_让脸明显更瘦长_脸颊总宽度减少两个像素_下颌向下收窄_3ca1bb35/edited.png"
+  ],
+  "status": "pending",
+  "relatedCall": "CALL013/CALL024",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回"
+}

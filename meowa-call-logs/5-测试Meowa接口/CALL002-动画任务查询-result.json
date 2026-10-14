@@ -1,0 +1,10 @@
+{
+  "status": "failed",
+  "startedAt": "2026-10-10T14:56:19+08:00",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "endedAt": "2026-10-10T14:56:20+08:00",
+  "exitCode": 1,
+  "output": "[ERROR] {\n  \"detail\": \"Please sign in and try again.\",\n  \"error_code\": \"authentication_required\",\n  \"error_id\": \"err_7f3f1cf8e78f4e2e\"\n}\n"
+}

@@ -2,6 +2,9 @@
 class_name TerrainData
 extends Resource
 
+signal surface_changed(indices: PackedInt32Array)
+var surface_change_only := false
+
 ## 地形格数据：每格一个区域类型、一个高度层级 + 一组覆盖层标记。
 ## 格子 (x, z) 的中心位于世界坐标 (x * cell_size, z * cell_size)。
 
@@ -124,11 +127,22 @@ func apply_surface_patch(indices: PackedInt32Array, patch_biomes: PackedByteArra
 		if index < 0 or index >= biomes.size() or index >= overlays.size():
 			push_error("地表修改包含地图范围外的格子。")
 			return
+	var geometry_changed := false
 	for i in indices.size():
+		geometry_changed = geometry_changed or ((overlays[indices[i]] ^ patch_overlays[i]) & (OVERLAY_WATER | OVERLAY_BRIDGE | OVERLAY_RAMP)) != 0
 		biomes[indices[i]] = patch_biomes[i]
 		overlays[indices[i]] = patch_overlays[i]
 		if not patch_paints.is_empty(): set_paint_at_index(indices[i],patch_paints[i])
+	if geometry_changed: emit_changed()
+	else: notify_surface_changed(indices)
+
+## 绘制仍通知保存与其它读者，但地形和地编可跳过全量几何重建。
+func notify_surface_changed(indices: PackedInt32Array) -> void:
+	if indices.is_empty(): return
+	surface_change_only = true
+	surface_changed.emit(indices)
 	emit_changed()
+	surface_change_only = false
 
 func world_to_cell(position: Vector3) -> Vector2i:
 	return Vector2i(roundi(position.x / cell_size), roundi(position.z / cell_size))

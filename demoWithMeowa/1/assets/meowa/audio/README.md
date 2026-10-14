@@ -46,8 +46,8 @@ MP3、Ogg、WAV 都可作为音乐或风声资源。运行时使用副本设置�
 
 ## 试听与验证
 
-- [BGM 单独试听](../../../../../docs/audio-preview/bgm.wav)：从旋律段选取 20 秒，使用当前 −20 dB 播放增益。
-- [当前游戏混音](../../../../../docs/audio-preview/soundscape.wav)：18 秒实机录音，包含 BGM、细雨与轻风。
-- [循环交叉淡化试听](../../../../../docs/audio-preview/music-loop.wav)：实机末尾到开头的 9 秒录音。
+- [BGM 单独试听](../../../../../docs/media/audio-preview/bgm.wav)：从旋律段选取 20 秒，使用当前 −20 dB 播放增益。
+- [当前游戏混音](../../../../../docs/media/audio-preview/soundscape.wav)：18 秒实机录音，包含 BGM、细雨与轻风。
+- [循环交叉淡化试听](../../../../../docs/media/audio-preview/music-loop.wav)：实机末尾到开头的 9 秒录音。
 
 音乐实际长度约 179.64 秒，已通过原生 Godot 完整播放一轮；风声已连续播放两轮。音乐循环交叉淡化、停雨保留音乐与风声、无风时停止风声、独立开关、音量即时更新及编辑器不创建音频播放器均通过检查。生成源音乐、混音与循环录音没有削波样本；当前混音与循环录音没有静音断层。详细数值见 `audio-validation.json`。音乐风格与相对音量仍以你的试听为准。

@@ -1,0 +1,78 @@
+{
+  "status": "success",
+  "beijingTime": "2026-10-10T18:53:05+08:00",
+  "httpStatus": 200,
+  "headers": {
+    "Alt-Svc": "h3=\":443\"; ma=2592000",
+    "Content-Encoding": "zstd",
+    "Content-Type": "application/json",
+    "Date": "Sat, 10 Oct 2026 10:53:04 GMT",
+    "Server": "uvicorn",
+    "Vary": "Origin, Accept-Encoding",
+    "Via": "1.1 Caddy",
+    "Content-Length": "769"
+  },
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "returnedData": {
+    "job_id": "job_cdbef3bc76d845659de419c4bdf415ab",
+    "job_type": "workflow",
+    "status": "success",
+    "stage": "completed",
+    "next_poll_after_seconds": 0,
+    "animation_type": null,
+    "queue": {
+      "position": 0,
+      "estimated_wait_seconds": 0
+    },
+    "progress": {
+      "label": "已完成",
+      "percent": 100
+    },
+    "result": {
+      "job_name": "104829_default_A_seamless_loop_of_faint_soft_outdoor_breeze_brushing_sparse_gra",
+      "audio_path": "https://media.meowa.ai/public/elevenlabs-generator/output/2026-10-10/10%3A48%3A35-workflow-c2600273a7094019a351e865/Gentle_Grass_Breeze_Loop.mp3",
+      "audio_paths": [
+        "https://media.meowa.ai/public/elevenlabs-generator/output/2026-10-10/10%3A48%3A35-workflow-c2600273a7094019a351e865/Gentle_Grass_Breeze_Loop.mp3"
+      ],
+      "audios": [
+        {
+          "type": "sound_effect",
+          "label": "Gentle Grass Breeze Loop",
+          "name": "Gentle Grass Breeze Loop",
+          "path": "https://media.meowa.ai/public/elevenlabs-generator/output/2026-10-10/10%3A48%3A35-workflow-c2600273a7094019a351e865/Gentle_Grass_Breeze_Loop.mp3",
+          "content_type": "audio/mpeg",
+          "prompt": "Soft gentle outdoor breeze brushing distant dry grass and leaves with quiet airy swells ambient natural background loop",
+          "loop": true,
+          "duration_seconds": 10,
+          "normalized": true,
+          "raw_path": "https://storage.googleapis.com/meowart-bucket/elevenlabs-generator/output/2026-10-10/10:48:35-workflow-c2600273a7094019a351e865/steps/raw_audio/Gentle_Grass_Breeze_Loop.mp3"
+        }
+      ],
+      "character_cost": 121.0,
+      "url": "https://media.meowa.ai/public/elevenlabs-generator/output/2026-10-10/10%3A48%3A35-workflow-c2600273a7094019a351e865/Gentle_Grass_Breeze_Loop.mp3"
+    },
+    "outputs": [
+      {
+        "output_key": "primary",
+        "url": "https://media.meowa.ai/public/elevenlabs-generator/output/2026-10-10/10%3A48%3A35-workflow-c2600273a7094019a351e865/Gentle_Grass_Breeze_Loop.mp3",
+        "media_type": "audio",
+        "mime_type": null,
+        "asset_id": null,
+        "thumb_url": null,
+        "width": null,
+        "height": null,
+        "byte_size": null
+      }
+    ],
+    "error": null,
+    "error_code": null,
+    "error_id": null,
+    "credit_refund": {
+      "refunded": false,
+      "amount": 0,
+      "reference_id": "job_cdbef3bc76d845659de419c4bdf415ab"
+    }
+  }
+}

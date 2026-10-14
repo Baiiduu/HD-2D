@@ -1,0 +1,21 @@
+{
+  "status": "success",
+  "job_id": "job_85d854d6a4c34efd88db01d67aaf236c",
+  "outputs": [
+    {
+      "type": "media",
+      "path": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\idle_front\\黄衣青年正面朝向观众原地待机_轻微呼吸_双脚位置稳定_保持当前外形和配色\\result_output_url.webp",
+      "mime_type": "image/webp"
+    },
+    {
+      "type": "media",
+      "path": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\idle_front\\黄衣青年正面朝向观众原地待机_轻微呼吸_双脚位置稳定_保持当前外形和配色\\result_output_transparent_output_urls_gif.gif",
+      "mime_type": "image/gif"
+    },
+    {
+      "type": "media",
+      "path": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\idle_front\\黄衣青年正面朝向观众原地待机_轻微呼吸_双脚位置稳定_保持当前外形和配色\\result_output_transparent_output_urls_png.png",
+      "mime_type": "image/png"
+    }
+  ]
+}

@@ -17,7 +17,7 @@ const GREEN := Color("92d5b0")
 ## 波次灰盒的管理限制；技能页先留空，不修改原有学习存档。
 @export var wave_session: Node
 ## 角色基础属性与训练规则；与训练小屋共享。
-@export var training_rules: TrainingRules = preload("res://data/training_rules.tres")
+@export var training_rules: TrainingRules = preload("res://data/rpg/training_rules.tres")
 @export_group("装备与技能界面")
 ## 打开/关闭界面的按键；ESC 也可关闭。
 @export var toggle_key: Key = KEY_TAB
@@ -904,7 +904,7 @@ func _refresh_hud() -> void:
 func _refresh_session_skills() -> void:
 	_picture("controls/details.png", Rect2(211, 172, 744, 684), _left, true)
 	_text("本局自动技能", Rect2(263, 195, 630, 65), 51, _left)
-	_text("经验升级后直接强化，下次挑战重置", Rect2(265, 258, 617, 42), 26, _left, FADED)
+	_text("开战选择初始技能，升级学习或强化", Rect2(265, 258, 617, 42), 26, _left, FADED)
 	_left_scroll = _scroll(Rect2(260, 311, 662, 511), _left)
 	var content := VBoxContainer.new()
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -912,6 +912,7 @@ func _refresh_session_skills() -> void:
 	content.add_theme_constant_override("separation", 24)
 	_left_scroll.add_child(content)
 	var slots: Array[Dictionary] = wave_session.get_run_skill_slots()
+	if slots.is_empty(): content.add_child(_journal_label("尚未选择技能，按 F 开始挑战时选择。", 28))
 	for slot in slots:
 		content.add_child(_journal_label("%s · Lv.%d / %d\n%s" % [slot.name, slot.level, slot.max_level, slot.description], 28))
 	content.add_child(_journal_label("当前第 %d 波\n已完成 %d 波 · 击败 %d 个敌人" % [wave_session.wave, wave_session.completed_waves, wave_session.kills], 28))
@@ -929,7 +930,7 @@ func _session_skill_details() -> void:
 	_detail_name.text = "%s · Lv.%d" % [slots[0].name, slots[0].level] if not slots.is_empty() else "暂无技能"
 	_detail_scroll.position.y = 579
 	_detail_scroll.size.y = 300
-	_description(slots[0].description if not slots.is_empty() else "后续技能通过本局获得与升级链路接入。")
+	_description(slots[0].description if not slots.is_empty() else "开始战斗时选择一个初始技能，升级时可学习其它技能或强化已有技能。")
 
 func _open_skill_from_hud(id: String) -> void:
 	selected_skill = id

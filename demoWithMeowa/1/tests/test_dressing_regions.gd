@@ -16,7 +16,7 @@ func run() -> void:
 	ground.data.resize(Vector2i(-10, -10), Vector2i(20, 20))
 	ground.data.biomes.fill(TerrainData.Biome.WILD)
 	root.add_child(ground)
-	var dressing: Node3D = load("res://scripts/ground_dressing.gd").new()
+	var dressing: Node3D = load("res://scripts/world/ground_dressing.gd").new()
 	dressing.terrain = ground
 	dressing.grass_density = 0.0
 	dressing.flower_density = 0.0

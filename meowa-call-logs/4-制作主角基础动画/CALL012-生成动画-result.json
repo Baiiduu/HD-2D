@@ -1,0 +1,48 @@
+{
+  "status": "success",
+  "startedAt": "2026-10-10T13:19:08+08:00",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "endedAt": "2026-10-10T13:19:53+08:00",
+  "exitCode": 0,
+  "output": "[INFO] planned_output_dir=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\idle_front\\黄衣青年正面朝向观众原地待机_轻微呼吸_双脚位置稳定_保持当前外形和配色\n[INFO] submitted api_job_id=job_85d854d6a4c34efd88db01d67aaf236c\n[INFO] status=running stage=queued progress=处理中:50%\n[INFO] status=running stage=queued progress=处理中:50%\n[INFO] status=running stage=queued progress=处理中:50%\n[INFO] status=running stage=queued progress=处理中:50%\n[INFO] status=running stage=queued progress=处理中:50%\n[INFO] status=running stage=finalizing progress=处理中:50%\n[INFO] status=running stage=finalizing progress=处理中:50%\n[INFO] status=running stage=finalizing progress=处理中:50%\n[INFO] status=running stage=finalizing progress=处理中:50%\n[INFO] status=running stage=finalizing progress=处理中:50%\n[INFO] status=running stage=finalizing progress=处理中:50%\n[INFO] status=success stage=completed progress=已完成:100%\n[INFO] downloading_outputs count=7 to=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\idle_front\\黄衣青年正面朝向观众原地待机_轻微呼吸_双脚位置稳定_保持当前外形和配色\n[INFO] downloaded=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\idle_front\\黄衣青年正面朝向观众原地待机_轻微呼吸_双脚位置稳定_保持当前外形和配色\\result_output_url.webp\n[INFO] downloaded=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\idle_front\\黄衣青年正面朝向观众原地待机_轻微呼吸_双脚位置稳定_保持当前外形和配色\\result_output_transparent_output_urls_gif.gif\n[INFO] downloaded=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\idle_front\\黄衣青年正面朝向观众原地待机_轻微呼吸_双脚位置稳定_保持当前外形和配色\\result_output_transparent_output_urls_png.png\n[INFO] saved_dir=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\idle_front\\黄衣青年正面朝向观众原地待机_轻微呼吸_双脚位置稳定_保持当前外形和配色\n{\n  \"job_id\": \"job_85d854d6a4c34efd88db01d67aaf236c\",\n  \"job_type\": \"animate\",\n  \"status\": \"success\",\n  \"next_poll_after_seconds\": 0,\n  \"animation_type\": \"idle\",\n  \"queue\": {\n    \"position\": 0,\n    \"estimated_wait_seconds\": 0\n  },\n  \"progress\": {\n    \"label\": \"已完成\",\n    \"percent\": 100\n  },\n  \"result\": {\n    \"id\": \"job_85d854d6a4c34efd88db01d67aaf236c\",\n    \"api_job_id\": \"job_85d854d6a4c34efd88db01d67aaf236c\",\n    \"status\": \"success\",\n    \"error\": null,\n    \"error_code\": null,\n    \"animation_type\": \"idle\",\n    \"final_prompt\": \"The young man in a yellow hoodie and dark pants stands facing the viewer with his hands tucked into his pockets, maintaining a stable posture. He performs a subtle idle breathing cycle, gently shifting his upper body and shoulders up and down while keeping his feet planted firmly in place.\",\n    \"output\": {\n      \"transparent_output_urls\": {},\n      \"download_urls\": {},\n      \"frame_count\": 8,\n      \"output_frames\": 8\n    }\n  },\n  \"outputs\": [],\n  \"error\": null,\n  \"error_code\": null,\n  \"error_id\": null,\n  \"credit_refund\": {\n    \"refunded\": false,\n    \"amount\": 0\n  }\n}\n",
+  "returnedData": {
+    "job_id": "job_85d854d6a4c34efd88db01d67aaf236c",
+    "job_type": "animate",
+    "status": "success",
+    "next_poll_after_seconds": 0,
+    "animation_type": "idle",
+    "queue": {
+      "position": 0,
+      "estimated_wait_seconds": 0
+    },
+    "progress": {
+      "label": "已完成",
+      "percent": 100
+    },
+    "result": {
+      "id": "job_85d854d6a4c34efd88db01d67aaf236c",
+      "api_job_id": "job_85d854d6a4c34efd88db01d67aaf236c",
+      "status": "success",
+      "error": null,
+      "error_code": null,
+      "animation_type": "idle",
+      "final_prompt": "The young man in a yellow hoodie and dark pants stands facing the viewer with his hands tucked into his pockets, maintaining a stable posture. He performs a subtle idle breathing cycle, gently shifting his upper body and shoulders up and down while keeping his feet planted firmly in place.",
+      "output": {
+        "transparent_output_urls": {},
+        "download_urls": {},
+        "frame_count": 8,
+        "output_frames": 8
+      }
+    },
+    "outputs": [],
+    "error": null,
+    "error_code": null,
+    "error_id": null,
+    "credit_refund": {
+      "refunded": false,
+      "amount": 0
+    }
+  }
+}

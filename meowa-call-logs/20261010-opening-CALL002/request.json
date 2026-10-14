@@ -1,0 +1,17 @@
+{
+  "id": "CALL002",
+  "beijingTime": "2026-10-10 11:40:54 +08:00",
+  "purpose": "读取通用生成的当前公开参数，避免使用未经支持的选项",
+  "tool": "Meowa CLI / general-image-run --help",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "arguments": [
+    "general-image-run",
+    "--help"
+  ],
+  "prompt": null,
+  "negativePrompt": null,
+  "referenceImages": [],
+  "status": "pending",
+  "relatedCall": "CALL001"
+}

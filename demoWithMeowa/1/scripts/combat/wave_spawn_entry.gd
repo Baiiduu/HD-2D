@@ -2,7 +2,9 @@ class_name WaveSpawnEntry
 extends Resource
 
 @export var enemy: WaveEnemyDefinition
-@export_range(1, 200, 1) var count := 5
+## 填写目录标识时从 Enemy Catalog 解析；Enemy 可留空。二者同时设置时须指向同一资源。
+@export var enemy_id: StringName
+@export_range(1, 16384, 1) var count := 5
 ## 相对本波开始的首次生成时间，秒。
 @export_range(0.0, 120.0, 0.1) var start_delay := 0.3
 @export_range(0.1, 10.0, 0.1) var interval := 1.3

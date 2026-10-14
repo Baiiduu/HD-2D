@@ -1,0 +1,49 @@
+[INFO] planned_output_dir=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\back-run-pose\让这个背对观众的黄衣青年朝远处轻跑_双腿前后错开_双臂自然摆动_始终只看到后_35fb1662
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=success stage=completed progress=已完成:100%
+[INFO] downloading_outputs count=2 to=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\back-run-pose\让这个背对观众的黄衣青年朝远处轻跑_双腿前后错开_双臂自然摆动_始终只看到后_35fb1662
+[INFO] downloaded=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\back-run-pose\让这个背对观众的黄衣青年朝远处轻跑_双腿前后错开_双臂自然摆动_始终只看到后_35fb1662\remove_bg.png
+[INFO] saved_dir=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\back-run-pose\让这个背对观众的黄衣青年朝远处轻跑_双腿前后错开_双臂自然摆动_始终只看到后_35fb1662
+{
+  "job_id": "job_f723079fe1e5432fbc162d47c6ca2fa8",
+  "job_type": "workflow",
+  "status": "success",
+  "next_poll_after_seconds": 0,
+  "animation_type": null,
+  "queue": {
+    "position": 0,
+    "estimated_wait_seconds": 0
+  },
+  "progress": {
+    "label": "已完成",
+    "percent": 100
+  },
+  "result": {
+    "job_name": "052055_image_edit_image_edit",
+    "remove_bg_path": "https://media.meowa.ai/public/image-edit/output/2026-10-10/05%3A21%3A13-workflow-b02b419781564aa7b351407c/remove_bg.png",
+    "url": "https://media.meowa.ai/public/image-edit/output/2026-10-10/05%3A21%3A13-workflow-b02b419781564aa7b351407c/remove_bg.png"
+  },
+  "outputs": [
+    {
+      "output_key": "primary",
+      "media_type": "image",
+      "mime_type": null,
+      "asset_id": null,
+      "thumb_url": null,
+      "width": null,
+      "height": null,
+      "byte_size": null
+    }
+  ],
+  "error": null,
+  "error_code": null,
+  "error_id": null,
+  "credit_refund": {
+    "refunded": false,
+    "amount": 0
+  }
+}

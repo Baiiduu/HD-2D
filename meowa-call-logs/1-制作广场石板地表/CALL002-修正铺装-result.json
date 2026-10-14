@@ -1,0 +1,47 @@
+{
+  "status": "success",
+  "startedAt": "2026-10-10T12:07:08+08:00",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "endedAt": "2026-10-10T12:07:48+08:00",
+  "exitCode": 0,
+  "output": "[INFO] planned_output_dir=D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\plaza-stone-base-v2\\一张64_64像素的灰蓝色大矩形石板地面无缝贴图_正俯视_整张图严格是两列四行的长_eb2f0493\n[INFO] submitted api_job_id=job_15a35d06583545328a6286f7fb4a8848\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=finalizing progress=处理中:50%\n[INFO] status=success stage=completed progress=已完成:100%\n[INFO] downloading_outputs count=3 to=D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\plaza-stone-base-v2\\一张64_64像素的灰蓝色大矩形石板地面无缝贴图_正俯视_整张图严格是两列四行的长_eb2f0493\n[INFO] downloaded=D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\plaza-stone-base-v2\\一张64_64像素的灰蓝色大矩形石板地面无缝贴图_正俯视_整张图严格是两列四行的长_eb2f0493\\texture.png\n[INFO] saved_dir=D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\plaza-stone-base-v2\\一张64_64像素的灰蓝色大矩形石板地面无缝贴图_正俯视_整张图严格是两列四行的长_eb2f0493\n{\n  \"job_id\": \"job_15a35d06583545328a6286f7fb4a8848\",\n  \"job_type\": \"workflow\",\n  \"status\": \"success\",\n  \"next_poll_after_seconds\": 0,\n  \"animation_type\": null,\n  \"queue\": {\n    \"position\": 0,\n    \"estimated_wait_seconds\": 0\n  },\n  \"progress\": {\n    \"label\": \"已完成\",\n    \"percent\": 100\n  },\n  \"result\": {\n    \"job_name\": \"040710_default_6464_3216_16\"\n  },\n  \"outputs\": [\n    {\n      \"output_key\": \"primary\",\n      \"media_type\": \"image\",\n      \"mime_type\": null,\n      \"asset_id\": null,\n      \"thumb_url\": null,\n      \"width\": null,\n      \"height\": null,\n      \"byte_size\": null\n    }\n  ],\n  \"error\": null,\n  \"error_code\": null,\n  \"error_id\": null,\n  \"credit_refund\": {\n    \"refunded\": false,\n    \"amount\": 0\n  }\n}\n",
+  "returnedData": {
+    "job_id": "job_15a35d06583545328a6286f7fb4a8848",
+    "job_type": "workflow",
+    "status": "success",
+    "next_poll_after_seconds": 0,
+    "animation_type": null,
+    "queue": {
+      "position": 0,
+      "estimated_wait_seconds": 0
+    },
+    "progress": {
+      "label": "已完成",
+      "percent": 100
+    },
+    "result": {
+      "job_name": "040710_default_6464_3216_16"
+    },
+    "outputs": [
+      {
+        "output_key": "primary",
+        "media_type": "image",
+        "mime_type": null,
+        "asset_id": null,
+        "thumb_url": null,
+        "width": null,
+        "height": null,
+        "byte_size": null
+      }
+    ],
+    "error": null,
+    "error_code": null,
+    "error_id": null,
+    "credit_refund": {
+      "refunded": false,
+      "amount": 0
+    }
+  }
+}

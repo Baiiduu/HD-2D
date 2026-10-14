@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/buildings/town_detail_prop.gd" id="prop"]
+
+[node name="FlowerCart" type="Node3D"]
+script = ExtResource("prop")
+detail_kind = 1
+dimensions = Vector3(2.25, 1.4, 1.25)

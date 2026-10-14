@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/buildings/ricochet_prop.gd" id="prop"]
+
+[node name="UWall" type="Node3D"]
+script = ExtResource("prop")
+kind = 5
+dimensions = Vector3(4.2, 1.35, 3.2)
+layout_variant = 1

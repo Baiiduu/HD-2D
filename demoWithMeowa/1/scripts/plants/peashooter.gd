@@ -2,7 +2,7 @@
 extends Node3D
 
 ## 只用于正式地图视觉审阅的 3D 植物；没有种植、攻击或生命逻辑。
-const SURFACE := preload("res://shaders/plant_surface.gdshader")
+const SURFACE := preload("res://shaders/environment/plant_surface.gdshader")
 
 @export_group("地图与体量")
 ## 设置后按地形顶面贴地；移动摆放后可点击刷新按钮重新贴地。

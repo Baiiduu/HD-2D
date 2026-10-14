@@ -37,7 +37,8 @@ func dispose() -> void:
 	_terrain = null
 	clear_cache()
 
-func unclipped_flat(origin: Vector3, radius: float) -> bool:
+## 平地资格与障碍独立：有墙的平地仍可省去逐点高度采样。
+func flat_ground(origin: Vector3, radius: float) -> bool:
 	if not is_instance_valid(_terrain) or not _terrain.global_basis.is_equal_approx(Basis.IDENTITY): return false
 	_bind_data()
 	if not _data: return false
@@ -51,7 +52,10 @@ func unclipped_flat(origin: Vector3, radius: float) -> bool:
 	var last := _data.world_to_cell(local + extent) + Vector2i.ONE
 	var key := [first, last, local.y]
 	if not _flat_regions.has(key): _flat_regions[key] = _same_height(first, last, local.y)
-	if not _flat_regions[key]: return false
+	return _flat_regions[key]
+
+func unclipped_flat(origin: Vector3, radius: float) -> bool:
+	if not flat_ground(origin, radius): return false
 	if not is_equal_approx(_shape.radius, radius): _shape.radius = radius
 	_query.transform = Transform3D(Basis.IDENTITY, origin + Vector3.UP * 0.45)
 	return _terrain.get_world_3d().direct_space_state.intersect_shape(_query, 1).is_empty()

@@ -1,0 +1,30 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/previews/plaza_landmarks_preview.gd" id="preview"]
+[ext_resource type="PackedScene" path="res://scenes/world/world.tscn" id="world"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/armillary_monument.tscn" id="monument"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/plaza_streetlamp.tscn" id="lamp"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/tree_planter.tscn" id="planter"]
+
+[node name="PlazaLandmarksPreview" type="Node3D"]
+script = ExtResource("preview")
+
+[node name="CurrentWorld" parent="." instance=ExtResource("world")]
+
+[node name="LandmarkSamples" type="Node3D" parent="CurrentWorld"]
+position = Vector3(-52, 0, 0)
+
+[node name="ArmillaryMonument" parent="CurrentWorld/LandmarkSamples" instance=ExtResource("monument")]
+position = Vector3(54, 0, 44)
+
+[node name="StreetlampLeft" parent="CurrentWorld/LandmarkSamples" instance=ExtResource("lamp")]
+position = Vector3(48.8, 0, 46)
+
+[node name="StreetlampRight" parent="CurrentWorld/LandmarkSamples" instance=ExtResource("lamp")]
+position = Vector3(59.2, 0, 46)
+
+[node name="TreePlanter" parent="CurrentWorld/LandmarkSamples" instance=ExtResource("planter")]
+position = Vector3(48.5, 0, 39)
+lamp_enabled = false
+
+[editable path="CurrentWorld"]
