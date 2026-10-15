@@ -1,0 +1,23 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/city_pack/trash_bin.glb" id="model"]
+
+[ext_resource type="Script" path="res://scripts/city/city_asset.gd" id="script"]
+
+[sub_resource type="BoxShape3D" id="shape_0"]
+
+size = Vector3(0.58, 0.98, 0.58)
+
+[node name="trash_bin" type="Node3D"]
+
+script = ExtResource("script")
+
+[node name="Model" parent="." instance=ExtResource("model")]
+
+[node name="Collision" type="StaticBody3D" parent="."]
+
+[node name="Shape0" type="CollisionShape3D" parent="Collision"]
+
+position = Vector3(0, 0.49, 0)
+
+shape = SubResource("shape_0")

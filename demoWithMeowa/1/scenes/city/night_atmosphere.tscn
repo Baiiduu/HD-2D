@@ -1,0 +1,37 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/visual/night_atmosphere.gd" id="atmosphere"]
+[ext_resource type="Script" path="res://scripts/visual/hdr_bokeh.gd" id="bokeh"]
+
+[sub_resource type="CompositorEffect" id="HDRBokeh"]
+resource_local_to_scene = true
+script = ExtResource("bokeh")
+
+[node name="NightAtmosphere" type="Node3D"]
+process_priority = 50
+script = ExtResource("atmosphere")
+bokeh = SubResource("HDRBokeh")
+
+[node name="MoonShafts" type="Node3D" parent="."]
+
+[node name="PlazaMoonlight" type="Marker3D" parent="MoonShafts"]
+position = Vector3(-2, 0, 2)
+
+[node name="EastMoonlight" type="Marker3D" parent="MoonShafts"]
+position = Vector3(6, 0, 6)
+
+[node name="SouthMoonlight" type="Marker3D" parent="MoonShafts"]
+position = Vector3(-4, 0, 10)
+
+[node name="SmokeSources" type="Node3D" parent="."]
+
+[node name="StoreRoofVent" type="Marker3D" parent="SmokeSources"]
+position = Vector3(-6.5, 6.0, -6.1)
+
+[node name="WestRoofVent" type="Marker3D" parent="SmokeSources"]
+position = Vector3(-13, 6.75, -1)
+
+[node name="FireSources" type="Node3D" parent="."]
+
+[node name="GardenBrazier" type="Marker3D" parent="FireSources"]
+position = Vector3(-8.3, 0.1, 1.6)

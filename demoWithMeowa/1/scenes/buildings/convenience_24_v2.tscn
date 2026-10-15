@@ -1,0 +1,25 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/convenience_24_v2/convenience_24_v2.glb" id="model"]
+[ext_resource type="Script" path="res://scripts/buildings/convenience_24.gd" id="script"]
+
+[sub_resource type="BoxShape3D" id="shop"]
+size = Vector3(4.16, 2.2, 2.76)
+
+[sub_resource type="BoxShape3D" id="residential"]
+size = Vector3(5.8, 3.985, 3.8)
+
+[node name="ConvenienceStore2" type="Node3D"]
+script = ExtResource("script")
+
+[node name="Model" parent="." instance=ExtResource("model")]
+
+[node name="BuildingCollision" type="StaticBody3D" parent="."]
+
+[node name="Shop" type="CollisionShape3D" parent="BuildingCollision"]
+position = Vector3(0, 1.1, 0)
+shape = SubResource("shop")
+
+[node name="Residential" type="CollisionShape3D" parent="BuildingCollision"]
+position = Vector3(0, 4.0075, 0)
+shape = SubResource("residential")

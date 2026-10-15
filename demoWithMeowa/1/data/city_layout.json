@@ -1,0 +1,34 @@
+{
+  "size": [36, 36],
+  "spawn": [-1, -3.2],
+  "plaza": [0, 1.5, 18, 23],
+  "buildings": [
+    {"id":"ConvenienceStore","label":"便利店","center":[-5.9,-5.8],"size":[5.2,6,3.5],"kind":"store"},
+    {"id":"ConvenienceStore2","label":"便利店2：下窄上宽","center":[8.4,8.9],"size":[5.8,6,3.8],"kind":"store2","ground_size":[4.16,2.2,2.76]},
+    {"id":"Hospital","label":"未来都市医院","center":[3.4,-5.5],"size":[6,5.6,6],"kind":"hospital","footprint":[[-3,-3],[3,-3],[3,3],[0.6,3],[0.6,0],[-3,0]]},
+    {"id":"WestBlock","label":"西侧街楼","center":[-13,-2.5],"size":[6,6.5,11],"kind":"block"},
+    {"id":"EastBlock","label":"东侧街楼","center":[13,-1.5],"size":[6,6.5,10],"kind":"block"},
+    {"id":"SouthWestBlock","label":"前景建筑","center":[-12,14.5],"size":[8,4.5,5],"kind":"block"},
+    {"id":"SouthEastBlock","label":"前景建筑","center":[12,14.5],"size":[8,4.5,5],"kind":"block"},
+    {"id":"NorthWestTower","label":"背景楼群","center":[-12,-15.5],"size":[7,10,4],"kind":"background"},
+    {"id":"LandmarkTower","label":"机甲整备台","center":[1,-15.5],"size":[6.8,12,4.1],"kind":"background"},
+    {"id":"NorthEastTower","label":"背景楼群","center":[12,-15.5],"size":[7,9,4],"kind":"background"}
+  ],
+  "bridge": {"center":[0,-10.5],"size":[34,1,2.4],"height":3.8,"supports":[-14,-7,7,14]},
+  "planters": [
+    {"id":"WestGarden","center":[-6.5,0],"size":[3.4,1.6],"tree":true},
+    {"id":"CentralIsland","center":[3,-0.7],"size":[4.2,2.2],"tree":true},
+    {"id":"SouthWestGarden","center":[-6.2,7.8],"size":[3.4,2],"tree":true},
+    {"id":"EastGarden","center":[8,5.3],"size":[2,3.4],"tree":true},
+    {"id":"InformationIsland","center":[3,7.6],"size":[4.6,1.6],"tree":false}
+  ],
+  "lamps": [[-7,-2.5],[7,-3.3],[-7,5.1],[7,9.6]],
+  "billboards": [{"id":"InformationBoard","center":[3,7.6],"width":3.3,"height":2.1},{"id":"EastBoard","center":[9.8,-2.6],"width":2.6,"height":2.4}],
+  "benches": [[3,1],[-6.2,9.1]],
+  "kiosks": [[-8.2,4.5],[-2.7,-4.2]],
+  "walk_routes": [
+    [[0,17],[0,4.4],[-1,1],[-1,-5],[0,-13]],
+    [[-9,3],[0,3],[9,3]],
+    [[-9,11],[0,11],[9,11]]
+  ]
+}
