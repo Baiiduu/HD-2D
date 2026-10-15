@@ -23,6 +23,7 @@ func run() -> void:
 	var growth: RunGrowth = wave.get_node("RunGrowth")
 	var player: Player = world.get_node("Player")
 	var fan: FanAutoAttack = wave.get_node("FanAutoAttack")
+	var skills: RunSkills = wave.get_node("RunSkills")
 	var weather: Node3D = world.get_node("MapEffects/Weather")
 	for frame in 12: await physics_frame
 	player.set_physics_process(false)
@@ -30,9 +31,16 @@ func run() -> void:
 	fan.set_physics_process(false)
 	growth.set_physics_process(false)
 	growth.choice_ui.open_duration = 0.0
+	growth.cards_per_draw = 100
+	skills.initial_choice.open_duration = 0.0
+	skills.initial_cards_per_draw = 100
 	growth.choice_ui.hover_duration = 0.0
 	player.global_position = wave._path.ground_position(wave.global_position) + Vector3.UP * 0.03
-	check(wave.start_run() and growth.active, "Actual wave start initializes local growth")
+	check(wave.start_run() and skills.initial_choice.is_open and not growth.active, "Initial selection precedes local growth and wave start")
+	check(skills.initial_choice.select_option(&"initial:fan_slash"), "Select A01 through the actual initial UI")
+	skills.initial_choice.confirm_selection()
+	fan.set_physics_process(false)
+	check(growth.active and wave.phase == WavePrototype.Phase.BATTLE, "Confirming the initial skill initializes local growth")
 	check(wave._spawn_enemy(), "Actual configured enemy can spawn")
 	var enemy := wave.enemies[0]
 	enemy.spawn_delay = 0.0
@@ -74,6 +82,7 @@ func run() -> void:
 	await create_timer(0.15).timeout
 	check(wave._wave_clock == wave_clock and enemy.global_position == position and attack.ticks == hazard_ticks and weapon.ticks == weapon_ticks, "Combat clocks, movement and hazards remain unchanged")
 	check(not paused and weather._clock > weather_clock and player.current_health == health, "Weather keeps running while battle damage is rejected")
+	growth.choice_ui.select_option(&"skill:fan_slash:2")
 	growth.choice_ui.confirm_selection()
 	check(not wave.combat_frozen and enemy.process_mode == Node.PROCESS_MODE_PAUSABLE and weapon.process_mode == Node.PROCESS_MODE_ALWAYS and fan.process_mode == Node.PROCESS_MODE_INHERIT, "Confirmation restores exact original node process modes")
 	var registered_count := wave._combat_nodes.size()
@@ -88,7 +97,10 @@ func run() -> void:
 	check(wave.phase == WavePrototype.Phase.BATTLE and wave.combat_frozen and growth._drops.is_empty(), "Wave boundary collects experience and waits for level choices")
 	var pending := growth.state.pending_choices
 	check(pending > 0 and wave.completed_waves == 0, "Wave completion cannot run ahead of pending upgrades")
-	for choice in pending: growth.choice_ui.confirm_selection()
+	for choice in pending:
+		var options := growth.choice_options
+		check(growth.choice_ui.select_option(options[0].id), "Each pending reward requires an explicit selection")
+		growth.choice_ui.confirm_selection()
 	wave._physics_process(0.01)
 	check(wave.phase == WavePrototype.Phase.REST and wave.completed_waves == 1 and not wave.combat_frozen, "Cleared wave enters safe rest after all choices")
 	check(wave.start_next_wave(), "Next wave starts normally after growth")
@@ -98,6 +110,10 @@ func run() -> void:
 	wave._physics_process(0.01)
 	check(wave.phase == WavePrototype.Phase.RESULT and not growth.active and growth._drops.is_empty() and not wave.combat_frozen, "Defeat cleans up drops and growth input without awarding cancelled enemies")
 	wave.retry()
+	check(wave.phase == WavePrototype.Phase.READY and skills.initial_choice.is_open and skills.get_slots().is_empty(), "Retry clears learned skills and requires a new initial choice")
+	skills.initial_choice.select_option(&"initial:fan_slash")
+	skills.initial_choice.confirm_selection()
+	fan.set_physics_process(false)
 	check(wave.phase == WavePrototype.Phase.BATTLE and growth.state.level == 1 and growth.state.total_experience == 0 and growth.state.pending_choices == 0, "Actual retry resets experience and level")
 	growth.drop_experience(player.global_position, 30)
 	growth.collect_all()
@@ -105,10 +121,13 @@ func run() -> void:
 	var on_result := func(phase: int):
 		if phase == WavePrototype.Phase.RESULT:
 			wave.retry()
-			restarted.append(wave.phase == WavePrototype.Phase.BATTLE and not growth.choice_ui.is_open and growth.state.level == 1)
+			restarted.append(wave.phase == WavePrototype.Phase.READY and skills.initial_choice.is_open and not growth.choice_ui.is_open and growth.state.level == 1)
 	wave.phase_changed.connect(on_result)
 	wave._finish("callback retry", WavePrototype.Outcome.RETREAT)
-	check(restarted == [true] and growth.active and not wave.combat_frozen, "A result callback can retry even when an upgrade modal was pending")
+	check(restarted == [true] and not growth.active and not wave.combat_frozen, "A result callback can retry into a fresh initial choice while an upgrade was pending")
+	skills.initial_choice.select_option(&"initial:light_pierce")
+	skills.initial_choice.confirm_selection()
+	check(growth.active and wave.phase == WavePrototype.Phase.BATTLE and skills.get_level(&"light_pierce") == 1, "Reentrant retry can begin a new run with a different initial skill")
 	world.free()
 	await create_timer(0.1).timeout
 	check(get_first_node_in_group(&"gameplay_input_blockers") == null, "World removal leaves no modal input lock")

@@ -1,11 +1,11 @@
 [gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/loadout_ui.gd" id="ui"]
-[ext_resource type="Resource" path="res://data/loadout_catalog.tres" id="catalog"]
+[ext_resource type="Resource" path="res://data/rpg/loadout_catalog.tres" id="catalog"]
 [ext_resource type="PackedScene" path="res://scenes/ui/skill_hud.tscn" id="skill_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/item_quickbar.tscn" id="item_quickbar"]
 [ext_resource type="PackedScene" path="res://scenes/ui/attribute_hud.tscn" id="attribute_hud"]
-[ext_resource type="PackedScene" path="res://scenes/ui/ui_audio.tscn" id="ui_audio"]
+[ext_resource type="PackedScene" path="res://scenes/audio/ui_audio.tscn" id="ui_audio"]
 
 [node name="LoadoutUI" type="CanvasLayer"]
 process_mode = 3

@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="TerrainPaintBrush" format=3 uid="uid://cv33r56galwxu"]
+
+[ext_resource type="Script" uid="uid://dcauimekxq8k1" path="res://scripts/terrain/terrain_paint_brush.gd" id="brush"]
+[ext_resource type="Texture2D" uid="uid://bo43yqyhtlxey" path="res://assets/meowa/city_plaza/fixed/10-arrow.png" id="color"]
+[ext_resource type="Texture2D" uid="uid://b4m7d1pgbl2fx" path="res://assets/meowa/city_plaza/fixed/ao/10-arrow.png" id="material_ao"]
+[ext_resource type="Texture2D" uid="uid://cpkq3jt4mf5xb" path="res://assets/meowa/city_plaza/fixed/roughness/10-arrow.png" id="material_roughness"]
+[ext_resource type="Texture2D" uid="uid://c16gigxunoces" path="res://assets/meowa/city_plaza/fixed/roughness_wet/10-arrow.png" id="material_roughness_wet"]
+[ext_resource type="Texture2D" uid="uid://cq2ykesf0w5b7" path="res://assets/meowa/city_plaza/fixed/normals/10-arrow.png" id="normal"]
+
+[sub_resource type="AtlasTexture" id="material_ao_slice"]
+atlas = ExtResource("material_ao")
+region = Rect2(0, 0, 103, 76)
+margin = Rect2(12, 26, 25, 52)
+
+[sub_resource type="AtlasTexture" id="normal_canvas"]
+atlas = ExtResource("normal")
+region = Rect2(0, 0, 103, 76)
+margin = Rect2(12, 26, 25, 52)
+
+[sub_resource type="AtlasTexture" id="material_roughness_slice"]
+atlas = ExtResource("material_roughness")
+region = Rect2(0, 0, 103, 76)
+margin = Rect2(12, 26, 25, 52)
+
+[sub_resource type="AtlasTexture" id="color_canvas"]
+atlas = ExtResource("color")
+region = Rect2(0, 0, 103, 76)
+margin = Rect2(12, 26, 25, 52)
+
+[sub_resource type="AtlasTexture" id="material_roughness_wet_slice"]
+atlas = ExtResource("material_roughness_wet")
+region = Rect2(0, 0, 103, 76)
+margin = Rect2(12, 26, 25, 52)
+
+[resource]
+script = ExtResource("brush")
+label = "方向箭头"
+paint_id = 20
+texture = SubResource("color_canvas")
+texture_meters = Vector2(3.2, 3.2)
+underlay_paint_id = 12
+ao_texture = SubResource("material_ao_slice")
+roughness_texture = SubResource("material_roughness_slice")
+wet_roughness_texture = SubResource("material_roughness_wet_slice")
+corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
+normal_texture = SubResource("normal_canvas")
+normal_strength = 0.6
+roughness = 0.78
+wet_response = 0.8

@@ -19,6 +19,13 @@ signal growth_choice_skipped(level: int)
 ## 静态候选备用；正式地图通过动态来源生成武器与增益选项。
 @export var choice_options: Array[GrowthChoiceOption] = []
 
+@export_group("成长抽卡")
+@export_range(1, 6, 1) var cards_per_draw := 3
+## 初始技能与后续升级共用；池子已全部展示时不消耗次数。
+@export_range(0, 10, 1) var rerolls_per_run := 3
+## 0 每局随机；非零用于复现抽取，不影响敌人生成。
+@export var draw_seed := 0
+
 @export_group("经验吸取")
 @export_range(0.1, 10.0, 0.1, "suffix:m") var attraction_radius := 2.0
 @export_range(0.05, 1.0, 0.05, "suffix:m") var collection_radius := 0.3
@@ -45,12 +52,19 @@ var active := false
 var _drops: Array[ExperiencePickup] = []
 var _choice_level := 0
 var _choice_error := false
+var rerolls_left := 0
+var _draft_started := false
+var _draw_pool := preload("res://scripts/growth/growth_draw_pool.gd").new()
+var _candidate_pool: Array[GrowthChoiceOption] = []
+var _previous_draw: Array[GrowthChoiceOption] = []
+var _fallback_options: Array[GrowthChoiceOption] = []
 @onready var choice_ui: GrowthChoiceUI = $GrowthChoiceUI
 @onready var experience_hud: ExperienceHUD = $ExperienceHUD
 @onready var _absorb: Sprite3D = $AbsorbFlash
 var _absorb_left := 0.0
 
 func _ready() -> void:
+	_fallback_options = choice_options.duplicate()
 	state = RunGrowthState.new()
 	state.rules = rules
 	state.levels_gained.connect(_levels_gained)
@@ -60,6 +74,7 @@ func _ready() -> void:
 	experience_collected.connect(experience_hud.pulse)
 	choice_ui.allow_cancel = false
 	choice_ui.choice_confirmed.connect(_confirm_choice)
+	choice_ui.reroll_requested.connect(_reroll_choice)
 	session.run_started.connect(_start_run)
 	session.run_ended.connect(_end_run)
 	session.enemy_defeated_at.connect(drop_experience)
@@ -67,6 +82,7 @@ func _ready() -> void:
 	session.phase_changed.connect(_phase_changed)
 
 func _start_run() -> void:
+	prepare_draw()
 	_close_choices()
 	_clear_drops()
 	state.reset()
@@ -80,11 +96,37 @@ func _end_run(_reason: String) -> void:
 	_clear_drops()
 	state.discard_pending_choices()
 	_reset_feedback()
+	_draft_started = false
+	_candidate_pool.clear()
+	_previous_draw.clear()
 
 func _phase_changed(phase: int) -> void:
 	# 在公共结算通知中的重试/返回回调之前释放自己的界面与输入。
 	if phase == session.Phase.RESULT and active: _end_run("")
-	if phase == session.Phase.READY and not active: state.reset()
+	if phase == session.Phase.READY and not active:
+		state.reset()
+		_draft_started = false
+		_previous_draw.clear()
+
+func prepare_draw() -> void:
+	if _draft_started: return
+	_draft_started = true
+	rerolls_left = rerolls_per_run
+	_draw_pool.reset(draw_seed)
+	_previous_draw.clear()
+
+func draw_options(pool: Array[GrowthChoiceOption], count: int, previous: Array[GrowthChoiceOption] = []) -> Array[GrowthChoiceOption]:
+	prepare_draw()
+	return _draw_pool.draw(pool, count, previous) if _draw_pool.valid_pool(pool) else []
+
+func can_reroll(pool: Array[GrowthChoiceOption], shown: Array[GrowthChoiceOption]) -> bool:
+	return rerolls_left > 0 and _draw_pool.can_redraw(pool, shown)
+
+func redraw_options(pool: Array[GrowthChoiceOption], shown: Array[GrowthChoiceOption], count: int) -> Array[GrowthChoiceOption]:
+	if not can_reroll(pool, shown): return []
+	var result := draw_options(pool, count, shown)
+	if not result.is_empty(): rerolls_left -= 1
+	return result
 
 func drop_experience(position: Vector3, amount: int) -> void:
 	if not active or amount <= 0: return
@@ -153,24 +195,44 @@ func _levels_gained(_count: int) -> void:
 func _try_open_choice() -> void:
 	if not active or state.pending_choices <= 0 or choice_ui.is_open or _choice_error: return
 	if get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null: return
-	if candidate_provider.is_valid():
-		while state.pending_choices > 0:
-			choice_options = candidate_provider.call()
-			if not choice_options.is_empty(): break
-			var skipped_level := state.next_choice_level()
-			state.complete_choice()
-			growth_choice_skipped.emit(skipped_level)
-			if not active: return
-		if state.pending_choices == 0:
+	while state.pending_choices > 0:
+		_candidate_pool = candidate_provider.call() if candidate_provider.is_valid() else _fallback_options.duplicate()
+		if not _draw_pool.valid_pool(_candidate_pool):
+			_choice_error = true
+			push_error("RunGrowth: 成长池需要有效且 ID 唯一的候选；经验保留，未冻结战斗。")
 			session.set_combat_frozen(false)
 			return
+		if _candidate_pool.any(func(option: GrowthChoiceOption): return option.enabled): break
+		var skipped_level := state.next_choice_level()
+		state.complete_choice()
+		growth_choice_skipped.emit(skipped_level)
+		if not active: return
+	if state.pending_choices == 0:
+		session.set_combat_frozen(false)
+		return
+	choice_options = draw_options(_candidate_pool, cards_per_draw, _previous_draw)
 	_choice_level = state.next_choice_level()
 	choice_ui.title = "等级 %d · 成长选择" % _choice_level
+	choice_ui.confirm_text = "领取成长"
+	choice_ui.choice_hint = "本次领取一张" if state.pending_choices == 1 else "本次领取一张 · 还有 %d 次成长待选" % (state.pending_choices - 1)
 	if not choice_ui.present_choices(choice_options):
 		_choice_error = true
 		push_error("RunGrowth: 需要至少一个有效、可选择且 ID 唯一的成长候选；本轮经验保留，未冻结战斗。")
+		session.set_combat_frozen(false)
 		return
 	session.set_combat_frozen(true)
+	_update_draw_status()
+
+func _update_draw_status() -> void:
+	choice_ui.set_draw_status(rerolls_left, can_reroll(_candidate_pool, choice_options))
+
+func _reroll_choice() -> void:
+	if not active or not choice_ui.is_open or not choice_ui.cards_revealed: return
+	var options := redraw_options(_candidate_pool, choice_options, cards_per_draw)
+	if options.is_empty(): return
+	choice_options = options
+	choice_ui.present_choices(choice_options)
+	_update_draw_status()
 
 func _confirm_choice(option_id: StringName) -> void:
 	if not active or state.pending_choices <= 0: return
@@ -179,6 +241,7 @@ func _confirm_choice(option_id: StringName) -> void:
 		if option and option.enabled and option.id == option_id: accepted = true; break
 	if not accepted: _try_open_choice(); return
 	var chosen_level := _choice_level
+	_previous_draw = choice_options.duplicate()
 	state.complete_choice()
 	growth_chosen.emit(chosen_level, option_id)
 	if not active: return
@@ -188,7 +251,7 @@ func _confirm_choice(option_id: StringName) -> void:
 		session.set_combat_frozen(false)
 
 func refresh_candidates(options: Array[GrowthChoiceOption]) -> void:
-	choice_options = options.duplicate()
+	_fallback_options = options.duplicate()
 	_choice_error = false
 	if choice_ui.is_open: choice_ui.close()
 	_try_open_choice()

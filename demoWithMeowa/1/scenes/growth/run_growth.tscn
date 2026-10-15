@@ -1,7 +1,7 @@
 [gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/growth/run_growth.gd" id="growth"]
-[ext_resource type="Resource" path="res://data/experience_rules.tres" id="rules"]
+[ext_resource type="Resource" path="res://data/growth/experience_rules.tres" id="rules"]
 [ext_resource type="PackedScene" path="res://scenes/growth/experience_pickup.tscn" id="pickup"]
 [ext_resource type="PackedScene" path="res://scenes/ui/growth_choice_ui.tscn" id="ui"]
 [ext_resource type="Script" path="res://scripts/ui/growth_choice_option.gd" id="option"]

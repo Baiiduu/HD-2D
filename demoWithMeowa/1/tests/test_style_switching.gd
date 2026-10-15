@@ -31,6 +31,8 @@ func key(code: Key, echo := false, shift := false) -> void:
 func run() -> void:
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
 	world.get_node("LoadoutUI").save_enabled = false
+	# Keyboard-cycle expectations start at golden hour; the formal default can be original.
+	world.get_node("VisualSample").style = 1
 	world.get_node("WavePrototype/RunGrowth").enabled = false
 	root.add_child(world)
 	current_scene = world
@@ -40,8 +42,7 @@ func run() -> void:
 	var wave: WavePrototype = world.get_node("WavePrototype")
 	var terrain: Terrain = world.get_node("Homestead")
 	var dressing := world.get_node("GroundDressing")
-	var home := world.get_node("HouseSite/Home")
-	var training := world.get_node("TrainingHut")
+	var props := world.get_node("WorldDetails/BattleCourts").get_children()
 	var weather := world.get_node("MapEffects/Weather")
 	var player: Player = world.get_node("Player")
 	player.set_physics_process(false)
@@ -56,11 +57,13 @@ func run() -> void:
 	weather.ground_splash_density = 1.1
 	weather.ground_splash_strength = 0.57
 	var camera_pose := camera.global_transform
-	var geometry := home.get_node("Geometry")
-	var training_geometry := training.get_node("Geometry")
+	var geometry := []
+	var sites := []
+	for prop in props:
+		geometry.append(prop.get_node("Geometry"))
+		sites.append(prop.transform)
 	var flora: Node3D = dressing._generated
 	var terrain_mesh: Node3D = terrain._generated
-	var sites := [home.get_parent().position, training.position]
 	var density: float = dressing.grass_density
 	var state_before: Dictionary = world.get_node("LoadoutUI").state.export_state().duplicate(true)
 	for next in [2, 3, 0, 1, 2, 3, 0, 1]:
@@ -70,8 +73,9 @@ func run() -> void:
 		await frames()
 		check(sample.style == next, "R cycles to style %d once" % next)
 		check(camera.global_transform == camera_pose and camera.distance == 29.0 and camera._yaw_offset_degrees == 45.0, "Style preserves custom camera and current rotation")
-		check(home.get_parent().position == sites[0] and training.position == sites[1], "Style preserves layout")
-		check(home.get_node("Geometry") == geometry and training.get_node("Geometry") == training_geometry, "Style preserves buildings and physical collisions")
+		for index in props.size():
+			check(props[index].transform == sites[index], "Style preserves obstacle layout")
+			check(props[index].get_node("Geometry") == geometry[index], "Style preserves obstacle geometry and collisions")
 		check(dressing._generated == flora and dressing.grass_density == density and terrain._generated == terrain_mesh, "Style does not rebuild plants or terrain")
 		check(weather.blink_plant_strength == 0.21 and weather.rain_volume_db == -23.0, "Style preserves independently adjusted blink and audio")
 		check(dressing.ground_sheen == sheen and is_equal_approx(terrain.top_material.get_shader_parameter("grass_sheen"), sheen), "Style preserves disabled and custom grass sheen")
@@ -125,13 +129,16 @@ func run() -> void:
 	# 独立素材开关恢复原图，R 不改变这项选择。
 	sample.pixel_art_enabled = false
 	await frames()
-	check(home.plaster_texture_override == null and not terrain.paint_palette.brushes[0].texture.resource_path.begins_with(sample.PIXEL_SAMPLE_PATH), "Independent material toggle restores source art")
+	check(not terrain.paint_palette.brushes[0].texture.resource_path.begins_with(sample.PIXEL_SAMPLE_PATH), "Independent material toggle restores source art")
 	key(KEY_R)
 	await frames()
-	check(not sample.pixel_art_enabled and home.plaster_texture_override == null, "Style preserves source-art selection")
+	check(not sample.pixel_art_enabled, "Style preserves source-art selection")
 	sample.pixel_art_enabled = true
 	await frames()
-	check(home.plaster_texture_override.resource_path.begins_with(sample.PIXEL_SAMPLE_PATH), "Independent material toggle reapplies pixel art")
+	var path_brush: TerrainPaintBrush
+	for brush in terrain.paint_palette.brushes:
+		if brush.target == TerrainPaintBrush.Target.PATH: path_brush = brush
+	check(path_brush != null and path_brush.texture.resource_path.begins_with(sample.PIXEL_SAMPLE_PATH), "Independent material toggle reapplies pixel path art")
 	for audio in world.find_children("*", "AudioStreamPlayer", true, false): audio.stop()
 	world.free()
 	await frames(2)

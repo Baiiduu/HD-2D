@@ -1,0 +1,10 @@
+{
+  "status": "success",
+  "startedAt": "2026-10-10T11:44:35+08:00",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "endedAt": "2026-10-10T11:44:36+08:00",
+  "exitCode": 0,
+  "output": "{\n  \"image_size\": [\n    1024,\n    768\n  ],\n  \"component_count\": 6,\n  \"parameters\": {\n    \"alpha_threshold\": 64,\n    \"background_tolerance\": 8,\n    \"connectivity\": 8,\n    \"min_component_area\": 256,\n    \"padding_px\": 3,\n    \"merge_contained_fragments\": true,\n    \"fragment_max_area\": 256,\n    \"fragment_max_area_ratio\": 0.02\n  },\n  \"warnings\": [],\n  \"components\": [\n    {\n      \"id\": \"component_001\",\n      \"file\": \"component_001.png\",\n      \"bbox\": [\n        695,\n        23,\n        995,\n        436\n      ],\n      \"width\": 300,\n      \"height\": 413,\n      \"pixel_count\": 61023\n    },\n    {\n      \"id\": \"component_002\",\n      \"file\": \"component_002.png\",\n      \"bbox\": [\n        698,\n        478,\n        989,\n        745\n      ],\n      \"width\": 291,\n      \"height\": 267,\n      \"pixel_count\": 53812\n    },\n    {\n      \"id\": \"component_003\",\n      \"file\": \"component_003.png\",\n      \"bbox\": [\n        27,\n        470,\n        329,\n        735\n      ],\n      \"width\": 302,\n      \"height\": 265,\n      \"pixel_count\": 52033\n    },\n    {\n      \"id\": \"component_004\",\n      \"file\": \"component_004.png\",\n      \"bbox\": [\n        389,\n        63,\n        624,\n        435\n      ],\n      \"width\": 235,\n      \"height\": 372,\n      \"pixel_count\": 49787\n    },\n    {\n      \"id\": \"component_005\",\n      \"file\": \"component_005.png\",\n      \"bbox\": [\n        365,\n        478,\n        656,\n        732\n      ],\n      \"width\": 291,\n      \"height\": 254,\n      \"pixel_count\": 46443\n    },\n    {\n      \"id\": \"component_006\",\n      \"file\": \"component_006.png\",\n      \"bbox\": [\n        98,\n        22,\n        290,\n        428\n      ],\n      \"width\": 192,\n      \"height\": 406,\n      \"pixel_count\": 39761\n    }\n  ],\n  \"elapsed_ms\": 805.886\n}\n"
+}

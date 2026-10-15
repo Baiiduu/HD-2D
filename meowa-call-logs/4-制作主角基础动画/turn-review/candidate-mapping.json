@@ -1,0 +1,17 @@
+{
+  "source_animation": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\turn-v2\\人物保持姿势和外观不变_原地居中_原地缓慢旋转360\\meowa_animation.webp",
+  "related_call": "CALL030",
+  "canvas": [
+    80,
+    80
+  ],
+  "frame_indices_zero_based": {
+    "front": 29,
+    "back": 15,
+    "right": 7,
+    "left": 24
+  },
+  "processing": "Native frames only; no resampling, repainting or background removal",
+  "art_acceptance": "pending user review",
+  "runtime_integrated": false
+}

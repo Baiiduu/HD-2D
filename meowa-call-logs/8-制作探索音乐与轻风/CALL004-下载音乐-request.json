@@ -1,0 +1,30 @@
+{
+  "id": "CALL004",
+  "task": "8-制作探索音乐与轻风",
+  "asset": "music",
+  "beijingTime": "2026-10-10T18:50:24+08:00",
+  "purpose": "下载音乐：当前四境 HD-2D 的空灵探索 BGM 与低存在感风声",
+  "tool": "Meowa CLI / music-poll / HTTP GET",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "arguments": [
+    "music-poll",
+    "--job-id",
+    "job_261574c790b84e9793fef6c6059e7972",
+    "--output-dir",
+    "D:\\.codexfile\\work\\ambient-audio\\music"
+  ],
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "actualRequest": {
+    "method": "GET",
+    "url": "https://media.meowa.ai/public/music-generator/output/2026-10-10/10%3A49%3A02-workflow-c0fb7335cae844e0b2d2c764/Lantern%20Rain%20and%20Neon%20Courtyard.mp3",
+    "params": null,
+    "timeout": 240,
+    "verify": true,
+    "headers": null
+  },
+  "prompt": null,
+  "negativePrompt": null,
+  "referenceResources": [],
+  "relatedJob": "job_261574c790b84e9793fef6c6059e7972",
+  "status": "pending"
+}

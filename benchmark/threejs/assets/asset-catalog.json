@@ -1,0 +1,542 @@
+{
+  "schemaVersion": 1,
+  "note": "Local copies of pre-existing files. No generation was performed. Source licenses are not inferred.",
+  "entries": [
+    {
+      "file": "public/characters/char_00_modern_youth.png",
+      "source": "D:\\Project\\godot\\games\\Asserts\\characters\\char_00_modern_youth.png",
+      "role": "existing benchmark asset",
+      "origin": "existing shared pack",
+      "bytes": 1566,
+      "sha256": "91f6076610fd467b47e0ac08da7731610126cace3b015b8edd91472aa52ad3b3",
+      "dimensions": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "public/characters/char_01_cafe_clerk.png",
+      "source": "D:\\Project\\godot\\games\\Asserts\\characters\\char_01_cafe_clerk.png",
+      "role": "existing benchmark asset",
+      "origin": "existing shared pack",
+      "bytes": 2066,
+      "sha256": "e070b86b54e7d529ecaf45a67059e912276bf29917305dd45b8bd1131dc044d5",
+      "dimensions": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "public/characters/char_02_cyber_hacker.png",
+      "source": "D:\\Project\\godot\\games\\Asserts\\characters\\char_02_cyber_hacker.png",
+      "role": "existing benchmark asset",
+      "origin": "existing shared pack",
+      "bytes": 2361,
+      "sha256": "196e940aeae743cc7007b8ec1bbdf26ece92ef47cd827c8d1edb4a3699608a91",
+      "dimensions": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "public/characters/char_03_cyborg_mercenary.png",
+      "source": "D:\\Project\\godot\\games\\Asserts\\characters\\char_03_cyborg_mercenary.png",
+      "role": "existing benchmark asset",
+      "origin": "existing shared pack",
+      "bytes": 2771,
+      "sha256": "2981be610433f18d8bdd737f5925b4275630d1a1f29b37ed81b2d6a1bbfc593c",
+      "dimensions": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "public/characters/char_04_white_robed_swordsman.png",
+      "source": "D:\\Project\\godot\\games\\Asserts\\characters\\char_04_white_robed_swordsman.png",
+      "role": "existing benchmark asset",
+      "origin": "existing shared pack",
+      "bytes": 2307,
+      "sha256": "cebd8d2f2a17e4acf7d4f350713c03681b73912f4bfa5ce3f817f08116098d50",
+      "dimensions": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "public/characters/char_05_jade_robed_cultivator.png",
+      "source": "D:\\Project\\godot\\games\\Asserts\\characters\\char_05_jade_robed_cultivator.png",
+      "role": "existing benchmark asset",
+      "origin": "existing shared pack",
+      "bytes": 2190,
+      "sha256": "2072676674460361fedc01a4162d44785c31281a795d403507a821fe93fce77f",
+      "dimensions": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "public/characters/char_06_forest_ranger.png",
+      "source": "D:\\Project\\godot\\games\\Asserts\\characters\\char_06_forest_ranger.png",
+      "role": "existing benchmark asset",
+      "origin": "existing shared pack",
+      "bytes": 2476,
+      "sha256": "9634f2fbdeebc3d2b6d227898f4867fc8044c5fec1be91070025ebb8d352ce7d",
+      "dimensions": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "public/characters/char_07_explorer.png",
+      "source": "D:\\Project\\godot\\games\\Asserts\\characters\\char_07_explorer.png",
+      "role": "existing benchmark asset",
+      "origin": "existing shared pack",
+      "bytes": 2585,
+      "sha256": "e563ac6904782dce92ff7c3d43f0756e9cd37ef3f611eb2c3f2900e462ab42ed",
+      "dimensions": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "public/textures/cliff_rock_strata.png",
+      "source": "D:\\Project\\godot\\games\\Asserts\\textures\\cliff_rock_strata.png",
+      "role": "existing benchmark asset",
+      "origin": "existing shared pack",
+      "bytes": 8896,
+      "sha256": "72d3d23be0045577faf40ec5fd93ac4071f345ee35b96e7da1fc26da4db0e029",
+      "dimensions": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "public/textures/ground_city_cobblestone.png",
+      "source": "D:\\Project\\godot\\games\\Asserts\\textures\\ground_city_cobblestone.png",
+      "role": "existing benchmark asset",
+      "origin": "existing shared pack",
+      "bytes": 9475,
+      "sha256": "ec94922809452b395d077fdbc19bce13cd37dc090f887f89e96737d46d868c41",
+      "dimensions": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "public/textures/ground_cultivation_slate.png",
+      "source": "D:\\Project\\godot\\games\\Asserts\\textures\\ground_cultivation_slate.png",
+      "role": "existing benchmark asset",
+      "origin": "existing shared pack",
+      "bytes": 8205,
+      "sha256": "13c41fe66b940e329b3a7b49e4ac357cca1f7336b2510c5de13674a9aa7bc449",
+      "dimensions": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "public/textures/ground_cyber_metal_panel.png",
+      "source": "D:\\Project\\godot\\games\\Asserts\\textures\\ground_cyber_metal_panel.png",
+      "role": "existing benchmark asset",
+      "origin": "existing shared pack",
+      "bytes": 5986,
+      "sha256": "0f5dfbf958ba4db0f049ba2caf8841181b88e3275d03f2d1bc8103db25e14a84",
+      "dimensions": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "public/textures/ground_wild_grass.png",
+      "source": "D:\\Project\\godot\\games\\Asserts\\textures\\ground_wild_grass.png",
+      "role": "existing benchmark asset",
+      "origin": "existing shared pack",
+      "bytes": 10688,
+      "sha256": "4e23b2be02dbe4ddc941e98efc52533b06ddb9d78b7eafecea07a80c7af3b3a6",
+      "dimensions": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "public/textures/water_shallow.png",
+      "source": "D:\\Project\\godot\\games\\Asserts\\textures\\water_shallow.png",
+      "role": "existing benchmark asset",
+      "origin": "existing shared pack",
+      "bytes": 7690,
+      "sha256": "9fae81572f688248af806238f5436dffe4fe9540e83a40bed766871d2c1ccc83",
+      "dimensions": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "public/textures/wood_planks.png",
+      "source": "D:\\Project\\godot\\games\\Asserts\\textures\\wood_planks.png",
+      "role": "existing benchmark asset",
+      "origin": "existing shared pack",
+      "bytes": 7858,
+      "sha256": "6195fe88aebeefa941803bf9a1f2a465f6550d056bc85685abd297ce3f81e05a",
+      "dimensions": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "public/tilesets/dirt_dualgrid.png",
+      "source": "D:\\Project\\godot\\games\\Asserts\\tilesets\\dirt_dualgrid.png",
+      "role": "existing benchmark asset",
+      "origin": "existing shared pack",
+      "bytes": 93052,
+      "sha256": "eeff20b8e7934f853c41915b90fe4b4263a231b6ea8d0a90d6a1a02e65c26b66",
+      "dimensions": [
+        256,
+        256
+      ]
+    },
+    {
+      "file": "public/tilesets/road_cobblestone_dualgrid.png",
+      "source": "D:\\Project\\godot\\games\\Asserts\\tilesets\\road_cobblestone_dualgrid.png",
+      "role": "existing benchmark asset",
+      "origin": "existing shared pack",
+      "bytes": 110290,
+      "sha256": "606b361ba2d8037556c89a788e8107a1890a486578c7e0f8e1e1f566521213b7",
+      "dimensions": [
+        256,
+        256
+      ]
+    },
+    {
+      "file": "public/layout/scene_layout.json",
+      "source": "D:\\Project\\godot\\games\\Asserts\\layout\\scene_layout.json",
+      "role": "existing benchmark asset",
+      "origin": "existing shared pack",
+      "bytes": 72354,
+      "sha256": "267ba1f23aec15c83ee9ddc6227a0fb7c640c0cad41de1b45bc8a083ba6422d1"
+    },
+    {
+      "file": "public/layout/terrain_maps.txt",
+      "source": "D:\\Project\\godot\\games\\Asserts\\layout\\terrain_maps.txt",
+      "role": "existing benchmark asset",
+      "origin": "existing shared pack",
+      "bytes": 2940,
+      "sha256": "f218d459209d2ba2964d84bf9593e4634665801cffb7a2042c03bb08a276e160"
+    },
+    {
+      "file": "assets/shared-pack-readme.md",
+      "source": "D:\\Project\\godot\\games\\Asserts\\README.md",
+      "role": "source documentation",
+      "origin": "existing shared pack",
+      "bytes": 5714,
+      "sha256": "64815c7b526cec326b3164a3da63a863e51b0b485c64d295f9bf8b15bfbf53ea"
+    },
+    {
+      "file": "public/props/component_001.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\props\\component_001.png",
+      "role": "prop component; validate style before use",
+      "origin": "existing extracted prop sheet",
+      "bytes": 135896,
+      "sha256": "cd0781b9e31cb4985a5adddd6da9a078be9cae4717eb7fc30ed465e1acf63fef",
+      "dimensions": [
+        276,
+        256
+      ]
+    },
+    {
+      "file": "public/props/component_002.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\props\\component_002.png",
+      "role": "prop component; validate style before use",
+      "origin": "existing extracted prop sheet",
+      "bytes": 120377,
+      "sha256": "9e57d6d51494f85b17710bc6391ba9d0b3cda9bbd7fc0607c2a4e64a1a5847a2",
+      "dimensions": [
+        245,
+        221
+      ]
+    },
+    {
+      "file": "public/props/component_003.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\props\\component_003.png",
+      "role": "prop component; validate style before use",
+      "origin": "existing extracted prop sheet",
+      "bytes": 116630,
+      "sha256": "2be51738f9514d04b56d2e3350a4524dcfc6c162d2d37491b1b3fbaa046e4ef2",
+      "dimensions": [
+        163,
+        253
+      ]
+    },
+    {
+      "file": "public/props/component_004.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\props\\component_004.png",
+      "role": "prop component; validate style before use",
+      "origin": "existing extracted prop sheet",
+      "bytes": 109840,
+      "sha256": "2afa2967287d0f84052eba81e276968c04b9501e9611672ebad690e7eedbfcf2",
+      "dimensions": [
+        232,
+        226
+      ]
+    },
+    {
+      "file": "public/props/component_005.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\props\\component_005.png",
+      "role": "prop component; validate style before use",
+      "origin": "existing extracted prop sheet",
+      "bytes": 104847,
+      "sha256": "741773a59447e3ee076c8c3646e4cc91c6709b6e0b8768b8be81874023191157",
+      "dimensions": [
+        233,
+        249
+      ]
+    },
+    {
+      "file": "public/props/component_006.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\props\\component_006.png",
+      "role": "prop component; validate style before use",
+      "origin": "existing extracted prop sheet",
+      "bytes": 103601,
+      "sha256": "db4f2c9da69e153ccffeb7506b4d355d63ac186b3ce736439381b04e29c8e8d5",
+      "dimensions": [
+        165,
+        243
+      ]
+    },
+    {
+      "file": "public/props/component_007.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\props\\component_007.png",
+      "role": "prop component; validate style before use",
+      "origin": "existing extracted prop sheet",
+      "bytes": 98460,
+      "sha256": "df761a783ce3cc43775ec68129df43d96c77f38a5326d249ddadca62f3312b1c",
+      "dimensions": [
+        217,
+        200
+      ]
+    },
+    {
+      "file": "public/props/component_008.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\props\\component_008.png",
+      "role": "prop component; validate style before use",
+      "origin": "existing extracted prop sheet",
+      "bytes": 93899,
+      "sha256": "dd824d548c372e1b3d299f3b7f1fef369a5037057408eeba092a2fc84534abce",
+      "dimensions": [
+        182,
+        241
+      ]
+    },
+    {
+      "file": "public/props/component_009.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\props\\component_009.png",
+      "role": "prop component; validate style before use",
+      "origin": "existing extracted prop sheet",
+      "bytes": 93685,
+      "sha256": "513e4b3b95f282350ed228656bcf661376db8a0424ccc3f91376af71a99b0363",
+      "dimensions": [
+        242,
+        254
+      ]
+    },
+    {
+      "file": "public/props/component_010.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\props\\component_010.png",
+      "role": "prop component; validate style before use",
+      "origin": "existing extracted prop sheet",
+      "bytes": 92927,
+      "sha256": "0e6c17030ce00cd4b6ace6b9a32e67fceded6a7165bc31d289d5d9141425aca6",
+      "dimensions": [
+        216,
+        211
+      ]
+    },
+    {
+      "file": "public/props/component_011.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\props\\component_011.png",
+      "role": "prop component; validate style before use",
+      "origin": "existing extracted prop sheet",
+      "bytes": 93107,
+      "sha256": "16530f6566c91f5bcb52ad2db7ce2eabe727d016785c93f29b76aa4b08e85f6c",
+      "dimensions": [
+        181,
+        217
+      ]
+    },
+    {
+      "file": "public/props/component_012.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\props\\component_012.png",
+      "role": "prop component; validate style before use",
+      "origin": "existing extracted prop sheet",
+      "bytes": 78110,
+      "sha256": "bb50ab28f614e5172cd262d3d3eb2abf47acfd882a09c6bef1d609e9c85830b9",
+      "dimensions": [
+        239,
+        181
+      ]
+    },
+    {
+      "file": "public/props/component_013.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\props\\component_013.png",
+      "role": "prop component; validate style before use",
+      "origin": "existing extracted prop sheet",
+      "bytes": 74581,
+      "sha256": "1e6f16c986985f1e47d4896225830d9a10c8cdb3094d96bea8a90e8efed0c90e",
+      "dimensions": [
+        166,
+        256
+      ]
+    },
+    {
+      "file": "public/props/component_014.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\props\\component_014.png",
+      "role": "prop component; validate style before use",
+      "origin": "existing extracted prop sheet",
+      "bytes": 68425,
+      "sha256": "28edaf4516218e329a185e1cb569d352c8d97d023b0fce4086c8a5ec09499a51",
+      "dimensions": [
+        166,
+        222
+      ]
+    },
+    {
+      "file": "public/props/component_015.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\props\\component_015.png",
+      "role": "prop component; validate style before use",
+      "origin": "existing extracted prop sheet",
+      "bytes": 53253,
+      "sha256": "3cdecd361206193ca6c0fa8dad0c15760408c99f592aaa0201ce6345ac8f4cf7",
+      "dimensions": [
+        115,
+        264
+      ]
+    },
+    {
+      "file": "public/props/component_016.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\props\\component_016.png",
+      "role": "prop component; validate style before use",
+      "origin": "existing extracted prop sheet",
+      "bytes": 29720,
+      "sha256": "5f8c77ebd3ea64d0c2f50b4a956e75e0a56ddf9f1a07422b76f65bc83e38923a",
+      "dimensions": [
+        76,
+        257
+      ]
+    },
+    {
+      "file": "public/props/component_017.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\props\\component_017.png",
+      "role": "prop component; validate style before use",
+      "origin": "existing extracted prop sheet",
+      "bytes": 4075,
+      "sha256": "39e05a44eeff247ef755439b498a7c9ca1bb5e62a288e72971beddaf558d9df1",
+      "dimensions": [
+        37,
+        56
+      ]
+    },
+    {
+      "file": "public/props/component_018.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\props\\component_018.png",
+      "role": "prop component; validate style before use",
+      "origin": "existing extracted prop sheet",
+      "bytes": 3142,
+      "sha256": "129c2d51d032fcb2b1e5149b18ee02105c06a1b5c24eba35ef8699f8aba3627c",
+      "dimensions": [
+        33,
+        51
+      ]
+    },
+    {
+      "file": "public/props/component_019.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\props\\component_019.png",
+      "role": "prop component; validate style before use",
+      "origin": "existing extracted prop sheet",
+      "bytes": 1530,
+      "sha256": "6d60f50339fa1756604bad850e6e79a714b346cb88c8623b1c7aa947248fa721",
+      "dimensions": [
+        24,
+        34
+      ]
+    },
+    {
+      "file": "assets/prop-components.json",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\props\\final_outputs.json",
+      "role": "component bounding boxes",
+      "origin": "existing extraction manifest",
+      "bytes": 4846,
+      "sha256": "bc025d1ff5b9c7e4b8532aa196c61a4f663cca90e075ff6b339c5df50328798c"
+    },
+    {
+      "file": "public/textures/references/01_dirt_1024.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\ground\\references\\01_dirt_1024.png",
+      "role": "supplementary texture reference",
+      "origin": "existing reference; not a newly generated asset",
+      "bytes": 8577,
+      "sha256": "f53370829ca53fcf65da1ae9656bead35fa328ffc93778f621ec3596ae85d5c0",
+      "dimensions": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "public/textures/references/02_minimal_mossy_stone.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\ground\\references\\02_minimal_mossy_stone.png",
+      "role": "supplementary texture reference",
+      "origin": "existing reference; not a newly generated asset",
+      "bytes": 10378,
+      "sha256": "b3f089228812b8ca6bbd37692b6756c82b83408775063c8fe92831318eeb39ef",
+      "dimensions": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "public/textures/references/01_terrain_rock_mountain.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\ground\\references\\elevation\\01_terrain_rock_mountain.png",
+      "role": "supplementary texture reference",
+      "origin": "existing reference; not a newly generated asset",
+      "bytes": 5493,
+      "sha256": "51c5c833252b5adcf440a6a71ba991c440b2d2de22bf1d4873959df6d8b02c17",
+      "dimensions": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "public/textures/references/01_wall_cave_rock.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\ground\\references\\elevation\\01_wall_cave_rock.png",
+      "role": "supplementary texture reference",
+      "origin": "existing reference; not a newly generated asset",
+      "bytes": 8163,
+      "sha256": "a89eb905c86d841524044ce4166581d8a536e95e37e6d409d1e297eae06a8022",
+      "dimensions": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "assets/source-packs/characters-preview.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\characters\\八个同一精致像素画风的全身游戏角色_现代城市青年_咖啡店店员_赛博朋克女黑客_fb335224\\sprite_pack_preview.png",
+      "role": "source sheet; not loaded by runtime",
+      "origin": "existing Meowa output",
+      "bytes": 18312,
+      "sha256": "15b7e3aa21433bd2720bcd4a1e831eba4dbfce4d9308ea2549e2a66f0f314481",
+      "dimensions": [
+        256,
+        256
+      ]
+    },
+    {
+      "file": "assets/source-packs/realm-props.png",
+      "source": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\realm_props\\一张透明背景的精致像素游戏道具素材表_四行四列_16个独立完整物件_各格之间留空_548aa6ac\\result_images_0_url.png",
+      "role": "source sheet; not loaded by runtime",
+      "origin": "existing Meowa output",
+      "bytes": 1972007,
+      "sha256": "9c9cfc696e9e5bb80617ad07671db8984feb57188e893d63f675fb12c3392d74",
+      "dimensions": [
+        1024,
+        1024
+      ]
+    }
+  ]
+}

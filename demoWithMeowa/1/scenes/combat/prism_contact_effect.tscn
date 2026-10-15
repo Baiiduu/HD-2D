@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/light_pierce_effect.gd" id="effect"]
+[ext_resource type="SpriteFrames" path="res://assets/meowa/combat/light_pierce/impact_frames.tres" id="impact"]
+
+[node name="PrismContactEffect" type="Node3D"]
+script = ExtResource("effect")
+impact_frames = ExtResource("impact")
+impact_width = 1.5
+impact_duration = 0.32
+ground_light_enabled = false

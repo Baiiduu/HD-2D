@@ -2,20 +2,20 @@ extends Node3D
 ## Builds the whole "Four Realms" scene from assets/layout/scene_layout.json at runtime.
 
 const ASSET := "res://assets/"
-const SH_TERRAIN := preload("res://shaders/terrain.gdshader")
-const SH_CLIFF := preload("res://shaders/cliff.gdshader")
-const SH_WATER := preload("res://shaders/water.gdshader")
-const SH_FALL := preload("res://shaders/waterfall.gdshader")
+const SH_TERRAIN := preload("res://shaders/terrain/terrain.gdshader")
+const SH_CLIFF := preload("res://shaders/terrain/cliff.gdshader")
+const SH_WATER := preload("res://shaders/water/water.gdshader")
+const SH_FALL := preload("res://shaders/water/waterfall.gdshader")
 const SH_PROP := preload("res://shaders/prop.gdshader")
 const SH_SPRITE := preload("res://shaders/sprite.gdshader")
 const SH_BLOB := preload("res://shaders/blob.gdshader")
-const SH_HALO := preload("res://shaders/halo.gdshader")
-const SH_FIREFLY := preload("res://shaders/firefly.gdshader")
+const SH_HALO := preload("res://shaders/environment/halo.gdshader")
+const SH_FIREFLY := preload("res://shaders/environment/firefly.gdshader")
 const SH_MIST := preload("res://shaders/mist.gdshader")
 const SH_SKY := preload("res://shaders/sky.gdshader")
 const SH_POST := preload("res://shaders/post.gdshader")
 
-const PlayerScript := preload("res://scripts/player.gd")
+const PlayerScript := preload("res://scripts/player/player.gd")
 const CameraRig := preload("res://scripts/camera_rig.gd")
 const Backdrop := preload("res://scripts/backdrop.gd")
 

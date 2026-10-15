@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SpawnVisualPreset" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/spawn_visual_preset.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+title = "雾与后处理 · 细雨"
+node_values = {
+"MapEffects/ArtDirection": {
+"fog_begin": 30.0,
+"fog_end": 85.0,
+"fog_amount": 0.32,
+"low_fog": 0.01,
+"volumetric_density": 0.0014,
+"bloom": 0.2,
+"vignette": 0.18,
+"split_toning": 0.24,
+"fog_curve": 1.25,
+"bloom_threshold": 1.0,
+"bloom_floor": 0.0,
+"vignette_radius": 0.95,
+"shadow_lift": Vector3(0.008, 0.012, 0.02)
+}
+}

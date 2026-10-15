@@ -4,7 +4,7 @@ extends HBoxContainer
 
 signal slot_pressed(skill_id: String)
 
-const SLOT_SHADER := preload("res://shaders/skill_hud.gdshader")
+const SLOT_SHADER := preload("res://shaders/ui/skill_hud.gdshader")
 
 @export_group("技能栏")
 ## Meowa 提取的透明空槽组件，包含细光边、角部辉光与暗底。

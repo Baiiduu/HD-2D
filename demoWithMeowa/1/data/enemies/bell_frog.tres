@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="BellFrogDefinition" format=3 uid="uid://bltuixndesjm3"]
+
+[ext_resource type="PackedScene" path="res://scenes/enemies/bell_frog.tscn" id="actor"]
+[ext_resource type="Script" uid="uid://dd6fvp4dtukr" path="res://scripts/combat/bell_frog_definition.gd" id="definition"]
+
+[resource]
+script = ExtResource("definition")
+speed_multiplier = 1.8
+body_radius = 0.24
+enemy_id = &"bell_frog"
+scene = ExtResource("actor")
+display_name = "响铃苔蛙"
+role = 1
+health = 50.0
+move_speed = 1.05
+attack_damage = 2.0
+experience_reward = 6
+population_cost = 4
+max_alive = 2

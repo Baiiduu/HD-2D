@@ -1,10 +1,10 @@
 [gd_scene format=3]
 
-[ext_resource type="Shader" path="res://shaders/halo.gdshader" id="halo_shader"]
-[ext_resource type="Script" path="res://scripts/environment_lantern.gd" id="controller"]
-[ext_resource type="Shader" path="res://shaders/environment_lantern_fog.gdshader" id="mist_shader"]
-[ext_resource type="Shader" path="res://shaders/lamp_beam.gdshader" id="beam_shader"]
-[ext_resource type="Shader" path="res://shaders/lamp_dust.gdshader" id="dust_shader"]
+[ext_resource type="Shader" path="res://shaders/environment/halo.gdshader" id="halo_shader"]
+[ext_resource type="Script" path="res://scripts/world/environment_lantern.gd" id="controller"]
+[ext_resource type="Shader" path="res://shaders/environment/environment_lantern_fog.gdshader" id="mist_shader"]
+[ext_resource type="Shader" path="res://shaders/environment/lamp_beam.gdshader" id="beam_shader"]
+[ext_resource type="Shader" path="res://shaders/environment/lamp_dust.gdshader" id="dust_shader"]
 
 [sub_resource type="StandardMaterial3D" id="Post_material"]
 albedo_color = Color(0.22, 0.15, 0.1, 1)

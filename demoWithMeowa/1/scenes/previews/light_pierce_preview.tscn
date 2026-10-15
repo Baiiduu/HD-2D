@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/previews/light_pierce_preview.gd" id="preview"]
+[ext_resource type="PackedScene" path="res://scenes/combat/light_pierce_effect.tscn" id="effect"]
+
+[node name="LightPiercePreview" type="Node3D"]
+script = ExtResource("preview")
+
+[node name="LightPierceEffect" parent="." instance=ExtResource("effect")]

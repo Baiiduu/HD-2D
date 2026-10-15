@@ -1,0 +1,19 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/mirror_mark_auto_attack.gd" id="attack"]
+[ext_resource type="Resource" path="res://data/skills/mirror_mark.tres" id="skill"]
+[ext_resource type="PackedScene" path="res://scenes/combat/mirror_projectile_effect.tscn" id="effect"]
+[ext_resource type="PackedScene" path="res://scenes/combat/mirror_mark_effect.tscn" id="mark"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/combat/hit_01.wav" id="hit1"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/combat/hit_02.wav" id="hit2"]
+
+[node name="MirrorMarkAutoAttack" type="Node3D"]
+script = ExtResource("attack")
+skill_definition = ExtResource("skill")
+effect_scene = ExtResource("effect")
+mark_scene = ExtResource("mark")
+damage = 14.0
+attack_interval = 1.3
+flight_speed = 10.0
+hit_sounds = Array[AudioStream]([ExtResource("hit1"), ExtResource("hit2")])
+bounce_sounds = Array[AudioStream]([ExtResource("hit2")])

@@ -1,0 +1,11 @@
+{
+  "status": "success",
+  "job_id": "job_7b705b3b2347429d9578546eceb3ff9e",
+  "outputs": [
+    {
+      "type": "media",
+      "path": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\props\\props.png",
+      "mime_type": "image/png"
+    }
+  ]
+}

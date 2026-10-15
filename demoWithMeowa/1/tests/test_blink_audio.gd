@@ -42,7 +42,7 @@ func _run() -> void:
 	collision.shape = shape
 	collision.position.y = shape.height * 0.5
 	player.add_child(collision)
-	var audio: PlayerMovementAudio = load("res://scenes/shared/player_movement_audio.tscn").instantiate()
+	var audio: PlayerMovementAudio = load("res://scenes/audio/player_movement_audio.tscn").instantiate()
 	player.add_child(audio)
 	world.add_child(player)
 	await frames(35)

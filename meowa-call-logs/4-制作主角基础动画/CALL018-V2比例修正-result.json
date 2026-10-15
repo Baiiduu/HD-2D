@@ -1,0 +1,57 @@
+{
+  "status": "success",
+  "startedAt": "2026-10-10T13:38:14+08:00",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "endedAt": "2026-10-10T13:41:20+08:00",
+  "exitCode": 0,
+  "output": "[INFO] submitted api_job_id=job_7f1c40191b1943d39a1f6d9970149add\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=finalizing progress=处理中:50%\n[INFO] status=running stage=finalizing progress=处理中:50%\n[INFO] status=running stage=finalizing progress=处理中:50%\n[INFO] status=success stage=completed progress=已完成:100%\n[INFO] downloading_outputs count=3 to=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run-front-v2\\这个黄衣青年保持正面朝向_小步原地慢跑_双腿交替_手臂小幅摆动_完成一轮后回到_4ee61917\n[INFO] downloaded=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run-front-v2\\这个黄衣青年保持正面朝向_小步原地慢跑_双腿交替_手臂小幅摆动_完成一轮后回到_4ee61917\\meowa_animation.webp\n[INFO] downloaded=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run-front-v2\\这个黄衣青年保持正面朝向_小步原地慢跑_双腿交替_手臂小幅摆动_完成一轮后回到_4ee61917\\meowa_animation_background.webp\n[INFO] saved_dir=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run-front-v2\\这个黄衣青年保持正面朝向_小步原地慢跑_双腿交替_手臂小幅摆动_完成一轮后回到_4ee61917\n{\n  \"job_id\": \"job_7f1c40191b1943d39a1f6d9970149add\",\n  \"job_type\": \"workflow\",\n  \"status\": \"success\",\n  \"next_poll_after_seconds\": 0,\n  \"animation_type\": null,\n  \"queue\": {\n    \"position\": 0,\n    \"estimated_wait_seconds\": 0\n  },\n  \"progress\": {\n    \"label\": \"已完成\",\n    \"percent\": 100\n  },\n  \"result\": {\n    \"job_name\": \"workflow-946f9decb6a2442e864e9443\"\n  },\n  \"outputs\": [\n    {\n      \"output_key\": \"output:0\",\n      \"media_type\": \"image\",\n      \"mime_type\": null,\n      \"asset_id\": null,\n      \"thumb_url\": null,\n      \"width\": null,\n      \"height\": null,\n      \"byte_size\": null\n    },\n    {\n      \"output_key\": \"output:1\",\n      \"media_type\": \"image\",\n      \"mime_type\": null,\n      \"asset_id\": null,\n      \"thumb_url\": null,\n      \"width\": null,\n      \"height\": null,\n      \"byte_size\": null\n    }\n  ],\n  \"error\": null,\n  \"error_code\": null,\n  \"error_id\": null,\n  \"credit_refund\": {\n    \"refunded\": false,\n    \"amount\": 0\n  }\n}\n",
+  "returnedData": {
+    "job_id": "job_7f1c40191b1943d39a1f6d9970149add",
+    "job_type": "workflow",
+    "status": "success",
+    "next_poll_after_seconds": 0,
+    "animation_type": null,
+    "queue": {
+      "position": 0,
+      "estimated_wait_seconds": 0
+    },
+    "progress": {
+      "label": "已完成",
+      "percent": 100
+    },
+    "result": {
+      "job_name": "workflow-946f9decb6a2442e864e9443"
+    },
+    "outputs": [
+      {
+        "output_key": "output:0",
+        "media_type": "image",
+        "mime_type": null,
+        "asset_id": null,
+        "thumb_url": null,
+        "width": null,
+        "height": null,
+        "byte_size": null
+      },
+      {
+        "output_key": "output:1",
+        "media_type": "image",
+        "mime_type": null,
+        "asset_id": null,
+        "thumb_url": null,
+        "width": null,
+        "height": null,
+        "byte_size": null
+      }
+    ],
+    "error": null,
+    "error_code": null,
+    "error_id": null,
+    "credit_refund": {
+      "refunded": false,
+      "amount": 0
+    }
+  }
+}

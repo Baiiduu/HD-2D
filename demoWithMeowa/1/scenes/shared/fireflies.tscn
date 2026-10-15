@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-[ext_resource type="Shader" uid="uid://syr3vpca6sp4" path="res://shaders/firefly.gdshader" id="firefly_shader"]
+[ext_resource type="Shader" uid="uid://syr3vpca6sp4" path="res://shaders/environment/firefly.gdshader" id="firefly_shader"]
 [sub_resource type="Gradient" id="Firefly_gradient"]
 resource_local_to_scene = true
 offsets = PackedFloat32Array(0, 0.2, 0.45, 0.6, 0.85, 1)

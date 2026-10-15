@@ -1,0 +1,30 @@
+{
+  "id": "CALL007",
+  "task": "8-制作探索音乐与轻风",
+  "asset": "wind",
+  "beijingTime": "2026-10-10T18:53:05+08:00",
+  "purpose": "下载风声：当前四境 HD-2D 的空灵探索 BGM 与低存在感风声",
+  "tool": "Meowa CLI / sound-poll / HTTP GET",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "arguments": [
+    "sound-poll",
+    "--job-id",
+    "job_cdbef3bc76d845659de419c4bdf415ab",
+    "--output-dir",
+    "D:\\.codexfile\\work\\ambient-audio\\wind"
+  ],
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "actualRequest": {
+    "method": "GET",
+    "url": "https://media.meowa.ai/public/elevenlabs-generator/output/2026-10-10/10%3A48%3A35-workflow-c2600273a7094019a351e865/Gentle_Grass_Breeze_Loop.mp3",
+    "params": null,
+    "timeout": 240,
+    "verify": true,
+    "headers": null
+  },
+  "prompt": null,
+  "negativePrompt": null,
+  "referenceResources": [],
+  "relatedJob": "job_cdbef3bc76d845659de419c4bdf415ab",
+  "status": "pending"
+}

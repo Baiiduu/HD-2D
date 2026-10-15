@@ -2,7 +2,7 @@ extends SceneTree
 ## 一次性脚本：在原有四境地图东侧扩出一片带高差的野外区域。
 ## 用法：godot --headless --path . -s res://tools/expand_terrain_east.gd
 
-const PATH := "res://data/four_realms_terrain.tres"
+const PATH := "res://data/world/four_realms_terrain.tres"
 
 func _initialize() -> void:
 	var data: TerrainData = load(PATH)

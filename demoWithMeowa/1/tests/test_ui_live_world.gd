@@ -113,7 +113,7 @@ func _run() -> void:
 	training.loadout = loadout
 	training.interaction_point = point
 	world.add_child(training)
-	weather = load("res://scripts/weather.gd").new()
+	weather = load("res://scripts/world/weather.gd").new()
 	weather.rain_audio_fade_time = 0.1
 	weather.wind_audio_fade_time = 0.1
 	world.add_child(weather)

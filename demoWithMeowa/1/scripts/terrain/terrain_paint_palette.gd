@@ -32,6 +32,10 @@ func validation_error() -> String:
 		if not brush: return "画笔列表中有空项，请补齐或删除。"
 		var problem := brush.validation_error()
 		if not problem.is_empty(): return brush.label + "：" + problem
+		if brush.underlay_paint_id > 0:
+			var underlay := brush_for_id(brush.underlay_paint_id)
+			if not underlay or underlay == brush or underlay.mode == TerrainPaintBrush.Mode.CORNER_ATLAS or underlay.underlay_paint_id > 0:
+				return brush.label + "：底层须使用另一支无底层的普通铺装画笔。"
 	return ""
 
 func id_error() -> String:
@@ -55,6 +59,7 @@ func apply_to(material: ShaderMaterial) -> Dictionary:
 	if not id_error().is_empty(): return textures
 	var images: Array[Image] = []
 	var normal_images: Array[Image] = []
+	var material_images: Array[Image] = []
 	var custom: Array[TerrainPaintBrush] = []
 	for brush in brushes:
 		if not brush or not brush.validation_error().is_empty(): continue
@@ -62,6 +67,7 @@ func apply_to(material: ShaderMaterial) -> Dictionary:
 			custom.append(brush)
 			images.append(brush.source_image())
 			normal_images.append(brush.normal_image())
+			material_images.append(brush.material_image())
 		else:
 			var prefix := "wild" if brush.target == TerrainPaintBrush.Target.GRASS else "path"
 			var source: Texture2D = brush.texture
@@ -93,18 +99,24 @@ func apply_to(material: ShaderMaterial) -> Dictionary:
 	for image in normal_images:
 		if image: normal_size = normal_size.max(image.get_size())
 	normal_size = Vector2i(nearest_po2(normal_size.x),nearest_po2(normal_size.y))
+	var material_size := Vector2i(4,4)
+	for image in material_images:
+		if image: material_size = material_size.max(image.get_size())
+	material_size = Vector2i(nearest_po2(material_size.x),nearest_po2(material_size.y))
 	var settings := Image.create_empty(256,20,false,Image.FORMAT_RGBAF)
 	var normals: Array[Image] = []
+	var materials: Array[Image] = []
 	for i in images.size():
 		var image := images[i]
 		image.resize(size.x,size.y,Image.INTERPOLATE_NEAREST)
 		image.generate_mipmaps()
 		var brush := custom[i]
-		settings.set_pixel(brush.paint_id,0,Color(i+1,brush.mode,brush.atlas_grid.x,brush.atlas_grid.y))
+		var repeat_size := Vector2(brush.atlas_grid) if brush.mode == TerrainPaintBrush.Mode.CORNER_ATLAS else brush.texture_meters
+		settings.set_pixel(brush.paint_id,0,Color(i+1,brush.mode,repeat_size.x,repeat_size.y))
 		settings.set_pixel(brush.paint_id,1,brush.tint)
 		settings.set_pixel(brush.paint_id,2,Color(brush.roughness,brush.metallic,brush.wet_response,float(brush.is_grass)))
 		var normal_image := normal_images[i]
-		settings.set_pixel(brush.paint_id,3,Color(1.0 if normal_image else 0.0,brush.normal_strength,0,0))
+		settings.set_pixel(brush.paint_id,3,Color(1.0 if normal_image else 0.0,brush.normal_strength,brush.underlay_paint_id,brush.material_flags()))
 		if not normal_image:
 			normal_image = Image.create_empty(normal_size.x,normal_size.y,false,Image.FORMAT_RGBA8)
 			normal_image.fill(Color(0.5,0.5,1.0,1.0))
@@ -112,6 +124,14 @@ func apply_to(material: ShaderMaterial) -> Dictionary:
 			normal_image.resize(normal_size.x,normal_size.y,Image.INTERPOLATE_NEAREST)
 		normal_image.generate_mipmaps()
 		normals.append(normal_image)
+		var material_image := material_images[i]
+		if not material_image:
+			material_image = Image.create_empty(material_size.x,material_size.y,false,Image.FORMAT_RGBA8)
+			material_image.fill(Color(1,brush.roughness,brush.roughness,0))
+		else:
+			material_image.resize(material_size.x,material_size.y,Image.INTERPOLATE_NEAREST)
+		material_image.generate_mipmaps()
+		materials.append(material_image)
 		for key in 16:
 			var tile := brush.corner_tiles[key] if brush.mode == TerrainPaintBrush.Mode.CORNER_ATLAS else Vector2.ZERO
 			settings.set_pixel(brush.paint_id,4+key,Color(tile.x,tile.y,0,0))
@@ -120,6 +140,8 @@ func apply_to(material: ShaderMaterial) -> Dictionary:
 	textures["paint_textures"] = texture_array
 	var normal_array := Texture2DArray.new()
 	if normal_array.create_from_images(normals) == OK: textures["paint_normals"] = normal_array
+	var material_array := Texture2DArray.new()
+	if material_array.create_from_images(materials) == OK: textures["paint_materials"] = material_array
 	textures["paint_settings"] = ImageTexture.create_from_image(settings)
 	material.set_shader_parameter("paint_enabled",true)
 	return textures

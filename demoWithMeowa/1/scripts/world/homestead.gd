@@ -3,8 +3,8 @@ extends Node3D
 
 signal surfaces_rebuilt
 
-const GROUND_SHADER := preload("res://shaders/homestead_ground.gdshader")
-const WATER_SHADER := preload("res://shaders/homestead_water.gdshader")
+const GROUND_SHADER := preload("res://shaders/terrain/homestead_ground.gdshader")
+const WATER_SHADER := preload("res://shaders/water/homestead_water.gdshader")
 const GRASS := preload("res://assets/meowa/homestead/grass.png")
 const DIRT := preload("res://assets/meowa/homestead/soil.png")
 const STONE := preload("res://assets/ground/cultivation/精致像素风灰青色青石板地面材质_长方形石板规则错缝铺设_细而清晰的深色砖缝_40699501/texture.png")

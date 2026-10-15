@@ -11,6 +11,9 @@ const MEOWA_TILES := [Vector2(0,3),Vector2(3,3),Vector2(0,0),Vector2(3,2),
 
 @export var label := "新地表":
 	set(value): label = value; emit_changed()
+## 隐藏旧画笔选项，仍保留固定编号、已有铺设和原型引用。
+@export var show_in_painter := true:
+	set(value): show_in_painter = value; emit_changed()
 ## 自定义地表独立绘制；草地与道路沿用现有地图的底层和道路标记。
 @export var target: Target = Target.CUSTOM:
 	set(value): target = value; emit_changed()
@@ -21,6 +24,26 @@ const MEOWA_TILES := [Vector2(0,3),Vector2(3,3),Vector2(0,0),Vector2(3,2),
 	set(value): texture = value; emit_changed()
 @export var mode: Mode = Mode.TEXTURE:
 	set(value): mode = value; emit_changed()
+## 整张纹理或图集单块的重复尺寸（米）；零值沿用一格一张。使用世界坐标，旋转镜头不改变铺装。
+@export var texture_meters := Vector2.ZERO:
+	set(value): texture_meters = value; emit_changed()
+## 透明装饰下面的固定画笔编号；0 透出原地表。底层只采样一层。
+@export_range(0,255,1) var underlay_paint_id := 0:
+	set(value): underlay_paint_id = value; emit_changed()
+## 原图奇数像素接口的旋转基准；默认不补偿，砖格分隔带使用半像素。
+@export var snap_pivot_offset := Vector2.ZERO:
+	set(value): snap_pivot_offset = value; emit_changed()
+
+@export_group("材质贴图")
+## 线性灰度：白色无遮挡，暗色为砖缝与凹槽遮蔽。须与颜色纹理同画布、同切片。
+@export var ao_texture: Texture2D:
+	set(value): ao_texture = value; emit_changed()
+## 线性灰度：白色粗糙，暗色光滑；不改变原颜色纹理。
+@export var roughness_texture: Texture2D:
+	set(value): roughness_texture = value; emit_changed()
+## 可选湿润粗糙度，沿用现有天气湿润程度混合。
+@export var wet_roughness_texture: Texture2D:
+	set(value): wet_roughness_texture = value; emit_changed()
 
 @export_group("图集")
 ## 图集的列数、行数；整张纹理模式忽略此值。
@@ -54,7 +77,11 @@ const MEOWA_TILES := [Vector2(0,3),Vector2(3,3),Vector2(0,0),Vector2(3,2),
 
 func validation_error() -> String:
 	if not texture: return "请选择纹理。"
+	if texture_meters != Vector2.ZERO and (texture_meters.x <= 0 or texture_meters.y <= 0):
+		return "纹理重复尺寸需同时大于 0；零值沿用地形格。"
 	if normal_texture and normal_texture.get_size() != texture.get_size(): return "法线图尺寸须与颜色纹理一致。"
+	for data in [ao_texture, roughness_texture, wet_roughness_texture]:
+		if data and data.get_size() != texture.get_size(): return "AO 与粗糙度贴图须与颜色纹理同尺寸、同切片。"
 	if target == Target.PATH and mode != Mode.CORNER_ATLAS:
 		return "原道路画笔需要过渡图集；整张纹理或单块图集请使用自定义地表。"
 	if target == Target.GRASS and mode == Mode.CORNER_ATLAS:
@@ -76,10 +103,11 @@ func _inside(tile: Vector2i) -> bool:
 	return tile.x >= 0 and tile.y >= 0 and tile.x < atlas_grid.x and tile.y < atlas_grid.y
 
 func source_image() -> Image:
-	var image := texture.get_image()
+	var image: Image = texture.get_image().duplicate()
 	if image.is_compressed(): image.decompress()
 	image.clear_mipmaps()
 	image.convert(Image.FORMAT_RGBA8)
+	image = _atlas_margin(image, texture, false)
 	if mode == Mode.ATLAS_TILE:
 		var tile_size := Vector2i(image.get_size()) / atlas_grid
 		image = image.get_region(Rect2i(atlas_tile * tile_size,tile_size))
@@ -91,17 +119,56 @@ func surface() -> Vector3:
 func normal_image() -> Image:
 	var source := normal_texture if normal_texture else SurfaceNormalMaps.for_texture(texture)
 	if not source: return null
-	var image := source.get_image()
+	var image: Image = source.get_image().duplicate()
 	if image.is_compressed(): image.decompress()
 	image.clear_mipmaps()
 	image.convert(Image.FORMAT_RGBA8)
 	if not normal_texture and texture is AtlasTexture:
 		var atlas := texture as AtlasTexture
 		if atlas.region.has_area(): image = image.get_region(Rect2i(atlas.region))
+	image = _atlas_margin(image, normal_texture if normal_texture else texture, true)
 	if mode == Mode.ATLAS_TILE:
 		var tile_size := Vector2i(image.get_size()) / atlas_grid
 		image = image.get_region(Rect2i(atlas_tile * tile_size, tile_size))
 	return image
+
+func _atlas_margin(image: Image, source: Texture2D, normal: bool) -> Image:
+	if not source is AtlasTexture or source.get_size() == Vector2(image.get_size()): return image
+	var atlas := source as AtlasTexture
+	var padded := Image.create_empty(int(source.get_width()), int(source.get_height()), false, Image.FORMAT_RGBA8)
+	padded.fill(Color(0.5, 0.5, 1, 0) if normal else Color(0, 0, 0, 0))
+	padded.blit_rect(image, Rect2i(Vector2i.ZERO, image.get_size()), Vector2i(atlas.margin.position))
+	return padded
+
+func material_flags() -> int:
+	return (1 if ao_texture else 0) | (2 if roughness_texture else 0) | (4 if wet_roughness_texture else 0)
+
+## Runtime-only linear channels: AO / dry roughness / wet roughness / reserved.
+func material_image() -> Image:
+	if material_flags() == 0: return null
+	var size := source_image().get_size()
+	var planes: Array[PackedByteArray] = []
+	for source in [ao_texture, roughness_texture, wet_roughness_texture]:
+		if not source:
+			planes.append(PackedByteArray())
+			continue
+		var image: Image = source.get_image().duplicate()
+		if image.is_compressed(): image.decompress()
+		image.clear_mipmaps()
+		image.convert(Image.FORMAT_RGBA8)
+		image = _atlas_margin(image, source, false)
+		if mode == Mode.ATLAS_TILE:
+			var tile_size := Vector2i(image.get_size()) / atlas_grid
+			image = image.get_region(Rect2i(atlas_tile * tile_size, tile_size))
+		planes.append(image.get_data())
+	var pixels := PackedByteArray()
+	pixels.resize(size.x * size.y * 4)
+	for index in range(0, pixels.size(), 4):
+		pixels[index] = (planes[0][index] if planes[0][index+3]>127 else 255) if not planes[0].is_empty() else 255
+		pixels[index+1] = (planes[1][index] if planes[1][index+3]>127 else 255) if not planes[1].is_empty() else roundi(roughness*255)
+		pixels[index+2] = (planes[2][index] if planes[2][index+3]>127 else 255) if not planes[2].is_empty() else roundi(roughness*255)
+		pixels[index+3] = 0 # Metalness continues to use the brush's scalar, currently zero.
+	return Image.create_from_data(size.x,size.y,false,Image.FORMAT_RGBA8,pixels)
 
 ## 一笔内只修改格子，完成整笔后由画笔发送一次 changed 并登记撤销。
 func stamp(data: TerrainData,index: int,erase: bool) -> Vector3i:

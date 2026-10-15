@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://nonwwjcstfxt"]
 
 [ext_resource type="SpriteFrames" uid="uid://d0bbnyltugo8y" path="res://assets/meowa/slime/animations.tres" id="frames"]
-[ext_resource type="Script" uid="uid://cnj43gbbfi4sc" path="res://scripts/character_lighting.gd" id="lighting"]
+[ext_resource type="Script" uid="uid://cnj43gbbfi4sc" path="res://scripts/rendering/character_lighting.gd" id="lighting"]
 [ext_resource type="Script" uid="uid://jkjmywicd43h" path="res://scripts/enemies/slime.gd" id="slime"]
 [ext_resource type="Texture2D" uid="uid://76scfvhfbk0f" path="res://assets/meowa/slime/frames/idle_front.png" id="texture"]
 

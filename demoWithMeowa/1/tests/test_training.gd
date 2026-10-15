@@ -23,8 +23,8 @@ func key(code: Key, pressed: bool) -> void:
 func run_checks() -> void:
 	var work := "D:/.codexfile/work/training-hut"
 	DirAccess.make_dir_recursive_absolute(work)
-	var catalog: LoadoutCatalog = load("res://data/loadout_catalog.tres")
-	var rules: TrainingRules = load("res://data/training_rules.tres").duplicate()
+	var catalog: LoadoutCatalog = load("res://data/rpg/loadout_catalog.tres")
+	var rules: TrainingRules = load("res://data/rpg/training_rules.tres").duplicate()
 	var state := LoadoutState.new(catalog,4,rules)
 	check(state.get_character_attributes() == {"health":100.0,"mana":100.0,"attack":10.0,"defense":5.0},"Base attributes exist without equipment")
 	check(state.acquire_equipment("sword") and state.equip("sword"),"Equip existing item")

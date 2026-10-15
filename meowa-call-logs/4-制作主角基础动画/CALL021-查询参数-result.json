@@ -1,0 +1,10 @@
+{
+  "status": "success",
+  "startedAt": "2026-10-10T13:44:16+08:00",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "endedAt": "2026-10-10T13:44:17+08:00",
+  "exitCode": 0,
+  "output": "usage: meowart_api.py animation-edit-run [-h] [--output-dir OUTPUT_DIR]\n                                         --animation-file ANIMATION_FILE\n                                         [--reference-image REFERENCE_IMAGE]\n                                         --prompt PROMPT [--mode {pixel,hd}]\n                                         [--remove-bg-method {none,standard,advanced}]\n                                         [--generation-speed {normal,fast}]\n\noptions:\n  -h, --help            show this help message and exit\n  --output-dir, --output_dir OUTPUT_DIR\n                        Output root; the runner creates one task subdirectory\n  --animation-file ANIMATION_FILE\n                        Animated GIF or WebP input\n  --reference-image REFERENCE_IMAGE\n                        Optional visual reference; repeat up to 8 times\n  --prompt PROMPT       Describe the requested animation edit\n  --mode {pixel,hd}\n  --remove-bg-method {none,standard,advanced}\n  --generation-speed {normal,fast}\n"
+}

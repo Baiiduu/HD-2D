@@ -73,7 +73,10 @@ func run() -> void:
 	var b := option(&"b", false)
 	var c := option(&"c")
 	check(ui.present_choices([a, b, c]), "Data-driven three-option screen opens")
-	check(ui.get_selected_option() == a, "First available candidate is selected")
+	check(ui.get_selected_option() == null and ui._confirm.disabled, "New draw requires an explicit selection")
+	key(KEY_SPACE)
+	check(confirmed.is_empty() and ui.is_open, "A carried jump/confirm key cannot claim the first card")
+	ui.select_option(&"a")
 	check(ui._cards.size() == 3, "Card count follows supplied data")
 	ui.title = "等级 123 · 成长选择"
 	var header: Label = ui.get_node("Root/Content/Header/Title")
@@ -128,6 +131,7 @@ func run() -> void:
 	await create_timer(0.1).timeout
 	paused = true
 	check(ui.present_choices([a]), "UI can operate during an externally requested pause")
+	ui.select_option(&"a")
 	key(KEY_ENTER)
 	check(paused and confirmed == [&"c", &"a"], "Keyboard confirmation preserves an external pause")
 	paused = false

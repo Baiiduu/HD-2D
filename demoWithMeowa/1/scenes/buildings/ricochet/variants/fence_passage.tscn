@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/buildings/ricochet_prop.gd" id="prop"]
+
+[node name="FencePassage" type="Node3D"]
+script = ExtResource("prop")
+kind = 1
+dimensions = Vector3(5.4, 1.5, 0.4)
+layout_variant = 1
+passage_width = 2.2

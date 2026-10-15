@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="SpawnVisualPreset" format=4]
+[gd_resource type="Resource" script_class="SpawnVisualPreset" format=4 uid="uid://c1uxnvlohoi5d"]
 
-[ext_resource type="Script" path="res://scripts/world/spawn_visual_preset.gd" id="1_j61e6"]
+[ext_resource type="Script" uid="uid://c8qywwip337bn" path="res://scripts/world/spawn_visual_preset.gd" id="1_j61e6"]
 
 [resource]
 script = ExtResource("1_j61e6")
@@ -98,7 +98,6 @@ node_values = {
 "window_glow_energy": 0.8
 },
 "MapEffects/ArtDirection": {
-"hemisphere_fill_enabled": false,
 "ambient_color": Color(0.5, 0.52, 0.6, 1),
 "ambient_energy": 0.6,
 "bloom": 0.18,
@@ -130,6 +129,7 @@ node_values = {
 "fog_color": Color(0.38, 0.35, 0.4, 1),
 "fog_end": 99.0,
 "halo_energy": 0.35,
+"hemisphere_fill_enabled": false,
 "horizon_glow": 0.5,
 "horizon_glow_color": Color(0.75, 0.42, 0.24, 1),
 "lamp_dust_color": Color(1, 0.84, 0.48, 1),

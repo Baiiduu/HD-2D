@@ -3,8 +3,8 @@ class_name BattleArea
 extends Node3D
 
 ## 连续地图南侧战场。地形显式重建，运行时沿用保存数据，保留地表画笔的修改。
-const HOME_DATA := preload("res://data/spawn_terrain.tres")
-const DATA_PATH := "res://data/world_terrain.tres"
+const HOME_DATA := preload("res://data/world/spawn_terrain.tres")
+const DATA_PATH := "res://data/world/world_terrain.tres"
 
 @export_group("地图连接")
 @export var terrain: Terrain
@@ -26,6 +26,10 @@ const DATA_PATH := "res://data/world_terrain.tres"
 @export_range(4.8, 8.0, 1.6, "suffix:m") var ramp_width := 4.8
 ## 固定远侧台地轮廓和零散卵石的位置；不改变小院的花草随机种子。
 @export var layout_seed := 13102026
+## 已追加区域的地表不参与旧战区重建；坐标采用 Terrain 的 X/Z 米数。
+@export var preserved_areas: Array[Rect2] = []
+## 锁定旧区域的地编外框，避免地图向东扩展时改变小院与原战区的随机分布。
+@export var dressing_bounds := Rect2()
 @export_tool_button("重建战斗区地形", "Reload") var rebuild_button = rebuild_terrain
 @export_tool_button("保存战斗区地形", "Save") var save_button = save_terrain
 
@@ -68,13 +72,22 @@ func get_entry_position() -> Vector3:
 
 ## 只在按钮或制作工具中执行；小院范围保留已有数据，战场范围重新生成。
 func make_terrain(source: TerrainData) -> TerrainData:
+	if is_instance_valid(get_parent()) and get_parent().get_meta("battle_only", false):
+		var cropped: TerrainData = source.duplicate(true)
+		var rect := get_activity_rect()
+		var first := Vector2i((rect.position / source.cell_size + Vector2.ONE * 0.5).floor())
+		var last := Vector2i((rect.end / source.cell_size - Vector2.ONE * 0.5).ceil())
+		cropped.resize(first, last - first + Vector2i.ONE)
+		return cropped
 	var result := TerrainData.new()
 	result.cell_size = source.cell_size
 	result.layer_height = source.layer_height
 	var home_rect := HOME_DATA.get_world_rect()
 	var core := get_core_rect()
 	var activity := get_activity_rect()
-	var bounds := activity.grow(scenery_margin).merge(home_rect)
+	var generated_bounds := activity.grow(scenery_margin).merge(home_rect)
+	var bounds := generated_bounds
+	if not preserved_areas.is_empty(): bounds = bounds.merge(source.get_world_rect())
 	var first := Vector2i((bounds.position / result.cell_size + Vector2.ONE * 0.5).floor())
 	var last := Vector2i((bounds.end / result.cell_size - Vector2.ONE * 0.5).ceil())
 	result.size = Vector2i.ZERO
@@ -88,7 +101,10 @@ func make_terrain(source: TerrainData) -> TerrainData:
 			var cell := result.origin + Vector2i(x, z)
 			var index := z * result.size.x + x
 			var point := Vector2(cell) * result.cell_size
-			if HOME_DATA.has_cell(cell):
+			var preserved := not generated_bounds.has_point(point) and not preserved_areas.is_empty()
+			for rect in preserved_areas:
+				if rect.has_point(point): preserved = true; break
+			if HOME_DATA.has_cell(cell) or (preserved and source.has_cell(cell)):
 				var existing := source if source.has_cell(cell) else HOME_DATA
 				var local := cell - existing.origin
 				var old_index := local.y * existing.size.x + local.x
@@ -159,7 +175,9 @@ func rebuild_terrain() -> void:
 
 func save_terrain() -> void:
 	if not Engine.is_editor_hint() or not terrain or not terrain.data: return
+	var uid := ResourceLoader.get_resource_uid(DATA_PATH)
 	var error := ResourceSaver.save(terrain.data, DATA_PATH, ResourceSaver.FLAG_CHANGE_PATH)
+	if error == OK and uid != ResourceUID.INVALID_ID: error = ResourceSaver.set_uid(DATA_PATH, uid)
 	if error != OK: push_error("战斗区地形保存失败：" + error_string(error))
 
 func _apply_layout() -> void:
@@ -207,8 +225,15 @@ func _apply_dressing() -> void:
 	_regions.clear()
 	var core := get_core_rect()
 	var ring := get_activity_rect()
+	if get_parent().get_meta("battle_only", false):
+		_region("Core", core, core_density, true)
+		_region("West", Rect2(ring.position, Vector2(loop_width, ring.size.y)), edge_density)
+		_region("East", Rect2(core.end.x, ring.position.y, loop_width, ring.size.y), edge_density)
+		_region("North", Rect2(core.position.x, ring.position.y, core.size.x, loop_width), edge_density)
+		_region("South", Rect2(core.position.x, core.end.y, core.size.x, loop_width), edge_density)
+		return
 	var home := HOME_DATA.get_world_rect()
-	var bounds := terrain.data.get_world_rect()
+	var bounds := dressing_bounds if dressing_bounds.has_area() else terrain.data.get_world_rect()
 	_region("Core", core, core_density, true)
 	_region("West", Rect2(ring.position, Vector2(loop_width, ring.size.y)), edge_density)
 	_region("East", Rect2(core.end.x, ring.position.y, loop_width, ring.size.y), edge_density)

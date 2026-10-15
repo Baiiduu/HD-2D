@@ -1,0 +1,50 @@
+[INFO] planned_output_dir=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\back-pose-retry\把人物转身180度_画出他完全背对观众的后视图_看到后脑勺_耳机头梁和黄色连帽衫_c56d39b7
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=success stage=completed progress=已完成:100%
+[INFO] downloading_outputs count=2 to=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\back-pose-retry\把人物转身180度_画出他完全背对观众的后视图_看到后脑勺_耳机头梁和黄色连帽衫_c56d39b7
+[INFO] downloaded=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\back-pose-retry\把人物转身180度_画出他完全背对观众的后视图_看到后脑勺_耳机头梁和黄色连帽衫_c56d39b7\remove_bg.png
+[INFO] saved_dir=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\back-pose-retry\把人物转身180度_画出他完全背对观众的后视图_看到后脑勺_耳机头梁和黄色连帽衫_c56d39b7
+{
+  "job_id": "job_61ec27ab69e04cca957e23f17301514f",
+  "job_type": "workflow",
+  "status": "success",
+  "next_poll_after_seconds": 0,
+  "animation_type": null,
+  "queue": {
+    "position": 0,
+    "estimated_wait_seconds": 0
+  },
+  "progress": {
+    "label": "已完成",
+    "percent": 100
+  },
+  "result": {
+    "job_name": "051908_image_edit_180",
+    "remove_bg_path": "https://media.meowa.ai/public/image-edit/output/2026-10-10/05%3A19%3A29-workflow-38cb5c5d51974a58b79c7f86/remove_bg.png",
+    "url": "https://media.meowa.ai/public/image-edit/output/2026-10-10/05%3A19%3A29-workflow-38cb5c5d51974a58b79c7f86/remove_bg.png"
+  },
+  "outputs": [
+    {
+      "output_key": "primary",
+      "media_type": "image",
+      "mime_type": null,
+      "asset_id": null,
+      "thumb_url": null,
+      "width": null,
+      "height": null,
+      "byte_size": null
+    }
+  ],
+  "error": null,
+  "error_code": null,
+  "error_id": null,
+  "credit_refund": {
+    "refunded": false,
+    "amount": 0
+  }
+}

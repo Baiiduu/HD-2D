@@ -1,0 +1,49 @@
+{
+  "status": "success",
+  "startedAt": "2026-10-10T13:17:42+08:00",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "endedAt": "2026-10-10T13:18:08+08:00",
+  "exitCode": 0,
+  "output": "[INFO] planned_output_dir=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\back-pose\\让同一个黄衣青年背对观众站立_双脚自然落地_保留原来的耳机_发型_黄衣_深蓝长裤_43884827\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=success stage=completed progress=已完成:100%\n[INFO] downloading_outputs count=2 to=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\back-pose\\让同一个黄衣青年背对观众站立_双脚自然落地_保留原来的耳机_发型_黄衣_深蓝长裤_43884827\n[INFO] downloaded=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\back-pose\\让同一个黄衣青年背对观众站立_双脚自然落地_保留原来的耳机_发型_黄衣_深蓝长裤_43884827\\remove_bg.png\n[INFO] saved_dir=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\back-pose\\让同一个黄衣青年背对观众站立_双脚自然落地_保留原来的耳机_发型_黄衣_深蓝长裤_43884827\n{\n  \"job_id\": \"job_98ef5e8cf9634c65b3c4688bbbd3a488\",\n  \"job_type\": \"workflow\",\n  \"status\": \"success\",\n  \"next_poll_after_seconds\": 0,\n  \"animation_type\": null,\n  \"queue\": {\n    \"position\": 0,\n    \"estimated_wait_seconds\": 0\n  },\n  \"progress\": {\n    \"label\": \"已完成\",\n    \"percent\": 100\n  },\n  \"result\": {\n    \"job_name\": \"051743_image_edit_image_edit\",\n    \"remove_bg_path\": \"https://media.meowa.ai/public/image-edit/output/2026-10-10/05%3A18%3A03-workflow-edf5f30cae454de88baf0eb0/remove_bg.png\",\n    \"url\": \"https://media.meowa.ai/public/image-edit/output/2026-10-10/05%3A18%3A03-workflow-edf5f30cae454de88baf0eb0/remove_bg.png\"\n  },\n  \"outputs\": [\n    {\n      \"output_key\": \"primary\",\n      \"media_type\": \"image\",\n      \"mime_type\": null,\n      \"asset_id\": null,\n      \"thumb_url\": null,\n      \"width\": null,\n      \"height\": null,\n      \"byte_size\": null\n    }\n  ],\n  \"error\": null,\n  \"error_code\": null,\n  \"error_id\": null,\n  \"credit_refund\": {\n    \"refunded\": false,\n    \"amount\": 0\n  }\n}\n",
+  "returnedData": {
+    "job_id": "job_98ef5e8cf9634c65b3c4688bbbd3a488",
+    "job_type": "workflow",
+    "status": "success",
+    "next_poll_after_seconds": 0,
+    "animation_type": null,
+    "queue": {
+      "position": 0,
+      "estimated_wait_seconds": 0
+    },
+    "progress": {
+      "label": "已完成",
+      "percent": 100
+    },
+    "result": {
+      "job_name": "051743_image_edit_image_edit",
+      "remove_bg_path": "https://media.meowa.ai/public/image-edit/output/2026-10-10/05%3A18%3A03-workflow-edf5f30cae454de88baf0eb0/remove_bg.png",
+      "url": "https://media.meowa.ai/public/image-edit/output/2026-10-10/05%3A18%3A03-workflow-edf5f30cae454de88baf0eb0/remove_bg.png"
+    },
+    "outputs": [
+      {
+        "output_key": "primary",
+        "media_type": "image",
+        "mime_type": null,
+        "asset_id": null,
+        "thumb_url": null,
+        "width": null,
+        "height": null,
+        "byte_size": null
+      }
+    ],
+    "error": null,
+    "error_code": null,
+    "error_id": null,
+    "credit_refund": {
+      "refunded": false,
+      "amount": 0
+    }
+  }
+}

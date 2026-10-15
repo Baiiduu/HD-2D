@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="LeafChargerDefinition" format=3 uid="uid://sn0jhc1s106t"]
+
+[ext_resource type="PackedScene" path="res://scenes/enemies/leaf_charger.tscn" id="actor"]
+[ext_resource type="Script" uid="uid://dio5kbm1wtyaj" path="res://scripts/combat/leaf_charger_definition.gd" id="definition"]
+
+[resource]
+script = ExtResource("definition")
+body_radius = 0.35
+body_height = 0.72
+enemy_id = &"leaf_charger"
+scene = ExtResource("actor")
+display_name = "卷叶冲锋虫"
+role = 1
+health = 100.0
+move_speed = 1.15
+attack_damage = 10.0
+experience_reward = 6
+spawn_clearance = 0.4
+navigation_radius = 0.4
+population_cost = 4
+max_alive = 4

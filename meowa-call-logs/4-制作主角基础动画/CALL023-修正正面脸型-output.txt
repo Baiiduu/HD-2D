@@ -1,0 +1,50 @@
+[INFO] planned_output_dir=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\front-face-slim-retry\Keep_this_exact_front-facing_standing_character_Narrow_only_the_cheeks_by_one_pixel_on_each_side_Keep_the_hair_7a0e75da
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=success stage=completed progress=已完成:100%
+[INFO] downloading_outputs count=2 to=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\front-face-slim-retry\Keep_this_exact_front-facing_standing_character_Narrow_only_the_cheeks_by_one_pixel_on_each_side_Keep_the_hair_7a0e75da
+[INFO] downloaded=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\front-face-slim-retry\Keep_this_exact_front-facing_standing_character_Narrow_only_the_cheeks_by_one_pixel_on_each_side_Keep_the_hair_7a0e75da\remove_bg.png
+[INFO] saved_dir=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\front-face-slim-retry\Keep_this_exact_front-facing_standing_character_Narrow_only_the_cheeks_by_one_pixel_on_each_side_Keep_the_hair_7a0e75da
+{
+  "job_id": "job_9def0bfcc00a48d6ba5f90fc6e72a66b",
+  "job_type": "workflow",
+  "status": "success",
+  "next_poll_after_seconds": 0,
+  "animation_type": null,
+  "queue": {
+    "position": 0,
+    "estimated_wait_seconds": 0
+  },
+  "progress": {
+    "label": "已完成",
+    "percent": 100
+  },
+  "result": {
+    "job_name": "054653_image_edit_Keep_this_exact_front_facing_standing_character_Narrow_only_the_",
+    "remove_bg_path": "https://media.meowa.ai/public/image-edit/output/2026-10-10/05%3A47%3A14-workflow-68adb30311fe479eb2bd8a30/remove_bg.png",
+    "url": "https://media.meowa.ai/public/image-edit/output/2026-10-10/05%3A47%3A14-workflow-68adb30311fe479eb2bd8a30/remove_bg.png"
+  },
+  "outputs": [
+    {
+      "output_key": "primary",
+      "media_type": "image",
+      "mime_type": null,
+      "asset_id": null,
+      "thumb_url": null,
+      "width": null,
+      "height": null,
+      "byte_size": null
+    }
+  ],
+  "error": null,
+  "error_code": null,
+  "error_id": null,
+  "credit_refund": {
+    "refunded": false,
+    "amount": 0
+  }
+}

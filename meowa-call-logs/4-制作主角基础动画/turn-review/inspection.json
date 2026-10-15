@@ -1,0 +1,524 @@
+{
+  "source": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\turn-v2\\人物保持姿势和外观不变_原地居中_原地缓慢旋转360\\meowa_animation.webp",
+  "dimensions": [
+    80,
+    80
+  ],
+  "frame_count": 32,
+  "duration_ms": 4000,
+  "frames": [
+    {
+      "frame": 0,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        28,
+        11,
+        51,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 1,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        28,
+        11,
+        51,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 2,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        28,
+        11,
+        51,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 3,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        28,
+        11,
+        51,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 4,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        29,
+        11,
+        51,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 5,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        30,
+        11,
+        52,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 6,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        30,
+        11,
+        52,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 7,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        30,
+        11,
+        53,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 8,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        29,
+        11,
+        53,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 9,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        29,
+        11,
+        53,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 10,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        29,
+        11,
+        53,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 11,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        30,
+        11,
+        51,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 12,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        30,
+        11,
+        51,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 13,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        29,
+        11,
+        50,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 14,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        28,
+        11,
+        52,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 15,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        28,
+        11,
+        52,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 16,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        28,
+        11,
+        52,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 17,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        28,
+        11,
+        52,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 18,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        29,
+        11,
+        51,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 19,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        28,
+        11,
+        50,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 20,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        27,
+        11,
+        50,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 21,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        27,
+        11,
+        50,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 22,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        27,
+        11,
+        50,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 23,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        27,
+        11,
+        50,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 24,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        27,
+        11,
+        50,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 25,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        28,
+        11,
+        50,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 26,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        28,
+        11,
+        50,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 27,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        29,
+        11,
+        51,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 28,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        29,
+        11,
+        52,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 29,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        28,
+        11,
+        52,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 30,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        28,
+        11,
+        51,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    },
+    {
+      "frame": 31,
+      "corner_rgba": [
+        195,
+        195,
+        195,
+        255
+      ],
+      "approximate_bounds": [
+        28,
+        11,
+        51,
+        69
+      ],
+      "note": "Threshold-based inspection only; no background pixels edited"
+    }
+  ],
+  "art_acceptance": "pending visual review"
+}

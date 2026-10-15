@@ -1,0 +1,40 @@
+{
+  "id": "CALL006",
+  "task": "4-制作主角基础动画",
+  "beijingTime": "2026-10-10T13:05:10.000+08:00",
+  "purpose": "准备主角轻跑起始姿势",
+  "tool": "Meowa CLI / image-edit-run",
+  "executionPython": "C:/Users/PC/AppData/Local/Programs/Python/Python314/python.exe",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "arguments": [
+    "image-edit-run",
+    "--reference-image",
+    "D:/Project/HD-2DMap/demoWithMeowa/1/assets/meowa/characters/八个同一精致像素画风的全身游戏角色_现代城市青年_咖啡店店员_赛博朋克女黑客_fb335224/sprite_00.png",
+    "--prompt",
+    "把这个黄衣青年改为向右轻跑的第一帧姿势：保持原来的三分之四视角，一条腿向前、一条腿向后，手臂自然交错。保留同一个人的发型、脸、黄衣、深色裤子、鞋子、像素密度和身体大小，透明背景，人物仍放在原图位置。",
+    "--mode",
+    "pixel",
+    "--strict",
+    "--generation-model",
+    "nano-banana",
+    "--resolution",
+    "1K",
+    "--generation-speed",
+    "normal",
+    "--remove-bg-method",
+    "standard",
+    "--output-dir",
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/run-pose"
+  ],
+  "prompt": "把这个黄衣青年改为向右轻跑的第一帧姿势：保持原来的三分之四视角，一条腿向前、一条腿向后，手臂自然交错。保留同一个人的发型、脸、黄衣、深色裤子、鞋子、像素密度和身体大小，透明背景，人物仍放在原图位置。",
+  "negativePrompt": null,
+  "referenceImages": [
+    "D:/Project/HD-2DMap/demoWithMeowa/1/assets/meowa/characters/八个同一精致像素画风的全身游戏角色_现代城市青年_咖啡店店员_赛博朋克女黑客_fb335224/sprite_00.png"
+  ],
+  "status": "pending",
+  "relatedCall": null,
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回"
+}

@@ -1,0 +1,45 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started 项目初始化 (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | 正在扫描文件结构……[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | 正在加载全局类名……[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | 正在校验 GDExtension……[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | 正在创建自动加载脚本……[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | 正在初始化插件……[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | 正在启动文件扫描……[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1m_update_scan_actions[22m | Started 正在扫描动作…… (22 steps)[39m[0m
+[   0% ] [90m[1m_update_scan_actions[22m | flower_01.png[39m[0m
+[   4% ] [90m[1m_update_scan_actions[22m | flower_02.png[39m[0m
+[   8% ] [90m[1m_update_scan_actions[22m | flower_03.png[39m[0m
+[  13% ] [90m[1m_update_scan_actions[22m | flower_04.png[39m[0m
+[  17% ] [90m[1m_update_scan_actions[22m | flower_05.png[39m[0m
+[  21% ] [90m[1m_update_scan_actions[22m | flower_06.png[39m[0m
+[  26% ] [90m[1m_update_scan_actions[22m | grass_01.png[39m[0m
+[  30% ] [90m[1m_update_scan_actions[22m | grass_02.png[39m[0m
+[  34% ] [90m[1m_update_scan_actions[22m | grass_03.png[39m[0m
+[  39% ] [90m[1m_update_scan_actions[22m | grass_04.png[39m[0m
+[  43% ] [90m[1m_update_scan_actions[22m | grass_05.png[39m[0m
+[  47% ] [90m[1m_update_scan_actions[22m | grass_06.png[39m[0m
+[  52% ] [90m[1m_update_scan_actions[22m | pebble_01.png[39m[0m
+[  56% ] [90m[1m_update_scan_actions[22m | pebble_02.png[39m[0m
+[  60% ] [90m[1m_update_scan_actions[22m | pebble_03.png[39m[0m
+[  65% ] [90m[1m_update_scan_actions[22m | pebble_04.png[39m[0m
+[  69% ] [90m[1m_update_scan_actions[22m | pebble_05.png[39m[0m
+[  73% ] [90m[1m_update_scan_actions[22m | pebble_06.png[39m[0m
+[  78% ] [90m[1m_update_scan_actions[22m | idle.webp[39m[0m
+[  82% ] [90m[1m_update_scan_actions[22m | idle_back.webp[39m[0m
+[  86% ] [90m[1m_update_scan_actions[22m | run.webp[39m[0m
+[  91% ] [90m[1m_update_scan_actions[22m | run_back.webp[39m[0m
+[92m[ DONE ][39m [1m_update_scan_actions[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started 正在加载编辑器 (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | 正在加载编辑器布局……[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | 正在加载停靠面板……[39m[0m
+[  33% ] [90m[1mloading_editor_layout[22m | 正在重新打开场景……[39m[0m
+[  50% ] [90m[1mloading_editor_layout[22m | 正在加载中央编辑器布局……[39m[0m
+[  66% ] [90m[1mloading_editor_layout[22m | 正在加载插件窗口布局……[39m[0m
+[  83% ] [90m[1mloading_editor_layout[22m | 编辑器布局就绪。[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m

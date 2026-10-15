@@ -1,0 +1,5 @@
+[ERROR] {
+  "detail": "Please sign in and try again.",
+  "error_code": "authentication_required",
+  "error_id": "err_2269d4e64ef1495f"
+}

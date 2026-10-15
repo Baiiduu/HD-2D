@@ -10,7 +10,7 @@ const SMOKE = preload("res://shaders/visual/atmosphere_smoke.gdshader")
 const MOTES = preload("res://shaders/visual/atmosphere_motes.gdshader")
 const FLAME = preload("res://shaders/visual/atmosphere_flame.gdshader")
 const LEAVES = preload("res://shaders/visual/atmosphere_leaves.gdshader")
-const GRASS = preload("res://shaders/vegetation_wind.gdshader")
+const GRASS = preload("res://shaders/environment/vegetation_wind.gdshader")
 const BOKEH_SCRIPT = preload("res://scripts/visual/hdr_bokeh.gd")
 const GRASS_TEXTURES := ["res://assets/meowa/dressing/grass/grass_01.png", "res://assets/meowa/dressing/grass/grass_03.png"]
 
@@ -401,7 +401,10 @@ func _update_uniforms() -> void:
 		_foreground.global_position = camera.global_position - camera.global_basis.z * 17.0
 	if bokeh and camera is FollowCamera and not Engine.is_editor_hint():
 		bokeh.enabled = enabled and bokeh_enabled and (camera as FollowCamera).dof_enabled
-		bokeh.set_camera_state((camera as FollowCamera).get_focus_depth(), camera.near, camera.far)
+		var follow := camera as FollowCamera
+		var focus := follow.target.get_global_transform_interpolated().origin + Vector3.UP * follow.focus_height
+		var focus_depth := maxf(camera.near, -(camera.global_transform.affine_inverse() * focus).z)
+		bokeh.set_camera_state(focus_depth, camera.near, camera.far)
 
 func _process(delta: float) -> void:
 	_clock += delta

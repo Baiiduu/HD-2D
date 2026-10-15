@@ -3,6 +3,7 @@ class_name Terrain
 extends Node3D
 
 signal paint_palette_applied
+signal free_surface_committed
 
 const WATER_LIGHT_LAYER := 1 << 16 # Layer 17; beam accents use 18, mirrors use 19/20.
 
@@ -14,9 +15,12 @@ const WATER_LIGHT_LAYER := 1 << 16 # Layer 17; beam accents use 18, mirrors use 
 	set(value):
 		if data and data.changed.is_connected(_queue_rebuild):
 			data.changed.disconnect(_queue_rebuild)
+		if data and data.surface_changed.is_connected(_on_surface_changed):
+			data.surface_changed.disconnect(_on_surface_changed)
 		data = value
 		if data:
 			data.changed.connect(_queue_rebuild)
+			data.surface_changed.connect(_on_surface_changed)
 		_queue_rebuild()
 
 @export var top_material: ShaderMaterial:
@@ -37,6 +41,13 @@ const WATER_LIGHT_LAYER := 1 << 16 # Layer 17; beam accents use 18, mirrors use 
 		paint_palette = value
 		if paint_palette: paint_palette.changed.connect(_queue_palette_apply)
 		_queue_palette_apply()
+## 自由涂刷与完整图块的独立数据；不改变地形格、碰撞或旧 paint ID。
+@export var surface_data: TerrainSurfaceData:
+	set(value):
+		surface_data = value
+		if is_inside_tree(): _configure_surface_canvas.call_deferred()
+
+var surface_canvas: TerrainSurfaceCanvas
 
 @export_group("草地与崖壁材质衔接")
 ## 关闭后恢复原来的草沿和阴影线，不改变地形几何。
@@ -94,6 +105,18 @@ var _paint_textures: Dictionary = {}
 func _ready() -> void:
 	_apply_paint_palette()
 	_rebuild()
+	_configure_surface_canvas()
+
+func _configure_surface_canvas() -> void:
+	if not is_inside_tree(): return
+	if not is_instance_valid(surface_canvas):
+		surface_canvas = TerrainSurfaceCanvas.new()
+		surface_canvas.name = "SurfaceCanvas"
+		add_child(surface_canvas)
+	surface_canvas.configure(self)
+
+func notify_free_surface_committed() -> void:
+	free_surface_committed.emit()
 
 func _queue_palette_apply() -> void:
 	if _palette_apply_queued or not is_inside_tree(): return
@@ -128,10 +151,14 @@ func _process(_delta: float) -> void:
 	_sync_edge_wetness()
 
 func _queue_rebuild() -> void:
+	if data and data.surface_change_only: return
 	if _rebuild_queued or not is_inside_tree():
 		return
 	_rebuild_queued = true
 	_rebuild.call_deferred()
+
+func _on_surface_changed(_indices: PackedInt32Array) -> void:
+	if is_inside_tree(): refresh_surface()
 
 func _queue_transition_apply() -> void:
 	if _transition_apply_queued or not is_inside_tree():

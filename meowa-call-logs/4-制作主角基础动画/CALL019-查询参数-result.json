@@ -1,0 +1,10 @@
+{
+  "status": "success",
+  "startedAt": "2026-10-10T13:43:09+08:00",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "endedAt": "2026-10-10T13:43:09+08:00",
+  "exitCode": 0,
+  "output": "usage: meowart_api.py remove-background-run [-h] [--output-dir OUTPUT_DIR]\n                                            --image-file IMAGE_FILE\n                                            [--mode {pixel,hd}]\n                                            [--quality {standard,advanced}]\n                                            [--source-background-color SOURCE_BACKGROUND_COLOR]\n                                            [--remove-bg-batch-size {2,4,8,16}]\n                                            [--preserve-translucency | --no-preserve-translucency]\n\noptions:\n  -h, --help            show this help message and exit\n  --output-dir, --output_dir OUTPUT_DIR\n                        Output root; the runner creates one task subdirectory\n  --image-file IMAGE_FILE\n                        Image or MP4 input; GIF, WebP and MP4 return lossless\n                        WebP (no audio)\n  --mode {pixel,hd}     Source artwork type\n  --quality {standard,advanced}\n                        Pixel: standard general (default), advanced complex\n                        (max 32 frames). HD: standard budget (2\n                        credits/batch), advanced general (default, 5\n                        credits/batch). Pixel animation frames must be at most\n                        256x256; static images have no 256x256 restriction.\n  --source-background-color SOURCE_BACKGROUND_COLOR\n                        Solid source background color used by Pixel advanced;\n                        defaults to white\n  --remove-bg-batch-size {2,4,8,16}\n                        Frames per removal call; HD recommends 4; ignored for\n                        Pixel advanced\n  --preserve-translucency, --no-preserve-translucency\n                        Keep soft alpha in Pixel removal; HD always keeps soft\n                        alpha; no extra credits\n"
+}

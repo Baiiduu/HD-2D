@@ -1,0 +1,33 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/city_plaza.gd" id="script"]
+[ext_resource type="Shader" path="res://shaders/terrain/city_plaza.gdshader" id="shader"]
+[ext_resource type="Texture2D" path="res://assets/meowa/city_plaza/stone.png" id="stone"]
+[ext_resource type="Texture2D" path="res://assets/meowa/city_plaza/worn.png" id="worn"]
+[ext_resource type="Texture2D" path="res://assets/meowa/city_plaza/strip.png" id="strip"]
+[ext_resource type="Texture2D" path="res://assets/meowa/city_plaza/trim.png" id="trim"]
+[ext_resource type="Texture2D" path="res://assets/meowa/city_plaza/octagon.png" id="octagon"]
+[ext_resource type="Texture2D" path="res://assets/meowa/city_plaza/arrow.png" id="arrow"]
+[ext_resource type="Texture2D" path="res://assets/meowa/city_plaza/inlay.png" id="inlay"]
+[ext_resource type="Texture2D" path="res://assets/meowa/city_plaza/marker.png" id="marker"]
+[ext_resource type="Texture2D" path="res://assets/meowa/city_plaza/normals/stone.png" id="stone_normal"]
+[ext_resource type="Texture2D" path="res://assets/meowa/city_plaza/normals/strip.png" id="strip_normal"]
+[ext_resource type="Texture2D" path="res://assets/meowa/city_plaza/normals/octagon.png" id="octagon_normal"]
+
+[sub_resource type="ShaderMaterial" id="material"]
+shader = ExtResource("shader")
+shader_parameter/stone_texture = ExtResource("stone")
+shader_parameter/worn_texture = ExtResource("worn")
+shader_parameter/strip_texture = ExtResource("strip")
+shader_parameter/trim_texture = ExtResource("trim")
+shader_parameter/octagon_texture = ExtResource("octagon")
+shader_parameter/arrow_texture = ExtResource("arrow")
+shader_parameter/inlay_texture = ExtResource("inlay")
+shader_parameter/marker_texture = ExtResource("marker")
+shader_parameter/stone_normal = ExtResource("stone_normal")
+shader_parameter/strip_normal = ExtResource("strip_normal")
+shader_parameter/octagon_normal = ExtResource("octagon_normal")
+
+[node name="CityPlaza" type="Node3D"]
+script = ExtResource("script")
+surface_material = SubResource("material")

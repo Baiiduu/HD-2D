@@ -42,6 +42,11 @@ var _attack_surface_query := ATTACK_SURFACE_QUERY.new()
 		if is_instance_valid(_ui): _ui.visible = value
 @export_group("波次配置")
 @export var default_enemy: WaveEnemyDefinition
+@export var enemy_catalog: WaveEnemyCatalog
+## 数量档位为空时沿用现有参数；正式地图用 horde_128，更大档位须单独压测，下一轮开始时生效。
+@export var population_rules: WavePopulationRules
+## 仅无尽模式应用；新挑战建立快照，当前局不受 Inspector 修改影响。
+@export var health_growth_rules: WaveHealthGrowthRules
 ## 留空沿用下面的递增波次；配置后每波可混合不同怪物。
 @export var waves: Array[WaveDefinition] = []
 @export_range(1, 12, 1) var total_waves := 3
@@ -50,7 +55,7 @@ var _attack_surface_query := ATTACK_SURFACE_QUERY.new()
 @export_range(0.2, 5.0, 0.1, "suffix:s") var spawn_interval := 1.3
 @export_range(0.2, 2.0, 0.1, "suffix:s") var spawn_warning := 0.8
 ## 达到上限时延后生成，不丢弃怪物或提前清波。
-@export_range(1, 200, 1) var max_active_enemies := 30
+@export_range(1, 4096, 1) var max_active_enemies := 30
 @export_range(1.0, 10.0, 0.1, "suffix:m") var spawn_safe_distance := 5.0
 @export_group("无尽波次")
 ## 用已配置波次开场，之后沿用末波生成后续波次；清波仍按 F 主动继续。
@@ -99,6 +104,7 @@ var result_reason := ""
 var outcome := Outcome.NONE
 var enemies: Array[WaveEnemy] = []
 var _path := TerrainPath.new()
+var _paths_by_radius: Dictionary = {}
 var _spawn_points := PackedVector3Array()
 var _spawn_queue: Array[Dictionary] = []
 var _run_waves: Array[WaveDefinition] = []
@@ -108,6 +114,15 @@ var _endless_cap := 160
 var _endless_interval_reduction := 0.03
 var _endless_min_interval := 0.18
 var _definition_snapshots: Dictionary = {}
+var _catalog_snapshots: Dictionary = {}
+var _run_population: WavePopulationRules
+var _run_health_growth: WaveHealthGrowthRules
+var _spatial_index := WaveEnemySpatialIndex.new()
+var _alive_by_definition: Dictionary = {}
+var _alive_by_role := PackedInt32Array([0, 0, 0, 0])
+var _population_cost := 0
+var _capacity_waiting := 0
+var _largest_spawn_clearance := 0.0
 var _scene_validity: Dictionary = {}
 var _spawn_zones: Array[WaveSpawnZone] = []
 var _zone_points: Dictionary = {}
@@ -176,6 +191,8 @@ func _initialize_path() -> void:
 	for enemy in get_tree().get_nodes_in_group(&"enemies"):
 		if enemy is CollisionObject3D: exclude.append(enemy.get_rid())
 	_path.build(terrain, 0.32, exclude, battle_area.grow(terrain.data.cell_size))
+	for radius: float in _paths_by_radius:
+		_paths_by_radius[radius].build(terrain, radius, exclude, battle_area.grow(terrain.data.cell_size))
 	_spawn_points.clear()
 	for id in _path.graph.get_point_ids():
 		var point := _path.graph.get_point_position(id)
@@ -291,6 +308,8 @@ func can_start_run() -> bool:
 
 func start_run() -> bool:
 	if not can_start_run(): return false
+	var skills := get_node_or_null("RunSkills") as RunSkills
+	if skills and not skills.has_learned_skill(): return skills.present_initial_choice()
 	_starting_run = true
 	completed_waves = 0
 	kills = 0
@@ -336,6 +355,31 @@ func _prepare_run() -> bool:
 	_endless_interval_reduction = endless_interval_reduction
 	_endless_min_interval = endless_min_spawn_interval
 	_definition_snapshots.clear()
+	_catalog_snapshots.clear()
+	_spatial_index.clear()
+	_alive_by_definition.clear()
+	_alive_by_role.fill(0)
+	_population_cost = 0
+	_largest_spawn_clearance = 0.0
+	_paths_by_radius.clear()
+	_run_population = null
+	_run_health_growth = null
+	if health_growth_rules:
+		var error := health_growth_rules.validation_error()
+		if not error.is_empty():
+			_finish("挑战配置错误 · " + error)
+			return false
+		_run_health_growth = health_growth_rules.duplicate() as WaveHealthGrowthRules
+	if population_rules:
+		var error := population_rules.validation_error()
+		if not error.is_empty():
+			_finish("挑战配置错误 · " + error)
+			return false
+		_run_population = population_rules.duplicate(true) as WavePopulationRules
+		_endless_growth = _run_population.enemies_per_wave_increment
+		_endless_cap = _run_population.max_wave_enemies
+		_endless_interval_reduction = _run_population.interval_reduction_per_wave
+		_endless_min_interval = _run_population.min_spawn_interval
 	_scene_validity.clear()
 	if max_active_enemies < 1 or max_spawns_per_wave < 1 or max_spawns_per_tick < 1 or max_spawn_checks_per_tick < 1 or not battle_area.has_area():
 		_finish("挑战配置错误 · 检查战斗范围与刷新数量上限")
@@ -350,6 +394,17 @@ func _prepare_run() -> bool:
 	if spawn_zone_root and _available_zones(PackedStringArray()).is_empty():
 		_finish("挑战配置错误 · 没有启用且可通行的刷新区域")
 		return false
+	if enemy_catalog:
+		var error := enemy_catalog.validation_error()
+		if not error.is_empty():
+			_finish("挑战配置错误 · " + error)
+			return false
+		for enemy in enemy_catalog.enemies:
+			var snapshot := _snapshot_definition(enemy)
+			if not snapshot:
+				_finish("挑战配置错误 · " + _definition_error)
+				return false
+			_catalog_snapshots[enemy.enemy_id] = snapshot
 	var definitions: Array[WaveDefinition] = []
 	if waves.is_empty():
 		if (not _run_endless and total_waves < 1) or first_wave_enemies < 1 or enemies_per_wave < 0 or not is_finite(spawn_interval) or spawn_interval <= 0:
@@ -377,14 +432,14 @@ func _prepare_run() -> bool:
 				_finish("挑战配置错误 · 检查怪物组数量、时间与预告")
 				return false
 			total += entry.count
-			if total > max_spawns_per_wave:
+			if total > _spawn_budget_limit():
 				_finish("挑战配置错误 · 本波数量超过生成预算")
 				return false
 			for id in entry.spawn_zone_ids:
 				if not _spawn_zones.any(func(zone: WaveSpawnZone): return String(zone.get_zone_id()) == id):
 					_finish("挑战配置错误 · 未找到刷新区域 " + id)
 					return false
-			var enemy := _snapshot_definition(entry.enemy)
+			var enemy := _resolve_entry_enemy(entry)
 			if not enemy:
 				_finish("挑战配置错误 · " + _definition_error)
 				return false
@@ -395,10 +450,23 @@ func _prepare_run() -> bool:
 		_run_waves.append(snapshot)
 	if _run_endless:
 		var last_total := _wave_total(_run_waves[-1])
-		if _endless_growth < 0 or _endless_cap < last_total or _endless_cap > max_spawns_per_wave or not is_finite(_endless_interval_reduction) or _endless_interval_reduction < 0.0 or _endless_interval_reduction > 0.1 or not is_finite(_endless_min_interval) or _endless_min_interval <= 0.0:
+		if _endless_growth < 0 or _endless_cap < last_total or _endless_cap > _spawn_budget_limit() or not is_finite(_endless_interval_reduction) or _endless_interval_reduction < 0.0 or _endless_interval_reduction > 0.1 or not is_finite(_endless_min_interval) or _endless_min_interval <= 0.0:
 			_finish("挑战配置错误 · 检查无尽每波增量、数量上限与最短刷新间隔")
 			return false
+	# 按通行尺寸预热共享导航，出怪帧不临时烘焙大型怪物路径。
+	for definition: WaveEnemyDefinition in _definition_snapshots.values():
+		_navigation_for(definition)
 	return true
+
+func _navigation_for(definition: WaveEnemyDefinition) -> TerrainPath:
+	if is_equal_approx(definition.navigation_radius, 0.32): return _path
+	if not _paths_by_radius.has(definition.navigation_radius):
+		var path := TerrainPath.new()
+		var exclude: Array[RID] = [player.get_rid()]
+		for enemy in enemies: exclude.append(enemy.get_rid())
+		path.build(terrain, definition.navigation_radius, exclude, battle_area.grow(terrain.data.cell_size))
+		_paths_by_radius[definition.navigation_radius] = path
+	return _paths_by_radius[definition.navigation_radius]
 
 func _wave_total(definition: WaveDefinition) -> int:
 	var total := 0
@@ -419,7 +487,8 @@ func _definition_for_wave(number: int) -> WaveDefinition:
 	var template := _run_waves[-1]
 	var base_total := _wave_total(template)
 	var total := _endless_total(number)
-	var interval_scale := 1.0 - minf(0.5, (number - _run_waves.size()) * _endless_interval_reduction)
+	var reduction_cap := _run_population.max_interval_reduction if _run_population else 0.5
+	var interval_scale := 1.0 - minf(reduction_cap, (number - _run_waves.size()) * _endless_interval_reduction)
 	var definition := WaveDefinition.new()
 	definition.description = "%d 只 · 末波分区与增援节奏" % total
 	var cumulative := 0
@@ -444,8 +513,13 @@ func _definition_for_wave(number: int) -> WaveDefinition:
 
 func _snapshot_definition(definition: WaveEnemyDefinition) -> WaveEnemyDefinition:
 	if definition and _definition_snapshots.has(definition): return _definition_snapshots[definition]
-	if not definition or not definition.scene or not is_finite(definition.health) or definition.health <= 0 or not is_finite(definition.move_speed) or definition.move_speed < 0 or not is_finite(definition.attack_damage) or definition.attack_damage < 0 or not is_finite(definition.spawn_clearance) or definition.spawn_clearance <= 0:
-		_definition_error = "怪物资源及生命、移动、伤害或碰撞留空参数无效"
+	if not definition:
+		_definition_error = "怪物资源为空"
+		return null
+	_definition_error = definition.validation_error()
+	if not _definition_error.is_empty(): return null
+	if _run_population and (definition.population_cost > _run_population.max_population_cost or _run_population.role_limits[definition.role] < 1):
+		_definition_error = "怪物容量成本或分类限制使其永远无法出场：" + definition.display_name
 		return null
 	if not _scene_validity.has(definition.scene):
 		var instance := definition.scene.instantiate()
@@ -454,10 +528,63 @@ func _snapshot_definition(definition: WaveEnemyDefinition) -> WaveEnemyDefinitio
 	if not _scene_validity[definition.scene]:
 		_definition_error = "怪物根节点须继承 WaveEnemy"
 		return null
-	var snapshot := definition.duplicate() as WaveEnemyDefinition
+	var snapshot := definition.duplicate(true) as WaveEnemyDefinition
+	# 场景和美术继续共享，专属配置子资源建立本局副本。
+	snapshot.scene = definition.scene
+	_largest_spawn_clearance = maxf(_largest_spawn_clearance, snapshot.spawn_clearance)
 	_definition_snapshots[definition] = snapshot
 	_definition_snapshots[snapshot] = snapshot
 	return snapshot
+
+func _resolve_entry_enemy(entry: WaveSpawnEntry) -> WaveEnemyDefinition:
+	if entry.enemy_id == &"": return _snapshot_definition(entry.enemy)
+	if not _catalog_snapshots.has(entry.enemy_id):
+		_definition_error = "未登记怪物 Enemy Id：" + String(entry.enemy_id)
+		return null
+	var snapshot: WaveEnemyDefinition = _catalog_snapshots[entry.enemy_id]
+	if entry.enemy and _snapshot_definition(entry.enemy) != snapshot:
+		_definition_error = "Enemy 与 Enemy Id 指向不同怪物：" + String(entry.enemy_id)
+		return null
+	return snapshot
+
+func get_active_enemy_limit() -> int:
+	return _run_population.active_limit(wave) if _run_population else max_active_enemies
+
+func get_enemy_health_multiplier(number := -1) -> float:
+	if number < 0: number = wave
+	return _run_health_growth.multiplier(number) if _run_endless and _run_health_growth else 1.0
+
+func _spawn_budget_limit() -> int:
+	return _run_population.max_queued_per_wave if _run_population else max_spawns_per_wave
+
+func _has_enemy_capacity(definition: WaveEnemyDefinition) -> bool:
+	if enemies.size() >= get_active_enemy_limit(): return false
+	if definition.max_alive > 0 and int(_alive_by_definition.get(definition, 0)) >= definition.max_alive: return false
+	if _run_population:
+		if _population_cost + definition.population_cost > _run_population.max_population_cost: return false
+		if _alive_by_role[definition.role] >= _run_population.role_limits[definition.role]: return false
+	return true
+
+func _release_enemy_capacity(enemy: WaveEnemy) -> void:
+	var definition := enemy.definition
+	_alive_by_definition[definition] = maxi(int(_alive_by_definition.get(definition, 0)) - 1, 0)
+	_alive_by_role[definition.role] -= 1
+	_population_cost -= definition.population_cost
+	_spatial_index.remove(enemy)
+
+## 出场、追击和攻击共用的局部候选查询；精确命中仍由招式判断。
+func get_nearby_enemies(point: Vector3, radius: float) -> Array[WaveEnemy]:
+	return _spatial_index.nearby(point, radius)
+
+func queue_spawn_by_id(id: StringName, count := 1, delay := 0.0, position := Vector3.INF) -> bool:
+	if phase != Phase.BATTLE and not _preparing_wave: return false
+	if not _catalog_snapshots.has(id):
+		_finish("挑战配置错误 · 未登记召唤怪物 " + String(id))
+		return false
+	return queue_spawn(_catalog_snapshots[id], count, delay, position)
+
+func _request_spawn_by_id(id: StringName, count: int, delay: float, position: Vector3, generation: int) -> bool:
+	return queue_spawn_by_id(id, count, delay, position) if generation == _generation else false
 
 func _begin_wave() -> void:
 	if phase not in [Phase.READY, Phase.REST] or _preparing_wave: return
@@ -471,6 +598,7 @@ func _begin_wave() -> void:
 	_wave_queued_total = 0
 	_spawned_this_wave = 0
 	_capacity_blocked = false
+	_capacity_waiting = 0
 	_unreachable.clear()
 	_reachability_clock = 0.0
 	_attack_root = Node3D.new()
@@ -478,28 +606,31 @@ func _begin_wave() -> void:
 	add_child(_attack_root)
 	_hurt_clock = 0.5
 	for entry in definition.entries:
-		for index in entry.count:
-			if not queue_spawn(entry.enemy, 1, entry.start_delay + index * entry.interval, Vector3.INF, entry.spawn_zone_ids, entry.warning_seconds):
-				_preparing_wave = false
-				return
+		if not queue_spawn(entry.enemy, entry.count, entry.start_delay, Vector3.INF, entry.spawn_zone_ids, entry.warning_seconds, entry.interval):
+			_preparing_wave = false
+			return
+	_sort_spawn_queue()
 	_preparing_wave = false
 	# 队列全部登记后再通知，监听者不能把尚未登记的波次当作空波。
 	_set_phase(Phase.BATTLE)
 
 ## 所有延迟出怪先登记在同一队列，分裂和召唤也阻止清波。
-func queue_spawn(definition: WaveEnemyDefinition, count := 1, delay := 0.0, position := Vector3.INF, zone_ids := PackedStringArray(), warning := -1.0) -> bool:
+func queue_spawn(definition: WaveEnemyDefinition, count := 1, delay := 0.0, position := Vector3.INF, zone_ids := PackedStringArray(), warning := -1.0, interval := 0.0) -> bool:
 	if phase != Phase.BATTLE and not _preparing_wave: return false
 	var snapshot := _snapshot_definition(definition)
-	if not snapshot or count <= 0 or _wave_queued_total + count > max_spawns_per_wave or not is_finite(delay) or delay < 0.0 or (position != Vector3.INF and not position.is_finite()) or not is_finite(warning) or warning < -1:
+	if not snapshot or count <= 0 or _wave_queued_total + count > _spawn_budget_limit() or not is_finite(delay) or delay < 0.0 or not is_finite(interval) or interval < 0.0 or (position != Vector3.INF and not position.is_finite()) or not is_finite(warning) or warning < -1:
 		_finish("挑战配置错误 · 检查怪物资源与待生成数量")
 		return false
 	for index in count:
 		_queue_sequence += 1
-		_spawn_queue.append({"id":_queue_sequence, "enemy": snapshot, "due": _wave_clock + delay, "position": position,
+		_spawn_queue.append({"id":_queue_sequence, "enemy": snapshot, "due": _wave_clock + delay + index * interval, "position": position,
 			"zones":zone_ids.duplicate(), "warning":warning, "next_attempt":0.0, "blocked_since":-1.0})
 	_wave_queued_total += count
-	_spawn_queue.sort_custom(func(a: Dictionary, b: Dictionary): return a.due < b.due or (a.due == b.due and a.id < b.id))
+	if not _preparing_wave: _sort_spawn_queue()
 	return true
+
+func _sort_spawn_queue() -> void:
+	_spawn_queue.sort_custom(func(a: Dictionary, b: Dictionary): return a.due < b.due or (a.due == b.due and a.id < b.id))
 
 func _request_spawn(definition: WaveEnemyDefinition, count: int, delay: float, position: Vector3, generation: int) -> bool:
 	if generation != _generation: return false
@@ -539,20 +670,36 @@ func _physics_process(delta: float) -> void:
 
 func _process_spawns() -> void:
 	if combat_frozen or not _path_ready: return
-	if enemies.size() >= max_active_enemies:
+	_capacity_waiting = 0
+	if _spawn_queue.is_empty():
+		_capacity_blocked = false
+		return
+	if enemies.size() >= get_active_enemy_limit():
+		for job in _spawn_queue:
+			if job.due > _wave_clock: break
+			_capacity_waiting += 1
 		if not _capacity_blocked:
 			for job in _spawn_queue: job.blocked_since = -1.0
 		_capacity_blocked = true
 		return
+	# 真正尝试出场前同步外部位移；没有待生成任务或满员时不重复扫描场上实体。
+	_spatial_index.synchronize(enemies)
 	_capacity_blocked = false
 	var generation := _generation
 	var checked := 0
 	var spawned := 0
+	var check_budget := _run_population.checks_per_tick if _run_population else max_spawn_checks_per_tick
+	var spawn_budget := _run_population.spawns_per_tick if _run_population else max_spawns_per_tick
 	# 副本固定本帧任务，怪物 _ready 或通知追加队列也不破坏当前迭代。
 	for job in _spawn_queue.duplicate():
 		if job.due > _wave_clock: break
+		# 容量等待不做位置查询，也不计入堵点超时；继续寻找能出场的其它种类。
+		if not _has_enemy_capacity(job.enemy):
+			job.blocked_since = -1.0
+			_capacity_waiting += 1
+			continue
 		if job.next_attempt > _wave_clock: continue
-		if checked >= max_spawn_checks_per_tick or spawned >= max_spawns_per_tick or enemies.size() >= max_active_enemies: break
+		if checked >= check_budget or spawned >= spawn_budget or enemies.size() >= get_active_enemy_limit(): break
 		checked += 1
 		var success := _spawn_enemy(job.enemy, job.position, job.zones, job.warning)
 		if generation != _generation or phase != Phase.BATTLE: return
@@ -570,8 +717,11 @@ func _process_spawns() -> void:
 				return
 
 ## 接触、弹丸、区域命中共用受击保护，命中判断留在怪物及其攻击对象。
+func _can_damage_player(amount: float, generation: int) -> bool:
+	return not combat_frozen and generation == _generation and phase == Phase.BATTLE and _hurt_clock <= 0.0 and player.current_health > 0.0 and is_finite(amount) and amount > 0.0
+
 func _damage_player(amount: float, generation: int) -> bool:
-	if combat_frozen or generation != _generation or phase != Phase.BATTLE or _hurt_clock > 0.0 or player.current_health <= 0.0 or not is_finite(amount) or amount <= 0.0: return false
+	if not _can_damage_player(amount, generation): return false
 	player.take_damage(amount)
 	_hurt_clock = hurt_interval
 	show_notice("受击 -%d" % ceili(amount))
@@ -616,28 +766,31 @@ func _pick_zone(zones: Array[WaveSpawnZone]) -> WaveSpawnZone:
 		if value <= 0: return zone
 	return zones.back()
 
-func _valid_spawn(point: Vector3, definition: WaveEnemyDefinition, goal: Vector3) -> bool:
+func _valid_spawn(point: Vector3, definition: WaveEnemyDefinition, goal: Vector3, local_spawn := false) -> bool:
 	var xz := Vector2(point.x, point.z)
 	if not battle_area.grow(-maxf(0.6, definition.spawn_clearance)).has_point(xz): return false
-	if TerrainPath.horizontal_distance(point, player.global_position) < maxf(spawn_safe_distance, definition.spawn_clearance + 0.3): return false
+	# 有预告的分裂／召唤须留在原地附近；普通边界刷新仍使用完整安全距离。
+	var safe_distance := definition.spawn_clearance + 0.3 if local_spawn else maxf(spawn_safe_distance, definition.spawn_clearance + 0.3)
+	if TerrainPath.horizontal_distance(point, player.global_position) < safe_distance: return false
 	for excluded in spawn_excluded_areas:
 		if excluded.grow(definition.spawn_clearance).has_point(xz): return false
-	for enemy in enemies:
-		if is_instance_valid(enemy) and not enemy.dead and TerrainPath.horizontal_distance(point, enemy.global_position) < maxf(spawn_spacing, definition.spawn_clearance + enemy.spawn_clearance): return false
+	var spacing := _run_population.spawn_spacing if _run_population else spawn_spacing
+	for enemy in _spatial_index.nearby(point, maxf(spacing, definition.spawn_clearance + _largest_spawn_clearance)):
+		if TerrainPath.horizontal_distance(point, enemy.global_position) < maxf(spacing, definition.spawn_clearance + enemy.spawn_clearance): return false
 	_spawn_shape.radius = definition.spawn_clearance
 	_spawn_query.shape = _spawn_shape
 	_spawn_query.transform = Transform3D(Basis.IDENTITY, point + Vector3.UP * (_spawn_shape.radius + 0.08))
 	_spawn_query.collision_mask = 1
 	_spawn_query.exclude = [player.get_rid()]
 	if not get_world_3d().direct_space_state.intersect_shape(_spawn_query, 1).is_empty(): return false
-	return not _path.route(point, goal).is_empty()
+	return _navigation_for(definition).shared_reachable(point, goal)
 
 func _find_spawn(definition: WaveEnemyDefinition, requested_position: Vector3, ids: PackedStringArray) -> Vector3:
 	var zones := _available_zones(ids)
 	if not requested_position.is_finite() and spawn_zone_root and zones.is_empty(): return Vector3.INF
 	if not requested_position.is_finite() and not spawn_zone_root and _boundary_points.is_empty(): return Vector3.INF
 	var goal := _ground_target()
-	for attempt in 40:
+	for attempt in (_run_population.position_attempts if _run_population else 40):
 		var point: Vector3
 		if requested_position.is_finite():
 			# 分裂和召唤留在指定位置附近；阻塞时不能跳到地图另一端。
@@ -651,7 +804,7 @@ func _find_spawn(definition: WaveEnemyDefinition, requested_position: Vector3, i
 			point = _boundary_points[_random.randi_range(0, _boundary_points.size() - 1)]
 		if not terrain.data.has_cell(terrain.data.world_to_cell(terrain.to_local(point))): continue
 		point = _path.ground_position(point)
-		if _valid_spawn(point, definition, goal): return point
+		if _valid_spawn(point, definition, goal, requested_position.is_finite()): return point
 	return Vector3.INF
 
 func _spawn_enemy(definition: WaveEnemyDefinition = null, requested_position := Vector3.INF, zone_ids := PackedStringArray(), warning := -1.0) -> bool:
@@ -661,6 +814,7 @@ func _spawn_enemy(definition: WaveEnemyDefinition = null, requested_position := 
 	if not definition:
 		_finish("挑战配置错误 · " + _definition_error)
 		return false
+	if not _has_enemy_capacity(definition): return false
 	var spawn := _find_spawn(definition, requested_position, zone_ids)
 	if not spawn.is_finite(): return false
 	var generation := _generation
@@ -671,10 +825,14 @@ func _spawn_enemy(definition: WaveEnemyDefinition = null, requested_position := 
 		return false
 	var enemy := instance as WaveEnemy
 	enemy.configure_wave({
+		"wave":wave, "health_multiplier":get_enemy_health_multiplier() if definition.health_growth_enabled else 1.0,
 		"player": player, "terrain": terrain, "camera": player.movement_camera,
-		"navigation": _path, "attack_root": _attack_root,
+		"navigation": _navigation_for(definition), "attack_root": _attack_root,
 		"damage_player": _damage_player.bind(_generation),
+		"can_damage_player": _can_damage_player.bind(_generation),
 		"request_spawn": _request_spawn.bind(_generation),
+		"request_spawn_by_id": _request_spawn_by_id.bind(_generation),
+		"spatial_index": _spatial_index,
 		"combat_active": combat_active,
 	}, definition, spawn_warning if warning < 0 else warning)
 	if phase != Phase.BATTLE or generation != _generation:
@@ -684,6 +842,9 @@ func _spawn_enemy(definition: WaveEnemyDefinition = null, requested_position := 
 	enemy.tree_exiting.connect(_enemy_exiting.bind(enemy))
 	enemy.position = to_local(spawn + Vector3.UP * 0.03)
 	enemies.append(enemy)
+	_alive_by_definition[definition] = int(_alive_by_definition.get(definition, 0)) + 1
+	_alive_by_role[definition.role] += 1
+	_population_cost += definition.population_cost
 	_spawned_this_wave += 1
 	_spawned_run += 1
 	add_child(enemy)
@@ -698,6 +859,7 @@ func _ground_target() -> Vector3:
 func _enemy_defeated(enemy: WaveEnemy) -> void:
 	if not enemies.has(enemy): return
 	enemies.erase(enemy)
+	_release_enemy_capacity(enemy)
 	_unreachable.erase(enemy.get_instance_id())
 	kills += 1
 	enemy_defeated_at.emit(enemy.global_position, enemy.experience_reward)
@@ -707,6 +869,7 @@ func _enemy_exiting(enemy: WaveEnemy) -> void:
 	# 非死亡销毁也不能留下悬空引用；此类异常结束挑战，不伪造击杀或清波。
 	if enemies.has(enemy):
 		enemies.erase(enemy)
+		_release_enemy_capacity(enemy)
 		if is_queued_for_deletion() or (owner and owner.is_queued_for_deletion()): return
 		if phase == Phase.BATTLE: _finish("挑战中断 · 怪物意外移除，请重试")
 
@@ -721,7 +884,7 @@ func _check_reachability(delta: float) -> void:
 		var id := enemy.get_instance_id()
 		var closest := _path.graph.get_point_position(_path.graph.get_closest_point(enemy.global_position))
 		var on_map := TerrainPath.horizontal_distance(enemy.global_position, closest) <= terrain.data.cell_size
-		var reachable := on_map and enemy.global_position.y >= _path.ground_position(enemy.global_position).y - 1.5 and not _path.route(enemy.global_position, goal).is_empty()
+		var reachable: bool = on_map and enemy.global_position.y >= _path.ground_position(enemy.global_position).y - 1.5 and enemy.navigation.shared_reachable(enemy.global_position, goal)
 		_unreachable[id] = 0.0 if reachable else float(_unreachable.get(id, 0.0)) + elapsed
 		if _unreachable[id] >= unreachable_timeout:
 			_finish("挑战中断 · 残余怪物无法到达，请重试")
@@ -759,6 +922,11 @@ func _finish(reason: String, result := Outcome.ERROR) -> void:
 	var remaining := enemies.duplicate()
 	enemies.clear()
 	for enemy in remaining: enemy.cancel()
+	_spatial_index.clear()
+	_alive_by_definition.clear()
+	_alive_by_role.fill(0)
+	_population_cost = 0
+	_capacity_waiting = 0
 	result_reason = reason
 	outcome = result
 	var generation := _generation
@@ -822,6 +990,8 @@ func get_run_state() -> Dictionary:
 	for enemy in enemies:
 		if is_instance_valid(enemy) and enemy.spawn_delay > 0: warning_count += 1
 	return {"run_id":_run_serial, "phase":phase, "outcome":outcome, "wave":wave, "wave_count":wave_count(), "endless":is_endless(), "completed_waves":completed_waves,
+		"active_limit":get_active_enemy_limit(), "population_cost":_population_cost, "alive_by_role":_alive_by_role.duplicate(), "capacity_waiting":_capacity_waiting,
+		"enemy_health_multiplier":get_enemy_health_multiplier(),
 		"pending":_pending, "alive":enemies.size(), "warning":warning_count, "queued_this_wave":_wave_queued_total,
 		"spawned_this_wave":_spawned_this_wave, "spawned_total":_spawned_run, "kills":kills,
 		"spawn_complete":_pending == 0, "clearing":phase == Phase.BATTLE and _clearing_wave, "combat_frozen":combat_frozen, "navigation_ready":_path_ready,

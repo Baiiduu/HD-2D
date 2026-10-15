@@ -1,0 +1,78 @@
+[INFO] planned_output_dir=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run-back-fixed\把动画每一帧的黄衣青年身材恢复成参考图的比例_保持同样的头部大小_肩宽_躯干_db941573
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=success stage=completed progress=已完成:100%
+[INFO] downloading_outputs count=3 to=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run-back-fixed\把动画每一帧的黄衣青年身材恢复成参考图的比例_保持同样的头部大小_肩宽_躯干_db941573
+[INFO] downloaded=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run-back-fixed\把动画每一帧的黄衣青年身材恢复成参考图的比例_保持同样的头部大小_肩宽_躯干_db941573\frames_edit.webp
+[INFO] downloaded=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run-back-fixed\把动画每一帧的黄衣青年身材恢复成参考图的比例_保持同样的头部大小_肩宽_躯干_db941573\sprite_sheet.png
+[INFO] saved_dir=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run-back-fixed\把动画每一帧的黄衣青年身材恢复成参考图的比例_保持同样的头部大小_肩宽_躯干_db941573
+{
+  "job_id": "job_911544907aeb4ad8b29359b3325f77c5",
+  "job_type": "workflow",
+  "status": "success",
+  "next_poll_after_seconds": 0,
+  "animation_type": null,
+  "queue": {
+    "position": 0,
+    "estimated_wait_seconds": 0
+  },
+  "progress": {
+    "label": "已完成",
+    "percent": 100
+  },
+  "result": {
+    "job_name": "054900_frames_edit_workflow_465c199bcfaa476f97d9a6c3_input_frames_edit_workflow_465c199bcfaa476f97d9a6c3_input",
+    "animation_path": "https://media.meowa.ai/public/frames-edit/output/2026-10-10/05%3A49%3A42-workflow-465c199bcfaa476f97d9a6c3/frames_edit.webp",
+    "sprite_sheet_path": "https://media.meowa.ai/public/frames-edit/output/2026-10-10/05%3A49%3A42-workflow-465c199bcfaa476f97d9a6c3/sprite_sheet.png",
+    "url": "https://media.meowa.ai/public/frames-edit/output/2026-10-10/05%3A49%3A42-workflow-465c199bcfaa476f97d9a6c3/frames_edit.webp"
+  },
+  "outputs": [
+    {
+      "output_key": "output:0",
+      "media_type": "image",
+      "mime_type": null,
+      "asset_id": null,
+      "thumb_url": null,
+      "width": null,
+      "height": null,
+      "byte_size": null
+    },
+    {
+      "output_key": "output:1",
+      "media_type": "image",
+      "mime_type": null,
+      "asset_id": null,
+      "thumb_url": null,
+      "width": null,
+      "height": null,
+      "byte_size": null
+    },
+    {
+      "output_key": "auxiliary:alpha_repair_source_path:0",
+      "media_type": "image",
+      "mime_type": null,
+      "asset_id": null,
+      "thumb_url": null,
+      "width": null,
+      "height": null,
+      "byte_size": null
+    }
+  ],
+  "error": null,
+  "error_code": null,
+  "error_id": null,
+  "credit_refund": {
+    "refunded": false,
+    "amount": 0
+  }
+}

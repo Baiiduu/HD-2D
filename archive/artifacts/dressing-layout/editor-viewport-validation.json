@@ -1,0 +1,14 @@
+{
+	"area_live": true,
+	"default": 69,
+	"density_live": true,
+	"editor_hint": true,
+	"outline": true,
+	"passed": true,
+	"playing": false,
+	"refresh_button": true,
+	"resources_live": true,
+	"toggle_off": true,
+	"toggle_restore": true,
+	"viewport_size": "(1122, 654)"
+}

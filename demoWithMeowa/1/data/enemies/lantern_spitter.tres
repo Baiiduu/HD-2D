@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="LanternSpitterDefinition" format=3 uid="uid://dbkma5smwsh14"]
+
+[ext_resource type="PackedScene" path="res://scenes/enemies/lantern_spitter.tscn" id="actor"]
+[ext_resource type="Script" uid="uid://ceeakg6uem1lr" path="res://scripts/combat/lantern_spitter_definition.gd" id="definition"]
+
+[resource]
+script = ExtResource("definition")
+body_height = 0.8
+enemy_id = &"lantern_spitter"
+scene = ExtResource("actor")
+display_name = "灯囊花兽"
+role = 1
+health = 40.0
+move_speed = 1.1
+attack_damage = 6.0
+experience_reward = 5
+population_cost = 4
+max_alive = 3

@@ -1,0 +1,22 @@
+{
+  "id": "CALL017",
+  "task": "4-制作主角基础动画",
+  "beijingTime": "2026-10-10T13:37:34.000+08:00",
+  "purpose": "核对帧动画 V2 CLI 参数",
+  "tool": "Meowa CLI / meowa-animation-run",
+  "executionPython": "C:/Users/PC/AppData/Local/Programs/Python/Python314/python.exe",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "arguments": [
+    "meowa-animation-run",
+    "--help"
+  ],
+  "prompt": null,
+  "negativePrompt": null,
+  "referenceImages": [],
+  "status": "pending",
+  "relatedCall": "CALL013/CALL016",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回"
+}

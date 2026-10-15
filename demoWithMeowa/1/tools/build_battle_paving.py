@@ -1,8 +1,9 @@
 """Bake native V2 paving into the existing continuous map's battle footprint.
 
 Only previously unpainted core cells are resurfaced. Terrain heights, overlays,
-dimensions, home paint and gameplay scenes are preserved. All module pixels are
-copied at their native size; the combined structural height generates normals.
+dimensions, home paint and gameplay scenes are preserved. Modules retain native
+pixels by default; optional material enlargement uses integer nearest-neighbor
+sampling. The combined structural height generates normals.
 """
 from pathlib import Path
 import argparse
@@ -19,10 +20,11 @@ WORLD_RECT = [-15.2, 29.6, 30.4, 30.4]
 POCKET_CENTERS = [(-7,21),(7,21),(-7,35),(7,35)]
 
 
-def build(output, terrain_path, apply=False):
+def build(output, terrain_path, apply=False, material_scale=1):
     source = PROJECT / 'assets/ground/paving_smooth_v2'
     contract = json.loads((source/'tileset.json').read_text(encoding='utf-8'))
     assert contract['pixels_per_meter'] == PPM and contract['stone_pixels'] == 16
+    assert material_scale in (1, 2, 4)
     channels = ['albedo','height','orm_dry','orm_wet']
     atlases = {key: Image.open(source/f'paving_atlas_{key}.png').copy() for key in channels}
     modules = {}
@@ -88,7 +90,20 @@ def build(output, terrain_path, apply=False):
     place('center_arrow_left',center-96,center-24)
     place('center_arrow_right',center+72,center-24)
 
-    height = np.asarray(image_set['height']).astype(float)/255*.004
+    # Enlarge the entire composition, including borders, ornaments and all maps.
+    # World coverage grows equally to keep the file density at 40 pixels/metre.
+    world_rect = list(WORLD_RECT)
+    if material_scale != 1:
+        size *= material_scale
+        image_set = {key:image.resize((size,size),Image.Resampling.NEAREST)
+                     for key,image in image_set.items()}
+        world_rect = [WORLD_RECT[0]+WORLD_RECT[2]*(1-material_scale)/2,
+                      WORLD_RECT[1]+WORLD_RECT[3]*(1-material_scale)/2,
+                      WORLD_RECT[2]*material_scale,WORLD_RECT[3]*material_scale]
+        for item in placements:
+            item['pixel_origin'] = [p*material_scale for p in item['pixel_origin']]
+
+    height = np.asarray(image_set['height']).astype(np.float32)/255*.004
     padded = np.pad(height,1,mode='edge')
     sx = (padded[1:-1,2:]-padded[1:-1,:-2])/(2/PPM)
     sy = (padded[2:,1:-1]-padded[:-2,1:-1])/(2/PPM)
@@ -127,10 +142,13 @@ def build(output, terrain_path, apply=False):
         updated = data_text[:match.start(1)]+encoded+data_text[match.end(1):]
         with terrain_path.open('w',encoding='utf-8',newline='') as stream:
             stream.write(updated)
-    summary = {'world_rect':WORLD_RECT,'pixels_per_meter':PPM,'size_pixels':[size,size],
+    summary = {'world_rect':world_rect,'pixels_per_meter':PPM,'size_pixels':[size,size],
                'paint_id':PAINT_ID,'painted_cells':len(painted),'grass_pocket_cells':len(pockets),
                'preserved_existing_paint_cells':skipped,'map_saved':apply,
                'height_range_m':[0,.004],'normal_convention':'OpenGL','metallic':0}
+    if material_scale != 1:
+        summary.update(material_scale=material_scale,stone_pixels=16*material_scale,
+                       stone_meters=.4*material_scale,sampling='nearest')
     (output/'layout.json').write_text(json.dumps({**summary,'grass_pocket_centers_cells':POCKET_CENTERS,
         'module_placements':placements},indent=2)+'\n',encoding='utf-8')
     print(json.dumps(summary))
@@ -139,7 +157,9 @@ def build(output, terrain_path, apply=False):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--output',type=Path,default=PROJECT/'assets/ground/battle_paving')
-    parser.add_argument('--terrain',type=Path,default=PROJECT/'data/world_terrain.tres')
+    parser.add_argument('--terrain',type=Path,default=PROJECT/'data/world/world_terrain.tres')
     parser.add_argument('--apply',action='store_true')
+    parser.add_argument('--material-scale',type=int,choices=(1,2,4),default=1,
+                        help='Enlarge all modules equally; 4 makes 64px / 1.6m stones.')
     args = parser.parse_args()
-    build(args.output,args.terrain,args.apply)
+    build(args.output,args.terrain,args.apply,args.material_scale)

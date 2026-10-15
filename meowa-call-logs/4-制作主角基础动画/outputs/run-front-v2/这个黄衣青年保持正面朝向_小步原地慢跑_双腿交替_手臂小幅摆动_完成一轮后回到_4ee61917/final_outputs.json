@@ -1,0 +1,16 @@
+{
+  "status": "success",
+  "job_id": "job_7f1c40191b1943d39a1f6d9970149add",
+  "outputs": [
+    {
+      "type": "media",
+      "path": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run-front-v2\\这个黄衣青年保持正面朝向_小步原地慢跑_双腿交替_手臂小幅摆动_完成一轮后回到_4ee61917\\meowa_animation.webp",
+      "mime_type": "image/webp"
+    },
+    {
+      "type": "media",
+      "path": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run-front-v2\\这个黄衣青年保持正面朝向_小步原地慢跑_双腿交替_手臂小幅摆动_完成一轮后回到_4ee61917\\meowa_animation_background.webp",
+      "mime_type": "image/webp"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "id": "CALL002",
+  "task": "6-制作细雨环境音",
+  "beijingTime": "2026-10-10T17:18:44+08:00",
+  "purpose": "查询状态：当前细雨天气的循环环境音",
+  "tool": "Meowa CLI / sound-run / HTTP GET",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "arguments": [
+    "sound-run",
+    "--prompt",
+    "A seamless continuous loop of gentle fine rain outdoors. Soft, even rain ambience at a moderate presence, with a few widely spaced light drops touching leaves and soil. Calm and sustained, with subtle natural variation. No heavy downpour, loud splashes, thunder, wind roar, voices or music.",
+    "--duration",
+    "10",
+    "--loop",
+    "--count",
+    "1",
+    "--language",
+    "en",
+    "--temperature",
+    "0.3",
+    "--normalize",
+    "--output-dir",
+    "D:\\.codexfile\\work\\rain-audio\\generated"
+  ],
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "actualRequest": {
+    "method": "GET",
+    "url": "http://api.meowa.ai/api/jobs/job_0159da1a7a9e4491bf3f3a2f8feb4344",
+    "headers": {
+      "User-Agent": "MeowaGameAssets/2026.10.08.2",
+      "X-Meowa-Skill-Name": "game-assets",
+      "X-Meowa-Skill-Version": "2026.10.08.2",
+      "Authorization": "[REDACTED]"
+    },
+    "params": null,
+    "data": null,
+    "files": null,
+    "json": null,
+    "timeout": 240,
+    "verify": true
+  },
+  "prompt": null,
+  "negativePrompt": null,
+  "referenceResources": [],
+  "relatedCall": "CALL001",
+  "status": "pending"
+}

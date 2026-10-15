@@ -1,0 +1,112 @@
+[
+  {
+    "id": 1,
+    "name": "八边形",
+    "file": "octagon_cutout.png",
+    "region": [
+      4,
+      4,
+      120,
+      120
+    ]
+  },
+  {
+    "id": 2,
+    "name": "基础石板",
+    "file": "02-stone.png",
+    "region": [
+      144,
+      16,
+      96,
+      96
+    ]
+  },
+  {
+    "id": 3,
+    "name": "裂纹石板",
+    "file": "03-worn.png",
+    "region": [
+      272,
+      16,
+      96,
+      96
+    ]
+  },
+  {
+    "id": 4,
+    "name": "菱形铺装",
+    "file": "04-pattern.png",
+    "region": [
+      400,
+      16,
+      96,
+      96
+    ]
+  },
+  {
+    "id": 5,
+    "name": "横向分隔带",
+    "file": "05-horizontal.png",
+    "region": [
+      16,
+      144,
+      96,
+      96
+    ]
+  },
+  {
+    "id": 6,
+    "name": "十字接口",
+    "file": "06-cross.png",
+    "region": [
+      144,
+      144,
+      96,
+      96
+    ]
+  },
+  {
+    "id": 7,
+    "name": "转角接口",
+    "file": "07-corner.png",
+    "region": [
+      272,
+      144,
+      96,
+      96
+    ]
+  },
+  {
+    "id": 8,
+    "name": "独立菱形",
+    "file": "08-diamond.png",
+    "region": [
+      396,
+      144,
+      103,
+      96
+    ]
+  },
+  {
+    "id": 9,
+    "name": "纵向分隔带",
+    "file": "09-vertical.png",
+    "region": [
+      16,
+      272,
+      96,
+      96
+    ]
+  },
+  {
+    "id": 10,
+    "name": "箭头",
+    "file": "10-arrow.png",
+    "region": [
+      140,
+      282,
+      103,
+      76
+    ]
+  }
+]

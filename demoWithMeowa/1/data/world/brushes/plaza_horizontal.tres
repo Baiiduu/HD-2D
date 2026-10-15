@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="TerrainPaintBrush" format=3 uid="uid://doyk182bf84l6"]
+
+[ext_resource type="Script" uid="uid://dcauimekxq8k1" path="res://scripts/terrain/terrain_paint_brush.gd" id="brush"]
+[ext_resource type="Texture2D" uid="uid://m0o4f2pgq5j8" path="res://assets/meowa/city_plaza/fixed/05-horizontal.png" id="color"]
+[ext_resource type="Texture2D" uid="uid://cexsjisb7l808" path="res://assets/meowa/city_plaza/fixed/ao/05-horizontal.png" id="material_ao"]
+[ext_resource type="Texture2D" uid="uid://b6db3m5weq78j" path="res://assets/meowa/city_plaza/fixed/roughness/05-horizontal.png" id="material_roughness"]
+[ext_resource type="Texture2D" uid="uid://cxke1vnjtntg8" path="res://assets/meowa/city_plaza/fixed/roughness_wet/05-horizontal.png" id="material_roughness_wet"]
+[ext_resource type="Texture2D" uid="uid://c27ader6a04x6" path="res://assets/meowa/city_plaza/fixed/normals/05-horizontal.png" id="normal"]
+
+[resource]
+script = ExtResource("brush")
+label = "横向分隔带"
+paint_id = 15
+texture = ExtResource("color")
+texture_meters = Vector2(2.4, 2.4)
+underlay_paint_id = 12
+snap_pivot_offset = Vector2(0.0125, 0.0125)
+ao_texture = ExtResource("material_ao")
+roughness_texture = ExtResource("material_roughness")
+wet_roughness_texture = ExtResource("material_roughness_wet")
+corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
+normal_texture = ExtResource("normal")
+normal_strength = 0.6
+roughness = 0.78
+wet_response = 0.8

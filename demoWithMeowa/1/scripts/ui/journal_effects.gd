@@ -1,7 +1,7 @@
 class_name JournalEffects
 extends Node
 
-const BUTTON_SHADER := preload("res://shaders/journal_button.gdshader")
+const BUTTON_SHADER := preload("res://shaders/ui/journal_button.gdshader")
 
 var ui
 var amount := 0.0

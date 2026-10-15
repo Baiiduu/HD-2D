@@ -2,7 +2,7 @@
 class_name ExperienceHUD
 extends CanvasLayer
 
-const FLOW_SHADER := preload("res://shaders/experience_flow.gdshader")
+const FLOW_SHADER := preload("res://shaders/ui/experience_flow.gdshader")
 
 @export_group("布局")
 ## 开启跟随血蓝条，关闭后使用下面的独立屏幕位置。

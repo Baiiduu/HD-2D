@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/mirror_mark_effect.gd" id="effect"]
+[ext_resource type="Texture2D" path="res://assets/meowa/combat/mirror_mark/mirror.png" id="art"]
+
+[node name="MirrorMarkEffect" type="Node3D"]
+script = ExtResource("effect")
+mirror_texture = ExtResource("art")

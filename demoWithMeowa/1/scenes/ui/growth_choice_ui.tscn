@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/growth_choice_ui.gd" id="ui"]
 [ext_resource type="Script" path="res://scripts/ui/growth_choice_option.gd" id="option"]
@@ -6,7 +6,7 @@
 [ext_resource type="Texture2D" path="res://assets/meowa/ui/upgrade/title-right.png" id="right"]
 [ext_resource type="Texture2D" path="res://assets/meowa/ui/upgrade/divider.png" id="divider"]
 [ext_resource type="Texture2D" path="res://assets/meowa/ui/upgrade/button.png" id="button"]
-[ext_resource type="PackedScene" path="res://scenes/ui/ui_audio.tscn" id="audio"]
+[ext_resource type="PackedScene" path="res://scenes/audio/ui_audio.tscn" id="audio"]
 
 [sub_resource type="Resource" id="preview_a"]
 script = ExtResource("option")
@@ -20,6 +20,13 @@ id = &"preview_b"
 texture = ExtResource("button")
 
 [sub_resource type="StyleBoxEmpty" id="focus"]
+
+[sub_resource type="StyleBoxFlat" id="hint_backing"]
+bg_color = Color(0.025, 0.035, 0.02, 0.78)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_left = 6
+corner_radius_bottom_right = 6
 
 [node name="GrowthChoiceUI" type="CanvasLayer"]
 layer = 40
@@ -98,3 +105,27 @@ theme_override_styles/disabled = SubResource("button_skin")
 theme_override_styles/focus = SubResource("focus")
 
 [node name="UIAudio" parent="." instance=ExtResource("audio")]
+
+[node name="HintBacking" type="Panel" parent="Root/Content"]
+mouse_filter = 2
+theme_override_styles/panel = SubResource("hint_backing")
+
+[node name="Hint" type="Label" parent="Root/Content"]
+mouse_filter = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(1, 0.93, 0.77, 1)
+theme_override_colors/font_shadow_color = Color(0.05, 0.07, 0.03, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+
+[node name="Reroll" type="Button" parent="Root/Content"]
+focus_mode = 0
+theme_override_colors/font_color = Color(1, 0.88, 0.64, 1)
+theme_override_colors/font_hover_color = Color(1, 0.94, 0.77, 1)
+theme_override_colors/font_pressed_color = Color(0.88, 0.72, 0.47, 1)
+theme_override_styles/normal = SubResource("button_skin")
+theme_override_styles/hover = SubResource("button_skin")
+theme_override_styles/pressed = SubResource("button_skin")
+theme_override_styles/disabled = SubResource("button_skin")
+theme_override_styles/focus = SubResource("focus")

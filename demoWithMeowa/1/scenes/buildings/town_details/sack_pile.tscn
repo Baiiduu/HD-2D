@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/buildings/town_detail_prop.gd" id="prop"]
+
+[node name="SackPile" type="Node3D"]
+script = ExtResource("prop")
+detail_kind = 7
+dimensions = Vector3(2, 1.25, 1.4)

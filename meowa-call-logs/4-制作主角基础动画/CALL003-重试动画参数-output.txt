@@ -1,0 +1,43 @@
+usage: meowart_api.py animate-run [-h] [--output-dir OUTPUT_DIR]
+                                  --image-file IMAGE_FILE [--prompt PROMPT]
+                                  [--output-frames {3,4,5,6,7,8,9,10,11,12,13,14,15,16}]
+                                  [--output-format {webp,gif,spritesheet}]
+                                  [--animation-type ANIMATION_TYPE]
+                                  [--animation-model {pixel-engine-v1.1,frame-engine-v1.1}]
+                                  [--intelligence {standard,advanced}]
+                                  [--optimize-prompt] [--no-optimize-prompt]
+                                  [--remove-bg-method {none,standard,advanced}]
+                                  [--color-count COLOR_COUNT]
+                                  [--padding-top PADDING_TOP]
+                                  [--padding-down PADDING_DOWN]
+                                  [--padding-left PADDING_LEFT]
+                                  [--padding-right PADDING_RIGHT]
+
+options:
+  -h, --help            show this help message and exit
+  --output-dir, --output_dir OUTPUT_DIR
+                        Output root; the runner creates one task subdirectory
+  --image-file IMAGE_FILE
+  --prompt PROMPT
+  --output-frames {3,4,5,6,7,8,9,10,11,12,13,14,15,16}
+  --output-format {webp,gif,spritesheet}
+  --animation-type ANIMATION_TYPE
+  --animation-model {pixel-engine-v1.1,frame-engine-v1.1}
+                        Animation image type: pixel-engine-v1.1 for Pixel or
+                        frame-engine-v1.1 for HD
+  --intelligence {standard,advanced}
+                        Animation intelligence tier; advanced uses the newer
+                        generation model
+  --optimize-prompt
+  --no-optimize-prompt
+  --remove-bg-method {none,standard,advanced}
+  --color-count COLOR_COUNT
+                        Pixel palette size, from 2 to 64 colors
+  --padding-top PADDING_TOP
+                        Transparent pixels above the source
+  --padding-down PADDING_DOWN
+                        Transparent pixels below the source
+  --padding-left PADDING_LEFT
+                        Transparent pixels left of the source
+  --padding-right PADDING_RIGHT
+                        Transparent pixels right of the source

@@ -1,0 +1,29 @@
+{
+  "id": "CALL003",
+  "task": "7-制作轻柔细雨环境音",
+  "beijingTime": "2026-10-10T18:36:13+08:00",
+  "purpose": "下载：不侵占游戏主体的轻柔绵延细雨循环环境音",
+  "tool": "Meowa CLI / sound-poll / HTTP GET",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "arguments": [
+    "sound-poll",
+    "--job-id",
+    "job_858f7983347346b498e4a9ca90457ebf",
+    "--output-dir",
+    "D:\\.codexfile\\work\\rain-soft\\recovered"
+  ],
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "actualRequest": {
+    "method": "GET",
+    "url": "https://media.meowa.ai/public/elevenlabs-generator/output/2026-10-10/10%3A35%3A38-workflow-e9777ae37ed646c5a75a7bf6/Soft_Light_Rain_Ambience.mp3",
+    "params": null,
+    "timeout": 240,
+    "verify": true,
+    "headers": null
+  },
+  "prompt": null,
+  "negativePrompt": null,
+  "referenceResources": [],
+  "relatedCall": "CALL001",
+  "status": "pending"
+}

@@ -1,0 +1,80 @@
+[gd_resource type="SpriteFrames" format=3 uid="uid://dwkxlifdby1hh"]
+
+[ext_resource type="Texture2D" uid="uid://bxqo1g0fyje2i" path="res://assets/meowa/enemies/mini_slime/frames/idle_front.png" id="idle_front"]
+[ext_resource type="Texture2D" uid="uid://dgobf5ie3kie4" path="res://assets/meowa/enemies/mini_slime/frames/walk_front.png" id="walk_front"]
+
+[sub_resource type="AtlasTexture" id="idle_front_0"]
+atlas = ExtResource("idle_front")
+region = Rect2(0, 0, 52, 56)
+
+[sub_resource type="AtlasTexture" id="walk_front_0"]
+atlas = ExtResource("walk_front")
+region = Rect2(0, 0, 52, 56)
+
+[sub_resource type="AtlasTexture" id="walk_front_1"]
+atlas = ExtResource("walk_front")
+region = Rect2(52, 0, 52, 56)
+
+[sub_resource type="AtlasTexture" id="walk_front_2"]
+atlas = ExtResource("walk_front")
+region = Rect2(104, 0, 52, 56)
+
+[sub_resource type="AtlasTexture" id="walk_front_3"]
+atlas = ExtResource("walk_front")
+region = Rect2(156, 0, 52, 56)
+
+[sub_resource type="AtlasTexture" id="walk_front_4"]
+atlas = ExtResource("walk_front")
+region = Rect2(208, 0, 52, 56)
+
+[sub_resource type="AtlasTexture" id="walk_front_5"]
+atlas = ExtResource("walk_front")
+region = Rect2(260, 0, 52, 56)
+
+[sub_resource type="AtlasTexture" id="walk_front_6"]
+atlas = ExtResource("walk_front")
+region = Rect2(312, 0, 52, 56)
+
+[sub_resource type="AtlasTexture" id="walk_front_7"]
+atlas = ExtResource("walk_front")
+region = Rect2(364, 0, 52, 56)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("idle_front_0")
+}],
+"loop": 1,
+"name": &"idle_front",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("walk_front_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk_front_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk_front_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk_front_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk_front_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk_front_5")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk_front_6")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk_front_7")
+}],
+"loop": 1,
+"name": &"walk_front",
+"speed": 10.0
+}]

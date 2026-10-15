@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PotBroodDefinition" format=3 uid="uid://crwsamqp657l0"]
+
+[ext_resource type="PackedScene" path="res://scenes/enemies/pot_brood.tscn" id="actor"]
+[ext_resource type="Script" uid="uid://cejbtinhste7o" path="res://scripts/combat/pot_brood_definition.gd" id="definition"]
+
+[resource]
+script = ExtResource("definition")
+body_radius = 0.3
+enemy_id = &"pot_brood"
+scene = ExtResource("actor")
+display_name = "裂瓷壶兽"
+health = 100.0
+move_speed = 0.95
+attack_damage = 6.0
+experience_reward = 5
+population_cost = 2
+max_alive = 6

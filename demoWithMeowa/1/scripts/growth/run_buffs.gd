@@ -40,6 +40,7 @@ func candidates() -> Array[GrowthChoiceOption]:
 		option.id = definition.id
 		option.title = "%s  %d/%d" % [definition.title, session.combat_modifiers.level_for(definition.id) + 1, definition.max_level]
 		option.icon = definition.icon
+		option.category = GrowthChoiceOption.Category.GLOBAL_BUFF
 		option.description = _description(definition)
 		# 保留卡面生成时的配置，远程调参不改变已经展示的奖励。
 		_offered[option.id] = definition.duplicate() as GrowthBuffDefinition
@@ -49,25 +50,21 @@ func candidates() -> Array[GrowthChoiceOption]:
 func _description(definition: GrowthBuffDefinition) -> String:
 	var current: RunCombatModifiers = session.combat_modifiers
 	var preview := current.preview_after(definition)
-	var lines := PackedStringArray(["本局共享增益"])
+	var gain := preview.bonus(definition.attribute) - current.bonus(definition.attribute)
+	var lines := PackedStringArray()
 	match definition.attribute:
 		GrowthBuffDefinition.Attribute.DAMAGE:
-			lines.append("伤害系数\n×%.2f → ×%.2f" % [current.damage_multiplier(), preview.damage_multiplier()])
+			lines.append("基础伤害 +%d%%" % roundi(gain * 100))
+			lines.append("累计系数\n×%.2f → ×%.2f" % [current.damage_multiplier(), preview.damage_multiplier()])
+			lines.append("本局所有技能共享")
 		GrowthBuffDefinition.Attribute.COOLDOWN:
-			lines.append("减幅 %d%% → %d%%" % [roundi((1.0 - current.interval_multiplier()) * 100), roundi((1.0 - preview.interval_multiplier()) * 100)])
+			lines.append("基础间隔 −%d%%" % roundi(gain * 100))
+			lines.append("累计缩短\n%d%% → %d%%" % [roundi((1.0 - current.interval_multiplier()) * 100), roundi((1.0 - preview.interval_multiplier()) * 100)])
+			lines.append("不加速动作动画")
 		GrowthBuffDefinition.Attribute.RANGE:
-			lines.append("增幅 %d%% → %d%%" % [roundi((current.range_multiplier() - 1.0) * 100), roundi((preview.range_multiplier() - 1.0) * 100)])
-	var before: Array[Dictionary] = session.get_attack_stats()
-	var after: Array[Dictionary] = session.get_attack_stats(preview)
-	var key := _stat_key(definition)
-	var suffix := {"damage": "", "interval": "秒", "range": "米"}
-	for index in mini(before.size(), after.size()):
-		if not before[index].has(key) or not after[index].has(key): continue
-		lines.append("%s\n%.2f → %.2f%s" % [before[index].get("name", "攻击"), before[index][key], after[index][key], suffix[key]])
-	if definition.attribute == GrowthBuffDefinition.Attribute.COOLDOWN:
-		lines.append("动作下限仍生效")
-	elif definition.attribute == GrowthBuffDefinition.Attribute.RANGE:
-		lines.append("特效同步扩大")
+			lines.append("基础范围 +%d%%" % roundi(gain * 100))
+			lines.append("累计扩大\n%d%% → %d%%" % [roundi((current.range_multiplier() - 1.0) * 100), roundi((preview.range_multiplier() - 1.0) * 100)])
+			lines.append("命中与特效同步扩大")
 	return "\n".join(lines)
 
 func _choose(_level: int, id: StringName) -> void:

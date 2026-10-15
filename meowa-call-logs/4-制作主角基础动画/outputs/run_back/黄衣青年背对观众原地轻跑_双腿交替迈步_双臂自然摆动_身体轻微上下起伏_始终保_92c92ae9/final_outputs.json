@@ -1,0 +1,21 @@
+{
+  "status": "success",
+  "job_id": "job_fdc92950586d4723a5377e4f8b30f293",
+  "outputs": [
+    {
+      "type": "media",
+      "path": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run_back\\黄衣青年背对观众原地轻跑_双腿交替迈步_双臂自然摆动_身体轻微上下起伏_始终保_92c92ae9\\result_output_url.webp",
+      "mime_type": "image/webp"
+    },
+    {
+      "type": "media",
+      "path": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run_back\\黄衣青年背对观众原地轻跑_双腿交替迈步_双臂自然摆动_身体轻微上下起伏_始终保_92c92ae9\\result_output_transparent_output_urls_gif.gif",
+      "mime_type": "image/gif"
+    },
+    {
+      "type": "media",
+      "path": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run_back\\黄衣青年背对观众原地轻跑_双腿交替迈步_双臂自然摆动_身体轻微上下起伏_始终保_92c92ae9\\result_output_transparent_output_urls_png.png",
+      "mime_type": "image/png"
+    }
+  ]
+}

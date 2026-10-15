@@ -1,0 +1,4 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+D3D12 12_0 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 3050
+
+{"default_plants":957,"density_10_plants":957,"density_2_pebbles":40,"density_2_plants":206,"failures":["Default scene no longer has the original 103 plants","Density above 1 did not add plants","Restoring density 1 did not exactly restore the original layout","Choosing resources altered the baseline quantity","Restoring the original selection did not restore the layout"],"selected_resources_plants":103}

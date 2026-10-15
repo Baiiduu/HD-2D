@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="WavePopulationRules" format=3 uid="uid://c6h80t573radv"]
+
+[ext_resource type="Script" uid="uid://casbe20xuc2il" path="res://scripts/combat/wave_population_rules.gd" id="rules"]
+
+[resource]
+resource_name = "正式怪潮 128 · 渐进容量"
+script = ExtResource("rules")
+active_growth_per_wave = 8
+max_active = 128
+max_population_cost = 256
+role_limits = PackedInt32Array(128, 12, 4, 1)
+enemies_per_wave_increment = 16
+max_wave_enemies = 384
+max_queued_per_wave = 1024
+max_interval_reduction = 0.75
+min_spawn_interval = 0.08

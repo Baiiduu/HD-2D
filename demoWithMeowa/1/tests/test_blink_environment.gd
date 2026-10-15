@@ -97,6 +97,6 @@ func verify_scene(scene_path: String, weather_path: String, dressing_path: Strin
 
 func _run() -> void:
 	await verify_scene("res://scenes/world/world.tscn", "MapEffects/Weather", "GroundDressing")
-	await verify_scene("res://scenes/four_realms.tscn", "Weather", "World/GroundDressing")
+	await verify_scene("res://scenes/previews/four_realms.tscn", "Weather", "World/GroundDressing")
 	print(JSON.stringify({"checks": checks, "failures": failures, "passed": failures.is_empty()}))
 	quit(0 if failures.is_empty() else 1)

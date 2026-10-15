@@ -84,7 +84,8 @@ export class World {
         this.ext[j * this.ew + i] = { biome: e.biome, level, overlay, outside: true, k };
       }
     // pass 2: the river climbs north in steps (cascades) and flows out south
-    const riverN = 14, riverS = 15;
+    const riverN = this.json.terrain.river_columns?.north ?? 14;
+    const riverS = this.json.terrain.river_columns?.south ?? 15;
     for (let iz = this.oz - 1; iz >= this.eoz; iz--) {
       const k = this.oz - iz;
       const lv = Math.max(0, Math.floor((k - 1) / 4));

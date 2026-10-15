@@ -30,6 +30,8 @@ func run() -> void:
 	var origin := Vector3(4, 0.3, 44.8)
 	var direction := Vector3(1, 0.3, -0.5).normalized()
 	var points: PackedVector3Array = mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+	# 验证共用组件的旧轨迹仍等价；A02 后缘残影由像素风格测试单独覆盖。
+	effect.preserve_trail_pixel_scale = false
 	for yaw in [0.0, 90.0, 180.0]:
 		camera.rotation_degrees = Vector3(-32, yaw, 0)
 		effect.transform = Transform3D(Basis.from_euler(Vector3(0, 0.7, 0)).scaled(Vector3(1.2, 0.9, 1.1)), Vector3(3, 0.1, -2))
@@ -50,6 +52,7 @@ func run() -> void:
 	effect._update_trail(camera)
 	check(effect._trail.mesh == mesh and is_equal_approx(effect._trail.global_basis.y.length(), 0.8),
 		"实时调宽度只改变实例变换")
+	effect.preserve_trail_pixel_scale = true
 	effect.stop()
 	check(not effect.is_processing() and not effect._trail.visible and not effect._light.visible,
 		"闲置组件停止更新并隐藏拖尾与映照")

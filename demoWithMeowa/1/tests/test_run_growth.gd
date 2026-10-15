@@ -66,6 +66,7 @@ func run() -> void:
 	var before := session.frames
 	await create_timer(0.1).timeout
 	check(session.frames > before, "Unrelated world process continues during a choice")
+	growth.choice_ui.select_option(&"slot_a")
 	growth.choice_ui.confirm_selection()
 	check(not session.combat_frozen and not growth.choice_ui.is_open and choices == [[2, &"slot_a"]], "Confirmation returns a level and candidate identifier then resumes combat")
 	growth.choice_ui.confirm_selection()
@@ -74,6 +75,7 @@ func run() -> void:
 	session.wave_clearing.emit()
 	check(growth._drops.is_empty() and growth.state.level == 4 and growth.state.pending_choices == 2, "Wave cleanup absorbs remaining experience and queues every crossed level")
 	check(growth.choice_ui.title == "等级 3 · 成长选择", "First pending level has the correct title")
+	growth.choice_ui.select_option(&"slot_a")
 	growth.choice_ui.confirm_selection()
 	check(session.combat_frozen and growth.choice_ui.is_open and growth.choice_ui.title == "等级 4 · 成长选择", "Consecutive level choices have no combat gap")
 	growth.choice_ui.select_option(&"slot_b")

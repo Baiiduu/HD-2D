@@ -1,0 +1,26 @@
+{
+  "note": "Asset paths shortened; source pixel bytes verified unchanged. Historical call requests and results keep their original paths.",
+  "paths": {
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\opening-props-v1\\参照图片的东方幻想像素风_制作六种用于_HD-2D_游戏的独立道具_红纸吊灯笼_方形暖_343c68d9\\final_outputs.json": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\props\\final_outputs.json",
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\opening-props-v1\\参照图片的东方幻想像素风_制作六种用于_HD-2D_游戏的独立道具_红纸吊灯笼_方形暖_343c68d9\\result_images_0_url.png": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\props\\props.png",
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\opening-props-components-v1\\component_001.png": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\parts\\component_001.png",
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\opening-props-components-v1\\component_002.png": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\parts\\component_002.png",
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\opening-props-components-v1\\component_003.png": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\parts\\component_003.png",
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\opening-props-components-v1\\component_004.png": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\parts\\component_004.png",
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\opening-props-components-v1\\component_005.png": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\parts\\component_005.png",
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\opening-props-components-v1\\component_006.png": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\parts\\component_006.png",
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\opening-props-components-v1\\final_outputs.json": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\parts\\final_outputs.json",
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\opening-slate-v1\\用于东方幻想宗门灯会庭院的青灰色石板地面_64_64_像素_无缝平铺_俯视正交材质_不_634b570d\\final_outputs.json": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\stone-1\\final_outputs.json",
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\opening-slate-v1\\用于东方幻想宗门灯会庭院的青灰色石板地面_64_64_像素_无缝平铺_俯视正交材质_不_634b570d\\texture.png": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\stone-1\\stone.png",
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\opening-slate-v2\\宗门庭院的青灰色长方形石砖铺地_64_64_像素无缝材质_俯视正交_石砖长宽约_2_1_横向_d2ee15fa\\final_outputs.json": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\stone-2\\final_outputs.json",
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\opening-slate-v2\\宗门庭院的青灰色长方形石砖铺地_64_64_像素无缝材质_俯视正交_石砖长宽约_2_1_横向_d2ee15fa\\texture.png": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\stone-2\\stone.png",
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\plaza-stone-base-v1\\东方幻想宗门广场的灰蓝色大块石板铺装_64_64_像素无缝地表纹理_正上方俯视_两列_53e563f1\\final_outputs.json": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\stone-3\\final_outputs.json",
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\plaza-stone-base-v1\\东方幻想宗门广场的灰蓝色大块石板铺装_64_64_像素无缝地表纹理_正上方俯视_两列_53e563f1\\texture.png": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\stone-3\\stone.png",
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\plaza-stone-base-v2\\一张64_64像素的灰蓝色大矩形石板地面无缝贴图_正俯视_整张图严格是两列四行的长_eb2f0493\\final_outputs.json": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\stone\\final_outputs.json",
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\plaza-stone-base-v2\\一张64_64像素的灰蓝色大矩形石板地面无缝贴图_正俯视_整张图严格是两列四行的长_eb2f0493\\texture.png": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\stone\\stone.png",
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\details\\制作一张像素风游戏地面贴花素材表_严格正俯视_透明背景_参考图片仅用于灰蓝石_fef5f37b\\result_images_0_url.png": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\details\\details.png",
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\details\\制作一张像素风游戏地面贴花素材表_严格正俯视_透明背景_参考图片仅用于灰蓝石_fef5f37b\\final_outputs.json": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\details\\final_outputs.json",
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\vista\\为东方幻想_HD-2D_像素游戏制作一张远景分层素材表_参考图只用于夜间宗门山谷的画_e0df562f\\result_images_0_url.png": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\vista\\vista.png",
+    "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\vista\\为东方幻想_HD-2D_像素游戏制作一张远景分层素材表_参考图只用于夜间宗门山谷的画_e0df562f\\final_outputs.json": "D:\\Project\\HD-2DMap\\benchmark\\threejs\\assets\\meowa\\vista\\final_outputs.json"
+  }
+}

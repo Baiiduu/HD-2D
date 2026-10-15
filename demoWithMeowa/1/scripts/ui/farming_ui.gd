@@ -1,7 +1,7 @@
 class_name FarmingUI
 extends CanvasLayer
 
-const FRAME_SHADER := preload("res://shaders/attribute_hud.gdshader")
+const FRAME_SHADER := preload("res://shaders/ui/attribute_hud.gdshader")
 
 @export var farming: Farming
 @export_group("像素交互素材")

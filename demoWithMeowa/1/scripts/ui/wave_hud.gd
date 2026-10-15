@@ -52,7 +52,7 @@ func _refresh() -> void:
 	match session.phase:
 		WavePrototype.Phase.READY:
 			_root.visible = _root.visible and session.can_start_run()
-			_set_text("准备" + session.wave_label(1), "按 %s 开始挑战" % key)
+			_set_text("准备" + session.wave_label(1), "按 %s 选择初始技能" % key)
 		WavePrototype.Phase.BATTLE:
 			_set_text(session.wave_label(session.wave), "")
 		WavePrototype.Phase.REST:

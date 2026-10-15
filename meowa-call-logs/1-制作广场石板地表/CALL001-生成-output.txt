@@ -1,0 +1,53 @@
+[INFO] planned_output_dir=D:\Project\HD-2DMap\benchmark\threejs\assets\meowa\plaza-stone-base-v1\东方幻想宗门广场的灰蓝色大块石板铺装_64_64_像素无缝地表纹理_正上方俯视_两列_53e563f1
+[INFO] submitted api_job_id=job_42f8117cb9894b088928f198be08ddc6
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=finalizing progress=处理中:50%
+[INFO] status=success stage=completed progress=已完成:100%
+[INFO] downloading_outputs count=3 to=D:\Project\HD-2DMap\benchmark\threejs\assets\meowa\plaza-stone-base-v1\东方幻想宗门广场的灰蓝色大块石板铺装_64_64_像素无缝地表纹理_正上方俯视_两列_53e563f1
+[INFO] downloaded=D:\Project\HD-2DMap\benchmark\threejs\assets\meowa\plaza-stone-base-v1\东方幻想宗门广场的灰蓝色大块石板铺装_64_64_像素无缝地表纹理_正上方俯视_两列_53e563f1\texture.png
+[INFO] saved_dir=D:\Project\HD-2DMap\benchmark\threejs\assets\meowa\plaza-stone-base-v1\东方幻想宗门广场的灰蓝色大块石板铺装_64_64_像素无缝地表纹理_正上方俯视_两列_53e563f1
+{
+  "job_id": "job_42f8117cb9894b088928f198be08ddc6",
+  "job_type": "workflow",
+  "status": "success",
+  "next_poll_after_seconds": 0,
+  "animation_type": null,
+  "queue": {
+    "position": 0,
+    "estimated_wait_seconds": 0
+  },
+  "progress": {
+    "label": "已完成",
+    "percent": 100
+  },
+  "result": {
+    "job_name": "040541_default_6464"
+  },
+  "outputs": [
+    {
+      "output_key": "primary",
+      "media_type": "image",
+      "mime_type": null,
+      "asset_id": null,
+      "thumb_url": null,
+      "width": null,
+      "height": null,
+      "byte_size": null
+    }
+  ],
+  "error": null,
+  "error_code": null,
+  "error_id": null,
+  "credit_refund": {
+    "refunded": false,
+    "amount": 0
+  }
+}

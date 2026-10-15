@@ -1,0 +1,70 @@
+{
+  "status": "success",
+  "startedAt": "2026-10-10T13:48:59+08:00",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "endedAt": "2026-10-10T13:49:47+08:00",
+  "exitCode": 0,
+  "output": "[INFO] planned_output_dir=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run-back-fixed\\把动画每一帧的黄衣青年身材恢复成参考图的比例_保持同样的头部大小_肩宽_躯干_db941573\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=running stage=processing progress=处理中:50%\n[INFO] status=success stage=completed progress=已完成:100%\n[INFO] downloading_outputs count=3 to=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run-back-fixed\\把动画每一帧的黄衣青年身材恢复成参考图的比例_保持同样的头部大小_肩宽_躯干_db941573\n[INFO] downloaded=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run-back-fixed\\把动画每一帧的黄衣青年身材恢复成参考图的比例_保持同样的头部大小_肩宽_躯干_db941573\\frames_edit.webp\n[INFO] downloaded=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run-back-fixed\\把动画每一帧的黄衣青年身材恢复成参考图的比例_保持同样的头部大小_肩宽_躯干_db941573\\sprite_sheet.png\n[INFO] saved_dir=D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run-back-fixed\\把动画每一帧的黄衣青年身材恢复成参考图的比例_保持同样的头部大小_肩宽_躯干_db941573\n{\n  \"job_id\": \"job_911544907aeb4ad8b29359b3325f77c5\",\n  \"job_type\": \"workflow\",\n  \"status\": \"success\",\n  \"next_poll_after_seconds\": 0,\n  \"animation_type\": null,\n  \"queue\": {\n    \"position\": 0,\n    \"estimated_wait_seconds\": 0\n  },\n  \"progress\": {\n    \"label\": \"已完成\",\n    \"percent\": 100\n  },\n  \"result\": {\n    \"job_name\": \"054900_frames_edit_workflow_465c199bcfaa476f97d9a6c3_input_frames_edit_workflow_465c199bcfaa476f97d9a6c3_input\",\n    \"animation_path\": \"https://media.meowa.ai/public/frames-edit/output/2026-10-10/05%3A49%3A42-workflow-465c199bcfaa476f97d9a6c3/frames_edit.webp\",\n    \"sprite_sheet_path\": \"https://media.meowa.ai/public/frames-edit/output/2026-10-10/05%3A49%3A42-workflow-465c199bcfaa476f97d9a6c3/sprite_sheet.png\",\n    \"url\": \"https://media.meowa.ai/public/frames-edit/output/2026-10-10/05%3A49%3A42-workflow-465c199bcfaa476f97d9a6c3/frames_edit.webp\"\n  },\n  \"outputs\": [\n    {\n      \"output_key\": \"output:0\",\n      \"media_type\": \"image\",\n      \"mime_type\": null,\n      \"asset_id\": null,\n      \"thumb_url\": null,\n      \"width\": null,\n      \"height\": null,\n      \"byte_size\": null\n    },\n    {\n      \"output_key\": \"output:1\",\n      \"media_type\": \"image\",\n      \"mime_type\": null,\n      \"asset_id\": null,\n      \"thumb_url\": null,\n      \"width\": null,\n      \"height\": null,\n      \"byte_size\": null\n    },\n    {\n      \"output_key\": \"auxiliary:alpha_repair_source_path:0\",\n      \"media_type\": \"image\",\n      \"mime_type\": null,\n      \"asset_id\": null,\n      \"thumb_url\": null,\n      \"width\": null,\n      \"height\": null,\n      \"byte_size\": null\n    }\n  ],\n  \"error\": null,\n  \"error_code\": null,\n  \"error_id\": null,\n  \"credit_refund\": {\n    \"refunded\": false,\n    \"amount\": 0\n  }\n}\n",
+  "returnedData": {
+    "job_id": "job_911544907aeb4ad8b29359b3325f77c5",
+    "job_type": "workflow",
+    "status": "success",
+    "next_poll_after_seconds": 0,
+    "animation_type": null,
+    "queue": {
+      "position": 0,
+      "estimated_wait_seconds": 0
+    },
+    "progress": {
+      "label": "已完成",
+      "percent": 100
+    },
+    "result": {
+      "job_name": "054900_frames_edit_workflow_465c199bcfaa476f97d9a6c3_input_frames_edit_workflow_465c199bcfaa476f97d9a6c3_input",
+      "animation_path": "https://media.meowa.ai/public/frames-edit/output/2026-10-10/05%3A49%3A42-workflow-465c199bcfaa476f97d9a6c3/frames_edit.webp",
+      "sprite_sheet_path": "https://media.meowa.ai/public/frames-edit/output/2026-10-10/05%3A49%3A42-workflow-465c199bcfaa476f97d9a6c3/sprite_sheet.png",
+      "url": "https://media.meowa.ai/public/frames-edit/output/2026-10-10/05%3A49%3A42-workflow-465c199bcfaa476f97d9a6c3/frames_edit.webp"
+    },
+    "outputs": [
+      {
+        "output_key": "output:0",
+        "media_type": "image",
+        "mime_type": null,
+        "asset_id": null,
+        "thumb_url": null,
+        "width": null,
+        "height": null,
+        "byte_size": null
+      },
+      {
+        "output_key": "output:1",
+        "media_type": "image",
+        "mime_type": null,
+        "asset_id": null,
+        "thumb_url": null,
+        "width": null,
+        "height": null,
+        "byte_size": null
+      },
+      {
+        "output_key": "auxiliary:alpha_repair_source_path:0",
+        "media_type": "image",
+        "mime_type": null,
+        "asset_id": null,
+        "thumb_url": null,
+        "width": null,
+        "height": null,
+        "byte_size": null
+      }
+    ],
+    "error": null,
+    "error_code": null,
+    "error_id": null,
+    "credit_refund": {
+      "refunded": false,
+      "amount": 0
+    }
+  }
+}

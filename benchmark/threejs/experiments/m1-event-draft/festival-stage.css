@@ -1,0 +1,24 @@
+#festival-stage { font: 13px/1.55 system-ui, "Microsoft YaHei", sans-serif; color: #f4e6cc; }
+#festival-stage * { box-sizing: border-box; }
+#festival-stage button, #festival-stage a { font: inherit; cursor: pointer; color: #f1dfb5; background: #252c35e8; border: 1px solid #73694f; border-radius: 5px; padding: 6px 10px; text-decoration: none; }
+#festival-stage button:hover, #festival-stage a:hover { background: #3a4351; }
+#festival-stage :focus-visible { outline: 2px solid #f4cc76; outline-offset: 3px; }
+#festival-stage [hidden] { display: none !important; }
+.festival-task { position: fixed; top: 95px; left: 14px; padding: 12px 14px; width: min(310px, calc(100vw - 28px)); border-left: 2px solid #dbb873; background: linear-gradient(90deg, #121b28e6, #121b2850); pointer-events: none; }
+.festival-tag { font-size: 10px; color: #baa77e; letter-spacing: 2px; }
+.festival-task h1 { font-size: 18px; margin: 3px 0; }
+.festival-task p { margin: 6px 0; }
+.festival-inventory { color: #a9cdd2; }
+.festival-intro { position: fixed; inset: 0; z-index: 12; display: grid; place-items: center; background: #08101a50; }
+.festival-intro > div { padding: 26px 30px; max-width: 420px; margin: 16px; border: 1px solid #a88a52; background: #141d2bef; text-align: center; box-shadow: 0 10px 45px #0008; }
+.festival-intro h2 { font-size: 25px; margin: 0 0 10px; font-weight: 500; }
+.festival-note { font-size: 10px; color: #a7b6c5; }
+.festival-announcement { position: fixed; z-index: 15; left: 50%; top: 38%; transform: translateX(-50%); max-width: min(560px, 80vw); padding: 15px 25px; border-top: 1px solid #b6bbd0; border-bottom: 1px solid #b6bbd0; background: #0b1628e8; text-align: center; pointer-events: none; }
+.festival-bottom { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 10; text-align: center; max-width: 80vw; }
+.festival-prompt { margin: 0 0 7px; padding: 5px 12px; background: #101824ce; border-radius: 4px; }
+.festival-bottom > div { display: flex; justify-content: center; gap: 6px; font-size: 11px; }
+.festival-inspection { position: fixed; bottom: 18px; left: 14px; z-index: 11; padding: 8px 10px; background: #152032e6; border: 1px solid #3f5369; border-radius: 5px; font-size: 11px; }
+.festival-inspection summary { cursor: pointer; color: #9ebed5; }
+.festival-inspection p { margin: 5px 0; color: #8c9cae; }
+.festival-inspection button { padding: 4px 7px !important; }
+@media (max-width: 700px) { .festival-task { top: 90px; width: 250px; } .festival-inspection { bottom: 105px; } }

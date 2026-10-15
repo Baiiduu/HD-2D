@@ -14,11 +14,11 @@ func check(value: bool,message: String) -> void:
 		print("FAIL: ",message)
 
 func _run() -> void:
-	var original: TerrainData = load("res://data/spawn_terrain.tres").duplicate(true)
+	var original: TerrainData = load("res://data/world/spawn_terrain.tres").duplicate(true)
 	original.paints = PackedByteArray()
 	check(original.paints.is_empty(),"Legacy terrain has no custom IDs")
 	check(original.to_image().get_pixel(0,0).a == 0.0,"Old terrain defaults to legacy rendering")
-	var palette: TerrainPaintPalette = load("res://data/spawn_paint_palette.tres").duplicate(true)
+	var palette: TerrainPaintPalette = load("res://data/world/spawn_paint_palette.tres").duplicate(true)
 	# The user may already be adding further brushes in the live editor.
 	palette.brushes = [palette.brushes[0],palette.brushes[1]]
 	check(palette.validation_error().is_empty(),"Current grass/path palette is valid")

@@ -1,0 +1,45 @@
+# 经验条流光与宝石拖尾
+
+2026-10-13。用户确认参考图中的两处效果都需要：经验条扫光与端点星芒，以及宝石吸取时的发光拖尾。已接入现有组件，复用 Meowa 的填充、微光和吸收素材，不重新提取升级卡或生成新美术。
+
+![经验条动态局部预览](../media/experience-flow-preview/hud-flow.gif)
+
+经验条默认每 2.8 秒出现一次扫光，0.9 秒扫过已填充区域。条身仍按真实经验裁切，光带不进入未获得经验的区域，也不改变条宽、数字或经验值。端点保留较清楚的暖白星芒，缓慢呼吸。拾取经验会唤醒等待中的扫光，并提高短时反馈；正在移动的光带不会被密集拾取反复拉回起点。
+
+![宝石吸取动态局部预览](../media/experience-flow-preview/gem-trail.gif)
+
+宝石吸取时带五点短流光，前端较亮，后端逐渐缩小并淡出。尾迹长度随实际移动逐渐展开，不越过尚未走过的起点；待机时不显示，收取或清理时随宝石一起释放。成长选择冻结宝石与拖尾，经验 HUD 的装饰流光继续播放。
+
+GIF 为原生实机画面的局部裁切，按 2 倍整数最近邻放大，28 帧、10 FPS。验证脚本保持经验为 6 / 10，循环演示三种晶体的真实 `advance()` 移动参数，便于看清效果；实际挑战仍按收取入账。完整机位见[实机 PNG](../media/experience-flow-preview/runtime.png)，沿用当前 28 米 / 32° / FOV 28° / 景深 0.065 和 16:10，没有改变镜头。
+
+## 调节入口
+
+经验条参数位于正式地图 `WavePrototype/RunGrowth/ExperienceHUD → 经验条流光`。宝石参数位于 `scenes/growth/experience_pickup.tscn` 根节点的“漂浮与拾取反馈”。已接入编辑器参数总览的中文搜索与常用筛选。
+
+| 参数 | 默认 | 含义 |
+| --- | ---: | --- |
+| Flow Enabled | true | 开关条内移动扫光 |
+| Flow Interval | 2.8 秒 | 两次扫光开始之间的间隔 |
+| Flow Duration | 0.9 秒 | 单次扫过时间；减小可加快移动 |
+| Flow Width | 18 逻辑像素 | 光带宽度 |
+| Flow Strength | 0.85 | 条内扫光亮度；0 隐藏 |
+| Flow Color | 暖白 | 光带颜色 |
+| Glint Size | 34 逻辑像素 | 端点星芒的完整透明画布宽度，实际亮芯更小 |
+| Glint Strength | 0.8 | 端点星芒强度；0 隐藏 |
+| Glint Pulse Speed | 0.8 | 星芒每秒呼吸周期数；0 保持静态 |
+| Trail Length | 0.65 米 | 最长拖尾范围 |
+| Trail Size | 0.19 米 | 前端光点完整画布尺寸，尾部依次缩小 |
+| Trail Brightness | 2.0 | 拖尾亮度 |
+| Trail Opacity | 0.7 | 拖尾不透明度；0 隐藏全部光点 |
+| Trail Color | 青蓝 | 拖尾颜色 |
+| Trail Pulse Speed | 2.5 | 光点每秒明暗变化周期数；0 不闪动 |
+
+想更安静可先降低 Flow Strength、Glint Strength 或 Trail Brightness；想更舒缓可增大 Flow Duration 和 Flow Interval。原有经验规则、视觉尺寸及吸取参数见[经验宝石与经验条](experience-visuals.md)。
+
+## 验证
+
+- `test_experience_flow.gd`：23 项，光带移动与范围、原数据不变、独立关闭、闲置唤醒、连续拾取不重置、隐藏与重试清理、MAX、尾迹渐淡与长度，以及旧实例材质恢复。
+- 现有经验视觉 30 项和成长／波次集成 25 项通过；参数总览索引通过。
+- 原生 D3D12 / Forward+ 渲染 28 帧；实际经验条像素随扫光变化，经验值保持不变，三种晶体拖尾可见，未出现着色器错误。
+
+实现使用经验条独立的 `experience_flow.gdshader` 与 `experience_glint.gdshader`，不更改血蓝条的共享 shader。尾迹由原拾取管理器统一推进，不额外创建逐颗粒子的计时器或灯光。

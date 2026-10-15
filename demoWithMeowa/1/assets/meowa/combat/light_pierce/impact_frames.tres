@@ -1,6 +1,6 @@
-[gd_resource type="SpriteFrames" load_steps=10 format=3]
+[gd_resource type="SpriteFrames" format=3 uid="uid://ba6giabmj3adg"]
 
-[ext_resource type="Texture2D" path="res://assets/meowa/combat/light_pierce/impact_atlas.png" id="atlas"]
+[ext_resource type="Texture2D" uid="uid://bs166s4wrcx86" path="res://assets/meowa/combat/light_pierce/impact_atlas.png" id="atlas"]
 
 [sub_resource type="AtlasTexture" id="frame_0"]
 atlas = ExtResource("atlas")
@@ -36,17 +36,32 @@ region = Rect2(1920, 504, 640, 504)
 
 [resource]
 animations = [{
-"frames": [
-{"duration": 1.0, "texture": SubResource("frame_0")},
-{"duration": 1.0, "texture": SubResource("frame_1")},
-{"duration": 1.0, "texture": SubResource("frame_2")},
-{"duration": 1.0, "texture": SubResource("frame_3")},
-{"duration": 1.0, "texture": SubResource("frame_4")},
-{"duration": 1.0, "texture": SubResource("frame_5")},
-{"duration": 1.0, "texture": SubResource("frame_6")},
-{"duration": 1.0, "texture": SubResource("frame_7")}
-],
-"loop": false,
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("frame_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("frame_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("frame_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("frame_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("frame_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("frame_5")
+}, {
+"duration": 1.0,
+"texture": SubResource("frame_6")
+}, {
+"duration": 1.0,
+"texture": SubResource("frame_7")
+}],
+"loop": 0,
 "name": &"impact",
 "speed": 20.0
 }]

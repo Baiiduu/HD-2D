@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="WaveHealthGrowthRules" format=3 uid="uid://tiqegj7nq1if"]
+
+[ext_resource type="Script" uid="uid://dogpctvle0vbx" path="res://scripts/combat/wave_health_growth_rules.gd" id="rules"]
+
+[resource]
+resource_name = "无尽生命成长 · 1 至 10 倍"
+script = ExtResource("rules")

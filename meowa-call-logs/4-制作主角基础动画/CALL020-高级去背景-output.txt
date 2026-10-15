@@ -1,0 +1,47 @@
+[INFO] planned_output_dir=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run-front-v2-clean\meowa_animation_background
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=finalizing progress=处理中:50%
+[INFO] status=success stage=completed progress=已完成:100%
+[INFO] downloading_outputs count=1 to=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run-front-v2-clean\meowa_animation_background
+[INFO] downloaded=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run-front-v2-clean\meowa_animation_background\output.webp
+[INFO] saved_dir=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run-front-v2-clean\meowa_animation_background
+{
+  "job_id": "job_360320426f8e4b53be02c5bfd030e746",
+  "job_type": "remove_background",
+  "status": "success",
+  "next_poll_after_seconds": 0,
+  "animation_type": null,
+  "queue": {
+    "position": 0,
+    "estimated_wait_seconds": 0
+  },
+  "progress": {
+    "label": "已完成",
+    "percent": 100
+  },
+  "result": {
+    "download_variants": {}
+  },
+  "outputs": [
+    {
+      "output_key": "primary",
+      "media_type": "image",
+      "mime_type": null,
+      "asset_id": null,
+      "thumb_url": null,
+      "width": null,
+      "height": null,
+      "byte_size": null
+    }
+  ],
+  "error": null,
+  "error_code": null,
+  "error_id": null,
+  "credit_refund": {
+    "refunded": false,
+    "amount": 0
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "id": "CALL002",
+  "task": "7-制作轻柔细雨环境音",
+  "beijingTime": "2026-10-10T18:35:47+08:00",
+  "purpose": "查询状态：不侵占游戏主体的轻柔绵延细雨循环环境音",
+  "tool": "Meowa CLI / sound-poll / HTTP GET",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "arguments": [
+    "sound-poll",
+    "--job-id",
+    "job_858f7983347346b498e4a9ca90457ebf",
+    "--output-dir",
+    "D:\\.codexfile\\work\\rain-soft\\recovered"
+  ],
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "actualRequest": {
+    "method": "GET",
+    "url": "https://api.meowa.ai/api/jobs/job_858f7983347346b498e4a9ca90457ebf",
+    "headers": {
+      "User-Agent": "MeowaGameAssets/2026.10.08.2",
+      "X-Meowa-Skill-Name": "game-assets",
+      "X-Meowa-Skill-Version": "2026.10.08.2",
+      "Authorization": "[REDACTED]"
+    },
+    "params": null,
+    "data": null,
+    "files": null,
+    "json": null,
+    "timeout": 240,
+    "verify": true
+  },
+  "prompt": null,
+  "negativePrompt": null,
+  "referenceResources": [],
+  "relatedCall": "CALL001",
+  "status": "pending"
+}

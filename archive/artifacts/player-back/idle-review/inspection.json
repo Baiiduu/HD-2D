@@ -1,0 +1,140 @@
+{
+  "source": "D:\\Project\\HD-2DMap\\artifacts\\player-back\\outputs\\idle\\黄衣青年背对观众原地待机_轻微呼吸_双脚不动_头部和肩膀不转向_保留原图的头型_cd9ac1cb\\meowa_animation.webp",
+  "canvas": [
+    80,
+    80
+  ],
+  "frames": 8,
+  "duration_ms": 1000,
+  "frame_details": [
+    {
+      "frame": 0,
+      "bounds": [
+        28,
+        11,
+        52,
+        69
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "alpha_values": [
+        255
+      ]
+    },
+    {
+      "frame": 1,
+      "bounds": [
+        28,
+        11,
+        52,
+        69
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "alpha_values": [
+        255
+      ]
+    },
+    {
+      "frame": 2,
+      "bounds": [
+        28,
+        14,
+        52,
+        69
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "alpha_values": [
+        255
+      ]
+    },
+    {
+      "frame": 3,
+      "bounds": [
+        28,
+        14,
+        52,
+        69
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "alpha_values": [
+        255
+      ]
+    },
+    {
+      "frame": 4,
+      "bounds": [
+        28,
+        14,
+        52,
+        69
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "alpha_values": [
+        255
+      ]
+    },
+    {
+      "frame": 5,
+      "bounds": [
+        28,
+        14,
+        52,
+        69
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "alpha_values": [
+        255
+      ]
+    },
+    {
+      "frame": 6,
+      "bounds": [
+        28,
+        14,
+        52,
+        69
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "alpha_values": [
+        255
+      ]
+    },
+    {
+      "frame": 7,
+      "bounds": [
+        28,
+        14,
+        52,
+        69
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "alpha_values": [
+        255
+      ]
+    }
+  ],
+  "art_acceptance": "pending visual review"
+}

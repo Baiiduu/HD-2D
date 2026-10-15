@@ -48,9 +48,36 @@ export const FOG = {
   heightBase: -0.6,
 };
 
+// Shared by built-in and custom materials, including the reflection views.
+export const FOG_UNIFORMS = {
+  uFogStart: { value: 9.0 },
+  uFogHeightDensity: { value: FOG.heightDensity },
+  uFogHeightFalloff: { value: FOG.heightFalloff },
+  uFogHeightBase: { value: FOG.heightBase },
+};
+
+export function bindFogUniforms(scene) {
+  const seen = new Set();
+  scene.traverse((object) => {
+    for (const material of [object.material].flat().filter(Boolean)) {
+      if (seen.has(material)) continue;
+      seen.add(material);
+      if (material.isShaderMaterial) Object.assign(material.uniforms, FOG_UNIFORMS);
+      else {
+        const compile = material.onBeforeCompile;
+        material.onBeforeCompile = function (shader, renderer) {
+          compile.call(this, shader, renderer);
+          Object.assign(shader.uniforms, FOG_UNIFORMS);
+        };
+      }
+    }
+  });
+}
+
 export const GLSL_FOG_FN = /* glsl */ `
 uniform vec3 fogColor;
 uniform float fogDensity;
+uniform float uFogStart, uFogHeightDensity, uFogHeightFalloff, uFogHeightBase;
 vec3 fogTint(vec3 base, vec3 dir, float f){
   // warm haze close by, a slightly cooler lavender in the far distance (aerial perspective)
   float up = clamp(dir.y * 4.0, 0.0, 1.0);
@@ -62,14 +89,14 @@ float fogAmount(vec3 camPos, vec3 wpos){
   float dist = length(rd);
   rd /= max(dist, 1e-4);
   // distance fog starts a little away from the camera so the play area stays crisp
-  float d = max(dist - 9.0, 0.0);
+  float d = max(dist - uFogStart, 0.0);
   float fd = 1.0 - exp(-fogDensity * d * (1.0 + d * 0.012));
   // analytic height fog (Quilez) - thick in valleys, thin on high ground
-  float b = ${FOG.heightFalloff.toFixed(3)};
-  float a = ${FOG.heightDensity.toFixed(3)};
-  float oy = camPos.y - (${FOG.heightBase.toFixed(3)});
+  float b = uFogHeightFalloff;
+  float a = uFogHeightDensity;
+  float oy = camPos.y - uFogHeightBase;
   float ry = abs(rd.y) < 1e-3 ? 1e-3 : rd.y;
-  float fh = a * exp(-oy * b) * (1.0 - exp(-d * ry * b)) / ry;
+  float fh = a * exp(clamp(-oy * b, -40.0, 40.0)) * (1.0 - exp(clamp(-d * ry * b, -40.0, 40.0))) / ry;
   fh = 1.0 - exp(-max(fh, 0.0));
   return clamp(1.0 - (1.0 - fd) * (1.0 - fh), 0.0, 1.0);
 }

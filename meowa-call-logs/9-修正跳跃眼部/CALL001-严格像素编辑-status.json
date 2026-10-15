@@ -1,0 +1,9 @@
+{
+  "id": "CALL001",
+  "status": "success",
+  "adopted": false,
+  "recordType": "retrospective_backfill",
+  "recordedBeijingTime": "2026-10-12T12:34:12.756121+08:00",
+  "job_id": "job_6032cc4b19b44da1b8176f09bdc5e6cc",
+  "reason": "完整返回图仍改变眼部以外的配色或像素；收腿帧瞳孔颜色与眼白仍未匹配原待机。"
+}

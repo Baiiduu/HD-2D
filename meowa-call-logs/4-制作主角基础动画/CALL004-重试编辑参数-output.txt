@@ -1,0 +1,36 @@
+usage: meowart_api.py image-edit-run [-h] [--output-dir OUTPUT_DIR]
+                                     --reference-image REFERENCE_IMAGE
+                                     --prompt PROMPT [--mode {pixel,hd}]
+                                     [--strict | --regional-pixelation]
+                                     [--multi-pixelation]
+                                     [--no-multi-pixelation]
+                                     [--generation-model {nano-banana,image-2,image-2.5}]
+                                     [--resolution {1K,2K}]
+                                     [--quality {standard,detailed,ultimate}]
+                                     [--generation-speed {normal,fast}]
+                                     [--remove-bg-method {none,standard,advanced}]
+
+options:
+  -h, --help            show this help message and exit
+  --output-dir, --output_dir OUTPUT_DIR
+                        Output root; the runner creates one task subdirectory
+  --reference-image REFERENCE_IMAGE
+                        Input image; repeat up to 8 times
+  --prompt PROMPT       Describe the requested edit
+  --mode {pixel,hd}
+  --strict              Preserve exact pixel structure
+  --regional-pixelation
+                        Pixelate separately detected asset regions in multi-
+                        asset images
+  --multi-pixelation    Return three pixelation results at no extra charge
+  --no-multi-pixelation
+                        Disable the regional pixelation default for multiple
+                        results
+  --generation-model {nano-banana,image-2,image-2.5}
+                        Generation model (pixel default: Nano Banana; HD
+                        default: Image2.5)
+  --resolution {1K,2K}  Output resolution (pixel default: 1K; HD default: 2K)
+  --quality {standard,detailed,ultimate}
+                        Image2 quality: Standard, Detailed, or Ultimate
+  --generation-speed {normal,fast}
+  --remove-bg-method {none,standard,advanced}

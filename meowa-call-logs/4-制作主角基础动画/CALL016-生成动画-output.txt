@@ -1,0 +1,75 @@
+[INFO] planned_output_dir=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run_back\黄衣青年背对观众原地轻跑_双腿交替迈步_双臂自然摆动_身体轻微上下起伏_始终保_92c92ae9
+[INFO] submitted api_job_id=job_fdc92950586d4723a5377e4f8b30f293
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=queued stage=queued progress=排队中:?%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=finalizing progress=处理中:50%
+[INFO] status=running stage=finalizing progress=处理中:50%
+[INFO] status=running stage=finalizing progress=处理中:50%
+[INFO] status=running stage=finalizing progress=处理中:50%
+[INFO] status=running stage=finalizing progress=处理中:50%
+[INFO] status=success stage=completed progress=已完成:100%
+[INFO] downloading_outputs count=7 to=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run_back\黄衣青年背对观众原地轻跑_双腿交替迈步_双臂自然摆动_身体轻微上下起伏_始终保_92c92ae9
+[INFO] downloaded=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run_back\黄衣青年背对观众原地轻跑_双腿交替迈步_双臂自然摆动_身体轻微上下起伏_始终保_92c92ae9\result_output_url.webp
+[INFO] downloaded=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run_back\黄衣青年背对观众原地轻跑_双腿交替迈步_双臂自然摆动_身体轻微上下起伏_始终保_92c92ae9\result_output_transparent_output_urls_gif.gif
+[INFO] downloaded=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run_back\黄衣青年背对观众原地轻跑_双腿交替迈步_双臂自然摆动_身体轻微上下起伏_始终保_92c92ae9\result_output_transparent_output_urls_png.png
+[INFO] saved_dir=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run_back\黄衣青年背对观众原地轻跑_双腿交替迈步_双臂自然摆动_身体轻微上下起伏_始终保_92c92ae9
+{
+  "job_id": "job_fdc92950586d4723a5377e4f8b30f293",
+  "job_type": "animate",
+  "status": "success",
+  "next_poll_after_seconds": 0,
+  "animation_type": "run",
+  "queue": {
+    "position": 0,
+    "estimated_wait_seconds": 0
+  },
+  "progress": {
+    "label": "已完成",
+    "percent": 100
+  },
+  "result": {
+    "id": "job_fdc92950586d4723a5377e4f8b30f293",
+    "api_job_id": "job_fdc92950586d4723a5377e4f8b30f293",
+    "status": "success",
+    "error": null,
+    "error_code": null,
+    "animation_type": "run",
+    "final_prompt": "The character wearing a yellow hoodie and dark pants performs a running cycle viewed from behind. His legs alternate stepping forward while his arms swing naturally at his sides, maintaining a steady and rhythmic vertical bounce.",
+    "output": {
+      "transparent_output_urls": {},
+      "download_urls": {},
+      "frame_count": 8,
+      "output_frames": 8
+    }
+  },
+  "outputs": [],
+  "error": null,
+  "error_code": null,
+  "error_id": null,
+  "credit_refund": {
+    "refunded": false,
+    "amount": 0
+  }
+}

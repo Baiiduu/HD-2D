@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { World } from './layout.js';
-import { installFogChunks, FOG, GI, setEmitters } from './shaderlib.js';
+import { installFogChunks, bindFogUniforms, FOG, FOG_UNIFORMS, GI, setEmitters } from './shaderlib.js';
 import { loadPixelTex, AOB } from './materials.js';
 import { buildTerrain } from './terrain.js';
+import { buildGroundDetails } from './ground-details.js';
 import { buildProps, buildBridges } from './props.js';
 import { buildWater } from './water.js';
 import { buildLights, updateShadowAssignment } from './lights.js';
@@ -12,6 +13,9 @@ import { makeSky, makeMountains } from './sky.js';
 import { PlanarReflection, LAYER_REFLECTIVE, LAYER_WATER } from './reflection.js';
 import { REFLW } from './materials.js';
 import { buildPost } from './post.js';
+import { createArtDirection } from './art-direction.js';
+import { createPlazaLighting } from './plaza-lighting.js';
+import { buildVista } from './vista.js';
 
 installFogChunks();
 
@@ -28,12 +32,22 @@ const SHOTS = [
   { file: 'shot_5_highland.png', x: 28, z: -4.8 },
 ];
 const shotMode = params.has('shot') || params.has('shots');
+const openingMode = !shotMode && params.get('scene') !== 'benchmark';
 const FIXED_W = 1280, FIXED_H = 800;
 
-const CAM = { fov: 25, pitch: 10, dist: 11 };
+const CAM = { fov: 25, pitch: 10, dist: 11, yaw: 0 };
 
 async function main() {
-  const json = await (await fetch('layout/scene_layout.json')).json();
+  const json = await (await fetch(openingMode ? 'layout/opening_layout.json' : 'layout/scene_layout.json')).json();
+  if (openingMode) {
+    document.title = json.name;
+    Object.assign(CAM, { fov: json.camera.fov_vertical_deg, pitch: json.camera.pitch_deg, dist: json.camera.distance, yaw: json.camera.yaw_deg });
+    FOG.color.setHex(0x19243b); FOG.density = 0.01; FOG.heightDensity = 0.055;
+    FOG.heightFalloff = FOG_UNIFORMS.uFogHeightFalloff.value = 0.65;
+    FOG.heightBase = FOG_UNIFORMS.uFogHeightBase.value = 0.4;
+    FOG_UNIFORMS.uFogStart.value = 4;
+    FOG_UNIFORMS.uFogHeightDensity.value = FOG.heightDensity;
+  }
   const world = new World(json);
 
   const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance', preserveDrawingBuffer: shotMode });
@@ -44,7 +58,11 @@ async function main() {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   document.body.appendChild(renderer.domElement);
 
-  const tex = {
+  const tex = openingMode ? {
+    slate: loadPixelTex('opening/stone.png', renderer),
+    details: loadPixelTex('opening/details.png', renderer, { repeat: false }),
+    vista: loadPixelTex('opening/vista.png', renderer, { repeat: false }),
+  } : {
     city: loadPixelTex('textures/ground_city_cobblestone.png', renderer),
     cyber: loadPixelTex('textures/ground_cyber_metal_panel.png', renderer),
     slate: loadPixelTex('textures/ground_cultivation_slate.png', renderer),
@@ -68,18 +86,23 @@ async function main() {
   // ---- world ----
   const terrain = buildTerrain(world, tex);
   terrain.topMesh.layers.set(LAYER_REFLECTIVE);
-  scene.add(terrain.topMesh, terrain.wallMesh, terrain.far);
-  if (params.has('debugFar')) terrain.far.material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-  if (params.has('debugWall')) terrain.wallMesh.material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-  terrain.far.layers.set(LAYER_REFLECTIVE);
+  scene.add(terrain.topMesh);
+  const ground = openingMode ? buildGroundDetails(world, tex.details, terrain.terrainMat.userData.stoneVariation) : null;
+  if (ground) scene.add(ground.group);
+  if (!openingMode) scene.add(terrain.wallMesh, terrain.far);
+  if (!openingMode && params.has('debugFar')) terrain.far.material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+  if (!openingMode && params.has('debugWall')) terrain.wallMesh.material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+  if (!openingMode) terrain.far.layers.set(LAYER_REFLECTIVE);
 
-  const props = buildProps(world, tex);
+  const props = openingMode ? { group: new THREE.Group(), emitters: [], aoBoxes: [] } : buildProps(world, tex);
   scene.add(props.group);
-  scene.add(buildBridges(world, tex));
+  if (!openingMode) scene.add(buildBridges(world, tex));
 
-  const water = buildWater(world, tex, terrain.cellTex);
-  water.mesh.layers.set(LAYER_WATER);
-  scene.add(water.mesh, water.falls);
+  const water = openingMode ? null : buildWater(world, tex, terrain.cellTex);
+  if (water) {
+    water.mesh.layers.set(LAYER_WATER);
+    scene.add(water.mesh, water.falls);
+  }
 
   const lights = buildLights(world, scene);
   scene.add(lights.group);
@@ -89,14 +112,16 @@ async function main() {
   const moonDir = new THREE.Vector3(...moonJ.direction_light_travels).normalize();
   const moon = new THREE.DirectionalLight(new THREE.Color().setRGB(...moonJ.color, THREE.SRGBColorSpace), moonJ.energy * 2.2);
   moon.castShadow = true;
-  moon.shadow.mapSize.set(4096, 4096);
+  moon.shadow.mapSize.set(openingMode ? 2048 : 4096, openingMode ? 2048 : 4096);
   const sc = moon.shadow.camera;
   sc.left = -30; sc.right = 30; sc.top = 30; sc.bottom = -30; sc.near = 1; sc.far = 120;
+  if (openingMode) { sc.left = sc.bottom = -14; sc.right = sc.top = 14; }
   moon.shadow.bias = -0.0006;
   moon.shadow.normalBias = 0.035;
   moon.shadow.radius = 3;
   scene.add(moon, moon.target);
   const hemi = new THREE.HemisphereLight(new THREE.Color(0.55, 0.6, 0.78), new THREE.Color(0.36, 0.28, 0.2), 0.7);
+  if (openingMode) { hemi.color.setHex(0xa8b8e4); hemi.groundColor.setHex(0x5b5360); hemi.intensity = 0.45; }
   scene.add(hemi);
 
   // GI emitters & AO boxes
@@ -125,22 +150,40 @@ async function main() {
   }
 
   // ---- particles & atmosphere ----
-  for (const p of json.particles) scene.add(makeFireflies(world, p.center, p.amount));
-  const wfMist = json.fog_volumes.find((f) => /Waterfall/.test(f.name));
-  if (wfMist) scene.add(makeWaterfallMist(wfMist, water.fallInfo));
-  const dustSrc = json.lights.filter((l) => l.type === 'OmniLight3D' && /StreetLight|Lantern/.test(l.name))
-    .map((l) => ({ p: new THREE.Vector3(...l.position), c: new THREE.Color(...l.color), n: /Street/.test(l.name) ? 22 : 8, r: /Street/.test(l.name) ? 1.1 : 0.7, h: /Street/.test(l.name) ? 2.3 : 1.0 }));
-  scene.add(makeDust(dustSrc));
-  scene.add(makeSky());
-  scene.add(makeMountains(new THREE.Vector3(12, 0, -10)));
+  if (!openingMode) {
+    for (const p of json.particles) scene.add(makeFireflies(world, p.center, p.amount));
+    const wfMist = json.fog_volumes.find((f) => /Waterfall/.test(f.name));
+    if (wfMist) scene.add(makeWaterfallMist(wfMist, water.fallInfo));
+    const dustSrc = json.lights.filter((l) => l.type === 'OmniLight3D' && /StreetLight|Lantern/.test(l.name))
+      .map((l) => ({ p: new THREE.Vector3(...l.position), c: new THREE.Color(...l.color), n: /Street/.test(l.name) ? 22 : 8, r: /Street/.test(l.name) ? 1.1 : 0.7, h: /Street/.test(l.name) ? 2.3 : 1.0 }));
+    scene.add(makeDust(dustSrc));
+  }
+  const sky = makeSky();
+  if (openingMode) { sky.material.uniforms.uMid.value.setHex(0x18243f); sky.material.uniforms.uGlowStrength.value = 0.45; }
+  const vista = openingMode ? buildVista(world, tex.vista) : null;
+  const mountains = vista ? vista.group : makeMountains(new THREE.Vector3(12, 0, -10));
+  scene.add(sky, mountains);
+  bindFogUniforms(scene);
 
   // ---- rendering helpers ----
   const reflection = new PlanarReflection(renderer, 0.5);
-  const waterRefl = [
+  const waterRefl = openingMode ? [] : [
     new PlanarReflection(renderer, 0.4, world.waterY(-1), REFLW[0], [0, LAYER_REFLECTIVE]),
     new PlanarReflection(renderer, 0.4, world.waterY(0), REFLW[1], [0, LAYER_REFLECTIVE]),
   ];
   const post = buildPost(renderer, scene, camera, lights.scatter);
+  if (openingMode) {
+    post.dof.uniforms.get('uNearSharp').value = 12;
+    post.dof.uniforms.get('uFarSharp').value = 30;
+    post.dof.uniforms.get('uMaxR').value = 0;
+    post.scatter.uniforms.get('uStrength').value = 0.014;
+    post.scatter.uniforms.get('uExposure').value = 1.1;
+    post.grade.uniforms.get('uSplit').value = 0.4;
+    post.grade.uniforms.get('uSat').value = 1.05;
+    post.bloom.intensity = 0.35;
+    post.vignette.uniforms.get('darkness').value = 0;
+  }
+  const lighting = openingMode ? createPlazaLighting(lights, moon, moonDir, post) : null;
 
   function resize() {
     const w = shotMode ? FIXED_W : window.innerWidth;
@@ -156,15 +199,27 @@ async function main() {
   }
   window.addEventListener('resize', resize);
   resize();
+  // Screenshot mode always uses the original settings, independent of browser storage.
+  let updateFrameStats = null;
+  if (!shotMode && params.get('visuals') !== '0') {
+    ({ updateFrameStats } = createArtDirection({ scene, sky, mountains, moon, hemi, post, ground, lighting, vista, cam: CAM, camera, onCameraChange: resize,
+      storageKey: openingMode ? 'lantern-festival.plaza-lighting.v1' : undefined,
+      legacyStorageKey: openingMode ? 'lantern-festival.plaza-visuals.v1' : undefined,
+      preservedSettings: openingMode ? ['fov', 'pitch', 'yaw', 'distance', ...Object.keys(ground.defaults)] : [] }));
+  }
 
   // ---- player & camera ----
   const P = { x: json.player.spawn[0], z: json.player.spawn[2], y: world.standHeight(json.player.spawn[0], json.player.spawn[2]) ?? 0.02, face: 1, walk: 0 };
   const speed = json.player.speed || 4;
   const camTarget = new THREE.Vector3(P.x, P.y + 0.75, P.z);
   const keys = new Set();
-  window.addEventListener('keydown', (e) => { keys.add(e.code); if (e.code.startsWith('Arrow')) e.preventDefault(); });
+  window.addEventListener('keydown', (e) => {
+    if (e.target.closest?.('#visual-controls')) return;
+    keys.add(e.code); if (e.code.startsWith('Arrow')) e.preventDefault();
+  });
   window.addEventListener('keyup', (e) => keys.delete(e.code));
   window.addEventListener('blur', () => keys.clear());
+  document.addEventListener('pointerdown', (e) => { if (e.target.closest?.('#visual-controls')) keys.clear(); });
 
   function placePlayer(x, z) {
     P.x = x; P.z = z;
@@ -209,14 +264,17 @@ async function main() {
     else if (len > dead) camTarget.add(d.multiplyScalar((1 - dead / len) * (1 - Math.exp(-dt * 6))));
     clampTarget(camTarget);
     const pitch = THREE.MathUtils.degToRad(CAM.pitch);
-    camera.position.set(camTarget.x, camTarget.y + Math.sin(pitch) * CAM.dist, camTarget.z + Math.cos(pitch) * CAM.dist);
+    const yaw = THREE.MathUtils.degToRad(CAM.yaw);
+    camera.position.set(camTarget.x + Math.sin(yaw) * Math.cos(pitch) * CAM.dist,
+      camTarget.y + Math.sin(pitch) * CAM.dist, camTarget.z + Math.cos(yaw) * Math.cos(pitch) * CAM.dist);
     camera.lookAt(camTarget);
     camera.updateMatrixWorld();
   }
 
   function updateMoonShadow() {
     // shadow frustum follows the view (centred a bit north of the player), snapped to texels
-    const c = new THREE.Vector3(camTarget.x, 0, camTarget.z - 9);
+    const c = openingMode ? new THREE.Vector3((world.minX + world.maxX) / 2, 0, (world.minZ + world.maxZ) / 2)
+      : new THREE.Vector3(camTarget.x, 0, camTarget.z - 9);
     const size = (sc.right - sc.left) / moon.shadow.mapSize.x;
     const lightRot = new THREE.Matrix4().lookAt(new THREE.Vector3(), moonDir, new THREE.Vector3(0, 1, 0));
     const inv = lightRot.clone().invert();
@@ -252,10 +310,13 @@ async function main() {
   const clock = new THREE.Clock();
   let t = 0, frames = 0, fpsAcc = 0, fpsFrames = 0;
   window.__fps = 0;
+  let skipFpsFrame = true;
+  document.addEventListener('visibilitychange', () => { fpsAcc = 0; fpsFrames = 0; skipFpsFrame = true; });
   let snapCam = true;
 
   function frame() {
-    const dt = Math.min(clock.getDelta(), 1 / 20);
+    const frameDelta = clock.getDelta();
+    const dt = Math.min(frameDelta, 1 / 20);
     t += dt;
     GI.uTime.value = t;
     if (!shotMode) updatePlayer(dt);
@@ -265,13 +326,19 @@ async function main() {
     updateMoonShadow();
     updateShadowAssignment(lights.points, new THREE.Vector3(P.x, P.y, P.z));
     renderer.shadowMap.needsUpdate = true;
-    reflection.render(scene, camera);
+    if (!openingMode) reflection.render(scene, camera);
     // water mirrors only when the river is in view (it runs along x = 22..24)
-    if (Math.abs(camTarget.x - 23) < 13) for (const r of waterRefl) r.render(scene, camera);
+    if (Math.abs(camTarget.x - (json.opening?.riverX ?? 23)) < 13) for (const r of waterRefl) r.render(scene, camera);
     if (params.has('nopost')) renderer.render(scene, camera); else post.render(dt);
     frames++;
-    fpsAcc += dt; fpsFrames++;
-    if (fpsAcc > 1) { window.__fps = fpsFrames / fpsAcc; fpsAcc = 0; fpsFrames = 0; }
+    // Keep FPS independent of the simulation time clamp, including frames slower than 50 ms.
+    if (skipFpsFrame || document.hidden) { skipFpsFrame = false; return; }
+    fpsAcc += frameDelta; fpsFrames++;
+    if (fpsAcc >= 1) {
+      window.__fps = fpsFrames / fpsAcc;
+      updateFrameStats?.(window.__fps, fpsAcc / fpsFrames * 1000);
+      fpsAcc = 0; fpsFrames = 0;
+    }
   }
 
   // ---- screenshot mode ----

@@ -1,12 +1,28 @@
 [gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/combat/light_pierce_effect.gd" id="effect"]
-[ext_resource type="Texture2D" path="res://assets/meowa/combat/light_pierce/head.png" id="head"]
-[ext_resource type="Texture2D" path="res://assets/meowa/combat/light_pierce/trail.png" id="trail"]
-[ext_resource type="SpriteFrames" path="res://assets/meowa/combat/light_pierce/impact_frames.tres" id="impact"]
+[ext_resource type="Texture2D" path="res://assets/meowa/combat/light_pierce/pixel/head.png" id="head"]
+[ext_resource type="Texture2D" path="res://assets/meowa/combat/light_pierce/pixel/trail.png" id="trail"]
+[ext_resource type="SpriteFrames" path="res://assets/meowa/combat/light_pierce/pixel/impact_frames.tres" id="impact"]
 
 [node name="LightPierceEffect" type="Node3D"]
 script = ExtResource("effect")
 head_texture = ExtResource("head")
 trail_texture = ExtResource("trail")
 impact_frames = ExtResource("impact")
+head_width = 0.8
+head_tip_anchor = 0.94
+flight_height = 0.45
+trail_length = 2.1
+trail_width = 0.35
+trail_fade_time = 0.22
+preserve_trail_pixel_scale = true
+impact_width = 1.12
+impact_duration = 0.28
+impact_height = 0.35
+effect_opacity = 0.9
+effect_energy = 1.4
+trail_energy_multiplier = 2.5
+ground_light_color = Color(0.42, 0.7, 1, 1)
+ground_light_energy = 0.18
+ground_light_range = 1.6

@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/buildings/ricochet_prop.gd" id="prop"]
+
+[node name="LowStoneWall" type="Node3D"]
+script = ExtResource("prop")
+dimensions = Vector3(3.6, 1.25, 0.55)

@@ -1,0 +1,10 @@
+{
+  "status": "failed",
+  "startedAt": "2026-10-10T14:15:14+08:00",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "endedAt": "2026-10-10T14:15:14+08:00",
+  "exitCode": 1,
+  "output": "Failed to find real location of C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python314\\python.exe\n[ERROR] HTTPSConnectionPool(host='api.meowa.ai', port=443): Max retries exceeded with url: /api/workflows/meowa_animation/prompts (Caused by NameResolutionError(\"HTTPSConnection(host='api.meowa.ai', port=443): Failed to resolve 'api.meowa.ai' ([Errno 11001] getaddrinfo failed)\"))\n"
+}

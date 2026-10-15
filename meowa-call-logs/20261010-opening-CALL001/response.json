@@ -1,0 +1,10 @@
+{
+  "status": "success",
+  "startedAt": "2026-10-10T11:40:22+08:00",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "endedAt": "2026-10-10T11:40:23+08:00",
+  "exitCode": 0,
+  "output": "{\n  \"total_credits\": 1364,\n  \"paid_credits\": 1354,\n  \"subscription_credits\": 0,\n  \"trial_credits\": 10,\n  \"next_trial_credit_expires_at\": \"2026-10-10T16:00:00Z\",\n  \"next_subscription_credit_expires_at\": null\n}\n"
+}

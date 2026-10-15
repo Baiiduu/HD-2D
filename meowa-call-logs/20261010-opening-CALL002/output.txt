@@ -1,0 +1,44 @@
+usage: meowart_api.py general-image-run [-h]
+                                        [--generation-model {image-2.5,image-2,nano-banana}]
+                                        [--output-dir OUTPUT_DIR]
+                                        --prompt PROMPT
+                                        [--reference-image REFERENCE_IMAGE]
+                                        [--resolution {512,1K,2K,4K}]
+                                        [--model {gemini-nano-banana-2.1,gemini-3.1-flash-lite-image,gemini-3.1-flash-image,gemini-3-pro-image}]
+                                        [--generation-speed {normal,fast}]
+                                        [--aspect-ratio {1:1,3:4,4:3,2:3,3:2,4:5,5:4,9:16,16:9,21:9,1:4,4:1,1:8,8:1}]
+                                        [--quality {standard,detailed,ultimate}]
+                                        [--remove-bg-method {none,standard}]
+
+General generation (通用生成); no asset template is imposed.
+
+options:
+  -h, --help            show this help message and exit
+  --generation-model {image-2.5,image-2,nano-banana}
+                        Image generation model; default Image2.5
+  --output-dir, --output_dir OUTPUT_DIR
+                        Output root; the runner creates one task subdirectory
+  --prompt PROMPT       Describe the requested image or asset sheet
+  --reference-image REFERENCE_IMAGE
+                        Optional visual reference; repeat up to 8 times
+  --resolution {512,1K,2K,4K}
+                        Canvas tier; recommended shared default is 1K;
+                        Image2/Image2.5: 1K, 2K
+  --model {gemini-nano-banana-2.1,gemini-3.1-flash-lite-image,gemini-3.1-flash-image,gemini-3-pro-image}
+                        Nano Banana only. Nano Banana model exposed by the web
+                        product; 2.1 supports 1K/2K/4K and normal speed only
+  --generation-speed {normal,fast}
+                        Nano Banana only.
+  --aspect-ratio {1:1,3:4,4:3,2:3,3:2,4:5,5:4,9:16,16:9,21:9,1:4,4:1,1:8,8:1}
+                        Canvas ratio; recommended shared default is 1:1;
+                        Image2/Image2.5: 1:1, 3:4, 4:3, 9:16, 16:9
+  --quality {standard,detailed,ultimate}
+                        Image2/Image2.5 only; Standard/Detailed/Ultimate
+  --remove-bg-method {none,standard}
+                        Image2.5 only; free native background removal, default
+                        none
+
+Replaces image-2.5-run, image-2-run, and nano-banana-run; these remain
+compatible aliases for --generation-model image-2.5, image-2, and nano-banana
+respectively. Recover an interrupted job with general-image-poll --job-id
+<id>; never resubmit it.

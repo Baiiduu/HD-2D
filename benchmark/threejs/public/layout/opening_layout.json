@@ -1,0 +1,747 @@
+{
+  "camera": {
+    "fov_vertical_deg": 34,
+    "pitch_deg": 32,
+    "distance": 22,
+    "yaw_deg": 22
+  },
+  "fog_volumes": [],
+  "lights": [
+    {
+      "name": "Plaza/Lamp01",
+      "position": [
+        -6,
+        1.9,
+        3.2
+      ],
+      "type": "OmniLight3D",
+      "color": [
+        1,
+        0.74,
+        0.45
+      ],
+      "energy": 3,
+      "range": 6,
+      "shadows": true,
+      "placeholder": true
+    },
+    {
+      "name": "Plaza/Lamp02",
+      "position": [
+        -4.6,
+        1.9,
+        -4.6
+      ],
+      "type": "OmniLight3D",
+      "color": [
+        1,
+        0.74,
+        0.45
+      ],
+      "energy": 3,
+      "range": 6,
+      "shadows": true,
+      "placeholder": true
+    },
+    {
+      "name": "Plaza/Lamp03",
+      "position": [
+        2.4,
+        1.9,
+        1.9
+      ],
+      "type": "OmniLight3D",
+      "color": [
+        1,
+        0.74,
+        0.45
+      ],
+      "energy": 3,
+      "range": 6,
+      "shadows": true,
+      "placeholder": true
+    }
+  ],
+  "meshes": [],
+  "moon": {
+    "direction_light_travels": [
+      -0.5,
+      -0.8,
+      -0.35
+    ],
+    "color": [
+      0.66,
+      0.76,
+      1
+    ],
+    "energy": 0.32
+  },
+  "particles": [],
+  "player": {
+    "spawn": [
+      -2.4,
+      0.02,
+      1.6
+    ],
+    "speed": 3.2
+  },
+  "sprites": [
+    {
+      "name": "Player/Sprite",
+      "texture": "characters/char_04_white_robed_swordsman.png",
+      "center_position": [
+        -2.4,
+        0.77,
+        1.6
+      ]
+    },
+    {
+      "name": "Residents/ConversationA",
+      "texture": "characters/char_05_jade_robed_cultivator.png",
+      "center_position": [
+        -3.5,
+        0.77,
+        -3.2
+      ]
+    },
+    {
+      "name": "Residents/ConversationB",
+      "texture": "characters/char_04_white_robed_swordsman.png",
+      "center_position": [
+        -2.6,
+        0.77,
+        -3.4
+      ]
+    },
+    {
+      "name": "Residents/Practice",
+      "texture": "characters/char_04_white_robed_swordsman.png",
+      "center_position": [
+        0.2,
+        0.77,
+        -3.4
+      ]
+    },
+    {
+      "name": "Residents/Tea",
+      "texture": "characters/char_05_jade_robed_cultivator.png",
+      "center_position": [
+        1.2,
+        0.77,
+        3.6
+      ]
+    },
+    {
+      "name": "Residents/Observer",
+      "texture": "characters/char_05_jade_robed_cultivator.png",
+      "center_position": [
+        3.6,
+        0.77,
+        -2.3
+      ]
+    }
+  ],
+  "terrain": {
+    "cell_size": 1.6,
+    "ground_y_offset": 0.02,
+    "layer_height": 0.8,
+    "origin_cell": [
+      -6,
+      -5
+    ],
+    "rows_north_to_south": [
+      [
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        }
+      ],
+      [
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        }
+      ],
+      [
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        }
+      ],
+      [
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        }
+      ],
+      [
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        }
+      ],
+      [
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        }
+      ],
+      [
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        }
+      ],
+      [
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        }
+      ],
+      [
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        }
+      ],
+      [
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        }
+      ],
+      [
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        },
+        {
+          "biome": 2,
+          "level": 0,
+          "overlay": 0
+        }
+      ]
+    ],
+    "size": [
+      10,
+      11
+    ],
+    "biome_ids": {
+      "0": "city",
+      "1": "cyber",
+      "2": "cultivation",
+      "3": "wild"
+    },
+    "overlay_bits": {
+      "1": "road (cobblestone dual-grid)",
+      "2": "dirt (dirt dual-grid)",
+      "4": "water (level = riverbed; water surface = (level+0.6)*layer_height)",
+      "8": "bridge (on a water cell; deck top = (level+1)*layer_height)",
+      "16": "ramp (level = bottom; rises toward the 4-neighbour that is exactly one level higher)"
+    }
+  },
+  "units": "meters, Y up, -Z = north (camera looks north)",
+  "name": "仙门灯会 · 石板广场",
+  "opening": {}
+}

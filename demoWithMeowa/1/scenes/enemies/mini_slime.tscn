@@ -1,0 +1,38 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/mini_slime.gd" id="actor"]
+[ext_resource type="Script" path="res://scripts/rendering/character_lighting.gd" id="lighting"]
+[ext_resource type="SpriteFrames" path="res://assets/meowa/enemies/mini_slime/animations.tres" id="frames"]
+[ext_resource type="Texture2D" path="res://assets/meowa/enemies/mini_slime/frames/idle_front.png" id="texture"]
+
+[sub_resource type="CapsuleShape3D" id="body"]
+radius = 0.16
+height = 0.34
+
+[sub_resource type="AtlasTexture" id="first"]
+atlas = ExtResource("texture")
+region = Rect2(0, 0, 52, 56)
+
+[node name="MiniSlime" type="CharacterBody3D"]
+floor_snap_length = 0.25
+script = ExtResource("actor")
+animations = ExtResource("frames")
+body_radius = 0.16
+body_height = 0.34
+
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.17, 0)
+shape = SubResource("body")
+
+[node name="Sprite" type="Sprite3D" parent="."]
+process_priority = 1
+position = Vector3(0, 0.208, 0)
+pixel_size = 0.016
+billboard = 2
+shaded = true
+alpha_cut = 1
+texture_filter = 0
+texture = SubResource("first")
+script = ExtResource("lighting")
+occlusion_outline_color = Color(1, 0.75, 0.4, 1)

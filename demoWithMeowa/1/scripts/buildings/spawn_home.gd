@@ -3,7 +3,7 @@ extends Node3D
 
 const ART := "res://assets/meowa/home/"
 const MATERIALS := ["plaster", "brick", "roof", "wood", "stone", "glass"]
-const LUMINA_SURFACE := preload("res://shaders/lumina_building.gdshader")
+const LUMINA_SURFACE := preload("res://shaders/environment/lumina_building.gdshader")
 
 @export_group("建筑尺寸")
 ## 主体宽度（米），正门位于本地 +Z 方向。

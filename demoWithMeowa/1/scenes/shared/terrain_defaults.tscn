@@ -1,19 +1,19 @@
 [gd_scene format=3]
 
-[ext_resource type="Shader" uid="uid://duhny4lanykqa" path="res://shaders/cliff.gdshader" id="cliff_shader"]
+[ext_resource type="Shader" uid="uid://duhny4lanykqa" path="res://shaders/terrain/cliff.gdshader" id="cliff_shader"]
 [ext_resource type="Texture2D" uid="uid://caeyg3ancboj0" path="res://assets/ground/references/04_road_cobblestone.png" id="ground_city"]
 [ext_resource type="Texture2D" uid="uid://cumfrvpaoxiij" path="res://assets/ground/cultivation/精致像素风灰青色青石板地面材质_长方形石板规则错缝铺设_细而清晰的深色砖缝_40699501/texture.png" id="ground_cultivation"]
 [ext_resource type="Texture2D" uid="uid://xgbm1di6oawd" path="res://assets/ground/references/03_floor_lab_metal_panel.png" id="ground_cyber"]
 [ext_resource type="Texture2D" uid="uid://bblb2p0f7uhds" path="res://assets/ground/references/grass/01_grass_mossy.png" id="ground_grass"]
-[ext_resource type="Shader" uid="uid://yl6y2vskn20o" path="res://shaders/terrain.gdshader" id="ground_shader"]
+[ext_resource type="Shader" uid="uid://yl6y2vskn20o" path="res://shaders/terrain/terrain.gdshader" id="ground_shader"]
 [ext_resource type="Script" uid="uid://bl1cnu18o3dyt" path="res://scripts/terrain/terrain.gd" id="terrain_script"]
 [ext_resource type="Texture2D" uid="uid://ds157g1oxjl3m" path="res://assets/ground/generated/cliff/Pixel_art_earthen_cliff_face_seen_from_the_side_horizontal_layered_rock_strata_in_warm_brown_and_gray_small_cracks/texture.png" id="tex_cliff"]
 [ext_resource type="Texture2D" uid="uid://cd1l4h0iojdtu" path="res://assets/ground/references/elevation/01_wood_plank.png" id="tex_planks"]
 [ext_resource type="Texture2D" uid="uid://netuv20ao0uy" path="res://assets/ground/references/elevation/01_liquid_water_shallow.png" id="tex_water"]
 [ext_resource type="Texture2D" uid="uid://dgthxbtp632a2" path="res://assets/ground/tilesets/dirt/tileset/tileset.png" id="tileset_dirt"]
 [ext_resource type="Texture2D" uid="uid://bhp0fawqqvcne" path="res://assets/ground/tilesets/path/tileset/tileset.png" id="tileset_path"]
-[ext_resource type="Shader" uid="uid://srqt368qg3a" path="res://shaders/waterfall.gdshader" id="waterfall_shader"]
-[ext_resource type="Shader" uid="uid://ckds5ydk553f1" path="res://shaders/water.gdshader" id="water_shader"]
+[ext_resource type="Shader" uid="uid://srqt368qg3a" path="res://shaders/water/waterfall.gdshader" id="waterfall_shader"]
+[ext_resource type="Shader" uid="uid://ckds5ydk553f1" path="res://shaders/water/water.gdshader" id="water_shader"]
 [sub_resource type="ShaderMaterial" id="Terrain_material"]
 resource_local_to_scene = true
 resource_name = "Unified terrain"

@@ -30,14 +30,16 @@ func key(code: Key, pressed: bool) -> void:
 	Input.parse_input_event(event)
 
 func run() -> void:
-	var source_palette: TerrainPaintPalette = load("res://data/spawn_paint_palette.tres")
+	var source_palette: TerrainPaintPalette = load("res://data/world/spawn_paint_palette.tres")
 	var source_grass_tint := source_palette.brushes[0].tint
-	var protected_paths := ["res://data/spawn_paint_palette.tres", "res://data/spawn_terrain.tres", "res://materials/world/spawn_ground.tres", "res://materials/world/spawn_cliff.tres"]
+	var protected_paths := ["res://data/world/spawn_paint_palette.tres", "res://data/world/spawn_terrain.tres", "res://materials/world/spawn_ground.tres", "res://materials/world/spawn_cliff.tres"]
 	var hashes := {}
 	for path in protected_paths: hashes[path] = FileAccess.get_sha256(path)
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
 	# Verify the base presets here; the optional value layer has its own restoration checks.
 	world.get_node("VisualSample").value_sample_enabled = false
+	world.get_node("VisualSample").original_light_refinement_enabled = false
+	world.get_node("VisualSample").fog_post_enabled = false
 	var loadout: LoadoutUI = world.get_node("LoadoutUI")
 	var save_path: String = loadout.save_path
 	var save_exists := FileAccess.file_exists(save_path)
@@ -74,10 +76,11 @@ func run() -> void:
 		sample.style = style
 		await frames()
 		var preset: SpawnVisualPreset = [sample.ORIGINAL, sample.DAY, sample.RAIN, sample.NIGHT][style]
+		var expected := sample._merged_values(preset.node_values, sample.ORIGINAL_RENDER.node_values) if style == 0 else preset.node_values
 		for path in ["HouseSite", "TrainingHut", "GroundDressing", "MapEffects/ArtDirection", "MapEffects/Weather"]:
-			for name in preset.node_values.get(path, {}):
+			for name in expected.get(path, {}):
 				if not sample._visual_property(path, name): continue
-				check(equivalent(world.get_node(path).get(name), preset.node_values[path][name]), "%d restores %s.%s" % [style, path, name])
+				check(equivalent(world.get_node(path).get(name), expected[path][name]), "%d restores %s.%s" % [style, path, name])
 		check(camera.target == player and camera.dof_enabled and camera.dof_mode == 0, "%d preserves follow and depth DOF" % style)
 		for property in camera_before:
 			check(equivalent(camera.get(property), camera_before[property]), "%d preserves current camera %s" % [style, property])

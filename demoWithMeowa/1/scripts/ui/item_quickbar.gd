@@ -3,7 +3,7 @@ extends Control
 
 signal slot_selected(item_id: String)
 
-const SLOT_SHADER := preload("res://shaders/skill_hud.gdshader")
+const SLOT_SHADER := preload("res://shaders/ui/skill_hud.gdshader")
 @export var slot_texture: Texture2D = preload("res://assets/meowa/ui/inventory/controls/quick-slot.png")
 @export var selected_slot_texture: Texture2D = preload("res://assets/meowa/ui/inventory/controls/quick-slot-active.png")
 @export_range(40,96,1) var slot_size := 68.0

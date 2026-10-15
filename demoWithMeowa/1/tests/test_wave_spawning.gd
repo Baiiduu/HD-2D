@@ -72,7 +72,7 @@ func reset() -> void:
 	player.reset_physics_interpolation()
 
 func run() -> void:
-	var protected := FileAccess.get_sha256("res://data/world_terrain.tres")
+	var protected := FileAccess.get_sha256("res://data/world/world_terrain.tres")
 	world = load("res://scenes/world/world.tscn").instantiate()
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("WavePrototype/RunGrowth").enabled = false
@@ -296,7 +296,7 @@ func run() -> void:
 	invalid.start_delay = -1
 	wave.waves.assign([plan([invalid])])
 	check(not wave.start_run() and wave.phase == WavePrototype.Phase.RESULT and wave.wave == 0, "Invalid schedule rejected before combat")
-	check(FileAccess.get_sha256("res://data/world_terrain.tres") == protected, "No terrain source writes")
+	check(FileAccess.get_sha256("res://data/world/world_terrain.tres") == protected, "No terrain source writes")
 	print(JSON.stringify({"checks":checks,"failures":failures,"navigation_points":navigation_points}))
 	for audio in world.find_children("*", "AudioStreamPlayer", true, false): audio.stop()
 	world.queue_free()

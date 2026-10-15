@@ -1,0 +1,40 @@
+{
+  "id": "CALL010",
+  "task": "4-制作主角基础动画",
+  "beijingTime": "2026-10-10T13:18:42.000+08:00",
+  "purpose": "修正背面姿势",
+  "tool": "Meowa CLI / image-edit-run",
+  "executionPython": "C:/Users/PC/AppData/Local/Programs/Python/Python314/python.exe",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "arguments": [
+    "image-edit-run",
+    "--reference-image",
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/front-pose/让同一个黄衣青年正面朝向观众站立_双脚自然落地_保留原来的耳机_发型_黄衣_深蓝_9db4b23f/remove_bg.png",
+    "--prompt",
+    "把人物转身180度，画出他完全背对观众的后视图：看到后脑勺、耳机头梁和黄色连帽衫背后的帽子，看不到脸、胸口和正面的口袋。保持相同人物、像素风格、大小和脚底高度。",
+    "--mode",
+    "pixel",
+    "--strict",
+    "--generation-model",
+    "nano-banana",
+    "--resolution",
+    "1K",
+    "--generation-speed",
+    "normal",
+    "--remove-bg-method",
+    "standard",
+    "--output-dir",
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/back-pose-retry"
+  ],
+  "prompt": "把人物转身180度，画出他完全背对观众的后视图：看到后脑勺、耳机头梁和黄色连帽衫背后的帽子，看不到脸、胸口和正面的口袋。保持相同人物、像素风格、大小和脚底高度。",
+  "negativePrompt": null,
+  "referenceImages": [
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/front-pose/让同一个黄衣青年正面朝向观众站立_双脚自然落地_保留原来的耳机_发型_黄衣_深蓝_9db4b23f/remove_bg.png"
+  ],
+  "status": "pending",
+  "relatedCall": "CALL009",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回"
+}

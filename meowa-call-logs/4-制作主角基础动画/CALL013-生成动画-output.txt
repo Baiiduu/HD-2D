@@ -1,0 +1,61 @@
+[INFO] planned_output_dir=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run_front\黄衣青年正面朝向观众原地轻跑_双腿交替迈步_手臂自然摆动_身体轻微上下起伏_保_a5d2bbed
+[INFO] submitted api_job_id=job_8bf7a2375bf34def83f77e0722f895bf
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=queued progress=处理中:50%
+[INFO] status=running stage=finalizing progress=处理中:50%
+[INFO] status=running stage=finalizing progress=处理中:50%
+[INFO] status=running stage=finalizing progress=处理中:50%
+[INFO] status=running stage=finalizing progress=处理中:50%
+[INFO] status=running stage=finalizing progress=处理中:50%
+[INFO] status=running stage=finalizing progress=处理中:50%
+[INFO] status=success stage=completed progress=已完成:100%
+[INFO] downloading_outputs count=7 to=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run_front\黄衣青年正面朝向观众原地轻跑_双腿交替迈步_手臂自然摆动_身体轻微上下起伏_保_a5d2bbed
+[INFO] downloaded=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run_front\黄衣青年正面朝向观众原地轻跑_双腿交替迈步_手臂自然摆动_身体轻微上下起伏_保_a5d2bbed\result_output_url.webp
+[INFO] downloaded=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run_front\黄衣青年正面朝向观众原地轻跑_双腿交替迈步_手臂自然摆动_身体轻微上下起伏_保_a5d2bbed\result_output_transparent_output_urls_gif.gif
+[INFO] downloaded=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run_front\黄衣青年正面朝向观众原地轻跑_双腿交替迈步_手臂自然摆动_身体轻微上下起伏_保_a5d2bbed\result_output_transparent_output_urls_png.png
+[INFO] saved_dir=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\run_front\黄衣青年正面朝向观众原地轻跑_双腿交替迈步_手臂自然摆动_身体轻微上下起伏_保_a5d2bbed
+{
+  "job_id": "job_8bf7a2375bf34def83f77e0722f895bf",
+  "job_type": "animate",
+  "status": "success",
+  "next_poll_after_seconds": 0,
+  "animation_type": "run",
+  "queue": {
+    "position": 0,
+    "estimated_wait_seconds": 0
+  },
+  "progress": {
+    "label": "已完成",
+    "percent": 100
+  },
+  "result": {
+    "id": "job_8bf7a2375bf34def83f77e0722f895bf",
+    "api_job_id": "job_8bf7a2375bf34def83f77e0722f895bf",
+    "status": "success",
+    "error": null,
+    "error_code": null,
+    "animation_type": "run",
+    "final_prompt": "The young man in the yellow hoodie and dark pants jogs in place while facing directly toward the viewer. His legs alternate stepping up and down while his arms swing naturally at his sides, maintaining a steady and rhythmic vertical bounce.",
+    "output": {
+      "transparent_output_urls": {},
+      "download_urls": {},
+      "frame_count": 8,
+      "output_frames": 8
+    }
+  },
+  "outputs": [],
+  "error": null,
+  "error_code": null,
+  "error_id": null,
+  "credit_refund": {
+    "refunded": false,
+    "amount": 0
+  }
+}

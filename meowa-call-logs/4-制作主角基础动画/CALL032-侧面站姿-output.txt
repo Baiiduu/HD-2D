@@ -1,0 +1,69 @@
+[INFO] planned_output_dir=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\side-view\将同一个黄衣青年改为完全朝右的侧面站姿_头部_身体和双脚都朝右_保留原图的侧_bdaa25bd
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=running stage=processing progress=处理中:50%
+[INFO] status=success stage=completed progress=已完成:100%
+[INFO] downloading_outputs count=2 to=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\side-view\将同一个黄衣青年改为完全朝右的侧面站姿_头部_身体和双脚都朝右_保留原图的侧_bdaa25bd
+[INFO] downloaded=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\side-view\将同一个黄衣青年改为完全朝右的侧面站姿_头部_身体和双脚都朝右_保留原图的侧_bdaa25bd\edited.png
+[INFO] saved_dir=D:\Project\HD-2DMap\meowa-call-logs\4-制作主角基础动画\outputs\side-view\将同一个黄衣青年改为完全朝右的侧面站姿_头部_身体和双脚都朝右_保留原图的侧_bdaa25bd
+{
+  "job_id": "job_cf0a966b044b4a5080806602927b4ce3",
+  "job_type": "workflow",
+  "status": "success",
+  "next_poll_after_seconds": 0,
+  "animation_type": null,
+  "queue": {
+    "position": 0,
+    "estimated_wait_seconds": 0
+  },
+  "progress": {
+    "label": "已完成",
+    "percent": 100
+  },
+  "result": {
+    "job_name": "064018_image_edit_image_edit",
+    "edited_path": "https://media.meowa.ai/public/image-edit/output/2026-10-10/06%3A41%3A48-workflow-e461d81dd06e4e38b3e7a544/edited.png",
+    "url": "https://media.meowa.ai/public/image-edit/output/2026-10-10/06%3A41%3A48-workflow-e461d81dd06e4e38b3e7a544/edited.png"
+  },
+  "outputs": [
+    {
+      "output_key": "primary",
+      "media_type": "image",
+      "mime_type": null,
+      "asset_id": null,
+      "thumb_url": null,
+      "width": null,
+      "height": null,
+      "byte_size": null
+    }
+  ],
+  "error": null,
+  "error_code": null,
+  "error_id": null,
+  "credit_refund": {
+    "refunded": false,
+    "amount": 0
+  }
+}

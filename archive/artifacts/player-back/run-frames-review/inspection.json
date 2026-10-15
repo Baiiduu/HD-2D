@@ -1,0 +1,148 @@
+{
+  "source": "D:\\Project\\HD-2DMap\\artifacts\\player-back\\outputs\\run-frames\\黄衣青年背对观众原地小步轻跑_双腿连续交替迈步_双臂小幅交错摆动_身体轻微起_61a75e7a\\result_output_url.webp",
+  "canvas": [
+    80,
+    80
+  ],
+  "frames": 8,
+  "duration_ms": 800,
+  "frame_details": [
+    {
+      "frame": 0,
+      "bounds": [
+        28,
+        11,
+        53,
+        69
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_values": [
+        0,
+        255
+      ]
+    },
+    {
+      "frame": 1,
+      "bounds": [
+        27,
+        12,
+        54,
+        70
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_values": [
+        0,
+        255
+      ]
+    },
+    {
+      "frame": 2,
+      "bounds": [
+        27,
+        11,
+        53,
+        70
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_values": [
+        0,
+        255
+      ]
+    },
+    {
+      "frame": 3,
+      "bounds": [
+        26,
+        10,
+        53,
+        70
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_values": [
+        0,
+        255
+      ]
+    },
+    {
+      "frame": 4,
+      "bounds": [
+        26,
+        11,
+        53,
+        69
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_values": [
+        0,
+        255
+      ]
+    },
+    {
+      "frame": 5,
+      "bounds": [
+        27,
+        12,
+        53,
+        70
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_values": [
+        0,
+        255
+      ]
+    },
+    {
+      "frame": 6,
+      "bounds": [
+        27,
+        11,
+        53,
+        70
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_values": [
+        0,
+        255
+      ]
+    },
+    {
+      "frame": 7,
+      "bounds": [
+        28,
+        11,
+        52,
+        69
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_values": [
+        0,
+        255
+      ]
+    }
+  ],
+  "art_acceptance": "pending visual review"
+}

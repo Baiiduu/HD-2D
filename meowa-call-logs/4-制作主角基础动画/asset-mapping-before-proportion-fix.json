@@ -1,0 +1,368 @@
+{
+  "idle": {
+    "source": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\idle\\黄衣青年原地待机_轻微呼吸和衣服摆动_脚底位置稳定_保持原图的朝向_外形_配色和_10a5ded3\\result_output_url.webp",
+    "runtime": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\player\\idle.webp",
+    "sha256": "6c17fe09760e766a6019944143987d9e35d952d00916a1a1b0b123cc044bbd81",
+    "canvas": [
+      80,
+      80
+    ],
+    "frames": 8,
+    "bounds": [
+      [
+        28,
+        11,
+        51,
+        69
+      ],
+      [
+        28,
+        11,
+        51,
+        69
+      ],
+      [
+        28,
+        12,
+        51,
+        69
+      ],
+      [
+        28,
+        12,
+        51,
+        69
+      ],
+      [
+        28,
+        13,
+        51,
+        69
+      ],
+      [
+        28,
+        12,
+        51,
+        69
+      ],
+      [
+        28,
+        12,
+        51,
+        69
+      ],
+      [
+        28,
+        11,
+        51,
+        69
+      ]
+    ],
+    "playback_fps": 8.0
+  },
+  "run": {
+    "source": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run\\黄衣青年保持朝右的三分之四视角_原地轻跑_双腿交替迈步_手臂自然摆动_身体只有_1158b885\\result_output_url.webp",
+    "runtime": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\player\\run.webp",
+    "sha256": "725737d153be55c09e73b1f4a1e05fd55793c88021452fb786edc668e6799b95",
+    "canvas": [
+      80,
+      80
+    ],
+    "frames": 8,
+    "bounds": [
+      [
+        22,
+        11,
+        57,
+        69
+      ],
+      [
+        26,
+        12,
+        54,
+        70
+      ],
+      [
+        25,
+        11,
+        56,
+        70
+      ],
+      [
+        23,
+        9,
+        59,
+        68
+      ],
+      [
+        23,
+        11,
+        58,
+        69
+      ],
+      [
+        25,
+        12,
+        57,
+        70
+      ],
+      [
+        26,
+        11,
+        54,
+        70
+      ],
+      [
+        23,
+        10,
+        52,
+        69
+      ]
+    ],
+    "playback_fps": 12.0
+  },
+  "idle_front": {
+    "source": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\idle_front\\黄衣青年正面朝向观众原地待机_轻微呼吸_双脚位置稳定_保持当前外形和配色\\result_output_url.webp",
+    "runtime": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\player\\idle_front.webp",
+    "sha256": "93c4a45f96c56aace1838857b1779366ce22f07d720c94d1ad8b8c9c76f8ee44",
+    "canvas": [
+      80,
+      80
+    ],
+    "frames": 8,
+    "bounds": [
+      [
+        27,
+        11,
+        52,
+        69
+      ],
+      [
+        27,
+        11,
+        52,
+        69
+      ],
+      [
+        27,
+        11,
+        52,
+        69
+      ],
+      [
+        27,
+        11,
+        52,
+        69
+      ],
+      [
+        27,
+        11,
+        52,
+        69
+      ],
+      [
+        27,
+        12,
+        52,
+        69
+      ],
+      [
+        27,
+        12,
+        52,
+        69
+      ],
+      [
+        27,
+        12,
+        52,
+        69
+      ]
+    ],
+    "playback_fps": 8.0
+  },
+  "run_front": {
+    "source": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run_front\\黄衣青年正面朝向观众原地轻跑_双腿交替迈步_手臂自然摆动_身体轻微上下起伏_保_a5d2bbed\\result_output_url.webp",
+    "runtime": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\player\\run_front.webp",
+    "sha256": "d619e398e75e5e002ec2e389b5faa82eecba74d32eaa4c796475d9947ea9ade0",
+    "canvas": [
+      80,
+      80
+    ],
+    "frames": 8,
+    "bounds": [
+      [
+        24,
+        11,
+        54,
+        69
+      ],
+      [
+        24,
+        11,
+        54,
+        68
+      ],
+      [
+        25,
+        10,
+        54,
+        66
+      ],
+      [
+        27,
+        10,
+        55,
+        69
+      ],
+      [
+        27,
+        11,
+        56,
+        69
+      ],
+      [
+        26,
+        11,
+        55,
+        67
+      ],
+      [
+        25,
+        10,
+        54,
+        67
+      ],
+      [
+        24,
+        11,
+        53,
+        68
+      ]
+    ],
+    "playback_fps": 12.0
+  },
+  "idle_back": {
+    "source": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\idle_back\\黄衣青年背对观众原地待机_轻微呼吸_双脚位置稳定_保持后脑勺_耳机和黄衣背后的_04dc1b8c\\result_output_url.webp",
+    "runtime": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\player\\idle_back.webp",
+    "sha256": "7059aa77b7c8ea3d1e1aa8821f545b2775783031183a3dfe152a5a916fb50cf5",
+    "canvas": [
+      80,
+      80
+    ],
+    "frames": 8,
+    "bounds": [
+      [
+        26,
+        12,
+        53,
+        69
+      ],
+      [
+        26,
+        12,
+        53,
+        69
+      ],
+      [
+        26,
+        13,
+        53,
+        69
+      ],
+      [
+        26,
+        13,
+        53,
+        69
+      ],
+      [
+        26,
+        13,
+        53,
+        69
+      ],
+      [
+        26,
+        13,
+        53,
+        69
+      ],
+      [
+        26,
+        12,
+        53,
+        69
+      ],
+      [
+        26,
+        12,
+        53,
+        69
+      ]
+    ],
+    "playback_fps": 8.0
+  },
+  "run_back": {
+    "source": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\run_back\\黄衣青年背对观众原地轻跑_双腿交替迈步_双臂自然摆动_身体轻微上下起伏_始终保_92c92ae9\\result_output_url.webp",
+    "runtime": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1\\assets\\meowa\\player\\run_back.webp",
+    "sha256": "6e632d6a679b9f99a93596dbc0571f9d8f168287b387f156041a4c6b24a27ec1",
+    "canvas": [
+      80,
+      80
+    ],
+    "frames": 8,
+    "bounds": [
+      [
+        23,
+        13,
+        55,
+        69
+      ],
+      [
+        26,
+        11,
+        57,
+        70
+      ],
+      [
+        27,
+        10,
+        55,
+        68
+      ],
+      [
+        25,
+        12,
+        56,
+        64
+      ],
+      [
+        24,
+        13,
+        57,
+        67
+      ],
+      [
+        22,
+        11,
+        53,
+        70
+      ],
+      [
+        23,
+        10,
+        52,
+        68
+      ],
+      [
+        21,
+        12,
+        54,
+        64
+      ]
+    ],
+    "playback_fps": 12.0
+  }
+}

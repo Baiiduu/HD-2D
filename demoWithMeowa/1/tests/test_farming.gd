@@ -14,7 +14,7 @@ func check(value: bool, label: String) -> void:
 		print("FAIL: ", label)
 
 func run() -> void:
-	var catalog: LoadoutCatalog = load("res://data/loadout_catalog.tres")
+	var catalog: LoadoutCatalog = load("res://data/rpg/loadout_catalog.tres")
 	var state := LoadoutState.new(catalog)
 	state.add_item("tomato_seed", 2)
 	state.assign_item("tomato_seed", 3)

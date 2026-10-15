@@ -1,0 +1,16 @@
+{
+	"camera_configuration": {
+		"amount": 0.02,
+		"distance": 11.0,
+		"mode": 0,
+		"pitch": 10.0,
+		"radius": "(0.25, 0.25)"
+	},
+	"failures": [],
+	"fixed_root_vertices": 286,
+	"lens_center_changed_pixels": 0,
+	"lens_changed_pixels": 2828,
+	"lens_drops_during_rain": 4,
+	"scatter_instances": 901,
+	"vegetation_materials": 6
+}

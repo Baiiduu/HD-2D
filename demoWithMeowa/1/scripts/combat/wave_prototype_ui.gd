@@ -51,7 +51,7 @@ func _ready() -> void:
 	_description = _label("", 20)
 	content.add_child(_description)
 	content.add_child(_button("重新开始", controller.retry))
-	content.add_child(_button("结束挑战，返回小院 [ESC]", controller.return_home))
+	content.add_child(_button("结束挑战，返回入口 [ESC]" if controller.get_parent().get_meta("battle_only", false) else "结束挑战，返回小院 [ESC]", controller.return_home))
 	_root.resized.connect(_fit)
 	controller.changed.connect(refresh)
 	refresh()

@@ -1,0 +1,11 @@
+{
+  "status": "success",
+  "job_id": "job_a122dd274eaf41598725bbbc9f853733",
+  "outputs": [
+    {
+      "type": "media",
+      "path": "D:\\Project\\HD-2DMap\\meowa-call-logs\\4-制作主角基础动画\\outputs\\turn-v2\\人物保持姿势和外观不变_原地居中_原地缓慢旋转360\\meowa_animation.webp",
+      "mime_type": "image/webp"
+    }
+  ]
+}

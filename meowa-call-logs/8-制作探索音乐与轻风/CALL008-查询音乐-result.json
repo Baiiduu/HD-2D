@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "beijingTime": "2026-10-10T18:55:05+08:00",
+  "httpStatus": 200,
+  "headers": {
+    "Alt-Svc": "h3=\":443\"; ma=2592000",
+    "Content-Encoding": "zstd",
+    "Content-Type": "application/json",
+    "Date": "Sat, 10 Oct 2026 10:55:04 GMT",
+    "Server": "uvicorn",
+    "Vary": "Origin, Accept-Encoding",
+    "Via": "1.1 Caddy",
+    "Transfer-Encoding": "chunked"
+  },
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回",
+  "returnedData": {
+    "job_id": "job_7a4d36f7c937404390a98b8cf6e0c66a",
+    "job_type": "workflow",
+    "status": "success",
+    "stage": "completed",
+    "next_poll_after_seconds": 0,
+    "animation_type": null,
+    "queue": {
+      "position": 0,
+      "estimated_wait_seconds": 0
+    },
+    "progress": {
+      "label": "已完成",
+      "percent": 100
+    },
+    "result": {
+      "job_name": "105224_default_Pure_instrumental_exploration_BGM_for_a_pixel_art_HD_2D_world_bl",
+      "name": "Lanterns and Neon Woods",
+      "summary": "A 3-minute gentle exploration BGM in A minor at 76 BPM in 4/4, featuring felt piano, soft ambient synthesizer pads, delicate guzheng plucks, and a breathy wooden flute with a calm, quietly curious nighttime atmosphere. Instrumental only, no vocals.",
+      "timestamps_detail": "[0:00 - 0:35] Intro: Intensity: 2/10.\nA quiet, spacious opening establishing a balance between warm lantern light and cool nocturnal hues. The piece begins with a gentle felt piano playing a sparse, contemplative four-bar motif in A minor, surrounded by deep, warm electronic pads and shimmering ambient synth layers. Delicate, solitary guzheng plucks ring out with generous acoustic decay, accenting key modal tones. The rhythm is unhurried and floating with no drums or percussive hits, relying on the breathing pulse of the synthesizer chords. The mood is calm, mysterious, and safe.\n\n[0:35 - 1:15] Main Exploration Theme: Intensity: 3/10.\nThe primary melody enters, carried by a breathy wooden flute playing a lyrical, pentatonic-influenced theme that evokes wandering through quiet streets and moonlit trees. The felt piano transitions into sparse chord arpeggios underneath, supported by a gentle low-end sine pulse that provides a grounded tonal base without sounding like a standard bass guitar or kick drum. The ambient synth pads shift subtly between warm analog textures and glass-like digital tones, reflecting the blend of eastern courtyards and distant neon reflections. The atmosphere is quietly curious and reflective.\n\n[1:15 - 1:55] Courtyard Variation: Intensity: 3/10.\nThe wooden flute pauses, allowing the delicate guzheng to take the melodic lead with elegant, resonant picking patterns and subtle ornamental bends. The felt piano provides warm counter-melodies in the mid-register, while the synth pads expand slightly in stereo width with gentle, filtering harmonic movement. The dynamics remain strictly restrained and even, maintaining the calm background utility. The spatial interaction between the acoustic strings and the lush synthesizer bed creates an intimate sense of quiet discovery.\n\n[1:55 - 2:35] Harmonized Theme: Intensity: 3.5/10.\nThe wooden flute returns to gently weave around the felt piano and guzheng, trading delicate phrases in a seamless call-and-response arrangement. The ambient pads reach their fullest richness, supporting the instruments with velvety warmth and quiet crystalline air. The phrasing remains spacious with ample room between melodic lines, ensuring the track never becomes cluttered or intrusive. The atmosphere is serene, nostalgic, and immersive.\n\n[2:35 - 3:00] Loop Outro: Intensity: 2/10.\nThe arrangement gradually decrescendos back to its core elements to ensure a flawless seamless loop. The wooden flute and guzheng gently fade, leaving the felt piano playing the opening sparse motif over the soft, sustained electronic pad bed. The harmony lingers on an open, unresolved A minor/modal voicing that smoothly and naturally reconnects with the beginning of the track without any abrupt silence or jarring shifts.",
+      "audio_path": "https://media.meowa.ai/public/music-generator/output/2026-10-10/10%3A53%3A25-workflow-3c7c3a6ea1ac43db80b57541/Lanterns%20and%20Neon%20Woods.mp3",
+      "audio_paths": [
+        "https://media.meowa.ai/public/music-generator/output/2026-10-10/10%3A53%3A25-workflow-3c7c3a6ea1ac43db80b57541/Lanterns%20and%20Neon%20Woods.mp3"
+      ],
+      "audios": [
+        {
+          "type": "music",
+          "label": "Lanterns and Neon Woods",
+          "name": "Lanterns and Neon Woods",
+          "path": "https://media.meowa.ai/public/music-generator/output/2026-10-10/10%3A53%3A25-workflow-3c7c3a6ea1ac43db80b57541/Lanterns%20and%20Neon%20Woods.mp3",
+          "content_type": "audio/mpeg",
+          "duration_seconds": 180
+        }
+      ],
+      "url": "https://media.meowa.ai/public/music-generator/output/2026-10-10/10%3A53%3A25-workflow-3c7c3a6ea1ac43db80b57541/Lanterns%20and%20Neon%20Woods.mp3"
+    },
+    "outputs": [
+      {
+        "output_key": "primary",
+        "url": "https://media.meowa.ai/public/music-generator/output/2026-10-10/10%3A53%3A25-workflow-3c7c3a6ea1ac43db80b57541/Lanterns%20and%20Neon%20Woods.mp3",
+        "media_type": "audio",
+        "mime_type": null,
+        "asset_id": null,
+        "thumb_url": null,
+        "width": null,
+        "height": null,
+        "byte_size": null
+      }
+    ],
+    "error": null,
+    "error_code": null,
+    "error_id": null,
+    "credit_refund": {
+      "refunded": false,
+      "amount": 0,
+      "reference_id": "job_7a4d36f7c937404390a98b8cf6e0c66a"
+    }
+  }
+}

@@ -5,9 +5,9 @@
 [ext_resource type="Texture2D" path="res://assets/meowa/ui/experience/fill.png" id="fill"]
 [ext_resource type="Texture2D" path="res://assets/meowa/ui/experience/badge.png" id="badge"]
 [ext_resource type="Texture2D" path="res://assets/meowa/ui/experience/glint.png" id="glint"]
-[ext_resource type="Shader" path="res://shaders/attribute_hud.gdshader" id="shader"]
-[ext_resource type="Shader" path="res://shaders/experience_flow.gdshader" id="flow_shader"]
-[ext_resource type="Shader" path="res://shaders/experience_glint.gdshader" id="glint_shader"]
+[ext_resource type="Shader" path="res://shaders/ui/attribute_hud.gdshader" id="shader"]
+[ext_resource type="Shader" path="res://shaders/ui/experience_flow.gdshader" id="flow_shader"]
+[ext_resource type="Shader" path="res://shaders/ui/experience_glint.gdshader" id="glint_shader"]
 
 [sub_resource type="ShaderMaterial" id="skin"]
 resource_local_to_scene = true

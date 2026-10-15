@@ -40,7 +40,7 @@ func key_r() -> void:
 	Input.parse_input_event(event)
 
 func run() -> void:
-	var source := "res://data/spawn_paint_palette.tres"
+	var source := "res://data/world/spawn_paint_palette.tres"
 	var source_hash := FileAccess.get_sha256(source)
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
 	world.get_node("LoadoutUI").save_enabled = false
@@ -59,10 +59,10 @@ func run() -> void:
 	var camera_pose := camera.global_transform
 	var mesh := terrain._generated
 	var startup := capture(material)
-	check(sample.style == 1, "Default golden style is selected without R")
-	check(startup.wild_tint == sample.DAY.palette_values[0].tint, "Startup grass tint matches the selected style")
-	check(startup.path_tint == sample.DAY.palette_values[1].tint, "Startup road tint matches the selected style")
-	check(startup.lumina_relief_enabled and startup.pixel_palette_enabled, "Meadow variation and palette are enabled at startup")
+	check(sample.style == 0 and sample.original_light_refinement_enabled, "Refined original lighting is selected without R")
+	check(startup.wild_tint == sample.ORIGINAL.palette_values[0].tint, "Startup grass tint matches the selected style")
+	check(startup.path_tint == sample.ORIGINAL.palette_values[1].tint, "Startup road tint matches the selected style")
+	check(not startup.lumina_relief_enabled and startup.pixel_palette_enabled, "Original lighting retains the independent pixel palette")
 	check(startup.grass_relief == dressing.ground_relief and startup.grass_root_occlusion == dressing.root_occlusion, "Grass lighting uses the dressing controller")
 	check(startup.grass_variation_enabled and is_equal_approx(startup.grass_variation_strength, sample.grass_variation_strength), "Meadow variation is enabled independently at startup")
 	# 同一风格重新应用不应改变启动画面；旧代码在这里把白色草底改成风格色调。
@@ -83,9 +83,9 @@ func run() -> void:
 		check_state(material, expected, "Late palette apply preserves style %d" % style)
 		check(emissions[0] == 0, "Palette refresh does not reapply unrelated scene effects")
 		sample.style_changed.disconnect(count)
-	sample.style = 1
+	sample.style = 0
 	await frames()
-	for style in [2, 3, 0, 1]:
+	for style in [1, 2, 3, 0]:
 		key_r()
 		await frames()
 		check(sample.style == style, "R still cycles to %d" % style)

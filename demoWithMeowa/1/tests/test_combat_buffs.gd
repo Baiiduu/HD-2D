@@ -5,6 +5,7 @@ class ProjectileProbe extends Node3D:
 		return {"name": "直线投射", "damage": 5.0 * modifiers.damage_multiplier(), "interval": modifiers.interval_multiplier()}
 
 var checks := 0
+var failures := 0
 
 func _initialize() -> void:
 	create_timer(55.0).timeout.connect(func(): quit(2))
@@ -12,7 +13,9 @@ func _initialize() -> void:
 
 func check(condition: bool, message: String) -> void:
 	checks += 1
-	assert(condition, message)
+	if not condition:
+		failures += 1
+		push_error(message)
 
 func near(actual: float, expected: float, message: String) -> void:
 	check(is_equal_approx(actual, expected), message)
@@ -65,8 +68,14 @@ func run() -> void:
 	fan.knockback_distance = 0.0
 	fan.audio_enabled = false
 	growth.choice_ui.open_duration = 0.0
+	growth.cards_per_draw = 100
+	skills.initial_choice.open_duration = 0.0
+	skills.initial_cards_per_draw = 100
 	player.global_position = wave._path.ground_position(wave.global_position) + Vector3.UP * 0.03
 	check(wave.start_run(), "Real challenge starts")
+	check(skills.initial_choice.select_option(&"initial:fan_slash"), "Choose actual initial A01 before buff checks")
+	skills.initial_choice.confirm_selection()
+	fan.set_physics_process(false)
 	player.global_position = world.get_node("BattleArea").global_position + Vector3.UP * 0.03
 	(world.get_node("MapEffects/Camera3D") as FollowCamera).snap_to_target()
 	for frame in 8: await process_frame
@@ -81,13 +90,13 @@ func run() -> void:
 	var weather: Node3D = world.get_node("MapEffects/Weather")
 	var weather_clock: float = weather._clock
 	growth._grant_experience(10)
-	check(growth.choice_ui.is_open and wave.combat_frozen and growth.choice_options.size() == 4, "Existing skill and all three buffs share the actual level-up pool")
+	check(growth.choice_ui.is_open and wave.combat_frozen and growth.choice_options.size() >= 5, "Learning other skills, upgrading A01 and all three buffs share the actual level-up pool")
 	var descriptions := {}
 	for option in growth.choice_options: descriptions[option.id] = option.description
 	check(descriptions.has(&"skill:fan_slash:2"), "Weapon upgrade stays available alongside buffs")
 	check("×1.00 → ×1.20" in descriptions[&"P01"], "Damage card shows actual coefficient transition")
-	check("0.80 → 0.72" in descriptions[&"P02"], "Cooldown card shows actual attack timing")
-	check("2.40 → 2.76" in descriptions[&"P03"], "Range card shows actual world distance")
+	check("0% → 10%" in descriptions[&"P02"], "Cooldown card shows the actual shared reduction")
+	check("0% → 15%" in descriptions[&"P03"], "Range card shows the actual shared coverage gain")
 	for frame in 3: await process_frame
 	check(not paused and weather._clock > weather_clock, "World and weather run behind frozen combat")
 	if DisplayServer.get_name() != "headless":
@@ -162,5 +171,5 @@ func run() -> void:
 	check(fan.skill_definition == definition and damage.bonus_per_level == 0.2, "Shared skill and buff resources are untouched")
 	world.free()
 	await create_timer(0.1).timeout
-	print("Combat buffs: %d checks passed" % checks)
-	quit.call_deferred()
+	print("Combat buffs: %d checks, %d failures" % [checks, failures])
+	quit.call_deferred(1 if failures else 0)

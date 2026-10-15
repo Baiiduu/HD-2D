@@ -1,0 +1,11 @@
+{
+	"default_on": true,
+	"editable_properties": 8,
+	"editor_hint": true,
+	"lens_transients_not_created_in_editor": true,
+	"live_update": true,
+	"passed": true,
+	"playing": false,
+	"preview_off": true,
+	"wind_animated": true
+}

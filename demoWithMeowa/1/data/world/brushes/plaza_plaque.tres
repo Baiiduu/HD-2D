@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="TerrainPaintBrush" format=3 uid="uid://vjxgy7g823c2"]
+
+[ext_resource type="Script" uid="uid://dcauimekxq8k1" path="res://scripts/terrain/terrain_paint_brush.gd" id="brush"]
+[ext_resource type="Texture2D" uid="uid://m0o4f2pgq5j8" path="res://assets/meowa/city_plaza/fixed/05-horizontal.png" id="color"]
+[ext_resource type="Texture2D" uid="uid://cexsjisb7l808" path="res://assets/meowa/city_plaza/fixed/ao/05-horizontal.png" id="material_ao"]
+[ext_resource type="Texture2D" uid="uid://b6db3m5weq78j" path="res://assets/meowa/city_plaza/fixed/roughness/05-horizontal.png" id="material_roughness"]
+[ext_resource type="Texture2D" uid="uid://cxke1vnjtntg8" path="res://assets/meowa/city_plaza/fixed/roughness_wet/05-horizontal.png" id="material_roughness_wet"]
+[ext_resource type="Texture2D" uid="uid://c27ader6a04x6" path="res://assets/meowa/city_plaza/fixed/normals/05-horizontal.png" id="normal"]
+
+[sub_resource type="AtlasTexture" id="material_ao_slice"]
+atlas = ExtResource("material_ao")
+region = Rect2(32, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="normal_slice"]
+atlas = ExtResource("normal")
+region = Rect2(32, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="material_roughness_slice"]
+atlas = ExtResource("material_roughness")
+region = Rect2(32, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="color_slice"]
+atlas = ExtResource("color")
+region = Rect2(32, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="material_roughness_wet_slice"]
+atlas = ExtResource("material_roughness_wet")
+region = Rect2(32, 32, 32, 32)
+
+[resource]
+script = ExtResource("brush")
+label = "分隔带节点饰块"
+paint_id = 24
+texture = SubResource("color_slice")
+texture_meters = Vector2(0.8, 0.8)
+underlay_paint_id = 12
+snap_pivot_offset = Vector2(0.0125, 0.0125)
+ao_texture = SubResource("material_ao_slice")
+roughness_texture = SubResource("material_roughness_slice")
+wet_roughness_texture = SubResource("material_roughness_wet_slice")
+corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
+normal_texture = SubResource("normal_slice")
+normal_strength = 0.6
+roughness = 0.78
+wet_response = 0.8

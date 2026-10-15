@@ -66,7 +66,13 @@ var _elapsed := 0.0
 var _hit_flash := 0.0
 var _sprite_scale := Vector3.ONE
 var _sprite_color := Color.WHITE
+var separation_radius := 0.75
+var separation_strength := 1.5
+var knockback_multiplier := 1.0
 @onready var sprite: Sprite3D = $Sprite
+
+func _enter_tree() -> void:
+	if wave_mode: $Sprite.set("shared_materials", true)
 
 func configure_wave(context: Dictionary, definition: WaveEnemyDefinition, warning: float) -> void:
 	super.configure_wave(context, definition, warning)
@@ -74,6 +80,21 @@ func configure_wave(context: Dictionary, definition: WaveEnemyDefinition, warnin
 	target = wave_target
 	camera = context.camera
 	_path = navigation
+	if definition is WaveMeleeEnemyDefinition:
+		var melee := definition as WaveMeleeEnemyDefinition
+		body_radius = melee.body_radius
+		body_height = melee.body_height
+		gravity = melee.gravity
+		route_interval = melee.route_interval
+		separation_radius = melee.separation_radius
+		separation_strength = melee.separation_strength
+		knockback_multiplier = melee.knockback_multiplier
+		combat_stop_distance = melee.combat_stop_distance
+		contact_distance = melee.contact_distance
+		contact_height = melee.contact_height
+		animation_speed = melee.animation_speed
+		warning_scale = melee.warning_scale
+		hit_flash_seconds = melee.hit_flash_seconds
 
 func _ready() -> void:
 	super._ready()
@@ -229,29 +250,33 @@ func _combat_tick(delta: float) -> void:
 		_route_clock -= delta
 		if _route_clock <= 0.0:
 			_route_clock = route_interval
-			_route = _path.route(global_position, _path.ground_position(target.global_position))
+			_route = _path.shared_pursuit_route(global_position, target.global_position)
 			_waypoint = 1 if _route.size() > 1 else 0
-		if not _route.is_empty():
+		if not _route.is_empty() and TerrainPath.horizontal_distance(global_position, _route[-1]) > 0.1:
 			while _waypoint < _route.size() - 1 and TerrainPath.horizontal_distance(global_position, _route[_waypoint]) < 0.14:
 				_waypoint += 1
 			direction = _route[_waypoint] - global_position
 			direction.y = 0.0
 			direction = direction.normalized()
 			var separation := Vector3.ZERO
-			for other in get_tree().get_nodes_in_group(&"wave_enemies"):
-				if other == self or other.dead or other.spawn_delay > 0.0: continue
-				var offset: Vector3 = global_position - other.global_position
-				offset.y = 0.0
-				var distance := offset.length()
-				if distance > 0.01 and distance < 0.75:
-					separation += offset / distance * (0.75 - distance)
-			direction = (direction + separation * 1.5).normalized()
-	velocity.x = direction.x * move_speed
-	velocity.z = direction.z * move_speed
+			if spatial_index:
+				separation = spatial_index.separation(self, separation_radius)
+			else:
+				for other in get_tree().get_nodes_in_group(&"wave_enemies"):
+					if other == self or other.dead or other.spawn_delay > 0.0: continue
+					var offset: Vector3 = global_position - other.global_position
+					offset.y = 0.0
+					var distance := offset.length()
+					if distance > 0.01 and distance < separation_radius:
+						separation += offset / distance * (separation_radius - distance)
+			direction = (direction + separation * separation_strength).normalized()
+	var actual_speed := effective_move_speed()
+	velocity.x = direction.x * actual_speed
+	velocity.z = direction.z * actual_speed
 	if direction != Vector3.ZERO: _look = direction
 	move_and_slide()
 	# 接触范围、高差和遮挡属于史莱姆招式，不放进通用波次控制器。
-	if TerrainPath.horizontal_distance(global_position, target.global_position) < contact_distance and absf(global_position.y - target.global_position.y) < contact_height and _can_see_target():
+	if TerrainPath.horizontal_distance(global_position, target.global_position) < contact_distance and absf(global_position.y - target.global_position.y) < contact_height and (not can_damage_player.is_valid() or can_damage_player.call(attack_damage)) and _can_see_target():
 		damage_player.call(attack_damage)
 
 func _damage_feedback() -> void:
@@ -259,10 +284,13 @@ func _damage_feedback() -> void:
 
 func apply_knockback(push: Vector3, distance: float) -> void:
 	if not wave_mode or dead or distance <= 0.0 or push == Vector3.ZERO: return
+	distance *= knockback_multiplier
+	if distance <= 0.0: return
 	var destination := navigation.ground_position(global_position + push * distance)
 	# 不击落台地，也不跨断层或穿墙。
 	if absf(destination.y - navigation.ground_position(global_position).y) > 0.2 or navigation.route(global_position, destination).is_empty(): return
 	move_and_collide(push * distance)
+	if spatial_index: spatial_index.update(self)
 	_route_clock = 0.0
 
 func _process(delta: float) -> void:

@@ -1,0 +1,40 @@
+{
+  "id": "CALL015",
+  "task": "4-制作主角基础动画",
+  "beijingTime": "2026-10-10T13:20:46.000+08:00",
+  "purpose": "背面轻跑起始姿势",
+  "tool": "Meowa CLI / image-edit-run",
+  "executionPython": "C:/Users/PC/AppData/Local/Programs/Python/Python314/python.exe",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "arguments": [
+    "image-edit-run",
+    "--reference-image",
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/back-pose-retry/把人物转身180度_画出他完全背对观众的后视图_看到后脑勺_耳机头梁和黄色连帽衫_c56d39b7/remove_bg.png",
+    "--prompt",
+    "让这个背对观众的黄衣青年朝远处轻跑，双腿前后错开，双臂自然摆动。始终只看到后脑勺和连帽衫背面，保持当前人物大小与像素风格。",
+    "--mode",
+    "pixel",
+    "--strict",
+    "--generation-model",
+    "nano-banana",
+    "--resolution",
+    "1K",
+    "--generation-speed",
+    "normal",
+    "--remove-bg-method",
+    "standard",
+    "--output-dir",
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/back-run-pose"
+  ],
+  "prompt": "让这个背对观众的黄衣青年朝远处轻跑，双腿前后错开，双臂自然摆动。始终只看到后脑勺和连帽衫背面，保持当前人物大小与像素风格。",
+  "negativePrompt": null,
+  "referenceImages": [
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/back-pose-retry/把人物转身180度_画出他完全背对观众的后视图_看到后脑勺_耳机头梁和黄色连帽衫_c56d39b7/remove_bg.png"
+  ],
+  "status": "pending",
+  "relatedCall": "CALL010",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回"
+}

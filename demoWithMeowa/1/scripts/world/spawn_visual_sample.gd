@@ -3,12 +3,17 @@ class_name SpawnVisualSample
 extends Node
 
 const ORIGINAL = preload("res://data/visual/spawn_original.tres")
+# 保留用户实际审阅的原始灯光；历史参数资源仍原样保存。
+const ORIGINAL_RENDER = preload("res://data/visual/spawn_original_render.tres")
 const DAY = preload("res://data/visual/spawn_lumina_day.tres")
 const RAIN = preload("res://data/visual/spawn_lumina_rain.tres")
 const NIGHT = preload("res://data/visual/spawn_lumina_night.tres")
 const PIXEL_SAMPLE_PATH := "res://assets/meowa/pixel_sample/"
 const SMOOTH_GRASS_PATH := "res://assets/ground/grass_smooth_v1/"
 const STYLE_NAMES := ["原始光影", "Lumina 黄金时段", "Lumina 细雨", "Lumina 夜晚"]
+# 新增总控项的旧版基线；切 Style 或关闭样板时不能遗留上一种样板的后处理。
+const FOG_POST_DEFAULTS := {"fog_curve": 1.0, "bloom_threshold": 1.0, "bloom_floor": 0.04,
+	"vignette_radius": 0.85, "shadow_lift": Vector3(0.012, 0.020, 0.035)}
 signal style_changed(index: int, title: String)
 
 @export_group("画面风格")
@@ -22,6 +27,14 @@ signal style_changed(index: int, title: String)
 @export var runtime_switch_enabled := true
 ## R 单次按下切换下一种风格；输入文字、管理界面和升级选择期间不接管按键。
 @export var style_key: Key = KEY_R
+
+@export_group("原始光影增强")
+## 只增强原始 Style 的主光、暗面补光和阴影交界；关闭恢复之前实际审阅的光影。
+@export var original_light_refinement_enabled := true:
+	set(value): original_light_refinement_enabled = value; _queue_apply()
+## 保留原暖光方向与局部光斑布局；强度、补光色、阴影柔化和曝光等长期参数在此配置。
+@export var original_light_preset: SpawnVisualPreset = preload("res://data/visual/spawn_original_refined.tres"):
+	set(value): original_light_preset = value; _queue_apply()
 
 @export_group("统一像素美术")
 ## 独立切换草地、卵石路、墙面和屋瓦，不随 Style 改变。
@@ -107,6 +120,19 @@ signal style_changed(index: int, title: String)
 @export var value_sample_profile: ValueLightingProfile = preload("res://data/visual/spawn_value_sample.tres"):
 	set(value): value_sample_profile = value; _value_sample_applied = null; _queue_apply()
 @export_tool_button("应用明暗层次样板", "Reload") var value_apply_button = apply_value_sample
+
+@export_group("雾与后处理样板")
+## 分别细调四种 Style 的空气透视、泛光与暗部调色；关闭恢复此前的雾和后处理。
+@export var fog_post_enabled := true:
+	set(value): fog_post_enabled = value; _queue_apply()
+## 按原始、黄金、细雨、夜晚排列；只覆盖雾和后处理，长期微调在资源的 Node Values 中保存。
+@export var fog_post_presets: Array[SpawnVisualPreset] = [
+	preload("res://data/visual/spawn_atmosphere_original.tres"),
+	preload("res://data/visual/spawn_atmosphere_day.tres"),
+	preload("res://data/visual/spawn_atmosphere_rain.tres"),
+	preload("res://data/visual/spawn_atmosphere_night.tres")]:
+	set(value): fog_post_presets = value; _queue_apply()
+@export_tool_button("应用雾与后处理", "Reload") var fog_post_apply_button = apply_style
 
 var _queued := false
 var _isolated := false
@@ -268,10 +294,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func _visual_property(path: String, property: String) -> bool:
 	if path in ["MapEffects/ArtDirection", "Player/Sprite"]: return true
 	if path == "MapEffects/Weather": return property in ["weather_mode", "rain_amount", "rain_intensity"]
-	if path == "MapEffects/AtmosphericLight": return property in ["distant_enabled", "light_color", "map_accents_enabled", "surface_energy"]
+	if path == "MapEffects/AtmosphericLight": return property in ["distant_enabled", "light_color", "map_accents_enabled", "surface_energy", "follow_global_direction"]
 	if path == "MapEffects/DaylightPreview": return property == "enabled"
-	# 湿草地亮斑由用户独立调节，切换光影不能恢复已关闭的亮斑。
-	if path == "GroundDressing": return property in ["lighting_enabled", "stable_shadows", "normal_strength", "root_occlusion", "backlight_strength", "ground_relief", "ground_wet_response"]
+	# 投影轮廓和湿草地亮斑独立保留，切光影不重设用户选择。
+	if path == "GroundDressing": return property in ["lighting_enabled", "normal_strength", "root_occlusion", "backlight_strength", "ground_relief", "ground_wet_response"]
 	if path in ["HouseSite/Home", "TrainingHut"]: return property.begins_with("lumina_") or property.begins_with("window_glow_")
 	return false
 
@@ -350,7 +376,7 @@ func _isolate_palette(terrain: Terrain) -> void:
 	# 调色与贴图覆盖只影响此地图实例，不写回画笔源文件或种植存档。
 	terrain.paint_palette = terrain.paint_palette.duplicate(true)
 	# 编辑器已保存新贴图时，旧材质基线仍来自原画笔；只恢复已知样板覆盖，不改固定编号。
-	var source: TerrainPaintPalette = load("res://data/spawn_paint_palette.tres")
+	var source: TerrainPaintPalette = load("res://data/world/spawn_paint_palette.tres")
 	for index in mini(terrain.paint_palette.brushes.size(), source.brushes.size()):
 		var brush := terrain.paint_palette.brushes[index]
 		if brush.texture and (brush.texture.resource_path.begins_with(PIXEL_SAMPLE_PATH) or brush.texture.resource_path.begins_with(SMOOTH_GRASS_PATH)):
@@ -360,7 +386,8 @@ func _isolate_palette(terrain: Terrain) -> void:
 			if restore_normal:
 				brush.normal_texture = source.brushes[index].normal_texture
 				brush.normal_strength = source.brushes[index].normal_strength
-	for building in [get_parent().get_node("HouseSite/Home"), get_parent().get_node("TrainingHut")]:
+	for building in [get_parent().get_node_or_null("HouseSite/Home"), get_parent().get_node_or_null("TrainingHut")]:
+		if not is_instance_valid(building): continue
 		for property in ["plaster_texture_override", "roof_texture_override"]:
 			var texture: Texture2D = building.get(property)
 			if texture and texture.resource_path.begins_with(PIXEL_SAMPLE_PATH): building.set(property, null)
@@ -456,7 +483,8 @@ func _apply_pixel_materials(terrain: Terrain) -> void:
 	var roof := _pixel_texture("roof")
 	if not plaster and not roof: return
 	var ramp := color_palette.palette_texture() if color_ramps_enabled and color_palette else null
-	for building in [get_parent().get_node("HouseSite/Home"), get_parent().get_node("TrainingHut")]:
+	for building in [get_parent().get_node_or_null("HouseSite/Home"), get_parent().get_node_or_null("TrainingHut")]:
+		if not is_instance_valid(building): continue
 		_pixel_building_values[building] = {
 			"plaster_texture_override": building.get("plaster_texture_override"),
 			"roof_texture_override": building.get("roof_texture_override"),
@@ -492,11 +520,13 @@ func apply_color_ramps() -> void:
 	_apply_color_ramps(terrain)
 	var enabled := pixel_art_enabled and color_ramps_enabled and color_palette != null
 	var ramp := color_palette.palette_texture() if enabled else null
-	for building in [world.get_node("HouseSite/Home"), world.get_node("TrainingHut")]:
+	for building in [world.get_node_or_null("HouseSite/Home"), world.get_node_or_null("TrainingHut")]:
+		if not is_instance_valid(building): continue
 		building.set("override_palette_texture", ramp)
 
 func apply_pixel_art() -> void:
 	_pixel_queued = false
+	if not is_inside_tree(): return
 	var world := get_parent()
 	if not world or not world.has_node("Homestead"): return
 	var terrain: Terrain = world.get_node("Homestead")
@@ -510,15 +540,22 @@ func apply_pixel_art() -> void:
 
 func apply_style() -> void:
 	_queued = false
+	if not is_inside_tree(): return
 	var world := get_parent()
 	if not world or not world.has_node("MapEffects") or not world.has_node("Homestead"): return
 	var terrain: Terrain = world.get_node("Homestead")
 	_isolate_palette(terrain)
 	var preset: SpawnVisualPreset = [ORIGINAL, DAY, RAIN, NIGHT][clampi(style, 0, 3)]
+	_nodes({"MapEffects/ArtDirection": FOG_POST_DEFAULTS})
 	_nodes(_merged_values(ORIGINAL.node_values, preset.node_values))
+	if style == 0: _nodes(ORIGINAL_RENDER.node_values)
+	if style == 0 and original_light_refinement_enabled and original_light_preset:
+		_nodes(original_light_preset.node_values)
 	if value_sample_enabled and value_sample_profile and style < value_sample_profile.lighting_presets.size():
 		var value_preset := value_sample_profile.lighting_presets[style]
 		if value_preset: _nodes(value_preset.node_values)
+	if fog_post_enabled and style < fog_post_presets.size() and fog_post_presets[style]:
+		_nodes(fog_post_presets[style].node_values)
 	_apply_value_palettes()
 	_materials(_merged_values(ORIGINAL.shader_values, preset.shader_values))
 	world.get_node("MapEffects/PostProcess/Screen").material.set_shader_parameter("lumina_grade_enabled", style > 0)
@@ -533,6 +570,8 @@ func apply_style() -> void:
 	style_changed.emit(style, STYLE_NAMES[style])
 
 func _update_window_lights() -> void:
+	var home := get_parent().get_node_or_null("HouseSite/Home") as Node3D
+	if not home: return
 	if _window_lights.is_empty():
 		for index in 2:
 			var lamp := OmniLight3D.new()
@@ -544,7 +583,6 @@ func _update_window_lights() -> void:
 			lamp.light_size = 0.15
 			add_child(lamp)
 			_window_lights.append(lamp)
-	var home := get_parent().get_node("HouseSite/Home") as Node3D
 	for index in 2:
 		var lamp := _window_lights[index]
 		lamp.visible = style > 0

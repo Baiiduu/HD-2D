@@ -58,6 +58,9 @@ class ScatterEffect extends Effect {
       ]),
     });
     this.camera = camera;
+    this.setLights(lights);
+  }
+  setLights(lights) {
     const n = Math.min(lights.length, MAXL);
     this.uniforms.get('uN').value = n;
     lights.slice(0, n).forEach((l, i) => {
@@ -124,19 +127,25 @@ class TiltDOFEffect extends Effect {
 class GradeEffect extends Effect {
   constructor() {
     super('GradeEffect', /* glsl */`
-      uniform float uSat;
+      uniform float uSat, uBrightness, uContrast, uSplit, uTemperature;
       void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor){
         vec3 c = max(inputColor.rgb, 0.0);
         float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
         vec3 shadowTint = vec3(0.93, 0.98, 1.06);
         vec3 highTint = vec3(1.06, 1.0, 0.9);
-        c *= mix(shadowTint, highTint, smoothstep(0.04, 0.55, l));
+        c *= mix(vec3(1.0), mix(shadowTint, highTint, smoothstep(0.04, 0.55, l)), uSplit);
         c = mix(vec3(l), c, uSat);
         c = c * 0.98 + vec3(0.010, 0.009, 0.012);
         // soft S-curve
         c = mix(c, c * c * (3.0 - 2.0 * c), 0.18);
+        c *= vec3(1.0 + uTemperature * 0.15, 1.0, 1.0 - uTemperature * 0.15);
+        c = max((c - 0.5) * uContrast + 0.5, 0.0) * uBrightness;
         outputColor = vec4(c, inputColor.a);
-      }`, { uniforms: new Map([['uSat', new THREE.Uniform(1.06)]]) });
+      }`, { uniforms: new Map([
+        ['uSat', new THREE.Uniform(1.06)], ['uBrightness', new THREE.Uniform(1.0)],
+        ['uContrast', new THREE.Uniform(1.0)], ['uSplit', new THREE.Uniform(1.0)],
+        ['uTemperature', new THREE.Uniform(0.0)],
+      ]) });
   }
 }
 
@@ -173,7 +182,7 @@ export function buildPost(renderer, scene, camera, scatterLights) {
   composer.addPass(new EffectPass(camera, bloom, tone, grade, vignette));
 
   return {
-    composer, ao, scatter, dof, bloom, tone,
+    composer, ao, scatter, dof, bloom, tone, grade, vignette,
     setSize(w, h) { composer.setSize(w, h); },
     render(dt) { scatter.update(); composer.render(dt); },
   };

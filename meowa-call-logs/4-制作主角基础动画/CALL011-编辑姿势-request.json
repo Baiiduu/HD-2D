@@ -1,0 +1,40 @@
+{
+  "id": "CALL011",
+  "task": "4-制作主角基础动画",
+  "beijingTime": "2026-10-10T13:18:48.000+08:00",
+  "purpose": "正面轻跑起始姿势",
+  "tool": "Meowa CLI / image-edit-run",
+  "executionPython": "C:/Users/PC/AppData/Local/Programs/Python/Python314/python.exe",
+  "runner": "C:/Users/PC/.codex/skills/game-assets/meowart_api.py",
+  "workingDirectory": "D:/Project/HD-2DMap",
+  "arguments": [
+    "image-edit-run",
+    "--reference-image",
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/front-pose/让同一个黄衣青年正面朝向观众站立_双脚自然落地_保留原来的耳机_发型_黄衣_深蓝_9db4b23f/remove_bg.png",
+    "--prompt",
+    "让这个正面黄衣青年向观众方向轻跑，双腿前后错开，双臂自然前后摆动。保持正面朝向、人物大小、像素风格与原来衣着。",
+    "--mode",
+    "pixel",
+    "--strict",
+    "--generation-model",
+    "nano-banana",
+    "--resolution",
+    "1K",
+    "--generation-speed",
+    "normal",
+    "--remove-bg-method",
+    "standard",
+    "--output-dir",
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/front-run-pose"
+  ],
+  "prompt": "让这个正面黄衣青年向观众方向轻跑，双腿前后错开，双臂自然前后摆动。保持正面朝向、人物大小、像素风格与原来衣着。",
+  "negativePrompt": null,
+  "referenceImages": [
+    "D:/Project/HD-2DMap/meowa-call-logs/4-制作主角基础动画/outputs/front-pose/让同一个黄衣青年正面朝向观众站立_双脚自然落地_保留原来的耳机_发型_黄衣_深蓝_9db4b23f/remove_bg.png"
+  ],
+  "status": "pending",
+  "relatedCall": "CALL008",
+  "model": "未返回",
+  "seed": "未返回",
+  "cost": "未返回"
+}

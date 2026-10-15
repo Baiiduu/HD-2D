@@ -1,0 +1,50 @@
+{
+  "front": {
+    "canvas": [
+      64,
+      64
+    ],
+    "alpha_bounds": [
+      20,
+      3,
+      43,
+      61
+    ],
+    "alpha_extrema": [
+      0,
+      255
+    ]
+  },
+  "side": {
+    "canvas": [
+      64,
+      64
+    ],
+    "alpha_bounds": [
+      22,
+      3,
+      43,
+      61
+    ],
+    "alpha_extrema": [
+      0,
+      255
+    ]
+  },
+  "left": {
+    "canvas": [
+      64,
+      64
+    ],
+    "alpha_bounds": [
+      21,
+      3,
+      42,
+      61
+    ],
+    "alpha_extrema": [
+      0,
+      255
+    ]
+  }
+}
