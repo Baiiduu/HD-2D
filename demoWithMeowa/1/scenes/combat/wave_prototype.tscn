@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=40 format=3]
 
 [ext_resource type="Script" path="res://scripts/combat/wave_prototype.gd" id="wave"]
 [ext_resource type="Resource" path="res://data/enemies/wave_slime.tres" id="slime"]
@@ -7,15 +7,39 @@
 [ext_resource type="PackedScene" path="res://scenes/combat/light_pierce_auto_attack.tscn" id="pierce"]
 [ext_resource type="PackedScene" path="res://scenes/combat/prism_ricochet_auto_attack.tscn" id="prism"]
 [ext_resource type="PackedScene" path="res://scenes/combat/mirror_mark_auto_attack.tscn" id="mirror"]
+[ext_resource type="PackedScene" path="res://scenes/combat/ricochet_storm.tscn" id="storm"]
 [ext_resource type="PackedScene" path="res://scenes/ui/growth_choice_ui.tscn" id="choice"]
 [ext_resource type="PackedScene" path="res://scenes/growth/run_growth.tscn" id="growth"]
 [ext_resource type="PackedScene" path="res://scenes/ui/wave_hud.tscn" id="hud"]
+[ext_resource type="PackedScene" path="res://scenes/combat/damage_numbers.tscn" id="damage_numbers"]
 [ext_resource type="Script" path="res://scripts/growth/run_skills.gd" id="skills"]
 [ext_resource type="Script" path="res://scripts/growth/run_buffs.gd" id="buffs"]
 [ext_resource type="Script" path="res://scripts/growth/growth_buff_definition.gd" id="buff_definition"]
 [ext_resource type="Resource" path="res://data/growth/damage.tres" id="damage_buff"]
 [ext_resource type="Resource" path="res://data/growth/cooldown.tres" id="cooldown_buff"]
 [ext_resource type="Resource" path="res://data/growth/range.tres" id="range_buff"]
+[ext_resource type="Resource" path="res://data/growth/ricochet/launch_speed.tres" id="body_speed"]
+[ext_resource type="Resource" path="res://data/growth/ricochet/flight_duration.tres" id="body_duration"]
+[ext_resource type="Resource" path="res://data/growth/ricochet/bounce_count.tres" id="body_bounces"]
+[ext_resource type="Resource" path="res://data/growth/ricochet/bounce_retention.tres" id="body_retention"]
+[ext_resource type="Resource" path="res://data/growth/ricochet/charge_efficiency.tres" id="body_charge"]
+[ext_resource type="Resource" path="res://data/growth/ricochet/recovery_efficiency.tres" id="body_recovery"]
+[ext_resource type="Resource" path="res://data/growth/ricochet/cooldown_efficiency.tres" id="body_cooldown"]
+[ext_resource type="Resource" path="res://data/growth/ricochet/push_radius.tres" id="body_radius"]
+[ext_resource type="Resource" path="res://data/growth/ricochet/push_force.tres" id="body_force"]
+[ext_resource type="Resource" path="res://data/growth/ricochet/push_duration.tres" id="body_push_duration"]
+[ext_resource type="Resource" path="res://data/growth/ricochet/push_stun.tres" id="body_stun"]
+
+[ext_resource type="Resource" path="res://data/growth/move_speed.tres" id="walk_buff"]
+[ext_resource type="Resource" path="res://data/growth/pickup_radius.tres" id="pickup_buff"]
+[ext_resource type="Resource" path="res://data/growth/specializations/heavy_blade.tres" id="special_heavy_blade"]
+[ext_resource type="Resource" path="res://data/growth/specializations/short_journey.tres" id="special_short_journey"]
+[ext_resource type="Resource" path="res://data/growth/specializations/corner_chain.tres" id="special_corner_chain"]
+[ext_resource type="Resource" path="res://data/growth/specializations/meteor_stride.tres" id="special_meteor_stride"]
+[ext_resource type="Resource" path="res://data/growth/specializations/gathering_ring.tres" id="special_gathering_ring"]
+[ext_resource type="Resource" path="res://data/growth/specializations/heavy_push.tres" id="special_heavy_push"]
+[ext_resource type="Resource" path="res://data/growth/specializations/quick_draw.tres" id="special_quick_draw"]
+[ext_resource type="Resource" path="res://data/growth/specializations/roaming_light.tres" id="special_roaming_light"]
 
 [node name="WavePrototype" type="Node3D"]
 script = ExtResource("wave")
@@ -34,13 +58,16 @@ session = NodePath("..")
 [node name="MirrorMarkAutoAttack" parent="." node_paths=PackedStringArray("session") instance=ExtResource("mirror")]
 session = NodePath("..")
 
+[node name="RicochetStorm" parent="." node_paths=PackedStringArray("session") instance=ExtResource("storm")]
+session = NodePath("..")
+
 [node name="RunGrowth" parent="." node_paths=PackedStringArray("session") instance=ExtResource("growth")]
 session = NodePath("..")
 
 [node name="RunSkills" type="Node" parent="." node_paths=PackedStringArray("session")]
 script = ExtResource("skills")
 session = NodePath("..")
-skill_paths = Array[NodePath]([NodePath("../FanAutoAttack"), NodePath("../LightPierceAutoAttack"), NodePath("../PrismRicochetAutoAttack"), NodePath("../MirrorMarkAutoAttack")])
+skill_paths = Array[NodePath]([NodePath("../FanAutoAttack"), NodePath("../LightPierceAutoAttack"), NodePath("../PrismRicochetAutoAttack"), NodePath("../MirrorMarkAutoAttack"), NodePath("../RicochetStorm")])
 
 [node name="InitialSkillChoice" parent="RunSkills" instance=ExtResource("choice")]
 title = "选择初始技能"
@@ -49,7 +76,10 @@ confirm_text = "开始战斗"
 [node name="WaveHUD" parent="." node_paths=PackedStringArray("session") instance=ExtResource("hud")]
 session = NodePath("..")
 
+[node name="DamageNumbers" parent="." node_paths=PackedStringArray("session") instance=ExtResource("damage_numbers")]
+session = NodePath("..")
+
 [node name="RunBuffs" type="Node" parent="." node_paths=PackedStringArray("session")]
 script = ExtResource("buffs")
 session = NodePath("..")
-definitions = Array[ExtResource("buff_definition")]([ExtResource("damage_buff"), ExtResource("cooldown_buff"), ExtResource("range_buff")])
+definitions = Array[ExtResource("buff_definition")]([ExtResource("damage_buff"), ExtResource("cooldown_buff"), ExtResource("range_buff"), ExtResource("body_speed"), ExtResource("body_duration"), ExtResource("body_bounces"), ExtResource("body_retention"), ExtResource("body_charge"), ExtResource("body_recovery"), ExtResource("body_cooldown"), ExtResource("body_radius"), ExtResource("body_force"), ExtResource("body_push_duration"), ExtResource("body_stun"), ExtResource("walk_buff"), ExtResource("pickup_buff"), ExtResource("special_heavy_blade"), ExtResource("special_short_journey"), ExtResource("special_corner_chain"), ExtResource("special_meteor_stride"), ExtResource("special_gathering_ring"), ExtResource("special_heavy_push"), ExtResource("special_quick_draw"), ExtResource("special_roaming_light")])

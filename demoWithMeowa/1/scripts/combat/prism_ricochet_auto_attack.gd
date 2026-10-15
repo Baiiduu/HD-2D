@@ -76,7 +76,7 @@ func describe_skill_upgrade(from_level: int, to_level: int) -> String:
 	var after := get_attack_stats(to_level)
 	var detail := skill_definition.level_data(to_level).description
 	if from_level == 0:
-		return "穿透敌人，撞墙反射\n伤害 %s\n每次 %d 枚 · 弹射 %d 次\n飞行距离 %.1f 米" % [str(snappedf(after.damage, 0.1)), after.count, after.bounces, after.distance]
+		return "穿透敌人，撞墙或镜印反射\n伤害 %s\n每次 %d 枚 · 弹射 %d 次\n飞行距离 %.1f 米" % [str(snappedf(after.damage, 0.1)), after.count, after.bounces, after.distance]
 	return "伤害 %s → %s · 弹射 %d → %d 次\n齐射 %d → %d 枚 · 飞行 %.1f → %.1f 米\n%s" % [str(snappedf(before.damage, 0.1)), str(snappedf(after.damage, 0.1)), before.bounces, after.bounces, before.count, after.count, before.distance, after.distance, detail]
 
 func _active() -> bool:
@@ -148,7 +148,7 @@ func _advance_shot(shot: Dictionary, delta: float) -> void:
 		var start: Vector3 = shot.position
 		var distance := _collision.ground_limit(session._path, start, shot.direction, remaining, shot.plane, shot.tolerance)
 		var stopped := distance < remaining - 0.00001
-		var wall := _collision.wall_contact(space, start, start + shot.direction * distance, shot.stats.radius, [session.player.get_rid()])
+		var wall := _collision.wall_contact(space, start, start + shot.direction * distance, shot.stats.radius, [session.player.get_rid()], ProjectileCollision.REFLECTION_MASK)
 		if not wall.is_empty(): distance = minf(distance, wall.distance)
 		var end: Vector3 = start + shot.direction * distance
 		for contact in _collision.enemy_contacts(space, start, end, shot.stats.radius, _eligible.bind(shot)):
@@ -158,9 +158,9 @@ func _advance_shot(shot: Dictionary, delta: float) -> void:
 			shot.hits[enemy.get_instance_id()] = true
 			var before := enemy.health
 			shot.effect.show_contact(start + shot.direction * contact.distance)
-			enemy.take_damage(shot.stats.damage)
+			enemy.take_damage(shot.stats.damage, {"source": &"A03", "direction": shot.direction})
 			var dealt := before - enemy.health
-			if dealt > 0.0:
+			if dealt > 0.0 or session.combat_modifiers.damage_disabled:
 				_play_sound(hit_sounds, &"prism_hit", enemy.global_position, GameAudio.Kind.HIT)
 				hit_landed.emit(enemy, dealt)
 			if not _active() or shot not in _shots or shot.generation != session._generation: return
@@ -171,7 +171,7 @@ func _advance_shot(shot: Dictionary, delta: float) -> void:
 		if wall.is_empty():
 			if stopped or shot.travelled >= shot.stats.distance - 0.00001: _finish_shot(shot)
 			return
-		var normal: Vector3 = wall.normal
+		var normal := ProjectileCollision.reflection_normal(wall.get("collider"), wall.normal, shot.direction)
 		normal.y = 0.0
 		normal = normal.normalized()
 		shot.effect.show_contact(wall.point, true)
@@ -182,6 +182,11 @@ func _advance_shot(shot: Dictionary, delta: float) -> void:
 		shot.direction = shot.direction.bounce(normal).normalized()
 		shot.bounces += 1
 		shot.hits.clear()
+		# 本次接触的宿主只按入射段命中一次，不在镜片内的零距离回程再扣血。
+		if wall.get("collider") is ProjectileCollision.MIRROR_SURFACE:
+			var source: WaveEnemy = wall.collider.enemy
+			if is_instance_valid(source): shot.hits[source.get_instance_id()] = true
+		ProjectileCollision.show_reflection(wall.get("collider"))
 		_play_sound(bounce_sounds, &"prism_bounce", wall.point, GameAudio.Kind.ATTACK)
 		wall_bounced.emit(wall.point, normal)
 		if not _active() or shot not in _shots: return

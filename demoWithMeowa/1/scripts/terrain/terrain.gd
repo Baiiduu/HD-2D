@@ -481,7 +481,7 @@ func _build_collision(collision_faces: PackedVector3Array) -> void:
 	body.name = "Body"
 	_generated.add_child(body)
 	var shape := ConcavePolygonShape3D.new()
-	shape.set_faces(collision_faces)
+	shape.set_faces(_compact_collision_faces(collision_faces))
 	var node := CollisionShape3D.new()
 	node.shape = shape
 	body.add_child(node)
@@ -499,6 +499,30 @@ func _build_collision(collision_faces: PackedVector3Array) -> void:
 			blocker.shape = box
 			blocker.position = Vector3(cell.x * data.cell_size, bottom + height * 0.5, cell.y * data.cell_size)
 			body.add_child(blocker)
+
+## Only merge an entirely flat rectangle. Preserve the open-bottom concave
+## surface, wall winding and exact outer corners; render meshes stay per cell.
+func _compact_collision_faces(faces: PackedVector3Array) -> PackedVector3Array:
+	var level := _level(data.origin)
+	for z in data.size.y:
+		for x in data.size.x:
+			var cell := data.origin + Vector2i(x, z)
+			if _level(cell) != level or data.has_overlay(cell, TerrainData.OVERLAY_WATER | TerrainData.OVERLAY_BRIDGE | TerrainData.OVERLAY_RAMP): return faces
+	var first := _corner_points(data.origin)[0]
+	var last := _corner_points(data.origin + data.size - Vector2i.ONE)[2]
+	var height := _corner_heights(data.origin)[0]
+	var top: Array[Vector3] = [Vector3(first.x, height, first.y), Vector3(last.x, height, first.y),
+		Vector3(last.x, height, last.y), Vector3(first.x, height, last.y)]
+	var result := PackedVector3Array()
+	for index in [0, 1, 2, 0, 2, 3]: result.append(top[index])
+	var bottom := minf(skirt_level * data.layer_height, height)
+	if height - bottom >= 0.001:
+		for edge in [Vector2i(1, 0), Vector2i(2, 1), Vector2i(3, 2), Vector2i(0, 3)]:
+			var a := top[edge.x]
+			var b := top[edge.y]
+			var quad: Array[Vector3] = [a, b, Vector3(b.x, bottom, b.z), Vector3(a.x, bottom, a.z)]
+			for index in [0, 1, 2, 0, 2, 3]: result.append(quad[index])
+	return result
 
 # ---------- 数据纹理 ----------
 

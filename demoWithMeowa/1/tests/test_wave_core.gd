@@ -27,6 +27,20 @@ func probe_definition() -> WaveEnemyDefinition:
 func freeze_enemies() -> void:
 	for enemy in wave.enemies: enemy.set_physics_process(false)
 
+func confirm_initial() -> void:
+	var skills := wave.get_node("RunSkills") as RunSkills
+	if skills.initial_choice.is_open:
+		skills.initial_choice.reveal_now()
+		assert(skills.initial_choice.select_option(&"initial:fan_slash"))
+		skills.initial_choice.confirm_selection()
+	# 生命周期用例只手动结算伤害，已学习技能不能在等待物理帧时介入。
+	for component: Node in skills._components.values(): component.process_mode = Node.PROCESS_MODE_DISABLED
+
+func start() -> bool:
+	if not wave.start_run(): return false
+	confirm_initial()
+	return wave.phase == WavePrototype.Phase.BATTLE
+
 func run() -> void:
 	scene = load("res://scenes/world/world.tscn").instantiate()
 	scene.get_node("WavePrototype/RunGrowth").enabled = false
@@ -36,14 +50,23 @@ func run() -> void:
 	await settle(12)
 	wave = scene.get_node("WavePrototype")
 	wave.endless_mode = false
+	# 固定旧接口夹具，不继承正式地图的模拟数量、零伤害、成长或目录怪潮。
+	wave.population_rules = null
+	wave.health_growth_rules = null
+	wave.enemy_catalog = null
+	wave.default_enemy = wave.default_enemy.duplicate(true)
+	wave.default_enemy.health = 20.0
+	wave.first_wave_enemies = 5
+	wave.spawn_interval = 1.3
 	wave.waves.clear()
 	wave.max_spawns_per_tick = 1 # 旧接口测试逐只检查生命周期。
 	wave.get_node("FanAutoAttack").enabled = false
+	(wave.get_node("RunSkills") as RunSkills).initial_cards_per_draw = 100
 	player = scene.get_node("Player")
 	player.set_physics_process(false)
 	wave.set_physics_process(false)
 	player.global_position = wave.global_position + Vector3.UP * 0.03
-	assert(wave.start_run())
+	assert(start())
 	# 定时生成有真实预告；出生安全距离与可达路线均满足。
 	wave._physics_process(0.31)
 	assert(wave.enemies.size() == 1 and wave._pending == 4)
@@ -88,6 +111,7 @@ func run() -> void:
 	assert(wave.phase == WavePrototype.Phase.RESULT and wave._pending == 0 and wave.enemies.is_empty())
 	assert(hazard.is_queued_for_deletion() or not hazard.is_inside_tree())
 	wave.retry()
+	confirm_initial()
 	wave._hurt_clock = 0.0
 	assert(not stale_damage.call(8.0) and not stale_spawn.call(wave.default_enemy, 1, 0.1, Vector3.INF))
 	assert(wave._pending == 5 and player.current_health == player.max_health)
@@ -144,7 +168,7 @@ func run() -> void:
 	wave.waves.assign([custom_wave])
 	wave.max_active_enemies = 30
 	player.global_position = wave.global_position
-	assert(wave.start_run() and wave.wave_count() == 1 and wave._pending == 2)
+	assert(start() and wave.wave_count() == 1 and wave._pending == 2)
 	wave._physics_process(0.01)
 	wave._physics_process(0.01)
 	freeze_enemies()
@@ -157,6 +181,7 @@ func run() -> void:
 	assert(wave.phase == WavePrototype.Phase.RESULT and wave.completed_waves == 1 and wave.kills == 2)
 	# 残怪跌落不会永久卡住；异常结束不计为清波成功。
 	wave.retry()
+	confirm_initial()
 	wave._spawn_queue.clear()
 	assert(wave._spawn_enemy())
 	var fallen := wave.enemies[0]
@@ -208,7 +233,7 @@ func run() -> void:
 	wave.waves.clear()
 	wave.default_enemy = bad
 	player.global_position = wave.global_position
-	assert(not wave.start_run(), "Invalid enemy scene fails before entering combat")
+	assert(not start(), "Invalid enemy scene fails before entering combat")
 	assert(wave.phase == WavePrototype.Phase.RESULT and wave._pending == 0 and wave.enemies.is_empty())
 	assert(wave.result_reason.contains("WaveEnemy"))
 	print("PASS: real slime, two-hit kills, safe telegraph, pending spawns, active cap, mixed wave data, independent attack strategy, shared hurt protection, split lifecycle, safe rest cleanup, stale callbacks, unreachable recovery and invalid scene handling")

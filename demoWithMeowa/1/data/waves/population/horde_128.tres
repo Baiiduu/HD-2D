@@ -1,16 +1,36 @@
 [gd_resource type="Resource" script_class="WavePopulationRules" format=3 uid="uid://c6h80t573radv"]
 
+[ext_resource type="Script" uid="uid://dig3yvspfwrug" path="res://scripts/combat/simulation_skill_entry.gd" id="2_28snf"]
+[ext_resource type="Resource" uid="uid://blp55rrsmif5v" path="res://data/skills/ricochet_storm.tres" id="3_5pvai"]
+[ext_resource type="Resource" uid="uid://cssua0pk7xd1h" path="res://data/skills/mirror_mark.tres" id="4_4jcln"]
+[ext_resource type="Resource" uid="uid://blct1nfrsmq28" path="res://data/skills/prism_ricochet.tres" id="5_4jcln"]
 [ext_resource type="Script" uid="uid://casbe20xuc2il" path="res://scripts/combat/wave_population_rules.gd" id="rules"]
+
+[sub_resource type="Resource" id="Resource_j3pel"]
+script = ExtResource("2_28snf")
+skill_definition = ExtResource("3_5pvai")
+skill_level = 0
+metadata/_custom_type_script = "uid://dig3yvspfwrug"
+
+[sub_resource type="Resource" id="Resource_5pvai"]
+script = ExtResource("2_28snf")
+skill_definition = ExtResource("4_4jcln")
+skill_level = 0
+metadata/_custom_type_script = "uid://dig3yvspfwrug"
+
+[sub_resource type="Resource" id="Resource_iupxe"]
+script = ExtResource("2_28snf")
+skill_definition = ExtResource("5_4jcln")
+skill_level = 0
+metadata/_custom_type_script = "uid://dig3yvspfwrug"
 
 [resource]
 resource_name = "正式怪潮 128 · 渐进容量"
 script = ExtResource("rules")
-active_growth_per_wave = 8
-max_active = 128
-max_population_cost = 256
+simulation_enemy_count = 50
+simulation_skills = Array[ExtResource("2_28snf")]([SubResource("Resource_j3pel"), SubResource("Resource_5pvai"), SubResource("Resource_iupxe")])
 role_limits = PackedInt32Array(128, 12, 4, 1)
-enemies_per_wave_increment = 16
-max_wave_enemies = 384
+max_wave_enemies = 512
 max_queued_per_wave = 1024
 max_interval_reduction = 0.75
 min_spawn_interval = 0.08

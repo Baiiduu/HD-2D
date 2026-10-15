@@ -38,6 +38,9 @@ const BUSES := [&"Combat", &"Music", &"Ambience", &"UI", &"Movement"]
 @export_range(-40.0, 6.0, 0.5) var ambience_volume_db := 0.0
 @export_range(-40.0, 6.0, 0.5) var ui_volume_db := 0.0
 @export_range(-40.0, 6.0, 0.5) var movement_volume_db := 0.0
+@export_group("本机声音调试")
+@export var load_local_mix := true
+@export var mix_save_path := "user://audio_mix.cfg"
 @export_group("战斗峰值控制")
 @export var compression_enabled := true
 @export_range(-40.0, 0.0, 1.0) var compression_threshold_db := -16.0
@@ -53,11 +56,14 @@ var _recent: Array[Dictionary] = []
 var _last_request: Dictionary = {}
 var _last_clip: Dictionary = {}
 var _mix_values: Array = []
+var mix := AudioMixSettings.new()
 var _stats := {"played": 0, "merged": 0, "budget_dropped": 0, "distance_dropped": 0, "preempted": 0}
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	add_to_group(&"game_audio")
+	if load_local_mix and FileAccess.file_exists(mix_save_path): mix.load_from_path(mix_save_path)
+	mix.changed.connect(_apply_mix)
 	var effects := get_parent()
 	var map := effects.get_parent() if effects else null
 	if not player and map: player = map.get_node_or_null("Player") as Node3D
@@ -150,7 +156,7 @@ func _update_spatial(slot: Dictionary, follow := true) -> void:
 	var gain := _spatial_gain(slot.position, slot.priority)
 	slot.voice.global_position = slot.position
 	slot.voice.panning_strength = panning_strength
-	slot.voice.volume_db = slot.gain_db + linear_to_db(maxf(gain, 0.00001))
+	slot.voice.volume_db = slot.gain_db + mix.clip_gain_db(slot.voice.stream) + linear_to_db(maxf(gain, 0.00001))
 	slot["score"] = slot.priority * 1000.0 + slot.voice.volume_db
 
 ## 统一声音事件：source 为生命周期拥有者，position 为实际出声位置。
@@ -208,7 +214,7 @@ func request(event: Dictionary) -> AudioStreamPlayer3D:
 			return null
 		free = worst
 	if free.is_empty(): return null
-	var valid: Array = clips.filter(func(clip): return clip is AudioStream)
+	var valid: Array = clips.filter(func(clip): return clip is AudioStream and not mix.is_clip_muted(clip))
 	if valid.is_empty(): return null
 	var index := randi_range(0, valid.size() - 1)
 	if valid.size() > 1 and valid[index] == _last_clip.get(cue): index = (index + 1) % valid.size()
@@ -237,6 +243,11 @@ func stop_source(source: Node) -> void:
 	for key in _last_request.keys():
 		if String(key).begins_with(str(id) + ":"): _last_request.erase(key)
 
+## 只结束指定动作循环，不能停止同一来源的其它反馈或已被复用的声音。
+func stop_cue(source: Node, cue: StringName) -> void:
+	for slot in _voices:
+		if slot.active and slot.source == source and slot.cue == cue: _release(slot)
+
 func stop_all() -> void:
 	for slot in _voices: _release(slot)
 	_recent.clear()
@@ -260,6 +271,7 @@ func get_debug_state() -> Dictionary:
 func _apply_mix() -> void:
 	var values: Array = [combat_volume_db, music_volume_db, ambience_volume_db, ui_volume_db, movement_volume_db,
 		compression_enabled, compression_threshold_db, compression_ratio, limiter_enabled, limiter_ceiling_db]
+	for index in BUSES.size(): values[index] += float(mix.bus_gains.get(String(BUSES[index]), 0.0))
 	if values == _mix_values: return
 	_mix_values = values
 	for index in BUSES.size():

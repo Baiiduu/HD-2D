@@ -6,6 +6,8 @@ signal jumped
 signal landed(impact_speed: float)
 ## 碰撞检查后的真实瞬移路径，世界坐标；只有实际发生位移才发出。
 signal blink_travelled(start: Vector3, destination: Vector3)
+## 人物出手通知；伤害由基础剑术组件结算，不在运动代码中扣血。
+signal normal_attack_requested(direction: Vector3)
 ## 当前生命、魔力或其上限发生变化；HUD 订阅此信号。
 signal vitals_changed
 
@@ -15,6 +17,15 @@ const ANIMATION_REFERENCE_SPEED := 4.0
 @export var animations: SpriteFrames
 ## 移动参照相机：W/S 沿相机前后方向，A/D 沿相机左右方向，均投影到地面。
 @export var movement_camera: Camera3D
+@export_group("本体弹射与动作资源")
+@export var ricochet_rules: PlayerRicochetRules
+@export var action_visuals: PlayerActionVisuals
+@export var sword_rules: PlayerSwordRules
+@export var flight_trail_settings: PlayerFlightTrailSettings
+@export_group("怪群近身留白")
+## 普通怪停靠时额外保留的距离，单位米；0 关闭。正式地图先用 0.12。
+## 近战怪会限制到仍可命中的距离；普通追击实时读取，不扩大人物碰撞体。
+@export_range(0.0, 1.0, 0.01, "suffix:m") var crowd_clearance_distance := 0.0
 @export_group("台阶通行")
 ## 接地行走时自动迈上低台阶；不影响主动跳跃。
 @export var auto_step_enabled := true
@@ -108,11 +119,20 @@ var _animation: StringName = &"idle"
 var _animation_frame := 0
 var _animation_elapsed := 0.0
 var _movement_speed := 0.0
+var _run_session: WavePrototype
 var _facing: StringName = &"side"
 var _side_flip_h := false
 var _landing_remaining := 0.0
 var _has_landed_once := false
 var _blink: PlayerBlink
+var body_ricochet: PlayerRicochet
+var flight_trail: PlayerFlightTrail
+var action_animator: PlayerActionAnimator
+var sword: PlayerSword
+
+func get_movement_speed(modifiers: RunCombatModifiers = null) -> float:
+	if not modifiers and is_instance_valid(_run_session): modifiers = _run_session.combat_modifiers
+	return speed * modifiers.multiplier(GrowthBuffDefinition.Attribute.MOVE_SPEED) if modifiers else speed
 
 func get_attributes() -> Dictionary[String, float]:
 	if character_state:
@@ -168,17 +188,37 @@ func restore_mana(amount: float) -> float:
 	return current_mana - before
 
 func _ready() -> void:
+	_run_session = get_parent().get_node_or_null("WavePrototype") as WavePrototype
 	_sync_vitals()
 	if animations:
 		sprite.texture = animations.get_frame_texture(_animation, 0)
 	_blink = PlayerBlink.new()
 	_blink.name = "Blink"
 	add_child(_blink)
+	action_animator = PlayerActionAnimator.new()
+	action_animator.player = self
+	action_animator.visuals = action_visuals
+	body_ricochet = PlayerRicochet.new()
+	body_ricochet.name = "BodyRicochet"
+	add_child(body_ricochet)
+	if flight_trail_settings:
+		flight_trail = PlayerFlightTrail.new()
+		flight_trail.name = "FlightTrail"
+		add_child(flight_trail)
+	if sword_rules:
+		sword = PlayerSword.new()
+		sword.name = "BasicSword"
+		add_child(sword)
 
 func _process(delta: float) -> void:
 	if _blink.active and _blink.movement_locked:
 		_blink.apply_pose()
 		return
+	if action_animator:
+		action_animator.visuals = action_visuals
+		var frozen := body_ricochet.is_frozen()
+		if action_animator.render(0.0 if frozen else delta): return
+		if frozen and (body_ricochet.charging or body_ricochet.flying): return
 	if not animations:
 		return
 	var playback_speed := _movement_speed / ANIMATION_REFERENCE_SPEED if _animation.begins_with("run") else 1.0
@@ -193,6 +233,7 @@ func _process(delta: float) -> void:
 		movement_frame_changed.emit(_animation, _animation_frame)
 		frame_duration = animations.get_frame_duration(_animation, _animation_frame) / animations.get_animation_speed(_animation)
 	sprite.texture = animations.get_frame_texture(_animation, _animation_frame)
+	sprite.flip_h = _side_flip_h if _facing == &"side" else false
 
 func _physics_process(delta: float) -> void:
 	# 面板只占用控制输入，人物物理、动画与整个世界继续更新。
@@ -211,15 +252,27 @@ func _physics_process(delta: float) -> void:
 		backward.y = 0.0
 		movement = (right.normalized() * direction.x + backward.normalized() * direction.y).normalized()
 	_blink.advance(delta)
+	if body_ricochet.advance(delta, movement, input_blocked):
+		# 飞行期间只由胶囊连续扫掠移动；占位画面保持现有人物，不伪装成快放跑步。
+		_movement_speed = 0.0
+		var pose: StringName = &"idle_back" if _facing == &"back" else &"idle"
+		if animations and animations.has_animation(pose) and _animation != pose:
+			_animation = pose
+			_animation_frame = 0
+			_animation_elapsed = 0.0
+		return
 	if not input_blocked and Input.is_action_just_pressed(&"blink"):
+		body_ricochet.cancel()
 		_blink.request(movement)
+	if body_ricochet.charging and (not is_on_floor() or Input.is_action_just_pressed(&"jump")): body_ricochet.cancel()
 	if _blink.active:
 		# 朝向与跳跃锁定；瞬移定格结束后，收尾阶段可立即恢复走路。
 		direction = Vector2.ZERO
 		if _blink.movement_locked:
 			movement = Vector3.ZERO
-	velocity.x = movement.x * speed
-	velocity.z = movement.z * speed
+	var movement_speed := get_movement_speed()
+	velocity.x = movement.x * movement_speed
+	velocity.z = movement.z * movement_speed
 	var was_on_floor := is_on_floor()
 	var was_falling := velocity.y < -0.1
 	var started_jump := jump_enabled and not _blink.active and not input_blocked and was_on_floor and Input.is_action_just_pressed(&"jump")
@@ -246,7 +299,7 @@ func _physics_process(delta: float) -> void:
 	var impact_speed := maxf(-velocity.y, 0.0)
 	var previous_snap := floor_snap_length
 	if auto_step_enabled and was_on_floor and not started_jump:
-		_try_step_up(movement * speed * delta)
+		_try_step_up(movement * movement_speed * delta)
 		# 下台阶时也贴住地面；超过此高差仍按原有重力下落。
 		floor_snap_length = maxf(previous_snap, max_step_height + safe_margin)
 	move_and_slide()
@@ -283,6 +336,28 @@ func _physics_process(delta: float) -> void:
 		_animation_frame = 0
 		_animation_elapsed = 0.0
 		movement_frame_changed.emit(_animation, _animation_frame)
+	if body_ricochet.charging: face_world_direction(body_ricochet.direction)
+
+func facing_direction() -> Vector3:
+	var basis := movement_camera.global_basis if movement_camera else Basis.IDENTITY
+	var heading := -basis.z if _facing == &"back" else basis.x * (-1.0 if _side_flip_h else 1.0)
+	heading.y = 0.0
+	return heading.normalized()
+
+func face_world_direction(heading: Vector3) -> void:
+	var basis := movement_camera.global_basis if movement_camera else Basis.IDENTITY
+	var right := basis.x
+	var back := basis.z
+	right.y = 0.0
+	back.y = 0.0
+	var x := heading.dot(right.normalized())
+	var z := heading.dot(back.normalized())
+	if absf(x) >= absf(z):
+		_facing = &"side"
+		_side_flip_h = x < 0.0
+	elif z < 0.0: _facing = &"back"
+	else: _facing = &"side" # 旧人物没有正面素材；独立动作槽可使用 front。
+	sprite.flip_h = _side_flip_h if _facing == &"side" else false
 
 func _try_step_up(motion: Vector3) -> void:
 	if motion.is_zero_approx():

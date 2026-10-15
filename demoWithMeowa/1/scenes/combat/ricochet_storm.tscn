@@ -1,0 +1,16 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/ricochet_storm.gd" id="skill_script"]
+[ext_resource type="Resource" path="res://data/skills/ricochet_storm.tres" id="skill"]
+[ext_resource type="PackedScene" path="res://scenes/combat/ricochet_storm_effect.tscn" id="effect"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/storm_strike_01.wav" id="hit1"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/storm_strike_02.wav" id="hit2"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/storm_chain.wav" id="chain"]
+
+[node name="RicochetStorm" type="Node3D"]
+script = ExtResource("skill_script")
+skill_definition = ExtResource("skill")
+effect_scene = ExtResource("effect")
+hit_sounds = Array[AudioStream]([ExtResource("hit1"), ExtResource("hit2")])
+propagation_sounds = Array[AudioStream]([ExtResource("chain")])
+hit_volume_db = -9.0

@@ -6,9 +6,11 @@ var _catalog := Catalog.new()
 var _dock: EditorDock
 var _search: LineEdit
 var _common: CheckBox
+var _locate_button: Button
 var _tree: Tree
 var _status: Label
 var _hint: Label
+var _navigation_request := 0
 
 func _enter_tree() -> void:
 	_dock = EditorDock.new()
@@ -45,7 +47,7 @@ func _enter_tree() -> void:
 	_tree.item_selected.connect(_select)
 	column.add_child(_tree)
 	_hint = Label.new()
-	_hint.text = "选择参数，在检查器修改原值。\nStyle 只切视觉和天气；镜头独立调节。"
+	_hint.text = "选择参数，在检查器修改原值；双击或点击“定位来源”跳转。\nStyle 只切视觉和天气；镜头独立调节。"
 	_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(_hint)
 	add_dock(_dock)
@@ -74,7 +76,10 @@ func _refresh() -> void:
 	_filter()
 
 func _filter() -> void:
+	_ensure_navigation()
+	_navigation_request += 1
 	_tree.clear()
+	_locate_button.disabled = true
 	var root := _tree.create_item()
 	var branches := {}
 	var components := {}
@@ -110,12 +115,74 @@ func _filter() -> void:
 	if _catalog.entries.is_empty(): _status.text = "请打开要调节的地图或组件场景。"
 
 func _select() -> void:
-	var item := _tree.get_selected()
-	if item == null: return
-	var entry: Variant = item.get_metadata(0)
-	if not entry is Dictionary or not is_instance_valid(entry.object): return
+	_ensure_navigation()
+	_navigation_request += 1
+	var entry := _selected_entry()
+	_locate_button.disabled = entry.is_empty()
+	if entry.is_empty(): return
 	# 检查器拥有撤销、保存和资源编辑；总览不维护第二套数值。
 	EditorInterface.inspect_object(entry.object, entry.property)
 	_hint.text = entry.group + "\n" + entry.path + "\n" + entry.property + "\n" + entry.description
+	var scene := EditorInterface.get_edited_scene_root()
+	if scene and is_instance_valid(entry.node):
+		_hint.text += "\n来源节点：" + String(scene.get_path_to(entry.node))
+		_hint.text += "\n当前场景：" + scene.scene_file_path
 	if entry.object is Resource:
+		var resource: Resource = entry.object
+		_hint.text += "\n资源：" + (resource.resource_path if not resource.resource_path.is_empty() else "场景内置资源（尚未独立保存）")
 		_hint.text += "\n编辑资源会影响引用它的对象；需要独立配置时先设为唯一。"
+
+func _ensure_navigation() -> void:
+	# @tool 脚本热重载不会重建已有停靠栏，刷新时为旧面板补上入口。
+	if not is_instance_valid(_locate_button):
+		_locate_button = Button.new()
+		_locate_button.text = "定位来源"
+		_locate_button.tooltip_text = "选中来源节点并展开、高亮检查器参数；资源还会定位文件。也可双击参数。"
+		_locate_button.disabled = true
+		_locate_button.pressed.connect(_locate)
+		_common.get_parent().add_child(_locate_button)
+	if not _tree.item_activated.is_connected(_locate): _tree.item_activated.connect(_locate)
+
+func _selected_entry() -> Dictionary:
+	var item := _tree.get_selected()
+	if item == null: return {}
+	var entry: Variant = item.get_metadata(0)
+	if not entry is Dictionary or not is_instance_valid(entry.object): return {}
+	return entry
+
+func _locate() -> void:
+	var entry := _selected_entry()
+	if entry.is_empty(): return
+	var scene := EditorInterface.get_edited_scene_root()
+	var node: Node = entry.node
+	if not is_instance_valid(node) or not scene or (node != scene and not scene.is_ancestor_of(node)):
+		_locate_button.disabled = true
+		_hint.text = "来源节点已变化，请刷新参数总览后重新选择。"
+		return
+	_navigation_request += 1
+	var request := _navigation_request
+	EditorInterface.get_selection().clear()
+	EditorInterface.edit_node(node)
+	if entry.object is Resource:
+		# 内置子资源使用 :: 后缀；文件系统只能定位到其所属场景或资源文件。
+		var resource: Resource = entry.object
+		var file := resource.resource_path.get_slice("::", 0)
+		if not file.is_empty() and FileAccess.file_exists(file): EditorInterface.select_file(file)
+	# 场景树选择也会延迟切换检查器，等其完成后再显示真正的资源参数。
+	await get_tree().process_frame
+	if request != _navigation_request or not is_instance_valid(entry.object): return
+	EditorInterface.inspect_object(entry.object, entry.property)
+	await get_tree().process_frame
+	if request != _navigation_request or not is_instance_valid(entry.object): return
+	var inspector := EditorInterface.get_inspector()
+	if inspector.get_edited_object() != entry.object: return
+	for editor in inspector.find_children("*", "EditorProperty", true, false):
+		if editor.get_edited_object() != entry.object or editor.get_edited_property() != entry.property: continue
+		# 只展开目标项的祖先分组，避免展开所有资源与大型数组。
+		var parent := editor.get_parent()
+		while parent != inspector and parent != null:
+			if parent.is_class("EditorInspectorSection"): parent.call("unfold")
+			parent = parent.get_parent()
+		editor.select()
+		inspector.ensure_control_visible.call_deferred(editor)
+		break

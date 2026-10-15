@@ -17,6 +17,7 @@ var _growth: RunGrowth
 var _initial_offered: Dictionary[StringName, StringName] = {}
 var _initial_pool: Array[GrowthChoiceOption] = []
 var _initial_cards: Array[GrowthChoiceOption] = []
+var _simulation_enabled: Dictionary[StringName, bool] = {}
 @onready var initial_choice: GrowthChoiceUI = get_node_or_null("InitialSkillChoice")
 
 func _ready() -> void:
@@ -41,6 +42,9 @@ func _ready() -> void:
 	reset()
 
 func reset() -> void:
+	for id in _simulation_enabled:
+		_components[id].enabled = _simulation_enabled[id]
+	_simulation_enabled.clear()
 	_offered.clear()
 	_initial_offered.clear()
 	_initial_pool.clear()
@@ -52,7 +56,7 @@ func reset() -> void:
 	_notify()
 
 func _phase_changed(phase: int) -> void:
-	if phase == session.Phase.READY: reset()
+	if phase == session.Phase.READY or (phase == session.Phase.RESULT and not _simulation_enabled.is_empty()): reset()
 	elif initial_choice:
 		initial_choice.close()
 		_initial_offered.clear()
@@ -61,6 +65,29 @@ func _phase_changed(phase: int) -> void:
 
 func has_learned_skill() -> bool:
 	return _levels.values().any(func(level: int): return level > 0)
+
+func simulation_loadout_error(entries: Array[SimulationSkillEntry]) -> String:
+	for entry in entries:
+		var id := entry.skill_definition.id
+		if not _components.has(id): return "模拟技能未接入当前场景：" + entry.skill_definition.display_name
+		var definition: CombatSkillDefinition = _components[id].get_skill_definition()
+		if entry.skill_level > definition.levels.size(): return "模拟技能等级超出当前组件范围：" + definition.display_name
+	return ""
+
+func apply_simulation_loadout(entries: Array[SimulationSkillEntry]) -> bool:
+	if not simulation_loadout_error(entries).is_empty(): return false
+	reset()
+	for entry in entries:
+		if entry.skill_level == 0: continue
+		var id := entry.skill_definition.id
+		_simulation_enabled[id] = _components[id].enabled
+		_components[id].enabled = true
+		if not _components[id].apply_skill_level(entry.skill_level):
+			reset()
+			return false
+		_levels[id] = entry.skill_level
+	_notify()
+	return true
 
 ## 选完才调用真正的开局，不花费经验、不提前刷怪或播放战斗音效。
 func present_initial_choice() -> bool:

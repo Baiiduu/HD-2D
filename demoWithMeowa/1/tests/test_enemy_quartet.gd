@@ -207,7 +207,7 @@ func frog_checks() -> void:
 	var health := common.health
 	frog._pulse()
 	check(is_equal_approx(common.effective_move_speed(), common.move_speed * 1.35) and common.health == health, "有限速度脉冲，不回血或改基础移速")
-	var second := spawn("bell_frog", Vector3(-1, 0, 2)) as BellFrogEnemy
+	var second := spawn("bell_frog", Vector3(0.5, 0, 0)) as BellFrogEnemy
 	second.rules = second.rules.duplicate()
 	second.rules.speed_multiplier = 1.5
 	second._pulse()
@@ -314,17 +314,20 @@ func run() -> void:
 		choice.confirm_selection()
 	for component: Node in (wave.get_node("RunSkills") as RunSkills)._components.values(): component.process_mode = Node.PROCESS_MODE_DISABLED
 	check(wave._pending == 18 and wave._wave_total(wave._run_waves[1]) == 28 and wave._wave_total(wave._run_waves[2]) == 40, "前三波初始总数保持 18／28／40")
-	for number in [3, 4, 10, 1000000000]:
+	for number in [1, 2, 3, 4, 10, 1000000000]:
 		var ids := {}
-		for entry in wave._definition_for_wave(number).entries: ids[entry.enemy.enemy_id] = true
-		check(ids.size() == 5 and not ids.has(&"mini_slime"), "第三波及无尽模板保留五种主体，幼体只从分裂进入")
+		for entry in wave._definition_for_wave(number).entries:
+			if entry.mixed_horde:
+				for data in wave._horde_pool: ids[data.enemy_id] = true
+			else: ids[entry.enemy.enemy_id] = true
+		check(ids.size() == 5 and not ids.has(&"mini_slime"), "首波起及无尽模板包含五种主体，幼体只从分裂进入")
 	var parameters: Array[Dictionary] = preload("res://addons/parameter_hub/catalog.gd").new().collect(world)
 	for property in ["charge_speed", "projectile_speed", "child_enemy_id", "boost_seconds"]:
 		check(parameters.any(func(item): return item.property == property and item.category == "战斗与成长"), "新怪物参数可从统一编辑器入口调整：" + property)
 	var late := wave._definition_for_wave(1000000000)
 	var late_children := 0
 	for entry in late.entries:
-		if entry.enemy.enemy_id == &"pot_brood": late_children += entry.count * 2
+		if entry.mixed_horde or entry.enemy.enemy_id == &"pot_brood": late_children += entry.count * 2
 	check(wave._run_population.max_queued_per_wave >= wave._wave_total(late) + late_children, "当前无尽混合编排的登记预算足以容纳一代分裂")
 	wave._spawn_queue.clear()
 	origin = choose_origin()

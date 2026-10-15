@@ -37,3 +37,6 @@ func ring(point: Vector3, radius: float) -> void:
 
 func set_opacity(value: float) -> void:
 	_material.set_shader_parameter("opacity", value)
+
+func set_tint(value: Color) -> void:
+	_material.set_shader_parameter("tint", value)

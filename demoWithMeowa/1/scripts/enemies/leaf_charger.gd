@@ -94,6 +94,13 @@ func _advance_charge(delta: float) -> void:
 		velocity.x = 0.0
 		velocity.z = 0.0
 
+func _on_stun_started() -> void:
+	attack_phase = AttackPhase.CHASE
+	_phase_clock = 0.0
+	_charge_travel = 0.0
+	_telegraph.hide()
+	super._on_stun_started()
+
 func _on_defeated() -> void:
 	_telegraph.hide()
 	super._on_defeated()

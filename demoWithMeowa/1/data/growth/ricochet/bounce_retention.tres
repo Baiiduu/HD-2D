@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="GrowthBuffDefinition" format=3 uid="uid://c3oywj5tftcq2"]
+
+[ext_resource type="Script" uid="uid://6cmgrb0pgn4m" path="res://scripts/growth/growth_buff_definition.gd" id="buff"]
+[ext_resource type="Script" uid="uid://boy8cpvevequv" path="res://scripts/growth/growth_buff_effect.gd" id="effect"]
+[ext_resource type="Texture2D" uid="uid://cyn6odllrs4vf" path="res://assets/meowa/ui/journal/symbols/shield.png" id="icon"]
+
+[sub_resource type="Resource" id="continuation"]
+script = ExtResource("effect")
+bonus_per_level = 0.03
+
+[resource]
+script = ExtResource("buff")
+attribute = 6
+bonus_per_level = 0.05
+extra_effects = Array[ExtResource("effect")]([SubResource("continuation")])
+id = &"R04"
+title = "反弹续势"
+icon = ExtResource("icon")
+category = 3

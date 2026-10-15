@@ -96,6 +96,18 @@ func run() -> void:
 	pooled.set("occlusion_outline_enabled", true)
 	await settle()
 	check(pooled.get("_outline").visible, "重新开启轮廓时缓存失效并恢复")
+	# 完全遮挡时核对关闭的实际像素，覆盖旧辅助节点留存但缓存引用丢失的情况。
+	pooled.texture = frames.get_frame_texture(&"idle_front", 0)
+	box.size = Vector3(2.0, 2.0, 0.1)
+	var enabled_image := await capture(pooled, original)
+	var old_outline := pooled.get_node("OcclusionOutline") as MeshInstance3D
+	pooled.set("_outline", null)
+	pooled.set("occlusion_outline_enabled", false)
+	var disabled_image := await capture(pooled, original)
+	check(enabled_image.get_data() != disabled_image.get_data(), "真实被挡轮廓随关闭开关从画面消失")
+	old_outline.hide()
+	var hidden_reference := await capture(pooled, original)
+	check(disabled_image.get_data() == hidden_reference.get_data(), "关闭后的画面与直接隐藏辅助面片逐像素一致")
 	viewport.queue_free()
 	await settle()
 	check(LIGHTING._shared_users == 0 and LIGHTING._shared_bodies.is_empty() and LIGHTING._shared_outlines.is_empty() and LIGHTING._shared_quads.is_empty(), "最后实例离场后共享资源缓存释放")

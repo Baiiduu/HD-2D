@@ -1,24 +1,24 @@
-[gd_resource type="Resource" script_class="SpawnVisualPreset" format=3]
+[gd_resource type="Resource" script_class="SpawnVisualPreset" format=3 uid="uid://e26tcmgmuh55"]
 
-[ext_resource type="Script" path="res://scripts/world/spawn_visual_preset.gd" id="script"]
+[ext_resource type="Script" uid="uid://c8qywwip337bn" path="res://scripts/world/spawn_visual_preset.gd" id="script"]
 
 [resource]
 script = ExtResource("script")
 title = "雾与后处理 · 原始"
 node_values = {
 "MapEffects/ArtDirection": {
-"fog_begin": 32.0,
-"fog_end": 95.0,
-"fog_amount": 0.12,
-"low_fog": 0.02,
-"volumetric_density": 0.0025,
 "bloom": 0.14,
-"vignette": 0.16,
-"split_toning": 0.35,
-"fog_curve": 1.25,
-"bloom_threshold": 1.1,
 "bloom_floor": 0.0,
+"bloom_threshold": 1.1,
+"fog_amount": 0.12,
+"fog_begin": 32.0,
+"fog_curve": 1.25,
+"fog_end": 95.0,
+"low_fog": 0.02,
+"shadow_lift": Vector3(0.012, 0.02, 0.035),
+"split_toning": 0.35,
+"vignette": 0.16,
 "vignette_radius": 0.95,
-"shadow_lift": Vector3(0.012, 0.02, 0.035)
+"volumetric_density": 0.0025
 }
 }

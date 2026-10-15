@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="BgmPlaylist" format=3]
+
+[ext_resource type="Script" path="res://scripts/audio/bgm_playlist.gd" id="playlist"]
+[ext_resource type="Script" path="res://scripts/audio/bgm_track.gd" id="track"]
+[ext_resource type="Resource" path="res://data/audio/music/exploration.tres" id="exploration"]
+
+[resource]
+resource_name = "准备与结算曲池"
+script = ExtResource("playlist")
+context_id = &"exploration"
+tracks = Array[ExtResource("track")]([ExtResource("exploration")])

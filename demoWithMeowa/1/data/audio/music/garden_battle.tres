@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BgmTrack" format=3 uid="uid://ctnn1eeloffrs"]
+
+[ext_resource type="AudioStream" uid="uid://cex4p7xmcu3p3" path="res://assets/meowa/audio/music/garden_battle.ogg" id="stream"]
+[ext_resource type="Script" uid="uid://dgvmp46t0pkg5" path="res://scripts/audio/bgm_track.gd" id="track"]
+
+[resource]
+resource_name = "雨灯疾行"
+script = ExtResource("track")
+track_id = &"garden_battle"
+track_title = "雨灯疾行"
+stream = ExtResource("stream")
+volume_db = -15.0
+loop_crossfade = 3.87

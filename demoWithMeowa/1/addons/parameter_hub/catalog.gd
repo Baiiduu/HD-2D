@@ -3,6 +3,69 @@ extends RefCounted
 
 const CATEGORIES := ["视觉", "人物", "战斗与成长", "地图与地编", "UI", "声音", "物品与规则"]
 const LABELS := {
+	"crowd_deflection_enabled": "人物接群偏转开关", "crowd_contact_radius": "人物接群距离",
+	"crowd_turn_distance": "绕群接入与脱离过渡长度", "crowd_exit_outward": "接群出射外向分量",
+	"crowd_arc_degrees": "人物沿怪群绕行角度", "enemy_push_enabled": "旧版拨怪开关",
+	"crowd_arc_distance": "人物贴群弧线路程上限",
+	"crowd_speed_retention": "接群速度保留", "crowd_release_clearance": "同群再次接触脱离余量",
+	"playlists": "BGM 场合曲池", "default_context": "默认音乐场合", "music_transition_time": "曲间切换时长",
+	"follow_battle_session": "音乐跟随波次状态", "exploration_context": "准备与结算曲池", "combat_context": "战斗与波间曲池",
+	"track_id": "曲目标识", "track_title": "曲目名称", "stream": "音乐文件", "loop_crossfade": "曲尾衔接时长",
+	"context_id": "播放场合标识", "tracks": "曲池曲目", "play_order": "曲池播放顺序",
+	"music_enabled": "背景音乐开关", "music_stream": "旧场景单曲", "music_fade_time": "音乐开关淡化时长",
+	"music_loop_crossfade": "旧单曲循环衔接时长", "music_bus": "音乐输出总线",
+	"crowd_clearance_distance": "人物周身留白距离（额外）",
+	"pursuit_lookahead": "追击路线前视距离", "pursuit_flank_strength": "追击侧向让行强度",
+	"patch_enabled": "成片电涌开关", "patch_duration": "成片电涌停留时间", "patch_opacity": "成片电涌强度", "patch_height": "成片电涌高度",
+	"mixed_horde": "自动目录混合怪潮", "horde_weight": "怪潮出场权重（0 排除）",
+	"action_volume_db": "核心动作音量", "enemy_volume_db": "怪物反馈音量", "feedback_volume_db": "成长与波次音量",
+	"low_health_ratio": "濒危提示血量比例", "pickup_interval": "经验音提示间隔",
+	"propagation_sounds": "雷潮传导音源", "propagation_layer_gain_db": "雷潮逐层音量变化",
+	"ricochet_camera_settings": "弹射镜头反馈配置", "launch_lag_seconds": "起射镜头滞后时间",
+	"launch_follow_fraction": "起射镜头跟随比例", "lookahead_ratio": "飞行镜头前视比例",
+	"lead_settle_seconds": "飞行前视过渡时间", "bounce_inertia_seconds": "反弹镜头惯性时间",
+	"return_seconds": "弹射镜头归位时间", "max_offset_ratio": "新增镜头偏移上限",
+	"impact_shake_pixels": "撞墙轻震像素", "impact_shake_seconds": "撞墙轻震时间", "impact_min_interval": "撞墙轻震最短间隔",
+	"number_styles": "伤害数字样式列表", "style_id": "伤害表现标签", "number_font": "伤害数字字体（可替换像素字体）",
+	"number_font_size": "伤害数字字号", "number_color": "伤害数字颜色", "number_outline_color": "数字描边颜色",
+	"number_outline_size": "数字描边粗细", "number_shadow_color": "数字投影颜色", "number_shadow_offset": "数字投影偏移",
+	"number_suffix": "数字后缀", "decimal_places": "伤害显示小数位", "number_lifetime": "数字存留时间",
+	"squash_seconds": "数字起跳压缩时间", "rise_seconds": "数字上升时间", "apex_seconds": "顶点停留时间",
+	"rise_pixels": "数字上升高度", "fall_pixels": "数字回落距离", "drift_pixels": "数字侧向飘动距离",
+	"pop_scale": "数字起跳放大倍率", "tilt_degrees": "数字倾斜幅度", "fade_start": "数字开始消散进度",
+	"number_spark_count": "收尾碎光数量", "number_spark_color": "收尾碎光颜色", "number_stack_columns": "连续命中错位列数",
+	"number_stack_spacing": "连续命中错位间距", "number_prewarm": "数字节点预热数量", "number_idle_limit": "数字闲置池上限",
+	"trigger_radius": "雷潮切入半径", "spread_radius": "雷潮传导距离", "spread_layers": "雷潮扩散层数", "max_propagation_radius": "雷潮传播总半径",
+	"targets_per_layer": "雷潮每片目标数", "layer_interval": "雷潮片间间隔", "sky_height": "降雷高度",
+	"arc_texture": "雷潮电弧素材", "arc_duration": "电弧消退时长", "reveal_seconds": "电弧展开时间",
+	"arc_energy_multiplier": "雷潮主电弧亮度倍率",
+	"flight_trail_settings": "弹射人物残影（飞行拖尾）", "flight_trail_color": "人物残影乘色",
+	"flight_echo_count": "人物残影数量", "flight_echo_spacing": "人物残影间距",
+	"flight_echo_saturation": "人物残影饱和度", "flight_echo_brightness": "人物残影亮度",
+	"flight_trail_max_length": "人物残影尾迹长度", "flight_trail_lifetime": "人物残影消散时间",
+	"flight_trail_opacity": "人物残影透明度", "flight_trail_energy": "人物残影自发光",
+	"sword_rules": "人物自带基础剑术", "normal_interval": "普攻出手间隔", "flight_interval": "弹射挥剑间隔",
+	"normal_range": "普攻半径", "flight_range": "弹射挥剑半径", "normal_angle": "普攻扇角", "flight_angle": "弹射挥剑扇角",
+	"sweep_seconds": "基础剑术扫击时间", "fade_seconds": "基础剑术收尾时间", "art_radius_pixels": "剑光原生半径像素",
+	"effect_height": "刀光中心高度", "effect_tilt_degrees": "刀光斜切角度",
+	"tree_local_light_softness": "树图近灯柔化", "lamp_canopy_clearance": "灯头树冠间隙",
+	"ricochet_rules": "人物本体弹射规则", "action_visuals": "人物动作资源槽位",
+	"full_charge_seconds": "蓄满所需时间", "minimum_launch_speed": "起步弹射速度", "maximum_launch_speed": "满蓄力弹射速度",
+	"flight_seconds": "旧版飞行时间（已停用）", "cooldown_seconds": "弹射冷却", "wall_bounce_limit": "旧版反弹次数（已停用）",
+	"minimum_bounce_speed": "人物续弹最低速度", "flight_deceleration": "飞行每秒耗速", "bounce_speed_cost": "每次碰撞固定耗速",
+	"bounce_speed_retention": "反弹速度保留比例", "ground_height_tolerance": "弹射允许地表高差",
+	"push_radius": "拨怪触发半径", "push_initial_speed": "怪群绕行速度", "push_seconds": "怪群绕行收势缓冲时间",
+	"push_group_link_distance": "怪群相连判定距离", "push_group_search_radius": "怪群局部搜索半径", "push_group_edge_margin": "怪群绕行外沿余量",
+	"push_arrival_arc_degrees": "怪群后沿落点扇区角度",
+	"push_chain_layers": "怪群绕行接力层数", "push_chain_speed_retention": "接力推力保留比例",
+	"push_chain_stun_retention": "接力眩晕保留比例", "push_chain_min_speed": "接力最低传递速度",
+	"clockwise": "人物正撞绕群顺时针旋向（兼容拨怪）", "push_height_tolerance": "怪群接触允许高差", "normal_attack": "普通攻击动画",
+	"charge": "蓄力动画", "flight": "弹射飞行动画", "flight_attack": "飞行攻击动画", "recovery": "弹射收尾动画",
+	"placeholder_attack_seconds": "缺少攻击素材的占位时长", "show_aim_guide": "显示碰撞路线预览", "show_push_ring": "显示拨怪作用圆",
+	"preview_show_target": "预览首个目标提示", "preview_bounces": "仅预览显示的反弹次数", "preview_distance": "预览路线最长距离",
+	"preview_color": "预览路线颜色", "preview_opacity": "预览路线透明度", "preview_line_width_pixels": "预览虚线宽度（人物原生像素）",
+	"show_charge_effect": "显示蓄力特效", "charge_radius_pixels": "蓄力环半径（人物原生像素）",
+	"charge_effect_opacity": "蓄力特效透明度", "charge_effect_energy": "蓄力特效亮度",
 	"enemies": "已登记怪物", "display_name": "怪物名称", "spawn_clearance": "出场留空半径",
 	"trigger_distance": "冲锋触发距离", "windup_seconds": "招式蓄力时间", "recovery_seconds": "招式恢复时间",
 	"charge_speed": "锁线冲锋速度", "charge_distance": "锁线冲锋距离", "shooting_range": "吐籽射击范围", "retreat_distance": "花兽退步距离",
@@ -41,6 +104,8 @@ const LABELS := {
 	"head_width": "晶体显示宽度", "trail_width": "光丝显示宽度", "bounce_sounds": "墙面反射音源",
 	"effect_scene": "弹丸特效场景", "feedback_scene": "碰撞反馈场景",
 	"definitions": "本局增益列表", "attribute": "增益属性", "bonus_per_level": "每级增益比例", "max_level": "增益等级上限", "bonus_cap": "同类总增幅上限",
+	"diminishing_after": "温和递减起始等级（0 关闭）", "breakthrough_every": "突破间隔等级（0 关闭）",
+	"breakthrough_multiplier": "突破收益倍率", "required_levels": "专精前置等级", "extra_effects": "组合收益与代价",
 	"card_text_color": "成长卡片文字颜色",
 	"cards_per_draw": "升级每次抽取张数", "initial_cards_per_draw": "初始技能抽取张数",
 	"rerolls_per_run": "本局共用重抽次数", "draw_seed": "抽卡复现种子（0 随机）", "choice_hint": "抽卡操作提示",
@@ -49,12 +114,17 @@ const LABELS := {
 	"windup_time": "起手时间", "sweep_time": "扫击时间", "fade_time": "收尾时间", "knockback_distance": "击退距离",
 	"effect_opacity": "特效透明度", "effect_energy": "特效亮度", "health": "生命", "attack_damage": "怪物攻击伤害",
 	"move_speed": "怪物速度", "experience_reward": "经验掉落", "waves": "波次列表", "entries": "出怪编排",
+	"batch_size": "怪潮每批数量", "start_delay": "首次进场时间", "interval": "批次或逐只间隔", "spawn_zone_ids": "允许进场区域",
 	"enemy_catalog": "怪物目录", "enemy_id": "怪物标识", "population_rules": "怪潮数量档位", "population_cost": "怪物容量成本", "max_alive": "同种怪物同场上限",
+	"enemy_occlusion_outline_enabled": "波次怪物遮挡轮廓（全部）",
+	"simulation_mode": "巨量怪潮模拟模式", "simulation_enemy_count": "模拟怪潮目标数量",
+	"simulation_skills": "模拟持有技能与等级", "skill_level": "本局技能等级（0 不携带）",
 	"health_growth_rules": "无尽生命成长规则", "health_growth_enabled": "参与无尽生命成长", "start_wave": "生命成长起始波",
 	"bonus_per_wave": "每波基础生命增幅", "minimum_multiplier": "生命倍率下限", "maximum_multiplier": "生命倍率上限",
 	"role": "怪物分类", "body_radius": "身体碰撞半径", "body_height": "身体碰撞高度", "knockback_multiplier": "击退倍率",
+	"stun_duration_multiplier": "眩晕时长倍率", "push_stun_seconds": "拨怪基础眩晕秒数",
 	"combat_stop_distance": "接近停止距离", "contact_distance": "接触攻击距离", "contact_height": "接触攻击高差", "route_interval": "路线刷新间隔",
-	"separation_radius": "局部避让半径", "separation_strength": "局部避让强度", "animation_speed": "动画速度",
+	"separation_radius": "聚群目标间距", "separation_strength": "聚群避让强度", "animation_speed": "动画速度",
 	"navigation_radius": "导航通行半径",
 	"first_active_limit": "开场同场上限", "growth_start_wave": "容量递增起始波", "active_growth_per_wave": "每波同场容量增量",
 	"max_active": "同场容量终值", "max_population_cost": "同场容量点预算", "role_limits": "四类怪物同场上限",
@@ -68,6 +138,7 @@ const LABELS := {
 	"grass_density": "草丛密度", "flower_density": "花簇密度", "paint_palette": "地表画笔列表", "data": "地形数据",
 	"grass_variation_enabled": "草地深浅开关", "grass_variation_strength": "草地深浅强度", "grass_variation_size": "草地斑块大小",
 	"core_size": "战区中心尺寸", "loop_width": "绕行带宽度", "ui_scale": "界面缩放", "font_size": "文字字号",
+	"opening_spawn_offset": "开场刷新左右／前进距离",
 	"first_level_experience": "首次升级经验", "per_level_increase": "每级经验增量", "curve_increase": "经验曲线增量", "level_cap": "本局等级上限",
 	"bar_width": "属性条宽度", "slot_size": "槽位尺寸", "slot_spacing": "槽位间隔", "screen_margin": "屏幕边距", "glow_strength": "辉光强度",
 	"track_width": "经验槽宽度", "badge_width": "等级底片宽度", "attribute_gap": "血蓝条下方间隔", "follow_attributes": "经验条跟随属性条",
@@ -92,6 +163,15 @@ const LABELS := {
 	"limiter_ceiling_db": "总输出峰值上限",
 }
 const COMMON := {
+	"ricochet_camera_settings.gd": ["enabled", "launch_lag_seconds", "lookahead_ratio", "lead_settle_seconds", "bounce_inertia_seconds", "return_seconds", "max_offset_ratio", "impact_shake_pixels"],
+	"damage_numbers.gd": ["enabled", "number_styles", "number_stack_columns", "number_stack_spacing", "number_idle_limit"],
+	"damage_number_style.gd": ["number_font", "number_font_size", "number_color", "number_lifetime", "rise_pixels", "drift_pixels", "pop_scale"],
+	"ricochet_storm.gd": ["enabled", "damage", "attack_interval", "trigger_radius", "spread_radius", "max_propagation_radius", "spread_layers", "targets_per_layer", "layer_interval", "skill_definition", "effect_scene"],
+	"ricochet_storm_effect.gd": ["pixel_size", "arc_duration", "reveal_seconds", "sky_height", "effect_energy", "arc_energy_multiplier", "effect_opacity", "impact_frames", "patch_enabled", "patch_duration", "patch_opacity", "patch_height"],
+	"player_flight_trail_settings.gd": ["enabled", "flight_echo_count", "flight_echo_spacing", "flight_trail_color", "flight_echo_saturation", "flight_echo_brightness", "flight_trail_max_length", "flight_trail_lifetime", "flight_trail_opacity", "flight_trail_energy"],
+	"player_sword_rules.gd": ["enabled", "damage", "normal_interval", "flight_interval", "normal_range", "flight_range", "normal_angle", "flight_angle", "frames", "art_radius_pixels", "effect_height", "effect_tilt_degrees"],
+	"player_ricochet_rules.gd": ["crowd_deflection_enabled", "crowd_arc_degrees", "crowd_arc_distance", "enemy_push_enabled", "crowd_contact_radius", "crowd_turn_distance", "crowd_exit_outward", "crowd_speed_retention", "crowd_release_clearance", "full_charge_seconds", "minimum_launch_speed", "maximum_launch_speed", "bounce_speed_retention", "minimum_bounce_speed", "flight_deceleration", "bounce_speed_cost", "push_radius", "push_initial_speed", "push_seconds", "push_stun_seconds", "push_group_link_distance", "push_group_search_radius", "push_group_edge_margin", "push_arrival_arc_degrees", "push_chain_layers", "push_chain_speed_retention", "push_chain_stun_retention", "push_chain_min_speed", "clockwise"],
+	"player_action_visuals.gd": ["normal_attack", "charge", "flight", "flight_attack", "recovery", "show_charge_effect", "show_aim_guide", "charge_radius_pixels", "charge_effect_opacity", "charge_effect_energy", "preview_show_target", "preview_bounces", "preview_distance", "preview_color", "preview_opacity", "preview_line_width_pixels"],
 	"leaf_charger_definition.gd": ["health", "attack_damage", "move_speed", "trigger_distance", "charge_speed", "charge_distance", "windup_seconds", "recovery_seconds", "attack_interval", "max_alive"],
 	"lantern_spitter_definition.gd": ["health", "attack_damage", "shooting_range", "retreat_distance", "projectile_speed", "projectile_distance", "windup_seconds", "attack_interval", "max_alive"],
 	"pot_brood_definition.gd": ["health", "move_speed", "attack_damage", "child_enemy_id", "split_delay", "max_alive"],
@@ -100,26 +180,31 @@ const COMMON := {
 	"game_audio.gd": ["enabled", "max_voices", "important_reserve", "merge_window", "far_distance", "combat_volume_db", "music_volume_db"],
 	"environment_dynamics.gd": ["enabled", "style_wind", "style_wind_tempo", "style_fireflies", "night_firefly_size", "region_wind", "region_fireflies", "region_blend_width", "transition_seconds", "battle_fireflies_enabled"],
 	"spawn_visual_sample.gd": ["style", "runtime_switch_enabled", "style_key", "original_light_refinement_enabled", "original_light_preset", "pixel_art_enabled", "color_ramps_enabled", "color_palette", "grass_variation_enabled", "grass_variation_strength", "grass_variation_size", "value_sample_enabled", "value_sample_profile", "fog_post_enabled", "fog_post_presets"],
-	"follow_camera.gd": ["distance", "pitch_degrees", "fov", "dof_amount", "focus_height"],
+	"follow_camera.gd": ["distance", "pitch_degrees", "fov", "dof_amount", "focus_height", "ricochet_camera_settings"],
 	"art_direction.gd": ["exposure", "contrast", "saturation", "bloom", "moon_energy", "ambient_energy", "hemisphere_fill_enabled", "hemisphere_sky_color", "hemisphere_ground_color", "fog_begin", "fog_end", "fog_curve", "fog_amount", "low_fog", "volumetric_density", "bloom_threshold", "bloom_floor", "vignette", "vignette_radius", "shadow_lift", "split_toning", "wet_surface_enabled", "wet_surface_minimum", "wet_surface_coverage", "wet_surface_roughness", "wet_surface_reflectivity", "wet_surface_ripple_strength", "wet_surface_ripple_speed"],
 	"weather.gd": ["weather_mode", "rain_intensity", "ground_rain_enabled", "ground_splash_size", "ground_splash_density", "ground_splash_strength", "wind_strength", "blink_plant_strength", "blink_rain_strength", "rain_volume_db", "wind_volume_db"],
-	"player.gd": ["speed", "blink_distance", "blink_cooldown", "jump_height"],
+	"player.gd": ["speed", "blink_distance", "blink_cooldown", "jump_height", "ricochet_rules", "action_visuals", "sword_rules", "flight_trail_settings", "crowd_clearance_distance"],
 	"fan_auto_attack.gd": ["damage", "attack_range", "attack_interval", "fan_angle", "effect_opacity", "skill_definition", "audio_enabled", "audio_volume_db", "hit_sound_limit"],
 	"mirror_mark_auto_attack.gd": ["damage", "attack_range", "attack_interval", "flight_speed", "mark_duration", "reflection_limit", "match_player_pixel_density", "skill_definition"],
 	"run_buffs.gd": ["definitions"],
-	"growth_buff_definition.gd": ["bonus_per_level", "max_level", "bonus_cap"],
+	"growth_buff_definition.gd": ["bonus_per_level", "max_level", "bonus_cap", "diminishing_after", "breakthrough_every", "breakthrough_multiplier", "required_levels", "extra_effects"],
+	"growth_buff_effect.gd": ["attribute", "bonus_per_level", "bonus_cap"],
 	"combat_skill_definition.gd": ["levels"],
 	"combat_skill_level.gd": ["parameters"],
 	"wave_enemy_definition.gd": ["health", "move_speed", "attack_damage", "experience_reward", "health_growth_enabled"],
 	"wave_melee_enemy_definition.gd": ["enemy_id", "health", "move_speed", "attack_damage", "experience_reward", "health_growth_enabled", "body_radius", "contact_distance", "knockback_multiplier", "population_cost", "max_alive"],
-	"wave_population_rules.gd": ["first_active_limit", "max_active", "max_wave_enemies", "max_population_cost", "role_limits"],
+	"wave_population_rules.gd": ["simulation_mode", "simulation_enemy_count", "simulation_skills", "first_active_limit", "max_active", "max_wave_enemies", "max_population_cost", "role_limits"],
+	"simulation_skill_entry.gd": ["skill_definition", "skill_level"],
+	"wave_spawn_entry.gd": ["mixed_horde", "enemy", "count", "batch_size", "start_delay", "interval", "spawn_zone_ids"],
 	"wave_health_growth_rules.gd": ["start_wave", "bonus_per_wave", "minimum_multiplier", "maximum_multiplier"],
-	"wave_prototype.gd": ["enemy_catalog", "population_rules", "health_growth_rules", "waves", "endless_mode", "endless_enemies_per_wave", "endless_max_enemies", "endless_interval_reduction", "endless_min_spawn_interval", "max_active_enemies", "retry_key", "show_ui"],
+	"wave_prototype.gd": ["enemy_catalog", "population_rules", "health_growth_rules", "enemy_occlusion_outline_enabled", "waves", "endless_mode", "endless_enemies_per_wave", "endless_max_enemies", "endless_interval_reduction", "endless_min_spawn_interval", "max_active_enemies", "retry_key", "show_ui"],
 	"wave_hud.gd": ["enabled", "font_size", "hint_font_size", "top_margin", "text_color"],
-	"battle_area.gd": ["core_size", "loop_width", "core_density", "edge_density"],
+	"battle_area.gd": ["core_size", "loop_width", "opening_spawn_offset", "core_density", "edge_density"],
 	"ground_dressing.gd": ["grass_density", "flower_density", "stable_shadows"],
 	"terrain.gd": ["data", "paint_palette"],
-	"bgm.gd": ["music_volume_db"],
+	"bgm.gd": ["music_enabled", "music_volume_db", "playlists", "music_transition_time", "music_fade_time"],
+	"bgm_track.gd": ["track_id", "track_title", "stream", "volume_db", "loop_crossfade"],
+	"bgm_playlist.gd": ["context_id", "tracks", "play_order"],
 	"experience_rules.gd": ["first_level_experience", "per_level_increase", "level_cap"],
 	"loadout_ui.gd": ["ui_scale", "font_size"],
 	"skill_hud.gd": ["slot_size", "slot_spacing", "screen_margin", "glow_strength"],
@@ -128,6 +213,7 @@ const COMMON := {
 	"experience_pickup.gd": ["medium_threshold", "large_threshold", "gem_height", "bob_amplitude", "trail_length", "trail_brightness"],
 	"item_quickbar.gd": ["slot_size", "slot_spacing", "background_opacity"],
 	"ui_audio.gd": ["volume_db"],
+	"core_feedback_audio.gd": ["enabled", "action_volume_db", "enemy_volume_db", "feedback_volume_db", "sounds"],
 }
 
 var entries: Array[Dictionary] = []
@@ -148,12 +234,16 @@ func _visit(node: Node, scene: Node) -> void:
 		if child.owner != null: _visit(child, scene)
 
 func category(filename: String, group: String) -> String:
+	if filename in ["core_feedback_audio.gd", "core_sound_bank.gd"]: return "声音"
+	if filename == "ricochet_camera_settings.gd": return "视觉"
+	if filename in ["damage_numbers.gd", "damage_number_style.gd"]: return "战斗与成长"
+	if filename.begins_with("ricochet_storm"): return "战斗与成长"
 	if filename in ["leaf_charger_definition.gd", "lantern_spitter_definition.gd", "pot_brood_definition.gd", "bell_frog_definition.gd", "creature_enemy.gd", "leaf_charger.gd", "lantern_spitter.gd", "pot_brood.gd", "bell_frog.gd", "mini_slime.gd"]: return "战斗与成长"
 	if filename == "environment_dynamics.gd": return "视觉"
-	if filename in ["game_audio.gd", "bgm.gd", "player_movement_audio.gd", "movement_sound_bank.gd", "ui_audio.gd", "ui_sound_bank.gd"] or "声音" in group or "音效" in group or "风声" in group: return "声音"
-	if filename in ["player.gd", "player_blink.gd", "character_lighting.gd"]: return "人物"
+	if filename in ["game_audio.gd", "bgm.gd", "bgm_track.gd", "bgm_playlist.gd", "player_movement_audio.gd", "movement_sound_bank.gd", "ui_audio.gd", "ui_sound_bank.gd"] or "声音" in group or "音效" in group or "风声" in group: return "声音"
+	if filename in ["player.gd", "player_blink.gd", "player_ricochet_rules.gd", "player_action_visuals.gd", "player_sword_rules.gd", "player_flight_trail_settings.gd", "character_lighting.gd"]: return "人物"
 	if filename == "wave_hud.gd": return "UI"
-	if filename.begins_with("wave_") or filename.begins_with("combat_skill_") or filename.begins_with("mirror_") or filename in ["fan_auto_attack.gd", "prism_ricochet_auto_attack.gd", "prism_ricochet_effect.gd", "slime.gd", "run_growth.gd", "run_skills.gd", "run_buffs.gd", "growth_buff_definition.gd", "experience_rules.gd", "experience_pickup.gd"]: return "战斗与成长"
+	if filename.begins_with("wave_") or filename.begins_with("combat_skill_") or filename.begins_with("mirror_") or filename in ["fan_auto_attack.gd", "prism_ricochet_auto_attack.gd", "prism_ricochet_effect.gd", "slime.gd", "run_growth.gd", "run_skills.gd", "run_buffs.gd", "growth_buff_definition.gd", "growth_buff_effect.gd", "experience_rules.gd", "experience_pickup.gd"]: return "战斗与成长"
 	if filename in ["spawn_visual_sample.gd", "spawn_visual_preset.gd", "pixel_color_palette.gd", "value_lighting_profile.gd", "art_direction.gd", "weather.gd", "follow_camera.gd", "atmospheric_light.gd", "daylight_preview.gd", "map_effects.gd", "planar_water_reflection.gd"]: return "视觉"
 	if filename in ["training_rules.gd", "loadout_catalog.gd", "equipment_definition.gd", "skill_definition.gd", "item_definition.gd"]: return "物品与规则"
 	if filename.ends_with("_ui.gd") or filename.ends_with("_hud.gd") or filename in ["item_quickbar.gd", "inventory_book_page.gd", "growth_choice_card.gd", "growth_choice_option.gd"]: return "UI"
@@ -213,7 +303,7 @@ func _add(object: Object, path: String, node: Node, filename: String, group: Str
 	var section := category(filename, group)
 	var description: String = _documentation(object.get_script()).get(property, "")
 	entries.append({"object": object, "node": node, "property": property, "label": label, "category": section,
-		"group": group, "path": path, "common": property in COMMON.get(filename, []),
+		"group": group, "path": path, "common": property in COMMON.get(filename, []) or (object is WaveEnemyDefinition and property in ["stun_duration_multiplier", "horde_weight"]) or (object is WaveMeleeEnemyDefinition and property in ["separation_radius", "separation_strength", "pursuit_lookahead", "pursuit_flank_strength"]),
 		"description": description, "search": (section + " " + group + " " + path + " " + label + " " + property + " " + description).to_lower()})
 
 func _documentation(script: Script) -> Dictionary:

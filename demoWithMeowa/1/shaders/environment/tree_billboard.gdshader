@@ -9,6 +9,7 @@ uniform float wind_speed = 1.6;
 uniform float gust_strength = 0.3;
 uniform float crown_sway = 0.045;
 uniform float normal_strength : hint_range(0.0, 1.0) = 0.5;
+uniform float local_light_softness : hint_range(0.0, 8.0) = 4.0;
 #include "res://shaders/includes/foliage_shadow.gdshaderinc"
 varying vec3 world_right;
 varying vec3 world_forward;
@@ -64,4 +65,29 @@ void fragment() {
 	BACKLIGHT = vec3(crown * 0.12);
 	AO = mix(0.7, 1.0, smoothstep(0.0, 0.22, height));
 	AO_LIGHT_AFFECT = 0.25;
+}
+
+float tree_fresnel_weight(float cosine) {
+	float grazing = 1.0 - clamp(cosine, 0.0, 1.0);
+	float squared = grazing * grazing;
+	return squared * squared * grazing;
+}
+
+void light() {
+	float nl = max(dot(NORMAL, LIGHT), 0.0);
+	float nv = max(dot(NORMAL, VIEW), 0.0001);
+	vec3 halfway = normalize(LIGHT + VIEW);
+	float lh = clamp(dot(LIGHT, halfway), 0.0, 1.0);
+	float fd90 = 2.0 * lh * lh * ROUGHNESS - 0.5;
+	float diffuse = nl * (1.0 + fd90 * tree_fresnel_weight(nl)) * (1.0 + fd90 * tree_fresnel_weight(nv)) / PI;
+	// Billboard leaves can approach the lamp as the view turns. Bound that near-field
+	// response without changing the actual light, its ground reflection or shadows.
+	float height = clamp((root_uv - UV.y) / root_uv, 0.0, 1.0);
+	float softness = local_light_softness * mix(0.06, 1.0, smoothstep(0.28, 0.58, height));
+	float attenuation = LIGHT_IS_DIRECTIONAL ? ATTENUATION : ATTENUATION / (1.0 + ATTENUATION * softness);
+	DIFFUSE_LIGHT += (vec3(diffuse) + (vec3(1.0 / PI) - vec3(diffuse)) * BACKLIGHT) * attenuation * LIGHT_COLOR;
+	// This material is fully rough (ROUGHNESS = 1); retain the native GGX response.
+	vec3 fresnel = vec3(0.04) + vec3(0.96) * tree_fresnel_weight(lh);
+	float visibility = 0.5 / max(nl + nv, 0.0001);
+	SPECULAR_LIGHT += nl * visibility / PI * fresnel * SPECULAR_AMOUNT * attenuation * LIGHT_COLOR;
 }

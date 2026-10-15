@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="WavePopulationRules" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/wave_population_rules.gd" id="rules"]
+[ext_resource type="Script" path="res://scripts/combat/simulation_skill_entry.gd" id="skill_entry"]
+[ext_resource type="Resource" path="res://data/skills/light_pierce.tres" id="pierce"]
+[ext_resource type="Resource" path="res://data/skills/prism_ricochet.tres" id="prism"]
+[ext_resource type="Resource" path="res://data/skills/mirror_mark.tres" id="mirror"]
+[ext_resource type="Resource" path="res://data/skills/ricochet_storm.tres" id="storm"]
+
+[sub_resource type="Resource" id="pierce_slot"]
+resource_name = "雷光贯穿"
+script = ExtResource("skill_entry")
+skill_definition = ExtResource("pierce")
+
+[sub_resource type="Resource" id="prism_slot"]
+resource_name = "棱光弹射"
+script = ExtResource("skill_entry")
+skill_definition = ExtResource("prism")
+
+[sub_resource type="Resource" id="mirror_slot"]
+resource_name = "反射镜印"
+script = ExtResource("skill_entry")
+skill_definition = ExtResource("mirror")
+
+[sub_resource type="Resource" id="storm_slot"]
+resource_name = "奔雷涌潮"
+script = ExtResource("skill_entry")
+skill_definition = ExtResource("storm")
+
+[resource]
+resource_name = "巨量怪潮模拟 · 人物零伤害且免伤"
+script = ExtResource("rules")
+simulation_mode = true
+simulation_enemy_count = 512
+simulation_skills = Array[ExtResource("skill_entry")]([SubResource("pierce_slot"), SubResource("prism_slot"), SubResource("mirror_slot"), SubResource("storm_slot")])

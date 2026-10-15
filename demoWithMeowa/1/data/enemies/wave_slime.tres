@@ -7,3 +7,5 @@
 script = ExtResource("definition")
 enemy_id = &"slime"
 scene = ExtResource("slime")
+health = 200.0
+move_speed = 1.7

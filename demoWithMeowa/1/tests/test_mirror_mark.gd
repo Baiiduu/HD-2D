@@ -79,9 +79,9 @@ func run() -> void:
 	player.global_position = wave._path.ground_position(wave.global_position) + Vector3.UP * 0.03
 	check(attack.skill_level == 0 and not attack.is_physics_processing(), "未学习时不消耗战斗更新")
 	check(skills.initial_cards_per_draw == 3, "正式开局仍是抽三张，而非新增技能后展示全部")
-	skills.initial_cards_per_draw = 4
+	skills.initial_cards_per_draw = 100
 	check(wave.start_run() and wave.phase == WavePrototype.Phase.READY, "开局等待实际技能选择")
-	check(skills._initial_pool.size() == 4 and skills._initial_offered.has(&"initial:mirror_mark"), "镜印进入当前四技能初始池")
+	check(skills._initial_pool.size() == skills._components.size() and skills._initial_offered.has(&"initial:mirror_mark"), "镜印进入完整初始池并兼容新增技能")
 	skills.initial_choice.close()
 	skills._choose_initial(&"initial:mirror_mark")
 	check(wave.phase == WavePrototype.Phase.BATTLE and skills.get_level(&"mirror_mark") == 1, "初始选择实际学习镜印并开始波次")

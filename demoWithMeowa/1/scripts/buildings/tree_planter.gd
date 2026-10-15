@@ -51,6 +51,9 @@ const PLANTS := [
 	set(value): crown_sway = value; _queue_build()
 @export_range(0.0, 1.0, 0.05) var tree_normal_strength := 0.5:
 	set(value): tree_normal_strength = value; _queue_build()
+## 只柔化树图的近距离点光／聚光亮斑，保留主光与环境光；0 恢复原强度。
+@export_range(0.0, 8.0, 0.1) var tree_local_light_softness := 4.0:
+	set(value): tree_local_light_softness = value; _queue_build()
 
 @export_group("花草与配件")
 @export var flowers_enabled := true:
@@ -62,6 +65,9 @@ const PLANTS := [
 ## 使用已有路灯与公共金色粒子。关闭只移除本花坛的路灯。
 @export var lamp_enabled := true:
 	set(value): lamp_enabled = value; _queue_build()
+## 灯头向下留出树冠间隙，避免风摆和转镜头时枝叶反复遮住灯芯。灯杆下端埋入花坛。
+@export_range(0.0, 0.6, 0.01, "suffix:m") var lamp_canopy_clearance := 0.4:
+	set(value): lamp_canopy_clearance = value; _queue_build()
 
 @export_group("花坛材质")
 @export var stone_texture: Texture2D = STONE:
@@ -113,6 +119,8 @@ func build() -> void:
 	_build_queued = false
 	if not is_inside_tree(): return
 	if get("cap_texture") == null: cap_texture = CAP
+	if get("tree_local_light_softness") == null: tree_local_light_softness = 4.0
+	if get("lamp_canopy_clearance") == null: lamp_canopy_clearance = 0.4
 	if is_instance_valid(_generated):
 		remove_child(_generated)
 		_generated.queue_free()
@@ -152,6 +160,7 @@ func build() -> void:
 		material.set_shader_parameter("root_uv", tree_anchor.y / tree_texture.get_height())
 		material.set_shader_parameter("crown_sway", crown_sway)
 		material.set_shader_parameter("normal_strength", tree_normal_strength)
+		material.set_shader_parameter("local_light_softness", tree_local_light_softness)
 		_wind_materials.append(material)
 		_card("Tree", tree_texture, tree_anchor, tree_pixel_size, Vector3(0, soil_y, 0) + tree_offset, material, 15)
 	if flowers_enabled: _build_flowers(soil_y, rim)
@@ -167,7 +176,7 @@ func build() -> void:
 	if lamp_enabled:
 		var lamp: Node3D = LANTERN.instantiate()
 		lamp.name = "Lamp"
-		lamp.position = Vector3(width * 0.5 - 0.18, height + 0.075, depth * 0.5 - 0.18)
+		lamp.position = Vector3(width * 0.5 - 0.18, height + 0.075 - lamp_canopy_clearance, depth * 0.5 - 0.18)
 		lamp.set("direct_energy", 2.0)
 		lamp.set("fill_energy", 0.95)
 		lamp.set("water_energy", 0.0)

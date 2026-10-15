@@ -27,9 +27,9 @@ Q/E 只改变观察角度，跳跃使用脚下的地表作为发射平面。闪�
 
 ## 查看与调整
 
-在 Godot 打开 `scenes/previews/light_pierce_preview.tscn`，按 **F6** 运行。预览每 2.2 秒重放一次，**Q/E** 可旋转镜头。角色与三只展示史莱姆保持原位，实际地图、材质、天气和既有 HUD 来自当前正式地图，预览不写存档。
+实际试玩统一使用 `scenes/world/world.tscn`，通过普通模式的技能池或巨量怪潮的技能与等级配置观察。旧固定三只史莱姆的自动重放入口已清理，技能组件与自动回归保留。
 
-在编辑器选中预览场景的 **LightPierceEffect** 子节点调整外观；也可打开 `scenes/combat/light_pierce_effect.tscn` 调整可复用组件。预览根节点的 `Replay Interval` 和 `Preview Distance` 分别控制重播间隔及演示飞行距离，当前距离 7.5 米，仅为视觉观察参数。
+在编辑器打开 `scenes/combat/light_pierce_effect.tscn` 调整可复用特效组件，实际出手与飞行距离沿用战斗技能参数。
 
 | 参数 | 当前值 | 含义 |
 | --- | --- | --- |

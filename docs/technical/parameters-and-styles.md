@@ -15,7 +15,7 @@ Godot 右侧新增「参数总览」，初次默认放在检查器下方，选�
 | 分类 | 实际控制对象 | 常用调节 |
 | --- | --- | --- |
 | 视觉 | VisualSample、ArtDirection、Camera3D、Weather | Style、像素材质、色板、曝光、主光、雾、镜头、景深、雨量、风摆、闪身扰动 |
-| 人物 | Player、Player/Sprite | 速度、跳跃、台阶、闪身与残影、生命魔力、受光、轮廓 |
+| 人物 | Player、Player/Sprite、人物弹射／基础剑术与动作资源 | 速度、跳跃、闪身、蓄力／反弹／拨怪、普攻与飞行剑术的伤害／间隔／范围／斜切摆位、五类动作槽、生命魔力、受光 |
 | 战斗与成长 | WavePrototype、FanAutoAttack、RunGrowth、波次／怪物／经验资源 | 扇击伤害／范围／间隔、怪物数值、刷新、保护、经验与吸取 |
 | 地图与地编 | Homestead、BattleArea、GroundDressing、区域、建筑及画笔 | 地形、战区、铺装、花草、建筑尺寸和材质 |
 | UI | LoadoutUI、TrainingUI、属性条、技能栏、物品栏、成长卡片 | 缩放、字号、边距、槽尺寸、辉光、透明度、动效 |

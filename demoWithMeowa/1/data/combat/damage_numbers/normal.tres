@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="DamageNumberStyle" format=3 uid="uid://bqogx658xjrt0"]
+
+[ext_resource type="FontFile" uid="uid://xtl85ce6efc6" path="res://assets/fonts/press_start_2p/PressStart2P-Regular.ttf" id="font"]
+[ext_resource type="Script" uid="uid://bfqun1m8bf8a6" path="res://scripts/combat/damage_number_style.gd" id="style"]
+
+[resource]
+script = ExtResource("style")
+number_font = ExtResource("font")
+number_font_size = 40
+apex_seconds = 0.08
+rise_pixels = 36.0
+pop_scale = 1.3

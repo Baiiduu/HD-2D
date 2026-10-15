@@ -1,5 +1,6 @@
 [gd_resource type="Resource" script_class="GrowthBuffDefinition" format=3 uid="uid://ktdo1w3q7jfi"]
 
+[ext_resource type="Script" uid="uid://boy8cpvevequv" path="res://scripts/growth/growth_buff_effect.gd" id="1_bx76v"]
 [ext_resource type="Script" uid="uid://6cmgrb0pgn4m" path="res://scripts/growth/growth_buff_definition.gd" id="buff"]
 [ext_resource type="Texture2D" uid="uid://dbuee1s076b7k" path="res://assets/meowa/ui/upgrade/cooldown.png" id="icon"]
 
@@ -9,10 +10,9 @@ region = Rect2(0, 274, 336, 344)
 
 [resource]
 script = ExtResource("buff")
-attribute = 1
-bonus_per_level = 0.1
-bonus_cap = 0.5
+attribute = 14
+bonus_per_level = 0.12
 id = &"P02"
-title = "冷却缩短"
+title = "攻速精进"
 icon = SubResource("clock_face")
 category = 3

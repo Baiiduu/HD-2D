@@ -1,0 +1,26 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://d2gei1udl6kj8"]
+
+[ext_resource type="Texture2D" uid="uid://b3r6uy7bhvrah" path="res://assets/buildings/urban_equipment/albedo.png" id="1_gv2gh"]
+[ext_resource type="Texture2D" uid="uid://bh6f177ri5toj" path="res://assets/buildings/urban_equipment/emission.png" id="2_xxb58"]
+[ext_resource type="Texture2D" uid="uid://dkisyltggt01u" path="res://assets/buildings/urban_equipment/orm.png" id="3_ob4oj"]
+[ext_resource type="Texture2D" uid="uid://cv3m68yxjolqx" path="res://assets/buildings/urban_equipment/normal.png" id="4_18u1s"]
+
+[resource]
+resource_name = "Urban Equipment | Meowa Stone and Graphite"
+albedo_texture = ExtResource("1_gv2gh")
+metallic = 1.0
+metallic_specular = 0.35
+metallic_texture = ExtResource("3_ob4oj")
+metallic_texture_channel = 2
+roughness_texture = ExtResource("3_ob4oj")
+roughness_texture_channel = 1
+emission_enabled = true
+emission = Color(1, 1, 1, 1)
+emission_energy_multiplier = 1.6
+emission_operator = 1
+emission_texture = ExtResource("2_xxb58")
+normal_enabled = true
+normal_scale = 0.55
+normal_texture = ExtResource("4_18u1s")
+texture_filter = 2
+texture_repeat = false

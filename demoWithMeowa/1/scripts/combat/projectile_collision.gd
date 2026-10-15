@@ -1,6 +1,19 @@
 class_name ProjectileCollision
 extends RefCounted
 
+const MIRROR_SURFACE := preload("res://scripts/combat/mirror_reflection_surface.gd")
+const REFLECTION_MASK := 1 | MIRROR_SURFACE.COLLISION_LAYER
+
+## 有限镜片边缘仍使用首次保存的镜面法线，正反两侧均朝入射侧脱离。
+static func reflection_normal(collider: Object, fallback: Vector3, incoming: Vector3) -> Vector3:
+	if collider is MIRROR_SURFACE:
+		var normal: Vector3 = collider.normal
+		return -normal if incoming.dot(normal) > 0.0 else normal
+	return fallback
+
+static func show_reflection(collider: Object) -> void:
+	if collider is MIRROR_SURFACE: collider.reflected.emit()
+
 ## 连续球形扫掠；墙面与敌人分别查询，调用方按墙前的真实进入顺序结算。
 ## 查询器复用，障碍和怪物位置每次读取当前物理世界，不缓存动态结果。
 var _sphere := SphereShape3D.new()
@@ -13,9 +26,9 @@ func _init() -> void:
 	_broad.shape = _capsule
 	_broad.collision_mask = 2
 
-func wall_contact(space: PhysicsDirectSpaceState3D, start: Vector3, end: Vector3, radius: float, excluded: Array[RID]) -> Dictionary:
+func wall_contact(space: PhysicsDirectSpaceState3D, start: Vector3, end: Vector3, radius: float, excluded: Array[RID], mask := 1) -> Dictionary:
 	_sphere.radius = radius
-	_query.collision_mask = 1
+	_query.collision_mask = mask
 	_query.exclude = excluded
 	_query.transform = Transform3D(Basis.IDENTITY, start)
 	_query.motion = Vector3.ZERO

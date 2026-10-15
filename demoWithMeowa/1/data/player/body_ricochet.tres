@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="PlayerRicochetRules" format=3 uid="uid://ciyr7ps75e2at"]
+
+[ext_resource type="Script" uid="uid://crla0x5jycpc8" path="res://scripts/player/player_ricochet_rules.gd" id="rules"]
+
+[resource]
+script = ExtResource("rules")
+minimum_launch_speed = 5.0
+maximum_launch_speed = 10.5
+flight_deceleration = 3.5
+bounce_speed_cost = 0.25
+crowd_deflection_enabled = true
+crowd_contact_radius = 1.05
+crowd_turn_distance = 0.45
+crowd_arc_degrees = 100.0
+crowd_arc_distance = 2.4
+crowd_exit_outward = 0.6
+crowd_release_clearance = 0.7
+enemy_push_enabled = false
+push_initial_speed = 24.0
+push_seconds = 0.36

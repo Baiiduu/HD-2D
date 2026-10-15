@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PlayerSwordRules" format=3 uid="uid://dk21ospxtw1xm"]
+
+[ext_resource type="AudioStream" uid="uid://dy0uv452eds74" path="res://assets/meowa/audio/combat/hit_01.wav" id="hit1"]
+[ext_resource type="AudioStream" uid="uid://dduvlomrm5yba" path="res://assets/meowa/audio/combat/hit_02.wav" id="hit2"]
+[ext_resource type="Script" uid="uid://bgs0ouklybckn" path="res://scripts/player/player_sword_rules.gd" id="rules"]
+
+[resource]
+script = ExtResource("rules")
+hit_sounds = Array[AudioStream]([ExtResource("hit1"), ExtResource("hit2")])

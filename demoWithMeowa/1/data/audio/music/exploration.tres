@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="BgmTrack" format=3 uid="uid://6hqhh8r7vqig"]
+
+[ext_resource type="AudioStream" uid="uid://ci8qwj8sgf1m2" path="res://assets/meowa/audio/bgm.mp3" id="stream"]
+[ext_resource type="Script" uid="uid://dgvmp46t0pkg5" path="res://scripts/audio/bgm_track.gd" id="track"]
+
+[resource]
+resource_name = "探索曲"
+script = ExtResource("track")
+track_id = &"exploration"
+track_title = "探索曲"
+stream = ExtResource("stream")
+volume_db = -18.0

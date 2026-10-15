@@ -2,6 +2,13 @@ class_name WavePopulationRules
 extends Resource
 
 ## 可选数量档位；未设置时保留控制器的已有参数。规则在新挑战／重试时生效。
+@export_group("巨量怪潮模拟")
+## 单波集中进场，人物攻击零伤害且免伤；按下方数量自动配置本局容量，保留真实刷新、攻击与碰撞。
+@export var simulation_mode := false
+## 仅模拟模式使用；新挑战／重试生效，不必同时修改普通容量曲线和无尽参数。
+@export_range(1, 4096, 1) var simulation_enemy_count := 512
+## 拖入技能定义并配置等级，0 为不携带；空列表仅保留人物基础剑术。模拟开局直接应用，不抽卡。
+@export var simulation_skills: Array[SimulationSkillEntry] = []
 @export_group("同场容量曲线")
 @export_range(1, 4096, 1) var first_active_limit := 24
 @export_range(1, 100, 1) var growth_start_wave := 4
@@ -30,6 +37,16 @@ func active_limit(number: int) -> int:
 	return mini(max_active, first_active_limit + steps * active_growth_per_wave)
 
 func validation_error() -> String:
+	if simulation_mode and (simulation_enemy_count < 1 or simulation_enemy_count > 4096): return "模拟怪潮数量须在 1～4096 之间"
+	if simulation_mode:
+		var ids := {}
+		for entry in simulation_skills:
+			if not entry: return "模拟技能列表不能包含空条目"
+			var error := entry.validation_error()
+			if not error.is_empty(): return error
+			var id := entry.skill_definition.id
+			if ids.has(id): return "模拟技能重复配置：" + entry.skill_definition.display_name
+			ids[id] = true
 	if first_active_limit < 1 or max_active < first_active_limit or growth_start_wave < 1 or active_growth_per_wave < 0 or max_population_cost < 1:
 		return "同场容量曲线无效"
 	if role_limits.size() != 4: return "需要普通、特殊、精英、首领四类容量上限"

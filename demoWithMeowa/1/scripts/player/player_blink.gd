@@ -32,6 +32,9 @@ func request(movement: Vector3) -> void:
 		_buffer_remaining = _player.blink_input_buffer
 		_buffer_direction = movement
 
+func discard_buffered_input() -> void:
+	_buffer_remaining = 0.0
+
 func try_start(movement: Vector3) -> bool:
 	if active or _cooldown > 0.0 or not _player.blink_enabled or not _player.is_on_floor():
 		return false

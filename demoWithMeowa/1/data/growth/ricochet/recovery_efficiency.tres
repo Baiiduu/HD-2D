@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GrowthBuffDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/growth/growth_buff_definition.gd" id="buff"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/journal/symbols/boot.png" id="icon"]
+
+[resource]
+script = ExtResource("buff")
+attribute = 8
+bonus_per_level = 0.2
+id = &"R06"
+title = "收势效率"
+icon = ExtResource("icon")
+category = 3

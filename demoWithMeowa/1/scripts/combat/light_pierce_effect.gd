@@ -1,6 +1,8 @@
 class_name LightPierceEffect
 extends Node3D
 
+const EFFECT_LAYER := preload("res://scripts/rendering/combat_effect_layer.gd")
+
 ## 可复用的贯穿视觉组件；发射和命中由调用方传入，不结算伤害。
 signal finished
 
@@ -93,8 +95,8 @@ func launch(origin: Vector3, direction: Vector3, distance: float, manual_flight 
 	_flying = true
 	_manual_flight = manual_flight
 	_flight_ended = false
-	_head_material.set_shader_parameter("effect_texture", head_texture)
-	_trail_material.set_shader_parameter("effect_texture", trail_texture)
+	EFFECT_LAYER.set_parameter(_head_material, "effect_texture", head_texture)
+	EFFECT_LAYER.set_parameter(_trail_material, "effect_texture", trail_texture)
 	_head.visible = head_texture != null
 	_trail.visible = trail_texture != null
 	set_process(true)
@@ -204,7 +206,7 @@ func _update_flight(camera: Camera3D) -> void:
 	_head.global_position = position_on_path - _head.global_basis.x * (head_tip_anchor - 0.5) * head_width
 	# 起手只露出真正行进过的雷刺，避免长贴图伸到人物后方。
 	var projected_travel := travelled * maxf(_direction.dot(_head.global_basis.x), 0.0)
-	_head_material.set_shader_parameter("clip_start", clampf(head_tip_anchor - projected_travel / maxf(head_width, 0.01), 0.0, head_tip_anchor) if preserve_trail_pixel_scale else 0.0)
+	EFFECT_LAYER.set_parameter(_head_material, "clip_start", clampf(head_tip_anchor - projected_travel / maxf(head_width, 0.01), 0.0, head_tip_anchor) if preserve_trail_pixel_scale else 0.0)
 	_style(_head_material, minf(_age / 0.035, 1.0))
 	_style(_trail_material, fade * minf(travelled / 0.8, 1.0), trail_energy_multiplier)
 	_update_trail(camera)
@@ -234,14 +236,14 @@ func _update_trail(camera: Camera3D) -> void:
 	_trail.global_basis = Basis(_direction * length, side * trail_width, _direction.cross(side))
 	if preserve_trail_pixel_scale:
 		var visible_fraction := length / maxf(trail_length, 0.01)
-		_trail_material.set_shader_parameter("frame_rect", Vector4(1.0 - visible_fraction, 0, visible_fraction, 1))
+		EFFECT_LAYER.set_parameter(_trail_material, "frame_rect", Vector4(1.0 - visible_fraction, 0, visible_fraction, 1))
 
 func _configure_pixel_sampling() -> void:
 	if not _head_material or not _trail_material: return
 	var edge := 0.0 if preserve_trail_pixel_scale else 0.06
-	_head_material.set_shader_parameter("edge_fade", edge)
-	_trail_material.set_shader_parameter("edge_fade", edge)
-	_trail_material.set_shader_parameter("frame_rect", Vector4(0, 0, 1, 1))
+	EFFECT_LAYER.set_parameter(_head_material, "edge_fade", edge)
+	EFFECT_LAYER.set_parameter(_trail_material, "edge_fade", edge)
+	EFFECT_LAYER.set_parameter(_trail_material, "frame_rect", Vector4(0, 0, 1, 1))
 
 static func _shared_ribbon_mesh() -> ArrayMesh:
 	if _ribbon_mesh: return _ribbon_mesh
@@ -272,9 +274,8 @@ func _recycle_impact(impact: Dictionary) -> void:
 	_impact_pool.append(impact)
 
 func _material(texture: Texture2D) -> ShaderMaterial:
-	var material := ShaderMaterial.new()
-	material.shader = EFFECT_SHADER
-	material.set_shader_parameter("effect_texture", texture)
+	var material := EFFECT_LAYER.material(EFFECT_SHADER)
+	EFFECT_LAYER.set_parameter(material, "effect_texture", texture)
 	return material
 
 func _quad(material: ShaderMaterial) -> MeshInstance3D:
@@ -290,16 +291,16 @@ func _set_size(mesh: MeshInstance3D, width: float, texture_size: Vector2) -> voi
 	if (mesh.mesh as QuadMesh).size != size: (mesh.mesh as QuadMesh).size = size
 
 func _style(material: ShaderMaterial, fade: float, energy_multiplier := 1.0) -> void:
-	material.set_shader_parameter("opacity", effect_opacity * fade)
-	material.set_shader_parameter("energy", effect_energy * energy_multiplier)
-	material.set_shader_parameter("tint", effect_tint)
+	EFFECT_LAYER.set_parameter(material, "opacity", effect_opacity * fade)
+	EFFECT_LAYER.set_parameter(material, "energy", effect_energy * energy_multiplier)
+	EFFECT_LAYER.set_parameter(material, "tint", effect_tint)
 
 func _set_frame(material: ShaderMaterial, texture: Texture2D) -> void:
 	if texture is AtlasTexture:
-		material.set_shader_parameter("effect_texture", texture.atlas)
+		EFFECT_LAYER.set_parameter(material, "effect_texture", texture.atlas)
 		var size: Vector2 = texture.atlas.get_size()
-		material.set_shader_parameter("frame_rect", Vector4(texture.region.position.x / size.x,
+		EFFECT_LAYER.set_parameter(material, "frame_rect", Vector4(texture.region.position.x / size.x,
 			texture.region.position.y / size.y, texture.region.size.x / size.x, texture.region.size.y / size.y))
 	else:
-		material.set_shader_parameter("effect_texture", texture)
-		material.set_shader_parameter("frame_rect", Vector4(0, 0, 1, 1))
+		EFFECT_LAYER.set_parameter(material, "effect_texture", texture)
+		EFFECT_LAYER.set_parameter(material, "frame_rect", Vector4(0, 0, 1, 1))

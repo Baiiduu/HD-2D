@@ -11,6 +11,13 @@ const DATA_PATH := "res://data/world/world_terrain.tres"
 @export var dressing: Node3D
 @export var wave_controller: Node3D
 
+@export_group("开场刷新（即时生效）")
+## 相对开战入口的左右距离／向场内前进距离，米；只移动两处开场刷新区，不重建地形与地编。
+@export var opening_spawn_offset := Vector2(6.4, 6.4):
+	set(value):
+		opening_spawn_offset = value.abs()
+		if is_node_ready(): _apply_spawn_positions()
+
 @export_group("场地布局（修改后重建）")
 ## 主战斗面的 X/Z 尺寸，米；中心为此节点的位置，内部保持同高。
 @export var core_size := Vector2(32.0, 32.0)
@@ -192,12 +199,18 @@ func _apply_layout() -> void:
 			wave_controller.set("spawn_zone_root", candidates)
 			var excluded: Array[Rect2] = [Rect2(entry.x - 6.4, entry.z - 3.2, 12.8, 6.4)]
 			wave_controller.set("spawn_excluded_areas", excluded)
-		var half := get_core_rect().size * 0.5
-		var positions := [Vector2(-half.x-loop_width+1.6, -half.y+4.8), Vector2(half.x+loop_width-1.6, -half.y+4.8),
-			Vector2(-half.x-loop_width+1.6, half.y-4.8), Vector2(half.x+loop_width-1.6, 1.6),
-			Vector2(-9.6, half.y+loop_width-3.2), Vector2(9.6, half.y+loop_width-3.2)]
-		for index in mini(candidates.get_child_count(), positions.size()):
-			candidates.get_child(index).position = Vector3(positions[index].x, 0.0, positions[index].y)
+	_apply_spawn_positions()
+
+func _apply_spawn_positions() -> void:
+	var candidates := get_node_or_null("SpawnCandidates")
+	if not candidates: return
+	var half := get_core_rect().size * 0.5
+	var opening_z := -half.y - 3.2 + opening_spawn_offset.y
+	var positions := [Vector2(-opening_spawn_offset.x, opening_z), Vector2(opening_spawn_offset.x, opening_z),
+		Vector2(-half.x-loop_width+1.6, half.y-4.8), Vector2(half.x+loop_width-1.6, 1.6),
+		Vector2(-9.6, half.y+loop_width-3.2), Vector2(9.6, half.y+loop_width-3.2)]
+	for index in mini(candidates.get_child_count(), positions.size()):
+		candidates.get_child(index).position = Vector3(positions[index].x, 0.0, positions[index].y)
 
 func _queue_dressing() -> void:
 	if not is_inside_tree() or _dressing_queued: return

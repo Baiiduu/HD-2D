@@ -54,7 +54,7 @@ func _refresh() -> void:
 			_root.visible = _root.visible and session.can_start_run()
 			_set_text("准备" + session.wave_label(1), "按 %s 选择初始技能" % key)
 		WavePrototype.Phase.BATTLE:
-			_set_text(session.wave_label(session.wave), "")
+			_set_text(session.wave_label(session.wave), "人物攻击零伤害 · 人物免伤 · ESC 结束模拟" if session.is_horde_simulation() else "")
 		WavePrototype.Phase.REST:
 			_set_text(session.wave_label(session.completed_waves) + " · 已完成", "休整 · 按 %s 开始第 %d 波" % [key, session.wave + 1])
 		WavePrototype.Phase.RESULT:

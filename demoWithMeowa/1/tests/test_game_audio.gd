@@ -53,6 +53,7 @@ func run() -> void:
 		map.add_child(owner)
 		owners.append(owner)
 	audio = GameAudio.new()
+	audio.load_local_mix = false
 	audio.player = player
 	audio.camera = camera
 	map.add_child(audio)

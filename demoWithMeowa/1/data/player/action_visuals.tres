@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="PlayerActionVisuals" format=3 uid="uid://dsyfbdx2buknv"]
+
+[ext_resource type="Script" uid="uid://cvtrdilce5oma" path="res://scripts/player/player_action_visuals.gd" id="visuals"]
+
+[resource]
+script = ExtResource("visuals")

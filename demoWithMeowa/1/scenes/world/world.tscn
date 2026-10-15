@@ -31,6 +31,7 @@
 [ext_resource type="Shader" uid="uid://fuoorj3rrv6c" path="res://shaders/post/post_process.gdshader" id="18_t634p"]
 [ext_resource type="Resource" path="res://data/visual/spawn_value_foliage.tres" id="28_7rtjl"]
 [ext_resource type="Resource" path="res://data/visual/spawn_value_palette.tres" id="53_phx5y"]
+[ext_resource type="Script" uid="uid://qopdxle3yinu" path="res://scripts/audio/bgm_playlist.gd" id="59_s64j0"]
 [ext_resource type="PackedScene" path="res://scenes/buildings/tree_planter.tscn" id="69_j3x8u"]
 [ext_resource type="PackedScene" path="res://scenes/buildings/armillary_monument.tscn" id="70_6eles"]
 [ext_resource type="PackedScene" path="res://scenes/buildings/plaza_streetlamp.tscn" id="71_124cm"]
@@ -53,20 +54,28 @@
 [ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/variants/octagonal_pillar.tscn" id="155_xmemx"]
 [ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/barrel_cluster.tscn" id="156_swpbm"]
 [ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/variants/fence_passage.tscn" id="157_xuq1k"]
+[ext_resource type="PackedScene" path="res://scenes/ui/audio_mix_ui.tscn" id="audio_mix_ui"]
 [ext_resource type="PackedScene" path="res://scenes/world/battle_area.tscn" id="battle_area"]
 [ext_resource type="Texture2D" uid="uid://deplmtrsm611v" path="res://assets/meowa/city_plaza/fixed/battle/preview.png" id="battle_preview"]
 [ext_resource type="Texture2D" uid="uid://dlu03m0vip3ow" path="res://assets/meowa/city_plaza/fixed/battle/preview_normal.png" id="battle_preview_normal"]
+[ext_resource type="Resource" uid="uid://ciyr7ps75e2at" path="res://data/player/body_ricochet.tres" id="body_ricochet_rules"]
 [ext_resource type="Script" uid="uid://cnj43gbbfi4sc" path="res://scripts/rendering/character_lighting.gd" id="character_lighting"]
+[ext_resource type="Resource" path="res://data/audio/music/combat_playlist.tres" id="combat_bgm"]
+[ext_resource type="PackedScene" path="res://scenes/audio/core_feedback_audio.tscn" id="core_audio"]
 [ext_resource type="PackedScene" path="res://scenes/shared/environment_dynamics.tscn" id="environment_dynamics"]
+[ext_resource type="Resource" path="res://data/audio/music/exploration_playlist.tres" id="exploration_bgm"]
 [ext_resource type="Resource" uid="uid://bkckbayjwnsuy" path="res://data/world/world_surface.tres" id="free_surface"]
 [ext_resource type="PackedScene" path="res://scenes/shared/ground_dressing_defaults.tscn" id="ground_dressing"]
-[ext_resource type="Resource" path="res://data/waves/endless_health_growth.tres" id="health_growth"]
+[ext_resource type="Resource" uid="uid://tiqegj7nq1if" path="res://data/waves/endless_health_growth.tres" id="health_growth"]
 [ext_resource type="Script" uid="uid://bl1cnu18o3dyt" path="res://scripts/terrain/terrain.gd" id="homestead"]
 [ext_resource type="PackedScene" path="res://scenes/ui/loadout_ui.tscn" id="loadout_ui"]
 [ext_resource type="PackedScene" path="res://scenes/shared/map_effects.tscn" id="map_effects"]
 [ext_resource type="PackedScene" path="res://scenes/audio/player_movement_audio.tscn" id="movement_audio"]
 [ext_resource type="Script" uid="uid://c3bn768plavjr" path="res://scripts/player/player.gd" id="player"]
+[ext_resource type="Resource" uid="uid://dsyfbdx2buknv" path="res://data/player/action_visuals.tres" id="player_action_visuals"]
+[ext_resource type="Resource" path="res://data/player/flight_trail.tres" id="player_flight_trail"]
 [ext_resource type="SpriteFrames" uid="uid://65qht0ymca02" path="res://assets/meowa/player/animations.tres" id="player_frames"]
+[ext_resource type="Resource" uid="uid://dk21ospxtw1xm" path="res://data/player/basic_sword.tres" id="player_sword_rules"]
 [ext_resource type="Texture2D" uid="uid://7bwsfpeaisy6" path="res://assets/meowa/player/idle_00.png" id="player_texture"]
 [ext_resource type="Resource" uid="uid://cv33r56galwxu" path="res://data/world/brushes/plaza_arrow.tres" id="plaza_arrow"]
 [ext_resource type="Resource" uid="uid://bqv2am32pkesw" path="res://data/world/brushes/plaza_corner.tres" id="plaza_corner"]
@@ -81,10 +90,12 @@
 [ext_resource type="Resource" uid="uid://b86rpnyleva2o" path="res://data/world/brushes/plaza_vertical.tres" id="plaza_vertical"]
 [ext_resource type="Resource" uid="uid://beujn8yksgieg" path="res://data/world/brushes/plaza_vertical_body.tres" id="plaza_vertical_body"]
 [ext_resource type="Resource" uid="uid://c8syrojp80053" path="res://data/world/brushes/plaza_worn.tres" id="plaza_worn"]
-[ext_resource type="Resource" path="res://data/waves/population/horde_128.tres" id="population_128"]
+[ext_resource type="Resource" uid="uid://c6h80t573radv" path="res://data/waves/population/horde_128.tres" id="population_128"]
+[ext_resource type="Resource" uid="uid://dd82euvn5fvgp" path="res://data/player/ricochet_camera.tres" id="ricochet_camera"]
 [ext_resource type="PackedScene" uid="uid://nonwwjcstfxt" path="res://scenes/enemies/slime.tscn" id="slime"]
 [ext_resource type="Script" uid="uid://ct6dsst8r0t64" path="res://scripts/world/spawn_world.gd" id="spawn_world"]
 [ext_resource type="Resource" uid="uid://cn4m5amkrc58p" path="res://data/world/world_terrain.tres" id="terrain_data"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/urban_equipment_textured.tscn" id="urban_equipment_blockout"]
 [ext_resource type="Script" uid="uid://bp4uf71k3m2pg" path="res://scripts/world/spawn_visual_sample.gd" id="visual_sample"]
 [ext_resource type="Resource" uid="uid://d0nqgxx6ehq22" path="res://data/waves/wave_01.tres" id="wave_01"]
 [ext_resource type="Resource" uid="uid://orhpbkem853w" path="res://data/waves/wave_02.tres" id="wave_02"]
@@ -92,7 +103,7 @@
 [ext_resource type="Script" uid="uid://caklrlj8ospwr" path="res://scripts/combat/wave_definition.gd" id="wave_definition"]
 [ext_resource type="PackedScene" path="res://scenes/combat/wave_prototype.tscn" id="wave_prototype"]
 
-[sub_resource type="Image" id="Image_oo0aq"]
+[sub_resource type="Image" id="Image_k6jmd"]
 data = {
 "data": PackedByteArray("JT04/0hwTv9ciVD/eaBf/7XOeP9ES1f/ZG51/4WJgP+qqJf/xr+q/46Rnv+4ta7/28+2/+vfw//06M3/ND9S/0hZaf9bcID/e4yZ/56srP8="),
 "format": "RGBA8",
@@ -101,8 +112,8 @@ data = {
 "width": 5
 }
 
-[sub_resource type="ImageTexture" id="ImageTexture_olhon"]
-image = SubResource("Image_oo0aq")
+[sub_resource type="ImageTexture" id="ImageTexture_k6jmd"]
+image = SubResource("Image_k6jmd")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_v6xt8"]
 resource_local_to_scene = true
@@ -119,7 +130,7 @@ shader_parameter/wet_surface_ripple_strength = 0.045
 shader_parameter/wet_surface_ripple_speed = 0.65
 shader_parameter/wet_surface_grass_response = 0.04
 shader_parameter/pixel_palette_enabled = true
-shader_parameter/pixel_palette_texture = SubResource("ImageTexture_olhon")
+shader_parameter/pixel_palette_texture = SubResource("ImageTexture_k6jmd")
 shader_parameter/pixel_stone_detail_strength = 0.65
 shader_parameter/pixel_grass_contrast = 1.0
 shader_parameter/pixel_grass_center = Color(0.3398362, 0.56298, 0.24572021, 1)
@@ -165,24 +176,24 @@ shader_parameter/city_tint = Color(0.92, 0.95, 1, 1)
 shader_parameter/cyber_tint = Color(0.92, 1, 0.98, 1)
 shader_parameter/cultivation_tint = Color(0.96, 0.97, 1, 1)
 shader_parameter/wild_tint = Color(1, 1, 1, 1)
-shader_parameter/path_tint = Color(1.08, 1.1, 1.12, 1)
+shader_parameter/path_tint = Color(0.88, 0.91, 1, 1)
 shader_parameter/dirt_tint = Color(0.98, 1.3, 1.5, 1)
 shader_parameter/city_surface = Vector3(0.76, 0, 0.9)
 shader_parameter/cyber_surface = Vector3(0.7, 0, 0.8)
 shader_parameter/cultivation_surface = Vector3(0.72, 0, 0.85)
-shader_parameter/wild_surface = Vector3(0.97, 0, 0)
-shader_parameter/path_surface = Vector3(0.8, 0, 0.85)
+shader_parameter/wild_surface = Vector3(0.97, 0, 0.08)
+shader_parameter/path_surface = Vector3(0.84, 0, 0.65)
 shader_parameter/dirt_surface = Vector3(0.96, 0, 0.45)
 shader_parameter/path_grid = Vector2(4, 4)
 shader_parameter/path_configured = true
 shader_parameter/path_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
 shader_parameter/paint_enabled = true
-shader_parameter/lumina_relief_enabled = false
+shader_parameter/lumina_relief_enabled = true
 shader_parameter/lumina_relief_strength = 0.8
 shader_parameter/lumina_tone_strength = 0.08
 shader_parameter/lumina_matte_floor = 0.48
 shader_parameter/ground_directional_reflection_strength = 0.0
-shader_parameter/wetness = 0.6
+shader_parameter/wetness = 0.18
 shader_parameter/wet_darkening = 0.65
 shader_parameter/wet_roughness = 0.16
 shader_parameter/puddles = false
@@ -191,24 +202,24 @@ shader_parameter/puddle_darkening = 0.45
 shader_parameter/puddle_roughness = 0.02
 shader_parameter/texture_pixels = 64.0
 shader_parameter/stone_relief = 0.006
-shader_parameter/stone_gloss_variation = 0.55
+shader_parameter/stone_gloss_variation = 0.25
 shader_parameter/grass_lighting_enabled = true
-shader_parameter/grass_relief = 0.008
+shader_parameter/grass_relief = 0.006
 shader_parameter/grass_wet_response = 0.2
 shader_parameter/grass_sheen = 0.0
-shader_parameter/grass_root_occlusion = 0.3
+shader_parameter/grass_root_occlusion = 0.35
 shader_parameter/grass_root_bounds = Vector4(-24.8, 20, 49.600002, 49.600002)
 shader_parameter/farming_enabled = false
 shader_parameter/farming_wet_darkening = 0.68
 shader_parameter/farming_wet_roughness = 0.72
-shader_parameter/rain_amount = 0.7
-shader_parameter/rain_clock = 3841.945202583119
+shader_parameter/rain_amount = 0.0
+shader_parameter/rain_clock = 400.17021666664965
 shader_parameter/rain_density = 1.6
 shader_parameter/rain_radius = 0.24
 shader_parameter/rain_strength = 0.95
-shader_parameter/weather_wetness = 0.08399999999999999
+shader_parameter/weather_wetness = 0.0
 shader_parameter/edge_fade_distance = 0.0
-shader_parameter/edge_fog_color = Color(0.38, 0.35, 0.4, 1)
+shader_parameter/edge_fog_color = Color(0.1, 0.17, 0.35, 1)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_tb5gq"]
 resource_local_to_scene = true
@@ -216,7 +227,7 @@ resource_name = "出生区台地侧壁"
 render_priority = 0
 shader = ExtResource("16_2t505")
 shader_parameter/pixel_palette_enabled = true
-shader_parameter/pixel_palette_texture = SubResource("ImageTexture_olhon")
+shader_parameter/pixel_palette_texture = SubResource("ImageTexture_k6jmd")
 shader_parameter/pixel_stone_detail_strength = 0.65
 shader_parameter/pixel_grass_contrast = 1.0
 shader_parameter/pixel_grass_center = Color(0.3398362, 0.56298, 0.24572021, 1)
@@ -274,19 +285,19 @@ shader_parameter/city_tint = Color(0.92, 0.95, 1, 1)
 shader_parameter/cyber_tint = Color(0.92, 1, 0.98, 1)
 shader_parameter/cultivation_tint = Color(0.96, 0.97, 1, 1)
 shader_parameter/wild_tint = Color(1, 1, 1, 1)
-shader_parameter/path_tint = Color(1.08, 1.1, 1.12, 1)
+shader_parameter/path_tint = Color(0.88, 0.91, 1, 1)
 shader_parameter/dirt_tint = Color(0.98, 1.3, 1.5, 1)
 shader_parameter/city_surface = Vector3(0.76, 0, 0.9)
 shader_parameter/cyber_surface = Vector3(0.7, 0, 0.8)
 shader_parameter/cultivation_surface = Vector3(0.72, 0, 0.85)
-shader_parameter/wild_surface = Vector3(0.97, 0, 0)
-shader_parameter/path_surface = Vector3(0.8, 0, 0.85)
+shader_parameter/wild_surface = Vector3(0.97, 0, 0.08)
+shader_parameter/path_surface = Vector3(0.84, 0, 0.65)
 shader_parameter/dirt_surface = Vector3(0.96, 0, 0.45)
 shader_parameter/path_grid = Vector2(4, 4)
 shader_parameter/path_configured = true
 shader_parameter/path_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
 shader_parameter/paint_enabled = true
-shader_parameter/lumina_relief_enabled = false
+shader_parameter/lumina_relief_enabled = true
 shader_parameter/lumina_relief_strength = 0.8
 shader_parameter/lumina_tone_strength = 0.08
 shader_parameter/lumina_matte_floor = 0.48
@@ -303,12 +314,12 @@ shader_parameter/surface_edge_enabled = true
 shader_parameter/surface_edge_lip_pixels = 2.0
 shader_parameter/surface_edge_height = 0.14
 shader_parameter/surface_edge_normal_softening = 0.5
-shader_parameter/edge_wetness = 0.684
+shader_parameter/edge_wetness = 0.18
 shader_parameter/edge_wet_darkening = 0.65
 shader_parameter/edge_wet_roughness = 0.16
 shader_parameter/edge_grass_wet_response = 0.2
 
-[sub_resource type="Resource" id="Resource_m4278"]
+[sub_resource type="Resource" id="Resource_pyabd"]
 script = ExtResource("6_cmg7y")
 label = "草地"
 target = 1
@@ -320,7 +331,7 @@ roughness = 0.97
 wet_response = 0.08
 is_grass = true
 
-[sub_resource type="Resource" id="Resource_nyio1"]
+[sub_resource type="Resource" id="Resource_qjyj0"]
 script = ExtResource("6_cmg7y")
 label = "卵石道路"
 target = 2
@@ -330,7 +341,7 @@ corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1
 roughness = 0.84
 wet_response = 0.65
 
-[sub_resource type="Resource" id="Resource_n0in2"]
+[sub_resource type="Resource" id="Resource_do88p"]
 script = ExtResource("6_cmg7y")
 label = "卵石铺装（图集单块）"
 texture = ExtResource("9_fqf7g")
@@ -339,7 +350,7 @@ corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1
 roughness = 0.8
 wet_response = 0.85
 
-[sub_resource type="Resource" id="Resource_mdkuk"]
+[sub_resource type="Resource" id="Resource_j8f2q"]
 script = ExtResource("6_cmg7y")
 label = "苔藓草地"
 show_in_painter = false
@@ -350,7 +361,7 @@ roughness = 0.97
 wet_response = 0.0
 is_grass = true
 
-[sub_resource type="Resource" id="Resource_mrxq0"]
+[sub_resource type="Resource" id="Resource_pnq3x"]
 script = ExtResource("6_cmg7y")
 label = "泥土（细颗粒）"
 show_in_painter = false
@@ -360,7 +371,7 @@ corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1
 roughness = 0.96
 wet_response = 0.45
 
-[sub_resource type="Resource" id="Resource_i1y2t"]
+[sub_resource type="Resource" id="Resource_8b617"]
 script = ExtResource("6_cmg7y")
 label = "泥土（碎石）"
 show_in_painter = false
@@ -370,7 +381,7 @@ corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1
 roughness = 0.96
 wet_response = 0.45
 
-[sub_resource type="Resource" id="Resource_ghkdt"]
+[sub_resource type="Resource" id="Resource_ckeh6"]
 script = ExtResource("6_cmg7y")
 label = "灰青石板"
 show_in_painter = false
@@ -380,7 +391,7 @@ corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1
 roughness = 0.72
 wet_response = 0.85
 
-[sub_resource type="Resource" id="Resource_s64j0"]
+[sub_resource type="Resource" id="Resource_pww7v"]
 script = ExtResource("6_cmg7y")
 label = "苔藓石板"
 show_in_painter = false
@@ -390,7 +401,7 @@ corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1
 roughness = 0.88
 wet_response = 0.5
 
-[sub_resource type="Resource" id="Resource_jtcuk"]
+[sub_resource type="Resource" id="Resource_nlt47"]
 script = ExtResource("6_cmg7y")
 label = "卵石铺装（纹理）"
 show_in_painter = false
@@ -400,7 +411,7 @@ corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1
 roughness = 0.8
 wet_response = 0.85
 
-[sub_resource type="Resource" id="Resource_k6jmd"]
+[sub_resource type="Resource" id="Resource_6a7tq"]
 script = ExtResource("6_cmg7y")
 label = "金属地板"
 show_in_painter = false
@@ -411,7 +422,7 @@ roughness = 0.35
 metallic = 0.35
 wet_response = 1.0
 
-[sub_resource type="Resource" id="Resource_pyabd"]
+[sub_resource type="Resource" id="Resource_wo74w"]
 script = ExtResource("6_cmg7y")
 label = "木板地面"
 show_in_painter = false
@@ -421,7 +432,7 @@ corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1
 roughness = 0.86
 wet_response = 0.45
 
-[sub_resource type="Resource" id="Resource_qjyj0"]
+[sub_resource type="Resource" id="Resource_425aq"]
 script = ExtResource("6_cmg7y")
 label = "泥土（自动过渡）"
 show_in_painter = false
@@ -432,7 +443,7 @@ corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1
 roughness = 0.96
 wet_response = 0.45
 
-[sub_resource type="Resource" id="Resource_do88p"]
+[sub_resource type="Resource" id="Resource_ayaol"]
 script = ExtResource("6_cmg7y")
 label = "南侧修正版石板"
 paint_id = 11
@@ -444,46 +455,45 @@ normal_strength = 0.8
 roughness = 0.58
 wet_response = 0.85
 
-[sub_resource type="Resource" id="Resource_j8f2q"]
+[sub_resource type="Resource" id="Resource_ecm30"]
 script = ExtResource("18_l4ul6")
-brushes = Array[ExtResource("6_cmg7y")]([SubResource("Resource_m4278"), SubResource("Resource_nyio1"), SubResource("Resource_n0in2"), SubResource("Resource_mdkuk"), SubResource("Resource_mrxq0"), SubResource("Resource_i1y2t"), SubResource("Resource_ghkdt"), SubResource("Resource_s64j0"), SubResource("Resource_jtcuk"), SubResource("Resource_k6jmd"), SubResource("Resource_pyabd"), SubResource("Resource_qjyj0"), SubResource("Resource_do88p"), ExtResource("plaza_stone"), ExtResource("plaza_worn"), ExtResource("plaza_pattern"), ExtResource("plaza_horizontal"), ExtResource("plaza_vertical"), ExtResource("plaza_cross"), ExtResource("plaza_corner"), ExtResource("plaza_diamond"), ExtResource("plaza_arrow"), ExtResource("plaza_octagon"), ExtResource("plaza_horizontal_body"), ExtResource("plaza_vertical_body"), ExtResource("plaza_plaque")])
+brushes = Array[ExtResource("6_cmg7y")]([SubResource("Resource_pyabd"), SubResource("Resource_qjyj0"), SubResource("Resource_do88p"), SubResource("Resource_j8f2q"), SubResource("Resource_pnq3x"), SubResource("Resource_8b617"), SubResource("Resource_ckeh6"), SubResource("Resource_pww7v"), SubResource("Resource_nlt47"), SubResource("Resource_6a7tq"), SubResource("Resource_wo74w"), SubResource("Resource_425aq"), SubResource("Resource_ayaol"), ExtResource("plaza_stone"), ExtResource("plaza_worn"), ExtResource("plaza_pattern"), ExtResource("plaza_horizontal"), ExtResource("plaza_vertical"), ExtResource("plaza_cross"), ExtResource("plaza_corner"), ExtResource("plaza_diamond"), ExtResource("plaza_arrow"), ExtResource("plaza_octagon"), ExtResource("plaza_horizontal_body"), ExtResource("plaza_vertical_body"), ExtResource("plaza_plaque")])
 
 [sub_resource type="CapsuleShape3D" id="player_capsule"]
 radius = 0.24
 height = 1.06592
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_pnq3x"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_l34gv"]
 resource_local_to_scene = true
 shader = ExtResource("17_tytul")
-shader_parameter/zenith_color = Color(0.05, 0.05, 0.11, 1)
-shader_parameter/horizon_color = Color(0.38, 0.35, 0.4, 1)
-shader_parameter/fog_color = Color(0.38, 0.35, 0.4, 1)
-shader_parameter/silhouette_color = Color(0.1, 0.09, 0.13, 1)
+shader_parameter/zenith_color = Color(0.025, 0.05, 0.15, 1)
+shader_parameter/horizon_color = Color(0.1, 0.17, 0.35, 1)
+shader_parameter/fog_color = Color(0.1, 0.17, 0.35, 1)
+shader_parameter/silhouette_color = Color(0.08, 0.11, 0.23, 1)
 shader_parameter/glow_color = Color(0.75, 0.42, 0.24, 1)
-shader_parameter/glow_strength = 0.5
+shader_parameter/glow_strength = 0.0
 shader_parameter/moon_glow_color = Color(0.55, 0.62, 0.85, 1)
-shader_parameter/star_density = 0.01
+shader_parameter/star_density = 0.008
 shader_parameter/pixel_angle = 0.004
-shader_parameter/hemisphere_fill_enabled = false
+shader_parameter/hemisphere_fill_enabled = true
 shader_parameter/hemisphere_sky_color = Color(0.3, 0.44, 0.72, 1)
 shader_parameter/hemisphere_ground_color = Color(0.1, 0.14, 0.25, 1)
 
-[sub_resource type="Sky" id="Sky_8b617"]
+[sub_resource type="Sky" id="Sky_2qot8"]
 resource_local_to_scene = true
-sky_material = SubResource("ShaderMaterial_pnq3x")
+sky_material = SubResource("ShaderMaterial_l34gv")
 radiance_size = 2
 
-[sub_resource type="Environment" id="Environment_ckeh6"]
+[sub_resource type="Environment" id="Environment_sfox1"]
 resource_local_to_scene = true
 background_mode = 2
 background_color = Color(0.07059, 0.10588, 0.18039, 1)
-sky = SubResource("Sky_8b617")
-ambient_light_source = 2
-ambient_light_color = Color(0.44, 0.52, 0.68, 1)
-ambient_light_energy = 0.85
+sky = SubResource("Sky_2qot8")
+ambient_light_source = 3
+ambient_light_color = Color(0.36, 0.43, 0.66, 1)
+ambient_light_energy = 1.15
 reflected_light_source = 2
 tonemap_mode = 3
-tonemap_exposure = 1.08
 tonemap_white = 6.0
 ssr_enabled = true
 ssr_max_steps = 96
@@ -501,36 +511,35 @@ glow_enabled = true
 glow_levels/2 = 0.6
 glow_levels/3 = 0.8
 glow_levels/5 = 0.6
-glow_intensity = 0.14
+glow_intensity = 0.22
 glow_strength = 1.05
 glow_hdr_threshold = 1.1
 fog_enabled = true
 fog_mode = 1
-fog_light_color = Color(0.38, 0.35, 0.4, 1)
-fog_density = 0.12
+fog_light_color = Color(0.1, 0.17, 0.35, 1)
+fog_density = 0.24
 fog_sky_affect = 0.0
 fog_height = -0.3
-fog_height_density = 0.02
+fog_height_density = 0.006
 fog_depth_curve = 1.25
 fog_depth_begin = 32.0
-fog_depth_end = 95.0
+fog_depth_end = 90.0
 volumetric_fog_enabled = true
-volumetric_fog_density = 0.0025
+volumetric_fog_density = 0.0011
 volumetric_fog_albedo = Color(0.75, 0.85, 0.92, 1)
-volumetric_fog_length = 40.0
+volumetric_fog_length = 65.0
 volumetric_fog_ambient_inject = 0.2
 volumetric_fog_sky_affect = 0.0
 adjustment_enabled = true
-adjustment_brightness = 1.06
-adjustment_contrast = 1.14
-adjustment_saturation = 1.3
+adjustment_contrast = 1.07
+adjustment_saturation = 1.08
 
-[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_pww7v"]
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_nmgud"]
 resource_local_to_scene = true
 dof_blur_far_enabled = true
 dof_blur_near_enabled = true
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_nlt47"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_le7yh"]
 resource_local_to_scene = true
 shader = ExtResource("18_t634p")
 shader_parameter/ellipse_enabled = false
@@ -548,13 +557,13 @@ shader_parameter/lens_irregularity = 0.7
 shader_parameter/lens_light_response = 0.55
 shader_parameter/lens_rim_strength = 0.18
 shader_parameter/lens_center_protection = 0.14
-shader_parameter/vignette_strength = 0.16
+shader_parameter/vignette_strength = 0.18
 shader_parameter/vignette_radius = 0.95
-shader_parameter/shadow_tint = Color(0.86, 0.94, 1.12, 1)
-shader_parameter/highlight_tint = Color(1.08, 1, 0.9, 1)
-shader_parameter/split_toning = 0.35
-shader_parameter/lumina_grade_enabled = false
-shader_parameter/shadow_lift = Vector3(0.012, 0.02, 0.035)
+shader_parameter/shadow_tint = Color(0.92, 1.01, 1.18, 1)
+shader_parameter/highlight_tint = Color(1.07, 1.01, 0.94, 1)
+shader_parameter/split_toning = 0.22
+shader_parameter/lumina_grade_enabled = true
+shader_parameter/shadow_lift = Vector3(0.009, 0.015, 0.026)
 
 [sub_resource type="Resource" id="empty_a"]
 script = ExtResource("107_2238k")
@@ -576,7 +585,7 @@ script = ExtResource("homestead")
 data = ExtResource("terrain_data")
 top_material = SubResource("ShaderMaterial_v6xt8")
 wall_material = SubResource("ShaderMaterial_tb5gq")
-paint_palette = SubResource("Resource_j8f2q")
+paint_palette = SubResource("Resource_ecm30")
 surface_data = ExtResource("free_surface")
 grass_lip_pixels = 4.0
 grass_edge_variation = 3.0
@@ -588,7 +597,10 @@ surface_edge_normal_softening = 0.5
 
 [node name="GroundDressing" parent="." unique_id=1290936241 node_paths=PackedStringArray("terrain") instance=ExtResource("ground_dressing")]
 terrain = NodePath("../Homestead")
+normal_strength = 0.3
+root_occlusion = 0.35
 leaf_normals_enabled = true
+ground_relief = 0.006
 ground_sheen = 0.0
 color_ramps_enabled = true
 color_palette = ExtResource("28_7rtjl")
@@ -614,6 +626,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 25.599998)
 script = ExtResource("player")
 animations = ExtResource("player_frames")
 movement_camera = NodePath("../MapEffects/Camera3D")
+ricochet_rules = ExtResource("body_ricochet_rules")
+action_visuals = ExtResource("player_action_visuals")
+sword_rules = ExtResource("player_sword_rules")
+flight_trail_settings = ExtResource("player_flight_trail")
+crowd_clearance_distance = 0.12
 
 [node name="MovementAudio" parent="Player" unique_id=2116248796 instance=ExtResource("movement_audio")]
 step_volume_db = -4.0
@@ -633,6 +650,9 @@ alpha_cut = 1
 texture_filter = 0
 texture = ExtResource("player_texture")
 script = ExtResource("character_lighting")
+light_wrap = 0.45
+top_light_response = 0.55
+back_rim_strength = 0.08
 normal_mapping_enabled = true
 
 [node name="MapEffects" parent="." unique_id=252326751 node_paths=PackedStringArray("terrain", "surface_source", "player", "dressing") instance=ExtResource("map_effects")]
@@ -645,41 +665,65 @@ dressing = NodePath("../GroundDressing")
 scene_root = NodePath("../..")
 terrain = NodePath("../../Homestead")
 surface_source = NodePath("../../Homestead")
-exposure = 1.08
-contrast = 1.14
-saturation = 1.3
-bloom = 0.14
+exposure = 1.0
+brightness = 1.0
+contrast = 1.07
+saturation = 1.08
+bloom = 0.22
 bloom_threshold = 1.1
 bloom_floor = 0.0
-ambient_color = Color(0.44, 0.52, 0.68, 1)
-ambient_energy = 0.85
+ambient_color = Color(0.36, 0.43, 0.66, 1)
+ambient_energy = 1.15
+hemisphere_fill_enabled = true
 hemisphere_sky_color = Color(0.3, 0.44, 0.72, 1)
 hemisphere_ground_color = Color(0.1, 0.14, 0.25, 1)
-moon_color = Color(1, 0.71, 0.4, 1)
-moon_energy = 2.85
-moon_azimuth = -112.0
-moon_elevation = 28.0
-moon_softness = 1.0
-moon_shadow_opacity = 0.94
+moon_color = Color(0.58, 0.68, 0.94, 1)
+moon_energy = 0.8
+moon_azimuth = 40.0
+moon_elevation = 38.0
+moon_softness = 1.4
+moon_shadow_opacity = 0.72
+fog_color = Color(0.1, 0.17, 0.35, 1)
 fog_begin = 32.0
-fog_end = 95.0
+fog_end = 90.0
 fog_curve = 1.25
-fog_amount = 0.12
-low_fog = 0.02
-volumetric_density = 0.0025
+fog_amount = 0.24
+low_fog = 0.006
+volumetric_density = 0.0011
+volumetric_length = 65.0
+sky_top_color = Color(0.025, 0.05, 0.15, 1)
+silhouette_color = Color(0.08, 0.11, 0.23, 1)
+horizon_glow = 0.0
+stars = 0.008
+firefly_color = Color(0.96, 0.84, 0.52, 1)
+firefly_size = 0.025
+firefly_energy = 2.0
+wetness = 0.18
+stone_gloss_variation = 0.25
 wet_surface_enabled = true
 wet_surface_roughness = 0.05
-vignette = 0.16
+vignette = 0.18
 vignette_radius = 0.95
-split_toning = 0.35
+split_toning = 0.22
+shadow_lift = Vector3(0.009, 0.015, 0.026)
 
 [node name="AtmosphericLight" parent="MapEffects" index="3"]
 process_priority = 40
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 0, 3)
 enabled = false
-surface_energy = 2.4
+distant_enabled = false
+surface_energy = 0.3
+
+[node name="BGM" parent="MapEffects" index="4" node_paths=PackedStringArray("session")]
+music_volume_db = 0.0
+playlists = Array[ExtResource("59_s64j0")]([ExtResource("exploration_bgm"), ExtResource("combat_bgm")])
+session = NodePath("../../WavePrototype")
 
 [node name="Weather" parent="MapEffects" index="5" node_paths=PackedStringArray("player", "dressing", "terrain", "surface_source")]
+weather_mode = 0
+rain_intensity = 0.48
+rain_amount = 2800
+rain_audio_enabled = true
 ground_splash_density = 1.6
 ground_splash_size = 0.24
 ground_splash_strength = 0.95
@@ -692,18 +736,18 @@ terrain = NodePath("../../Homestead")
 surface_source = NodePath("../../Homestead")
 
 [node name="WorldEnvironment" parent="MapEffects" index="6"]
-environment = SubResource("Environment_ckeh6")
+environment = SubResource("Environment_sfox1")
 
 [node name="Moon" parent="MapEffects" index="7"]
-transform = Transform3D(-0.37460652, 0.43528673, -0.8186546, 0, 0.8829481, 0.46947148, 0.9271836, 0.17586726, -0.33075795, 0, 0, 0)
-light_color = Color(1, 0.71, 0.4, 1)
-light_energy = 2.85
-light_angular_distance = 1.0
+transform = Transform3D(0.76604414, -0.3957398, 0.50652343, 0, 0.78801125, 0.6156614, -0.64278734, -0.47162434, 0.60365117, 0, 0, 0)
+light_color = Color(0.58, 0.68, 0.94, 1)
+light_energy = 0.8
+light_angular_distance = 1.4
 light_cull_mask = 4294803455
-shadow_opacity = 0.94
+shadow_opacity = 0.72
 
 [node name="Camera3D" parent="MapEffects" index="8" node_paths=PackedStringArray("target", "post_process")]
-attributes = SubResource("CameraAttributesPractical_pww7v")
+attributes = SubResource("CameraAttributesPractical_nmgud")
 fov = 28.0
 target = NodePath("../../Player")
 post_process = NodePath("../PostProcess/Screen")
@@ -715,14 +759,19 @@ dof_far_transition = 6.0
 dof_near_margin = 3.0
 dof_near_transition = 2.5
 dof_amount = 0.03
+ricochet_camera_settings = ExtResource("ricochet_camera")
 
 [node name="Screen" parent="MapEffects/PostProcess" index="0"]
-material = SubResource("ShaderMaterial_nlt47")
+material = SubResource("ShaderMaterial_le7yh")
 
 [node name="WaterReflection" parent="MapEffects" index="10" node_paths=PackedStringArray("terrain", "surface_source", "geometry_root")]
 terrain = NodePath("../../Homestead")
 surface_source = NodePath("../../Homestead")
 geometry_root = NodePath("../..")
+
+[node name="CoreFeedbackAudio" parent="MapEffects" unique_id=412139722 node_paths=PackedStringArray("player", "session") instance=ExtResource("core_audio")]
+player = NodePath("../../Player")
+session = NodePath("../../WavePrototype")
 
 [node name="LoadoutUI" parent="." unique_id=1022841047 node_paths=PackedStringArray("player", "wave_session") instance=ExtResource("loadout_ui")]
 player = NodePath("../Player")
@@ -753,7 +802,16 @@ spawn_zone_root = NodePath("../BattleArea/SpawnCandidates")
 spawn_excluded_areas = Array[Rect2]([Rect2(-6.4, 22.399998, 12.8, 6.4)])
 spawn_block_timeout = 30.0
 
-[node name="RunGrowth" parent="WavePrototype" index="4"]
+[node name="FanAutoAttack" parent="WavePrototype" index="0"]
+enabled = false
+
+[node name="LightPierceAutoAttack" parent="WavePrototype" index="1"]
+enabled = false
+
+[node name="RicochetStorm" parent="WavePrototype" index="4"]
+damage = 1.0
+
+[node name="RunGrowth" parent="WavePrototype" index="5"]
 choice_options = Array[ExtResource("107_2238k")]([SubResource("empty_a"), SubResource("empty_b")])
 
 [node name="InitialSkillChoice" parent="WavePrototype/RunSkills" index="0"]
@@ -764,11 +822,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 44.8)
 terrain = NodePath("../Homestead")
 dressing = NodePath("../GroundDressing")
 wave_controller = NodePath("../WavePrototype")
+terrace_levels = 0
 dressing_bounds = Rect2(-24, 20.8, 48, 48)
 
 [node name="VisualSample" type="Node" parent="." unique_id=233758505]
 script = ExtResource("visual_sample")
-style = 0
+style = 3
 smooth_grass_enabled = true
 grass_variation_enabled = false
 grass_variation_strength = 0.19
@@ -784,51 +843,12 @@ terrain = NodePath("../Homestead")
 battle_area = NodePath("../BattleArea")
 art_direction = NodePath("../MapEffects/ArtDirection")
 
-[node name="TreePlanter" parent="." unique_id=1539662983 instance=ExtResource("69_j3x8u")]
-transform = Transform3D(-0.7499896, 0, -0.0039590355, 0, 0.75, 0, 0.0039590355, 0, -0.7499896, -3.1511412, 4.7683716e-07, 52.902603)
-width = 2.8800000000000003
-depth = 2.16
-tree_pixel_size = 0.04
-
-[node name="TreePlanter2" parent="." unique_id=1414095270 instance=ExtResource("69_j3x8u")]
-transform = Transform3D(-0.7499896, 0, -0.0039590355, 0, 0.75, 0, 0.0039590355, 0, -0.7499896, -8.03303, 4.7683716e-07, 52.902603)
-width = 2.8800000000000003
-depth = 2.16
-tree_pixel_size = 0.04
-
-[node name="TreePlanter3" parent="." unique_id=269440572 instance=ExtResource("69_j3x8u")]
-transform = Transform3D(-0.7499896, 0, -0.0039590355, 0, 0.75, 0, 0.0039590355, 0, -0.7499896, 1.3489304, 4.7683716e-07, 52.902603)
-width = 2.8800000000000003
-depth = 2.16
-tree_pixel_size = 0.04
-
-[node name="TreePlanter4" parent="." unique_id=1804514304 instance=ExtResource("69_j3x8u")]
-transform = Transform3D(-0.7499896, 0, -0.0039590355, 0, 0.75, 0, 0.0039590355, 0, -0.7499896, 7.8592486, 4.7683716e-07, 52.902603)
-width = 2.8800000000000003
-depth = 2.16
-tree_pixel_size = 0.04
-
-[node name="TreePlanter5" parent="." unique_id=1066366950 instance=ExtResource("69_j3x8u")]
-transform = Transform3D(-0.7499896, 0, -0.0039590355, 0, 0.75, 0, 0.0039590355, 0, -0.7499896, 7.8592486, 4.7683716e-07, 47.058395)
-width = 2.8800000000000003
-depth = 2.16
-tree_pixel_size = 0.04
-
-[node name="TreePlanter6" parent="." unique_id=1091967061 instance=ExtResource("69_j3x8u")]
-transform = Transform3D(-0.7499896, 0, -0.0039590355, 0, 0.75, 0, 0.0039590355, 0, -0.7499896, -10.982439, 4.7683716e-07, 47.058395)
-width = 2.8800000000000003
-depth = 2.16
-tree_pixel_size = 0.04
-
-[node name="ArmillaryMonument" parent="." unique_id=1680715826 instance=ExtResource("70_6eles")]
-transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -0.0009602308, 0, 44.78542)
-
-[node name="PlazaStreetlamp" parent="." unique_id=1138984107 instance=ExtResource("71_124cm")]
-transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 2.337369, 9.536743e-07, 38.104465)
-
 [node name="WorldDetails" type="Node3D" parent="." unique_id=1702150811]
 
 [node name="BattleCourts" type="Node3D" parent="WorldDetails" unique_id=511245698]
+
+[node name="UrbanEquipmentBlockout" parent="WorldDetails/BattleCourts" unique_id=1680119061 instance=ExtResource("urban_equipment_blockout")]
+transform = Transform3D(0.016144477, 0, -0.9998697, 0, 1, 0, 0.9998697, 0, 0.016144477, 14.407574, 0, 35.064583)
 
 [node name="FlowerCart0" parent="WorldDetails/BattleCourts" unique_id=1271269389 node_paths=PackedStringArray("terrain") instance=ExtResource("141_132i3")]
 transform = Transform3D(0.4698463, 0, 0.17101006, 0, 0.5, 0, -0.17101006, 0, 0.4698463, 4.8, 0, 37.6)
@@ -933,6 +953,53 @@ terrain = NodePath("../../../Homestead")
 [node name="PlazaStreetlamp25" parent="WorldDetails/BattleCourts" unique_id=224282117 node_paths=PackedStringArray("terrain") instance=ExtResource("71_124cm")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.4, 0, 40.8)
 terrain = NodePath("../../../Homestead")
+
+[node name="TreePlanter" parent="WorldDetails/BattleCourts" unique_id=1539662983 instance=ExtResource("69_j3x8u")]
+transform = Transform3D(-0.7499896, 0, -0.0039590355, 0, 0.75, 0, 0.0039590355, 0, -0.7499896, -3.1511412, 4.7683716e-07, 52.902603)
+width = 2.8800000000000003
+depth = 2.16
+tree_pixel_size = 0.04
+
+[node name="TreePlanter2" parent="WorldDetails/BattleCourts" unique_id=1414095270 instance=ExtResource("69_j3x8u")]
+transform = Transform3D(-0.7499896, 0, -0.0039590355, 0, 0.75, 0, 0.0039590355, 0, -0.7499896, -8.03303, 4.7683716e-07, 52.902603)
+width = 2.8800000000000003
+depth = 2.16
+tree_pixel_size = 0.04
+
+[node name="TreePlanter3" parent="WorldDetails/BattleCourts" unique_id=269440572 instance=ExtResource("69_j3x8u")]
+transform = Transform3D(-0.7499896, 0, -0.0039590355, 0, 0.75, 0, 0.0039590355, 0, -0.7499896, 1.3489304, 4.7683716e-07, 52.902603)
+width = 2.8800000000000003
+depth = 2.16
+tree_pixel_size = 0.04
+
+[node name="TreePlanter4" parent="WorldDetails/BattleCourts" unique_id=1804514304 instance=ExtResource("69_j3x8u")]
+transform = Transform3D(-0.7499896, 0, -0.0039590355, 0, 0.75, 0, 0.0039590355, 0, -0.7499896, 7.8592486, 4.7683716e-07, 52.902603)
+width = 2.8800000000000003
+depth = 2.16
+tree_pixel_size = 0.04
+
+[node name="TreePlanter5" parent="WorldDetails/BattleCourts" unique_id=1066366950 instance=ExtResource("69_j3x8u")]
+transform = Transform3D(-0.7499896, 0, -0.0039590355, 0, 0.75, 0, 0.0039590355, 0, -0.7499896, 7.8592486, 4.7683716e-07, 47.058395)
+width = 2.8800000000000003
+depth = 2.16
+tree_pixel_size = 0.04
+
+[node name="TreePlanter6" parent="WorldDetails/BattleCourts" unique_id=1091967061 instance=ExtResource("69_j3x8u")]
+transform = Transform3D(-0.7499896, 0, -0.0039590355, 0, 0.75, 0, 0.0039590355, 0, -0.7499896, -10.982439, 4.7683716e-07, 47.058395)
+width = 2.8800000000000003
+depth = 2.16
+tree_pixel_size = 0.04
+
+[node name="ArmillaryMonument" parent="WorldDetails/BattleCourts" unique_id=1680715826 instance=ExtResource("70_6eles")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -0.0009602308, 0, 44.78542)
+
+[node name="PlazaStreetlamp" parent="WorldDetails/BattleCourts" unique_id=1138984107 instance=ExtResource("71_124cm")]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 2.337369, 9.536743e-07, 38.104465)
+
+[node name="AudioMixUI" parent="." unique_id=666696893 node_paths=PackedStringArray("audio", "feedback", "loadout") instance=ExtResource("audio_mix_ui")]
+audio = NodePath("../MapEffects/GameAudio")
+feedback = NodePath("../MapEffects/CoreFeedbackAudio")
+loadout = NodePath("../LoadoutUI")
 
 [editable path="GroundDressing"]
 [editable path="MapEffects"]

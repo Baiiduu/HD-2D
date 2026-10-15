@@ -1,10 +1,10 @@
 [gd_resource type="Resource" script_class="WaveDefinition" format=3 uid="uid://btpdprjqjy3bm"]
 
 [ext_resource type="Script" uid="uid://i1xql6e8gpsr" path="res://scripts/combat/wave_spawn_entry.gd" id="entry"]
-[ext_resource type="Resource" path="res://data/enemies/lantern_spitter.tres" id="flower"]
-[ext_resource type="Resource" path="res://data/enemies/bell_frog.tres" id="frog"]
-[ext_resource type="Resource" path="res://data/enemies/leaf_charger.tres" id="leaf"]
-[ext_resource type="Resource" path="res://data/enemies/pot_brood.tres" id="pot"]
+[ext_resource type="Resource" uid="uid://dbkma5smwsh14" path="res://data/enemies/lantern_spitter.tres" id="flower"]
+[ext_resource type="Resource" uid="uid://bltuixndesjm3" path="res://data/enemies/bell_frog.tres" id="frog"]
+[ext_resource type="Resource" uid="uid://sn0jhc1s106t" path="res://data/enemies/leaf_charger.tres" id="leaf"]
+[ext_resource type="Resource" uid="uid://crwsamqp657l0" path="res://data/enemies/pot_brood.tres" id="pot"]
 [ext_resource type="Resource" uid="uid://d2jynhqktqji0" path="res://data/enemies/wave_slime.tres" id="slime"]
 [ext_resource type="Script" uid="uid://caklrlj8ospwr" path="res://scripts/combat/wave_definition.gd" id="wave"]
 
@@ -18,19 +18,12 @@ spawn_zone_ids = PackedStringArray("WestNorth", "EastNorth")
 
 [sub_resource type="Resource" id="cross"]
 script = ExtResource("entry")
-enemy = ExtResource("slime")
-count = 10
+mixed_horde = true
+count = 18
 start_delay = 10.0
-interval = 0.3
+batch_size = 18
+interval = 10.0
 spawn_zone_ids = PackedStringArray("WestSouth", "EastSouth")
-
-[sub_resource type="Resource" id="south"]
-script = ExtResource("entry")
-enemy = ExtResource("slime")
-count = 8
-start_delay = 21.0
-interval = 0.4
-spawn_zone_ids = PackedStringArray("SouthWest", "SouthEast")
 
 [sub_resource type="Resource" id="chargers"]
 script = ExtResource("entry")
@@ -44,7 +37,7 @@ spawn_zone_ids = PackedStringArray("WestNorth", "EastNorth")
 script = ExtResource("entry")
 enemy = ExtResource("flower")
 count = 4
-start_delay = 12.0
+start_delay = 14.0
 interval = 4.5
 spawn_zone_ids = PackedStringArray("WestSouth", "EastSouth")
 
@@ -66,5 +59,5 @@ spawn_zone_ids = PackedStringArray("WestSouth", "EastSouth")
 
 [resource]
 script = ExtResource("wave")
-description = "40 只：26 只史莱姆、4 冲锋虫、4 花兽、4 壶兽、2 苔蛙；壶兽各分裂 2 幼体"
-entries = Array[ExtResource("entry")]([SubResource("sides"), SubResource("cross"), SubResource("south"), SubResource("chargers"), SubResource("flowers"), SubResource("pots"), SubResource("frogs")])
+description = "40 只：8 只史莱姆试探、18 只目录混合怪潮、4 冲锋虫、4 花兽、4 壶兽、2 苔蛙；幼体仅由壶兽分裂"
+entries = Array[ExtResource("entry")]([SubResource("sides"), SubResource("cross"), SubResource("chargers"), SubResource("flowers"), SubResource("pots"), SubResource("frogs")])

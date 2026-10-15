@@ -1,6 +1,6 @@
 # 项目文档
 
-当前 Godot 项目：`demoWithMeowa/1`。正式地图集中在战斗区与外围绕行带，视觉测试地图独立维护。最新玩法方向是手动普攻、蓄力发射人物本体并借建筑反弹；本体弹射尚未接入，现有四种自动技能与波次成长保留作原型。设计提案与实际接入状态分别标明。
+当前 Godot 项目：`demoWithMeowa/1`。正式地图集中在战斗区与外围绕行带，视觉测试地图独立维护。本体蓄力弹射、墙面反弹与同旋向切线拨怪已接入；人物自带普攻和弹射挥剑独立于 A01，并与已有自动技能共享局内属性增益。设计提案与实际接入状态分别标明。
 
 总体玩法与战斗核心设计保留在本目录，便于持续讨论。其余文件按用途分组：
 
@@ -22,16 +22,20 @@
 | 文档 | 内容 |
 | --- | --- |
 | [当前玩法与实现状态](rpg-game-design.md) | 手动普攻与本体弹射的确认范围、已接入原型及待定规则 |
+| [人物本体弹射框架](gameplay/player-ricochet.md) | 右键蓄力、胶囊反弹、同向切线拨怪、五类动作资源槽与试玩参数 |
+| [人物自带基础剑术](gameplay/player-sword.md) | 左键普攻、弹射自动挥剑、真实连续命中与共享属性；当前独立剑光停用 |
+| [伤害数字框架](gameplay/damage-numbers.md) | 真实伤害事件、可替换样式、弹跳错位、旋转投影、冻结与节点复用 |
 | [战斗内容候选](combat-core-design.md) | 原自动攻击方案的怪物、攻击、增益与构筑讨论池；具体数量与规则继续讨论 |
 | [趣味海克斯提案](hex-system-proposal.md) | 阵法边界、地陷、庇护与上一局援场等候选，尚未接入 |
 | [南侧战斗区域搭建参考](gameplay/battle-area-plan.md) | 保留早期扩展布局和试走基线；当前范围与入口见正式地图说明 |
 | [波次循环灰盒](gameplay/wave-graybox.md) | 操作、敌人与基础攻击参数；挑战 UI 当前默认隐藏 |
-| [怪物刷新与波次基础](gameplay/wave-spawning.md) | 18／28／40 分批开场、顶部透明波次文字、刷新保护与扩展接口 |
+| [怪物刷新与波次基础](gameplay/wave-spawning.md) | 小股与怪潮交替、首波十只集中进场、整批容量预留、安全刷新与扩展接口 |
 | [怪物接入与大规模框架](gameplay/enemy-framework.md) | 统一怪物目录与数值、正式渐进 128 档、1～10 倍生命成长、512／768 扩展档位及待验收性能目标 |
 | [A01 自动扇击](gameplay/fan-auto-attack.md) | 本局技能框架、八级扇击／连斩／持续旋转、真实升级卡与实机动画 |
 | [棱光弹射](gameplay/prism-ricochet.md) | 连续球形碰撞、真实墙面反射、八级晶体齐射、折线拖尾与实机预览 |
 | [A02 雷光贯穿](gameplay/light-pierce.md) | 四级实际贯穿成长、墙体阻挡、原生像素雷刺、断续电光尾迹与命中电弧 |
 | [反射镜印](gameplay/mirror-mark.md) | 四级镜梭成长、怪物贴印与固定法线反射、致死碎裂和人物像素匹配 |
+| [奔雷涌潮](gameplay/ricochet-storm.md) | 独立弹射雷电技能、同片多目标、分层扩散、真实挡墙、四级成长与实机预览 |
 | [本局经验与抽卡成长](gameplay/run-growth.md) | 经验吸取、初始技能与升级三选一、共用三次重抽、连续升级和战斗冻结 |
 | [本局战斗增益](gameplay/combat-buffs.md) | 伤害、冷却、范围的升级卡、叠加、封顶与参数调节 |
 | [无尽波次](gameplay/endless-waves.md) | 无限续波、清波休整、数量和节奏增长、上限与参数 |
@@ -62,6 +66,7 @@
 | [技能栏](ui/skill-hud.md) | 已确认的槽位外框、本局技能图标与等级、视觉参数 |
 | [UI 操作音效](audio/ui-audio.md) | 共用声音、操作对应与音量配置 |
 | [人物动作音效](audio/movement-audio.md) | 地表脚步过渡、起跳与落地 |
+| [背景音乐与曲池](audio/background-music.md) | 探索／战斗状态选曲、双路衔接、曲池扩展与参数入口 |
 
 ## 视觉与声音
 
@@ -94,7 +99,7 @@
 ## 历史参考与反馈
 
 - [仙门灯会历史方案](archive/lantern-festival-design.md)：保留早期设计供参考，不作为当前世界题材或实现要求。
-- [本体弹射概念图](references/body-ricochet/)：蓄力、动作与场景玩法参考；不代表本体弹射已接入。
+- [本体弹射概念图](references/body-ricochet/)：蓄力、动作与场景玩法参考；当前运动框架见人物本体弹射文档，参考图不作为动画帧。
 - [Meowa 动画反馈](technical/meowa-animation-feedback.md)：原始观察、调用证据与已接入结果。[证据包](references/meowa-animation-feedback.zip) 和 [原始证据目录](references/meowa-animation-feedback/) 保留。
 - 已确认的界面参考与提取组件：[装备与技能](references/equipment-skills-reference/)、[背包](references/inventory-reference/)、[人物属性条](references/player-bars-reference/) 与 [技能栏参考图](media/skill-hud-preview/reference.png)。
 

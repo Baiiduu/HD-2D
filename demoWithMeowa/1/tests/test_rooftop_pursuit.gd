@@ -41,6 +41,7 @@ func navigation_checks() -> void:
 	await settle()
 	path.build(terrain, 0.28, exclude)
 	check(path.pursuit_route(Vector3(100, 0, 0), Vector3(103.2, 0.8, 0)).is_empty(), "Pursuit preserves disconnected cliff rejection")
+	check(not path.shared_reachable(Vector3(100.79, 0, 0), Vector3(101.6, 0.8, 0)), "Shared endpoint fallback cannot cross a nearby cliff")
 	var building := StaticBody3D.new()
 	var collision := CollisionShape3D.new()
 	var box := BoxShape3D.new()
@@ -52,6 +53,7 @@ func navigation_checks() -> void:
 	await settle()
 	path.build(terrain, 0.28, exclude)
 	check(path.pursuit_route(Vector3(100, 0, 0), Vector3(103.2, 1.8, 0)).is_empty(), "Spawn/reachability reject a building on a disconnected platform")
+	check(not path.shared_reachable(Vector3(100, 0, 0), Vector3(103.2, 1.8, 0)), "Shared reachability rejects a disconnected rooftop")
 	check(not path.pursuit_route(Vector3(100, 0, 0), Vector3(103.2, 1.8, 0), true).is_empty(), "Existing slime may approach the reachable side of a building")
 	building.queue_free()
 	await settle()
@@ -61,13 +63,17 @@ func navigation_checks() -> void:
 	path.build(terrain, 0.28, exclude)
 	var route := path.pursuit_route(Vector3(100, 0, 0), Vector3(103.2, 1.4, 0))
 	check(not route.is_empty() and route[-1].is_equal_approx(Vector3(103.2, 0.8, 0)), "Jumping target still uses exact ramp surface")
+	check(path.shared_reachable(Vector3(100, 0, 0), Vector3(103.2, 1.4, 0)), "Shared endpoints preserve a connected ramp")
 	data.set_overlay(Vector2i(1, 0), TerrainData.OVERLAY_RAMP, false)
 	data.set_overlay(Vector2i(1, 0), TerrainData.OVERLAY_WATER, true)
 	data.set_level(Vector2i(2, 0), 0)
 	await settle()
 	path.build(terrain, 0.28, exclude)
 	check(path.pursuit_route(Vector3(100, 0, 0), Vector3(103.2, 0, 0)).is_empty(), "Pursuit cannot cross water")
+	check(not path.shared_reachable(Vector3(100, 0, 0), Vector3(103.2, 0, 0)), "Shared pursuit cannot cross water")
 	check(path.pursuit_route(Vector3(100, 0, 0), Vector3(101.6, 0, 0)).is_empty(), "Water target does not become a building fallback")
+	check(not path.shared_reachable(Vector3(100, 0, 0), Vector3(101.6, 0, 0)), "Shared target fallback cannot escape a water cell")
+	check(not path.shared_reachable(Vector3(101.59, 0, 0), Vector3(100, 0, 0)), "Shared source fallback cannot escape a water cell")
 	check(path.pursuit_route(Vector3(100, 0, 0), Vector3(110, 0, 0)).is_empty(), "Outside-map target stays unreachable")
 	check(path.pursuit_route(Vector3.INF, Vector3(100, 0, 0)).is_empty(), "Invalid target/source is rejected")
 	terrain.queue_free()
@@ -104,7 +110,7 @@ func run() -> void:
 		return
 	var slime := wave.enemies[0] as SlimeEnemy
 	slime.spawn_delay = 0.0
-	for prop_path in ["TreePlanter", "WorldDetails/BattleCourts/OctagonalPillar20", "WorldDetails/BattleCourts/CrateRow22"]:
+	for prop_path in ["WorldDetails/BattleCourts/TreePlanter", "WorldDetails/BattleCourts/OctagonalPillar20", "WorldDetails/BattleCourts/CrateRow22"]:
 		var prop: Node3D = scene.get_node(prop_path)
 		var collider := prop.find_children("*", "CollisionShape3D", true, false)[0] as CollisionShape3D
 		var center := collider.global_position

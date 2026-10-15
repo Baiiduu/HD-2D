@@ -142,14 +142,19 @@ func drop_experience(position: Vector3, amount: int) -> void:
 	pickup.global_position = session._path.ground_position(position) + Vector3.UP * 0.05
 	_drops.append(pickup)
 
+func get_attraction_radius(modifiers: RunCombatModifiers = null) -> float:
+	if not modifiers and is_instance_valid(session): modifiers = session.combat_modifiers
+	return attraction_radius * modifiers.multiplier(GrowthBuffDefinition.Attribute.PICKUP_RADIUS) if modifiers else attraction_radius
+
 func _physics_process(delta: float) -> void:
 	if not active: return
 	_try_open_choice()
 	if session.combat_frozen: return
 	var target: Vector3 = session.player.global_position + Vector3.UP * 0.35
+	var pickup_radius := get_attraction_radius()
 	for pickup: ExperiencePickup in _drops.duplicate():
 		pickup.advance_visual(delta)
-		if pickup.advance(delta, target, attraction_radius, collection_radius, height_tolerance, attraction_initial_speed, attraction_acceleration, attraction_max_speed):
+		if pickup.advance(delta, target, pickup_radius, collection_radius, height_tolerance, attraction_initial_speed, attraction_acceleration, attraction_max_speed):
 			_drops.erase(pickup)
 			var amount: int = pickup.amount
 			pickup.queue_free()

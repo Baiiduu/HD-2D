@@ -6,6 +6,8 @@ signal selection_changed(option_id: StringName)
 signal choice_confirmed(option_id: StringName)
 signal cancelled
 signal reroll_requested
+signal cards_turned
+signal cards_redrawn
 
 const CARD := preload("res://scenes/ui/growth_choice_card.tscn")
 
@@ -109,6 +111,7 @@ func present_choices(options: Array[GrowthChoiceOption]) -> bool:
 		ids.append(option.id)
 		selectable = selectable or option.enabled
 	if not selectable: return false
+	var redrawing := is_open
 	_build_cards(options)
 	_can_reroll = false
 	is_open = true
@@ -120,6 +123,7 @@ func present_choices(options: Array[GrowthChoiceOption]) -> bool:
 		_opening = create_tween()
 		_opening.tween_property(_content, "modulate:a", 1.0, open_duration)
 	_audio.play(&"journal_open")
+	if redrawing: cards_redrawn.emit()
 	_deal_cards()
 	return true
 
@@ -138,6 +142,7 @@ func _deal_cards() -> void:
 	for card in _cards: card.set_revealed(cards_revealed)
 	if cards_revealed:
 		_refresh_selection()
+		cards_turned.emit()
 		return
 	_dealing = create_tween().set_parallel()
 	for index in _cards.size():
@@ -146,11 +151,11 @@ func _deal_cards() -> void:
 		_dealing.tween_property(card, "scale:x", 0.04, open_duration * 0.5).from(1.0).set_delay(delay)
 		_dealing.tween_callback(card.set_revealed.bind(true)).set_delay(delay + open_duration * 0.5)
 		_dealing.tween_property(card, "scale:x", 1.0, open_duration * 0.5).from(0.04).set_delay(delay + open_duration * 0.5)
-	_dealing.finished.connect(func(): cards_revealed = true; _refresh_selection())
+	_dealing.finished.connect(func(): cards_revealed = true; _refresh_selection(); cards_turned.emit())
 	_refresh_selection()
 
 func reveal_now() -> void:
-	if not is_open: return
+	if not is_open or cards_revealed: return
 	if _dealing:
 		_dealing.kill()
 		_dealing = null
@@ -159,6 +164,7 @@ func reveal_now() -> void:
 		card.scale = Vector2.ONE
 		card.set_revealed(true)
 	_refresh_selection()
+	cards_turned.emit()
 
 func close() -> void:
 	if _dealing:

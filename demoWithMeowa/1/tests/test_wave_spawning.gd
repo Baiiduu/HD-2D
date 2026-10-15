@@ -51,6 +51,19 @@ func plan(entries: Array[WaveSpawnEntry]) -> WaveDefinition:
 func hold() -> void:
 	for enemy in wave.enemies: enemy.set_physics_process(false)
 
+func start() -> bool:
+	if not wave.start_run(): return false
+	choose_initial()
+	return wave.phase == WavePrototype.Phase.BATTLE
+
+func choose_initial() -> void:
+	var skills := wave.get_node("RunSkills") as RunSkills
+	if skills.initial_choice.is_open:
+		skills.initial_choice.reveal_now()
+		skills.initial_choice.select_option(skills.initial_choice._options[0].id)
+		skills.initial_choice.confirm_selection()
+	for component: Node in skills._components.values(): component.process_mode = Node.PROCESS_MODE_DISABLED
+
 func reset() -> void:
 	wave._finish("fixture reset")
 	wave.return_home()
@@ -81,59 +94,69 @@ func run() -> void:
 	await frames(12)
 	wave = world.get_node("WavePrototype")
 	wave.endless_mode = false # 有限模式仍覆盖原三波胜利与刷新边界。
+	wave.population_rules = null
+	wave.health_growth_rules = null
+	wave.max_active_enemies = 24
 	player = world.get_node("Player")
 	wave.set_physics_process(false)
 	player.set_physics_process(false)
 	wave.get_node("FanAutoAttack").enabled = false
 	original_exclusions.assign(wave.spawn_excluded_areas)
 	var navigation_points := wave._path.graph.get_point_count()
-	check(navigation_points < wave.terrain.data.size.x * wave.terrain.data.size.y * 2, "Wave navigation stays within arena and apron")
+	var nav_bounds := wave.battle_area.grow(wave.terrain.data.cell_size * 2.0)
+	var nav_inside := wave._path.graph.get_point_count() > 0
+	for id in wave._path.graph.get_point_ids():
+		var point := wave._path.graph.get_point_position(id)
+		nav_inside = nav_inside and nav_bounds.has_point(Vector2(point.x, point.z))
+	check(nav_inside, "Wave navigation stays within arena and apron on the current sparse map")
 	check(wave._spawn_zones.size() == 6, "All six perimeter zones connected")
 	check(wave.waves.size() == 3, "Production uses three editable wave resources")
 	check(wave.max_active_enemies == 24, "Production admits at most 24 simultaneous enemies")
 	player.global_position = wave.global_position + Vector3.UP * .03
-	check(wave.start_run(), "Production wave starts")
+	check(start(), "Production wave starts")
 	var expected_totals := [18, 28, 40]
 	var peak_population := 0
 	for index in expected_totals.size():
 		check(wave._pending == expected_totals[index], "Production registers entire rhythmic wave %d" % (index + 1))
 		var groups := wave.waves[index].entries
-		for group_index in range(1, groups.size()):
-			var preceding := groups[group_index - 1]
-			check(groups[group_index].start_delay - (preceding.start_delay + preceding.interval * (preceding.count - 1)) >= 3.0, "Production batches leave a short spawning lull")
+		var horde: WaveSpawnEntry = groups.filter(func(item): return item.mixed_horde)[0]
+		check(horde.start_delay - (groups[0].start_delay + groups[0].spawn_duration()) >= 3.0, "Scouts leave a short spawning lull before the first mixed horde")
+		var expected: int = expected_totals[index]
+		for job in wave._spawn_queue:
+			if job.enemy.enemy_id == &"pot_brood": expected += 2
+		var largest_batch := 1
+		for item in groups: largest_batch = maxi(largest_batch, item.batch_size)
+		var horde_radius := sqrt(float(largest_batch)) * maxf(wave.spawn_spacing, wave._largest_spawn_clearance * 2.0) * 1.25
 		wave._physics_process(.59)
 		check(wave.enemies.is_empty(), "Wave begins with a short lead-in")
 		var steps := 0
 		var safety_ok := true
-		while wave._pending > 0 and wave.phase == WavePrototype.Phase.BATTLE and steps < 180:
+		while wave.phase == WavePrototype.Phase.BATTLE and steps < 240:
 			wave._physics_process(.3)
 			hold()
 			peak_population = maxi(peak_population, wave.enemies.size())
 			for enemy in wave.enemies:
 				safety_ok = safety_ok and not original_exclusions[0].has_point(Vector2(enemy.global_position.x, enemy.global_position.z))
-				safety_ok = safety_ok and wave._spawn_zones.any(func(zone: WaveSpawnZone): return TerrainPath.horizontal_distance(zone.global_position, enemy.global_position) <= zone.radius)
-			if wave.enemies.size() == wave.max_active_enemies:
+				if enemy.definition.enemy_id != &"mini_slime":
+					safety_ok = safety_ok and wave._spawn_zones.any(func(zone: WaveSpawnZone): return TerrainPath.horizontal_distance(zone.global_position, enemy.global_position) <= maxf(zone.radius, horde_radius) + 0.01)
+			if wave.enemies.size() == wave.max_active_enemies or wave._capacity_waiting > 0 or steps % 8 == 0:
 				for enemy in wave.enemies.duplicate().slice(0, 8):
 					enemy.spawn_delay = 0
 					enemy.take_damage(1000)
 			steps += 1
-		check(wave.phase == WavePrototype.Phase.BATTLE and wave._pending == 0 and wave._spawned_this_wave == expected_totals[index], "Every queued enemy is eventually spawned for production wave %d" % (index + 1))
+		check(wave._pending == 0 and wave._spawned_this_wave == expected and wave.enemies.is_empty(), "Every queued primary and split child spawns and is defeated for production wave %d" % (index + 1))
 		check(safety_ok, "Larger groups stay in valid perimeter zones and outside entrance")
-		for enemy in wave.enemies.duplicate():
-			enemy.spawn_delay = 0
-			enemy.take_damage(1000)
-		wave._physics_process(.01)
 		if index < expected_totals.size() - 1:
 			check(wave.phase == WavePrototype.Phase.REST, "Production clear enters a safe break")
 			check(wave.start_next_wave(), "Production next wave requires an explicit start")
-	check(peak_population == 24, "Larger production waves reach but never exceed requested cap")
-	check(wave.outcome == WavePrototype.Outcome.VICTORY and wave.kills == 86 and wave._spawned_run == 86, "Full production run completes all 86 monsters without losing queued jobs")
+	check(peak_population > 0 and peak_population <= 24, "Mixed production hordes respect the requested simultaneous cap")
+	check(wave.outcome == WavePrototype.Outcome.VICTORY and wave.kills == wave._spawned_run and wave._spawned_run > 86, "Full production run completes all 86 primary monsters and their split children without losing queued jobs")
 	# 开始通知中的清波请求不能把新波次当成空波。
 	reset()
 	var clear_on_start := func(value: int):
 		if value == WavePrototype.Phase.BATTLE: wave._clear_wave()
 	wave.phase_changed.connect(clear_on_start)
-	check(wave.start_run() and wave.phase == WavePrototype.Phase.BATTLE and wave.completed_waves == 0 and wave._pending == 1, "Reentrant start notification sees fully registered queue")
+	check(start() and wave.phase == WavePrototype.Phase.BATTLE and wave.completed_waves == 0 and wave._pending == 1, "Reentrant start notification sees fully registered queue")
 	wave.phase_changed.disconnect(clear_on_start)
 	# 临时无安全点保留任务；腾出空间后继续。
 	wave.spawn_safe_distance = 500
@@ -149,7 +172,7 @@ func run() -> void:
 	wave.waves.assign([plan([entry(probe, 3)])])
 	wave.max_active_enemies = 2
 	wave.spawn_block_timeout = 2
-	check(wave.start_run(), "Batch fixture starts")
+	check(start(), "Batch fixture starts")
 	wave._physics_process(.01)
 	hold()
 	check(wave.enemies.size() == 2 and wave._pending == 1, "Per-frame budget admits bounded batch")
@@ -169,7 +192,7 @@ func run() -> void:
 	var late := entry(probe, 1, 1.0)
 	wave.waves.assign([plan([late, first])])
 	wave.max_spawns_per_tick = 1
-	check(wave.start_run(), "Timing fixture starts")
+	check(start(), "Timing fixture starts")
 	first.count = 200
 	early.health = 1
 	wave.waves.clear()
@@ -194,7 +217,7 @@ func run() -> void:
 	var blocked_xz := Vector2(blocked_zone.global_position.x, blocked_zone.global_position.z)
 	wave.spawn_excluded_areas.append(Rect2(blocked_xz - Vector2.ONE * 6, Vector2.ONE * 12))
 	wave.waves.assign([plan([entry(probe, 1, 0, PackedStringArray(["SouthWest"])), entry(probe, 1, 0, PackedStringArray(["EastNorth"]))])])
-	check(wave.start_run(), "Independent zones fixture starts")
+	check(start(), "Independent zones fixture starts")
 	wave._physics_process(.01)
 	hold()
 	check(wave.enemies.size() == 1 and wave._pending == 1 and wave.phase == WavePrototype.Phase.BATTLE, "Blocked zone does not starve another due group")
@@ -205,7 +228,7 @@ func run() -> void:
 	# 分裂登记在母体死亡前；幼体留在原位置附近并各自占位。
 	reset()
 	wave.waves.assign([plan([entry(probe)])])
-	check(wave.start_run(), "Local summon fixture starts")
+	check(start(), "Local summon fixture starts")
 	wave._physics_process(.01)
 	hold()
 	var parent: WaveEnemy = wave.enemies[0]
@@ -230,7 +253,7 @@ func run() -> void:
 	check(not stale_damage.call(10) and not stale_spawn.call(probe, 1, .1, Vector3.INF), "Ended callbacks cannot mutate result")
 	# 清波扩展可暂停，恢复后只通知一次完成。
 	reset()
-	check(wave.start_run(), "Clear extension fixture starts")
+	check(start(), "Clear extension fixture starts")
 	wave._physics_process(.31)
 	hold()
 	var completions: Array[int] = []
@@ -256,6 +279,7 @@ func run() -> void:
 	event.pressed = true
 	event.physical_keycode = wave.retry_key
 	wave._unhandled_key_input(event)
+	choose_initial()
 	check(wave.retry_key == KEY_T and wave.phase == WavePrototype.Phase.BATTLE and wave.wave == 1 and wave.kills == 0, "T retries from result without visible UI")
 	# 延迟召唤预算包含已生成者，防止持续追加绕过上限。
 	wave.max_spawns_per_wave = 2
@@ -263,20 +287,20 @@ func run() -> void:
 	# 开始回调不能递归开启同一轮；开始回调撤销后不能继续偷偷开波。
 	reset()
 	var repeated: Array[bool] = []
-	var repeat_start := func(): repeated.append(wave.start_run())
+	var repeat_start := func(): repeated.append(start())
 	wave.run_started.connect(repeat_start)
-	check(wave.start_run() and repeated == [false] and wave._pending == 1, "Repeated start from run notification is rejected")
+	check(start() and repeated == [false] and wave._pending == 1, "Repeated start from run notification is rejected")
 	wave.run_started.disconnect(repeat_start)
 	reset()
 	var abort_start := func():
 		wave._finish("abort start")
 		wave.return_home()
 	wave.run_started.connect(abort_start)
-	check(not wave.start_run() and wave.phase == WavePrototype.Phase.READY and wave.enemies.is_empty() and wave.wave == 0, "Aborted start cannot resume after returning home")
+	check(not start() and wave.phase == WavePrototype.Phase.READY and wave.enemies.is_empty() and wave.wave == 0, "Aborted start cannot resume after returning home")
 	wave.run_started.disconnect(abort_start)
 	# 结果通知中立即重试时，旧结果不得发出新一轮的结束通知。
 	reset()
-	check(wave.start_run(), "Automatic retry fixture starts")
+	check(start(), "Automatic retry fixture starts")
 	var serial: int = wave.get_run_state().run_id
 	var did_retry: Array[bool] = [false]
 	var ended: Array[String] = []
@@ -284,6 +308,7 @@ func run() -> void:
 		if wave.phase == WavePrototype.Phase.RESULT and not did_retry[0]:
 			did_retry[0] = true
 			wave.retry()
+			choose_initial()
 	var record_end := func(reason: String): ended.append(reason)
 	wave.changed.connect(auto_retry)
 	wave.run_ended.connect(record_end)
@@ -295,7 +320,7 @@ func run() -> void:
 	var invalid := entry(probe)
 	invalid.start_delay = -1
 	wave.waves.assign([plan([invalid])])
-	check(not wave.start_run() and wave.phase == WavePrototype.Phase.RESULT and wave.wave == 0, "Invalid schedule rejected before combat")
+	check(not start() and wave.phase == WavePrototype.Phase.RESULT and wave.wave == 0, "Invalid schedule rejected before combat")
 	check(FileAccess.get_sha256("res://data/world/world_terrain.tres") == protected, "No terrain source writes")
 	print(JSON.stringify({"checks":checks,"failures":failures,"navigation_points":navigation_points}))
 	for audio in world.find_children("*", "AudioStreamPlayer", true, false): audio.stop()

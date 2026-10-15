@@ -52,7 +52,7 @@ func _combat_tick(delta: float) -> void:
 		_look = -away
 	elif distance > rules.shooting_range or not _can_see_target(): _move_chase(delta, 1.4)
 	else:
-		_idle_motion(delta)
+		_idle_motion(delta, true)
 		if _attack_clock <= 0.0 and absf(global_position.y - target.global_position.y) < contact_height and _claim_warning():
 			_shot_direction = target.global_position - global_position
 			_shot_direction.y = 0.0
@@ -61,6 +61,12 @@ func _combat_tick(delta: float) -> void:
 			_phase_clock = rules.windup_seconds
 			attack_phase = AttackPhase.WINDUP
 			_telegraph.line(navigation.ground_position(global_position), _shot_direction, minf(distance, rules.shooting_range), 0.18)
+
+func _on_stun_started() -> void:
+	attack_phase = AttackPhase.MOVE
+	_phase_clock = 0.0
+	_telegraph.hide()
+	super._on_stun_started()
 
 func _on_defeated() -> void:
 	_telegraph.hide()

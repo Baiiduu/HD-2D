@@ -65,7 +65,7 @@ icon = ExtResource("4_ovo30")
 slot = 1
 attribute_bonuses = Dictionary[String, float]({
 "defense": 5.0,
-"health": 20.0
+"health": 10000.0
 })
 
 [sub_resource type="Resource" id="Resource_einqv"]

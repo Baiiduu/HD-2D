@@ -18,6 +18,11 @@ func run() -> void:
 	scene.get_node("LoadoutUI").save_enabled = false
 	scene.get_node("WavePrototype/RunGrowth").enabled = false
 	scene.get_node("WavePrototype/FanAutoAttack").enabled = false
+	# 本用例验证正常扣血；正式地图可处于免伤模拟，夹具单独固定规则。
+	var test_wave: WavePrototype = scene.get_node("WavePrototype")
+	if test_wave.population_rules:
+		test_wave.population_rules = test_wave.population_rules.duplicate(true)
+		test_wave.population_rules.simulation_mode = false
 	root.add_child(scene)
 	current_scene = scene
 	for frame in 12: await physics_frame

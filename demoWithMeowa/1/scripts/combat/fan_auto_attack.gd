@@ -1,6 +1,8 @@
 class_name FanAutoAttack
 extends Node3D
 
+const EFFECT_LAYER := preload("res://scripts/rendering/combat_effect_layer.gd")
+
 ## A01：武器特效独立运行，人物不切换攻击动画。
 signal strike_started(direction: Vector3)
 signal hit_landed(enemy: WaveEnemy, damage: float)
@@ -161,8 +163,7 @@ func _ready() -> void:
 	_mesh = MeshInstance3D.new()
 	_mesh.name = "SlashEffect"
 	_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_material = ShaderMaterial.new()
-	_material.shader = SLASH_SHADER
+	_material = EFFECT_LAYER.material(SLASH_SHADER)
 	_mesh.material_override = _material
 	_mesh.visible = false
 	add_child(_mesh)
@@ -342,9 +343,9 @@ func _apply_hits(origin: Vector3, previous: float, progress: float) -> void:
 		if not _can_reach(enemy, origin, stats): continue
 		_hits[enemy.get_instance_id()] = true
 		var before := enemy.health
-		enemy.take_damage(maxf(stats.damage, 0.0))
+		enemy.take_damage(maxf(stats.damage, 0.0), {"source": &"A01", "direction": enemy.global_position - origin})
 		var dealt := before - enemy.health
-		if dealt <= 0.0: continue
+		if dealt <= 0.0 and not session.combat_modifiers.damage_disabled: continue
 		_play_hit_audio(enemy.global_position)
 		if not enemy.dead:
 			var push := enemy.global_position - origin
@@ -387,7 +388,7 @@ func _advance_spin(delta: float) -> void:
 		var effect := MeshInstance3D.new()
 		effect.name = "SpinSlash%d" % (_extra_meshes.size() + 1)
 		effect.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		effect.material_override = _material.duplicate()
+		effect.material_override = EFFECT_LAYER.duplicate_material(_material)
 		add_child(effect)
 		_extra_meshes.append(effect)
 	var effects: Array[MeshInstance3D] = [_mesh]
@@ -422,9 +423,9 @@ func _apply_spin_hits(origin: Vector3, basis: Basis, travelled: float, stats: Di
 		if not _can_reach(enemy, origin, stats): continue
 		_spin_hits[id] = _spin_time + stats.hit_interval
 		var before := enemy.health
-		enemy.take_damage(maxf(stats.damage, 0.0))
+		enemy.take_damage(maxf(stats.damage, 0.0), {"source": &"A01", "direction": enemy.global_position - origin})
 		var dealt := before - enemy.health
-		if dealt <= 0.0: continue
+		if dealt <= 0.0 and not session.combat_modifiers.damage_disabled: continue
 		_play_hit_audio(enemy.global_position)
 		if not enemy.dead:
 			var push := enemy.global_position - origin
@@ -442,15 +443,15 @@ func _update_texture(progress: float, opacity: float, effect: MeshInstance3D = n
 	if texture is AtlasTexture:
 		var atlas := texture as AtlasTexture
 		var size: Vector2 = atlas.atlas.get_size()
-		material.set_shader_parameter("slash_texture", atlas.atlas)
-		material.set_shader_parameter("frame_rect", Vector4(atlas.region.position.x / size.x, atlas.region.position.y / size.y, atlas.region.size.x / size.x, atlas.region.size.y / size.y))
+		EFFECT_LAYER.set_parameter(material, "slash_texture", atlas.atlas)
+		EFFECT_LAYER.set_parameter(material, "frame_rect", Vector4(atlas.region.position.x / size.x, atlas.region.position.y / size.y, atlas.region.size.x / size.x, atlas.region.size.y / size.y))
 	else:
-		material.set_shader_parameter("slash_texture", texture)
-		material.set_shader_parameter("frame_rect", Vector4(0, 0, 1, 1))
-	material.set_shader_parameter("tint", effect_color)
-	material.set_shader_parameter("opacity", opacity * effect_opacity)
-	material.set_shader_parameter("energy", get_attack_stats().energy)
-	material.set_shader_parameter("leading_angle", (ART_HALF_ANGLE if full_arc else lerpf(-ART_HALF_ANGLE, ART_HALF_ANGLE, progress)) + HIT_BAND)
+		EFFECT_LAYER.set_parameter(material, "slash_texture", texture)
+		EFFECT_LAYER.set_parameter(material, "frame_rect", Vector4(0, 0, 1, 1))
+	EFFECT_LAYER.set_parameter(material, "tint", effect_color)
+	EFFECT_LAYER.set_parameter(material, "opacity", opacity * effect_opacity)
+	EFFECT_LAYER.set_parameter(material, "energy", get_attack_stats().energy)
+	EFFECT_LAYER.set_parameter(material, "leading_angle", (ART_HALF_ANGLE if full_arc else lerpf(-ART_HALF_ANGLE, ART_HALF_ANGLE, progress)) + HIT_BAND)
 	effect.visible = true
 
 ## 沿角度裁切墙体、断层和水面，网格逐环贴合坡面。

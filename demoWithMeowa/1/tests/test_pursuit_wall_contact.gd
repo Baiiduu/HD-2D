@@ -21,7 +21,7 @@ func run() -> void:
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("WavePrototype/RunGrowth").enabled = false
 	# Keep the captured contact geometry independent of later map-scale edits.
-	world.get_node("TreePlanter2").scale = Vector3.ONE*0.6
+	world.get_node("WorldDetails/BattleCourts/TreePlanter2").scale = Vector3.ONE*0.6
 	root.add_child(world)
 	current_scene = world
 	await settle(16)
@@ -54,7 +54,7 @@ func run() -> void:
 		check(not path.pursuit_route(slime.global_position,goal).is_empty(), "The strict original route confirms ground connectivity")
 		check(path.shared_reachable(slime.global_position,goal), "A slime touching navigation padding remains reachable")
 		check(not path.shared_pursuit_route(slime.global_position,goal).is_empty(), "Shared pursuit retains the escape route at the planter edge")
-		var planter: Node3D = world.get_node("TreePlanter2")
+		var planter: Node3D = world.get_node("WorldDetails/BattleCourts/TreePlanter2")
 		var inward := planter.global_position-slime.global_position
 		inward.y = 0.0
 		check(not path._pursuit_start_clear(slime.global_position,slime.global_position+inward.normalized()*4.0), "Initial padding contact cannot permit movement through the same planter")

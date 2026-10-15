@@ -66,6 +66,10 @@ extends Camera3D
 ## 相对人物屏幕位置的中心偏移；X 向右、Y 向下，单位为画面宽高比例。
 @export var ellipse_center_offset := Vector2.ZERO
 
+@export_group("弹射镜头反馈")
+## 弹射时的前视、跟随惯性与撞墙轻震；留空沿用原跟随。
+@export var ricochet_camera_settings: RicochetCameraSettings
+
 ## 焦点在地面 XZ 上的活动范围，由 set_world_rect() 根据地图大小计算
 var bounds_min := Vector2(-INF, -INF)
 var bounds_max := Vector2(INF, INF)
@@ -81,6 +85,8 @@ var _yaw_settle_speed: float = 0.0
 var _yaw_settle_elapsed: float = 0.0
 var _yaw_settle_duration: float = 0.0
 var _post_material: ShaderMaterial
+var _ricochet_camera: RicochetCameraFeedback
+var _impact_offset := Vector3.ZERO
 
 func _ready() -> void:
 	# 在 _process 中按插值后的人物位置移动，相机自身不参与物理插值
@@ -103,6 +109,8 @@ func set_world_rect(rect: Rect2) -> void:
 func snap_to_target() -> void:
 	if not target:
 		return
+	if _ricochet_camera: _ricochet_camera.reset()
+	_impact_offset = Vector3.ZERO
 	anchor = _clamp_to_bounds(_target_point())
 	focus = anchor
 	_apply_transform()
@@ -113,6 +121,23 @@ func _process(delta: float) -> void:
 		return
 	_update_horizontal_rotation(delta)
 	var point := _target_point()
+	_bind_ricochet_camera()
+	_impact_offset = Vector3.ZERO
+	if _ricochet_camera:
+		var view := Basis.looking_at(-_orbit_offset(), Vector3.UP)
+		var viewport_size := get_viewport().get_visible_rect().size
+		var short_side := minf(viewport_size.x, viewport_size.y)
+		var span := _short_side_span()
+		_ricochet_camera.advance(delta, point, view, span, short_side)
+		if _ricochet_camera.active:
+			anchor = _clamp_to_bounds(point)
+			var framing := _ricochet_camera.framing * span
+			focus = _clamp_to_bounds(point + view.x * framing.x + view.y * framing.y + _ricochet_camera.carry)
+			var impact := _ricochet_camera.shake * span
+			_impact_offset = view.x * impact.x + view.y * impact.y
+			_apply_transform()
+			_update_dof()
+			return
 	var offset := Vector2(point.x - anchor.x, point.z - anchor.z)
 	if offset.length() > dead_zone:
 		var push := offset.normalized() * (offset.length() - dead_zone)
@@ -123,6 +148,23 @@ func _process(delta: float) -> void:
 	focus = focus.lerp(anchor, 1.0 - exp(-smoothing * delta))
 	_apply_transform()
 	_update_dof()
+
+func _bind_ricochet_camera() -> void:
+	if _ricochet_camera and (not ricochet_camera_settings or not _ricochet_camera.follows(target)):
+		_ricochet_camera.dispose()
+		_ricochet_camera = null
+	if ricochet_camera_settings and not _ricochet_camera and target is Player and is_instance_valid((target as Player).body_ricochet):
+		_ricochet_camera = RicochetCameraFeedback.new()
+		_ricochet_camera.bind(self, target)
+
+func _short_side_span() -> float:
+	var viewport_size := get_viewport().get_visible_rect().size
+	var span := 2.0 / get_camera_projection().y.y
+	if projection == Camera3D.PROJECTION_PERSPECTIVE: span *= distance
+	return span * minf(viewport_size.x, viewport_size.y) / maxf(viewport_size.y, 1.0)
+
+func _exit_tree() -> void:
+	if _ricochet_camera: _ricochet_camera.dispose()
 
 func _update_horizontal_rotation(delta: float) -> void:
 	if not horizontal_rotation_enabled or get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null:
@@ -225,13 +267,17 @@ func _clamp_to_bounds(point: Vector3) -> Vector3:
 	point.z = clampf(point.z, bounds_min.y, bounds_max.y)
 	return point
 
-func _apply_transform() -> void:
+func _orbit_offset() -> Vector3:
 	# 绕焦点水平旋转，保持距离和俯角。
 	var pitch := deg_to_rad(pitch_degrees)
 	# 运镜与收尾保留连续角度，只有计算空间朝向时折回一圈。
 	var yaw := deg_to_rad(wrapf(yaw_degrees + _yaw_offset_degrees, -180.0, 180.0))
-	global_position = focus + Vector3(0.0, sin(pitch), cos(pitch)).rotated(Vector3.UP, yaw) * distance
-	look_at(focus, Vector3.UP)
+	return Vector3(0.0, sin(pitch), cos(pitch)).rotated(Vector3.UP, yaw) * distance
+
+func _apply_transform() -> void:
+	var view_focus := focus if _impact_offset.is_zero_approx() else _clamp_to_bounds(focus + _impact_offset)
+	global_position = view_focus + _orbit_offset()
+	look_at(view_focus, Vector3.UP)
 
 ## 只恢复 Q/E 旋转偏移，保留初始朝向、俯角、距离与景深设置。
 func reset_horizontal_rotation() -> void:

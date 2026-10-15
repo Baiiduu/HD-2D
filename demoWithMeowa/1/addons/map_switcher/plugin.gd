@@ -3,14 +3,14 @@ extends EditorPlugin
 
 const MAPS: Array[Dictionary] = [
 	{
-		"name": "视觉预览",
-		"path": "res://scenes/previews/four_realms.tscn",
-		"description": "现有视觉效果测试地图。",
-	},
-	{
 		"name": "正式连续地图",
 		"path": "res://scenes/world/world.tscn",
 		"description": "正式主场景，当前只保留战斗区与外围绕行带。\n复用手绘地表、分隔带、小型弹射障碍、人物和无尽波次。",
+	},
+	{
+		"name": "视觉预览",
+		"path": "res://scenes/previews/four_realms.tscn",
+		"description": "保留的独立视觉沙盒，用于光影和材质对照。\n玩法试玩统一使用正式连续地图。",
 	},
 	{
 		"name": "树池建筑预览",
@@ -33,9 +33,9 @@ const MAPS: Array[Dictionary] = [
 		"description": "十二种同风格变形，分四组陈列于当前广场。\n斜面、通行开口、圆面与多面转角；保留实际镜头与 Q/E。",
 	},
 	{
-		"name": "棱光弹射技能预览",
-		"path": "res://scenes/previews/prism_ricochet_preview.tscn",
-		"description": "真实墙面反射、青金棱晶与折线拖尾。\n根节点可选 1–8 级，保留实际镜头与 Q/E。",
+		"name": "伤害数字预览",
+		"path": "res://scenes/previews/damage_numbers_preview.tscn",
+		"description": "当前地图和实际镜头中的普通、重击、暴击与雷电数字样式。\n循环演示弹跳、错位与消散，保留 Q/E；重击／暴击仅为表现预留。",
 	},
 	{
 		"name": "城镇细节物件预览",
@@ -114,6 +114,7 @@ func _on_map_selected(_index: int) -> void:
 	_update_status()
 
 func _on_scene_changed(scene_root: Node) -> void:
+	_sync_maps()
 	if scene_root:
 		for index in MAPS.size():
 			if MAPS[index]["path"] == scene_root.scene_file_path:
@@ -122,6 +123,7 @@ func _on_scene_changed(scene_root: Node) -> void:
 	_update_status()
 
 func _selected_path() -> String:
+	_sync_maps()
 	return MAPS[_selector.selected]["path"]
 
 func _default_path() -> String:
@@ -132,7 +134,17 @@ func _default_path() -> String:
 			return ResourceUID.get_id_path(id)
 	return path
 
+func _sync_maps() -> void:
+	if _selector.item_count == MAPS.size(): return
+	var previous := _selector.get_item_tooltip(_selector.selected) if _selector.selected >= 0 else ""
+	_selector.clear()
+	for map in MAPS:
+		_selector.add_item(map["name"])
+		_selector.set_item_tooltip(_selector.item_count - 1, map["path"])
+		if map["path"] == previous: _selector.select(_selector.item_count - 1)
+
 func _update_status() -> void:
+	_sync_maps()
 	_description.text = MAPS[_selector.selected]["description"]
 	var default_path := _default_path()
 	var default_name := default_path.get_file()

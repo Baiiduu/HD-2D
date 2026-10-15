@@ -4,7 +4,7 @@
 
 主场景只保留现有 32×32 米战斗核心和 8 米宽外围绕行带，活动范围约 48×48 米，实际地形按格子裁成 49.6×49.6 米。出生与撤退位置均在战区入口。小院、住宅、训练小屋、东侧广场及独立花园城镇大地图已退出正式场景；保留它们可复用的原型资源。
 
-`WorldDetails/BattleCourts` 集中布置 26 件细节与弹射障碍，复用花车、长椅、告示牌、花盆、水钵、垃圾桶、托盘、麻袋、石墙、柱、围栏、箱桶与路灯。普通道具使用原尺寸的 90%，树池底座也适当收小，树木原生像素尺度保持。中心横穿和外围绕行通路保留，物件具有实际碰撞。
+`WorldDetails/BattleCourts` 集中布置城镇细节、树池、中心雕塑与弹射障碍，复用花车、长椅、告示牌、花盆、水钵、垃圾桶、托盘、麻袋、石墙、柱、围栏、箱桶与路灯。道具按各实例的缩放布置，树池底座与树冠可独立调节，保留原生像素素材。中心横穿和外围绕行通路保留，物件具有实际碰撞。
 
 树池建筑样板可从「地图切换 → 树池建筑预览」查看。将 `scenes/buildings/tree_planter.tscn` 拖入世界，选择根节点整体移动、旋转、复制；Inspector「贴合地面」对齐高度，尺寸与花草／长椅／路灯独立可调。具体素材与放置方式见[树池说明](../../assets/meowa/buildings/tree_planter/README.md)。
 
@@ -18,11 +18,11 @@
 
 战区挑战使用[无尽波次](../../../../docs/gameplay/endless-waves.md)：开场 18／28／40 只，后续持续递增；清波休整后按 F 继续，失败或 ESC 撤退结束，T 重试回到第一波。参数位于 `WavePrototype → 无尽波次`。
 
-战区地形使用 `data/world/world_terrain.tres`，裁切保留范围内原有高度、道路、画笔编号和台地。`data/world/world_surface.tres` 保留手绘地表与分隔带数据，仅上传落在战区内的绘制块。原 `data/world/spawn_terrain.tres` 保留为小院原型基准。`VisualSample` 默认使用增强后的原始光影；三种 Lumina 仍可按 R 比较。原始增强可独立关闭，见[提亮、明暗交界与光向统一](../../../../docs/visuals/original-light-refinement.md)。
+战区地形使用 `data/world/world_terrain.tres`，当前战斗面与绕行带统一为零层平地，取消原东西两侧的高台地与坡道；原道路覆盖层、区域类型与画笔编号保持。`data/world/world_surface.tres` 保留手绘地表与分隔带数据，仅上传落在战区内的绘制块。原 `data/world/spawn_terrain.tres` 保留为小院原型基准。`VisualSample` 使用场景当前保存的光影，三种 Lumina 与原始增强仍可按 R 比较；原始增强参数见[提亮、明暗交界与光向统一](../../../../docs/visuals/original-light-refinement.md)。
 
 `SpawnPoint` 是实际出生位置，运行时将人物放到此标记。WASD / 方向键移动，空格跳跃，Q/E 旋转，R 切四种光影／天气 Style，结算后 T 重试。Godot「参数总览」统一定位参数，见 [参数与 Style](../../../../docs/technical/parameters-and-styles.md)。
 
-`Player → 台阶通行` 可开关自动迈步，并调整单级最大高度（默认 0.25 米）；战区高台地仍通过坡道或跳跃通行。
+`Player → 台阶通行` 可开关自动迈步，并调整单级最大高度（默认 0.25 米）；当前地图地面不需要登坡或跳台，建筑自身的体积与碰撞保留。
 
 地表分布可在编辑器中手绘：选中 `Homestead`，打开右侧「地表画笔」并启用，选择草地或卵石道路后左键拖动。Shift+左键擦除道路，Ctrl+Z / Ctrl+Shift+Z 撤销或重做；使用「保存地表」或 Ctrl+S 保存。详见 [地表画笔](../../addons/terrain_painter/README.md)。
 
@@ -32,7 +32,7 @@
 | --- | --- |
 | `WorldDetails/BattleCourts` | 小型道具的整体位置、朝向、缩放与真实碰撞 |
 | `GroundDressing → excluded_areas` | 建筑与入口的花草留空区域，采用地形本地 X/Z 坐标 |
-| `BattleArea` | 主战斗面、绕行带及花草密度；当前战区模式的重建只裁切数据，不重画手绘地表或恢复旧区域 |
+| `BattleArea` | 主战斗面、绕行带及花草密度；正式场景 `terrace_levels = 0`，重建沿用已铺平的数据，不重画手绘地表或恢复旧区域 |
 | `Homestead → data` | `cell_size` 为格子尺寸（当前 1.6 米），`layer_height` 为每档高差（当前 0.8 米）；地块轮廓与层级在独立数据中保存 |
 | `Homestead → top_material` | 草地、道路与手绘石板铺装；各 `surface` 的 X/Y/Z 分别控制干燥粗糙度、金属度、受湿程度 |
 | `Homestead → wall_material` | 独立的 `materials/world/spawn_cliff.tres`；`wall_texture` 为侧壁纹理，`tint/saturation` 为色调，`texel` 为单像素对应的米数，`lip_pixels/lip_shadow_pixels` 为边沿宽度与阴影宽度 |

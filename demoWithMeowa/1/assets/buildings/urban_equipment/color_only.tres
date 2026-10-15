@@ -1,0 +1,16 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/buildings/urban_equipment/albedo.png" id="1_ajomj"]
+
+[resource]
+resource_name = "Urban Equipment | Albedo Review"
+albedo_texture = ExtResource("1_ajomj")
+metallic_specular = 0.0
+metallic_texture_channel = 2
+roughness_texture_channel = 1
+emission = Color(1, 1, 1, 1)
+emission_energy_multiplier = 1.6
+emission_operator = 1
+normal_scale = 0.55
+texture_filter = 2
+texture_repeat = false

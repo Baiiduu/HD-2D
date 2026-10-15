@@ -3,9 +3,11 @@ extends Sprite3D
 
 const SHADER := preload("res://shaders/character/character_lighting.gdshader")
 const OCCLUSION_SHADER := preload("res://shaders/character/character_occlusion.gdshader")
+const EFFECT_MASK_SHADER := preload("res://shaders/character/combat_effect_mask.gdshader")
 static var _shared_bodies: Dictionary = {}
 static var _shared_outlines: Dictionary = {}
 static var _shared_quads: Dictionary = {}
+static var _shared_effect_masks: Dictionary = {}
 static var _shared_users := 0
 
 ## 同帧、同受光与颜色的波次贴片共用资源；个人参数变化时重新选择，互不修改。
@@ -66,10 +68,20 @@ var _last_flip_v := false
 var _last_tint := Color(-1.0, -1.0, -1.0, -1.0)
 var _shared_registered := false
 var _bound_texture: Texture2D
+var _occlusion_outline_allowed := true
+var _effect_receiver := false
+var _effect_mask_state: Array = []
+
+## 波次统一开关只作许可门，不覆盖 Sprite 自己保存的轮廓开关。
+func set_occlusion_outline_allowed(value: bool) -> void:
+	_occlusion_outline_allowed = value
+	_sync_outline()
 
 func _ready() -> void:
+	_effect_receiver = get_parent() is WaveEnemy
 	process_priority = 1 # Sync flips after Player has selected this frame's facing.
 	apply_lighting()
+	_sync_effect_mask()
 
 func _exit_tree() -> void:
 	if _bound_texture and _bound_texture.changed.is_connected(_sync_texture):
@@ -82,6 +94,7 @@ func _exit_tree() -> void:
 			_shared_bodies.clear()
 			_shared_outlines.clear()
 			_shared_quads.clear()
+			_shared_effect_masks.clear()
 
 func _process(_delta: float) -> void:
 	# An already-open @tool scene may not receive _ready after a script reload.
@@ -100,6 +113,30 @@ func _process(_delta: float) -> void:
 			_material.set_shader_parameter("tint", modulate)
 			_last_tint = modulate
 	_sync_outline()
+	_sync_effect_mask()
+
+func _sync_effect_mask() -> void:
+	if not _effect_receiver: return
+	if not texture:
+		material_overlay = null
+		_effect_mask_state.clear()
+		return
+	var state: Array = [texture, modulate.a, billboard]
+	if state == _effect_mask_state: return
+	# state 同时用作共享缓存键；本地失效时不能清空字典中的同一个数组。
+	_effect_mask_state = state.duplicate()
+	if not _shared_registered:
+		_shared_registered = true
+		_shared_users += 1
+	if not _shared_effect_masks.has(state):
+		var material := ShaderMaterial.new()
+		material.shader = EFFECT_MASK_SHADER
+		material.render_priority = -120
+		material.set_shader_parameter("sprite_texture", texture)
+		material.set_shader_parameter("opacity", modulate.a)
+		material.set_shader_parameter("fixed_y", billboard == BaseMaterial3D.BILLBOARD_FIXED_Y)
+		_shared_effect_masks[state] = material
+	material_overlay = _shared_effect_masks[state]
 
 func _queue_apply() -> void:
 	if not is_inside_tree() or _apply_queued:
@@ -111,6 +148,7 @@ func _sync_texture() -> void:
 	# 动画帧、图集区域和纹理的原地修改都使轮廓绑定失效。
 	_bind_texture_changes()
 	_outline_state.clear()
+	_effect_mask_state.clear()
 	if shared_materials:
 		_select_shared_body()
 	elif _material:
@@ -180,10 +218,12 @@ func apply_lighting() -> void:
 func _sync_outline() -> void:
 	if not is_inside_tree():
 		return
-	if not occlusion_outline_enabled or not texture or occlusion_outline_width <= 0.0 or occlusion_outline_opacity <= 0.0:
+	if not _occlusion_outline_allowed or not occlusion_outline_enabled or not texture or occlusion_outline_width <= 0.0 or occlusion_outline_opacity <= 0.0:
 		_outline_state.clear()
-		if is_instance_valid(_outline):
-			_outline.visible = false
+		# @tool 重载后辅助节点可能仍在，缓存引用却已丢失；关闭时也须查找旧节点。
+		var existing := _outline if is_instance_valid(_outline) else get_node_or_null("OcclusionOutline") as MeshInstance3D
+		if is_instance_valid(existing):
+			existing.visible = false
 		return
 	if not is_instance_valid(_outline):
 		_outline = get_node_or_null("OcclusionOutline") as MeshInstance3D

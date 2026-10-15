@@ -9,12 +9,14 @@ signal run_ended(reason: String)
 signal enemy_defeated_at(position: Vector3, experience: int)
 signal wave_clearing
 signal enemy_spawned(enemy: WaveEnemy)
+signal batch_spawned(count: int, point: Vector3)
 signal wave_cleared(number: int)
 
 enum Phase { READY, BATTLE, REST, RESULT }
 enum Outcome { NONE, VICTORY, DEFEAT, RETREAT, ERROR }
 const UI_SCRIPT := preload("res://scripts/combat/wave_prototype_ui.gd")
 const ATTACK_SURFACE_QUERY := preload("res://scripts/combat/attack_surface_query.gd")
+const HORDE_PLANNER := preload("res://scripts/combat/wave_horde_planner.gd")
 var _attack_surface_query := ATTACK_SURFACE_QUERY.new()
 
 @export_group("地图连接")
@@ -47,6 +49,12 @@ var _attack_surface_query := ATTACK_SURFACE_QUERY.new()
 @export var population_rules: WavePopulationRules
 ## 仅无尽模式应用；新挑战建立快照，当前局不受 Inspector 修改影响。
 @export var health_growth_rules: WaveHealthGrowthRules
+## 控制现有和后续生成的全部波次怪物；各 Sprite 自身关闭时仍保持关闭，不影响玩家。
+@export var enemy_occlusion_outline_enabled := false:
+	set(value):
+		enemy_occlusion_outline_enabled = value
+		for enemy in enemies:
+			if is_instance_valid(enemy): enemy.set_occlusion_outline_allowed(value)
 ## 留空沿用下面的递增波次；配置后每波可混合不同怪物。
 @export var waves: Array[WaveDefinition] = []
 @export_range(1, 12, 1) var total_waves := 3
@@ -107,6 +115,8 @@ var _path := TerrainPath.new()
 var _paths_by_radius: Dictionary = {}
 var _spawn_points := PackedVector3Array()
 var _spawn_queue: Array[Dictionary] = []
+## 只保留当前到期怪潮的剩余容量；分帧创建期间不被后续散兵抢占。
+var _reserved_batch: Dictionary = {}
 var _run_waves: Array[WaveDefinition] = []
 var _run_endless := false
 var _endless_growth := 8
@@ -115,6 +125,8 @@ var _endless_interval_reduction := 0.03
 var _endless_min_interval := 0.18
 var _definition_snapshots: Dictionary = {}
 var _catalog_snapshots: Dictionary = {}
+var _horde_pool: Array[WaveEnemyDefinition] = []
+var _horde_usage: Dictionary = {}
 var _run_population: WavePopulationRules
 var _run_health_growth: WaveHealthGrowthRules
 var _spatial_index := WaveEnemySpatialIndex.new()
@@ -153,6 +165,10 @@ var _generation := 0
 var _attack_root: Node3D
 var _unreachable: Dictionary = {}
 var _reachability_clock := 0.0
+var _reachability_queue: Array[WaveEnemy] = []
+var _reachability_cursor := 0
+var _reachability_budget := 0.0
+var _reachability_last: Dictionary[int, float] = {}
 var _preview_state: Dictionary = {}
 var combat_frozen := false
 var combat_modifiers := RunCombatModifiers.new()
@@ -218,6 +234,7 @@ func _exit_tree() -> void:
 	set_combat_frozen(false)
 	_generation += 1
 	_spawn_queue.clear()
+	_reserved_batch.clear()
 	if _bound_data and _bound_data.changed.is_connected(_queue_path_rebuild): _bound_data.changed.disconnect(_queue_path_rebuild)
 	remove_from_group(&"gameplay_input_blockers")
 	if is_instance_valid(loadout) and loadout.wave_session == self:
@@ -253,7 +270,9 @@ func get_attack_surface_query() -> RefCounted:
 func get_attack_stats(modifiers: RunCombatModifiers = null) -> Array[Dictionary]:
 	var values: Array[Dictionary] = []
 	for node in _combat_nodes:
-		if is_instance_valid(node) and node.has_method("get_combat_stats"):
+		if is_instance_valid(node) and node.has_method("get_combat_stat_variants"):
+			values.append_array(node.get_combat_stat_variants(modifiers if modifiers else combat_modifiers))
+		elif is_instance_valid(node) and node.has_method("get_combat_stats"):
 			var stats: Dictionary = node.get_combat_stats(modifiers if modifiers else combat_modifiers)
 			if not stats.is_empty(): values.append(stats)
 	return values
@@ -309,7 +328,7 @@ func can_start_run() -> bool:
 func start_run() -> bool:
 	if not can_start_run(): return false
 	var skills := get_node_or_null("RunSkills") as RunSkills
-	if skills and not skills.has_learned_skill(): return skills.present_initial_choice()
+	if skills and not is_horde_simulation() and not skills.has_learned_skill(): return skills.present_initial_choice()
 	_starting_run = true
 	completed_waves = 0
 	kills = 0
@@ -327,6 +346,10 @@ func start_run() -> bool:
 	_hide_preview()
 	var generation := _generation
 	combat_modifiers.reset()
+	combat_modifiers.damage_disabled = _run_population != null and _run_population.simulation_mode
+	if combat_modifiers.damage_disabled and skills and not skills.apply_simulation_loadout(_run_population.simulation_skills):
+		_finish("挑战配置错误 · 无法应用模拟技能配置")
+		return false
 	run_started.emit()
 	if phase != Phase.READY or generation != _generation:
 		_starting_run = false
@@ -336,19 +359,29 @@ func start_run() -> bool:
 	return phase == Phase.BATTLE
 
 func wave_count() -> int:
+	if is_horde_simulation(): return 1
 	# 0 表示没有有限总波数，调用方用 is_endless() 区分。
 	if is_endless(): return 0
 	if phase != Phase.READY and not _run_waves.is_empty(): return _run_waves.size()
 	return waves.size() if not waves.is_empty() else total_waves
 
 func is_endless() -> bool:
+	if is_horde_simulation(): return false
 	return endless_mode if phase == Phase.READY else _run_endless
 
+func is_horde_simulation() -> bool:
+	var rules := population_rules if phase == Phase.READY else _run_population
+	return rules != null and rules.simulation_mode
+
 func wave_label(number: int) -> String:
+	if is_horde_simulation():
+		var rules := population_rules if phase == Phase.READY else _run_population
+		return "巨量怪潮模拟 · %d / %d 只" % [enemies.size(), rules.simulation_enemy_count] if phase == Phase.BATTLE else "巨量怪潮模拟 · %d 只" % rules.simulation_enemy_count
 	return "第 %d 波 · 无尽" % number if is_endless() else "第 %d / %d 波" % [number, wave_count()]
 
 func _prepare_run() -> bool:
 	_run_waves.clear()
+	_reserved_batch.clear()
 	_run_endless = endless_mode
 	_endless_growth = endless_enemies_per_wave
 	_endless_cap = endless_max_enemies
@@ -356,6 +389,8 @@ func _prepare_run() -> bool:
 	_endless_min_interval = endless_min_spawn_interval
 	_definition_snapshots.clear()
 	_catalog_snapshots.clear()
+	_horde_pool.clear()
+	_horde_usage.clear()
 	_spatial_index.clear()
 	_alive_by_definition.clear()
 	_alive_by_role.fill(0)
@@ -380,6 +415,13 @@ func _prepare_run() -> bool:
 		_endless_cap = _run_population.max_wave_enemies
 		_endless_interval_reduction = _run_population.interval_reduction_per_wave
 		_endless_min_interval = _run_population.min_spawn_interval
+		if _run_population.simulation_mode:
+			_configure_simulation_population()
+			var skills := get_node_or_null("RunSkills") as RunSkills
+			var skill_error := skills.simulation_loadout_error(_run_population.simulation_skills) if skills else ("当前场景缺少技能组件" if not _run_population.simulation_skills.is_empty() else "")
+			if not skill_error.is_empty():
+				_finish("挑战配置错误 · " + skill_error)
+				return false
 	_scene_validity.clear()
 	if max_active_enemies < 1 or max_spawns_per_wave < 1 or max_spawns_per_tick < 1 or max_spawn_checks_per_tick < 1 or not battle_area.has_area():
 		_finish("挑战配置错误 · 检查战斗范围与刷新数量上限")
@@ -405,8 +447,19 @@ func _prepare_run() -> bool:
 				_finish("挑战配置错误 · " + _definition_error)
 				return false
 			_catalog_snapshots[enemy.enemy_id] = snapshot
+			if snapshot.horde_weight > 0.0: _horde_pool.append(snapshot)
 	var definitions: Array[WaveDefinition] = []
-	if waves.is_empty():
+	if _run_population and _run_population.simulation_mode:
+		var entry := WaveSpawnEntry.new()
+		entry.mixed_horde = not _horde_pool.is_empty()
+		entry.enemy = default_enemy if not entry.mixed_horde else null
+		entry.count = _run_population.simulation_enemy_count
+		entry.batch_size = entry.count
+		var definition := WaveDefinition.new()
+		definition.description = "%d 只 · 集中怪潮模拟 · 人物零伤害且免伤" % entry.count
+		definition.entries.append(entry)
+		definitions.append(definition)
+	elif waves.is_empty():
 		if (not _run_endless and total_waves < 1) or first_wave_enemies < 1 or enemies_per_wave < 0 or not is_finite(spawn_interval) or spawn_interval <= 0:
 			_finish("挑战配置错误 · 检查递增波次数量与间隔")
 			return false
@@ -428,7 +481,7 @@ func _prepare_run() -> bool:
 		snapshot.description = definition.description
 		var total := 0
 		for entry in definition.entries:
-			if not entry or entry.count < 1 or not is_finite(entry.start_delay) or entry.start_delay < 0 or not is_finite(entry.interval) or entry.interval <= 0 or not is_finite(entry.warning_seconds) or entry.warning_seconds < -1:
+			if not entry or entry.count < 1 or entry.batch_size < 1 or not is_finite(entry.start_delay) or entry.start_delay < 0 or not is_finite(entry.interval) or entry.interval <= 0 or not is_finite(entry.warning_seconds) or entry.warning_seconds < -1:
 				_finish("挑战配置错误 · 检查怪物组数量、时间与预告")
 				return false
 			total += entry.count
@@ -439,9 +492,22 @@ func _prepare_run() -> bool:
 				if not _spawn_zones.any(func(zone: WaveSpawnZone): return String(zone.get_zone_id()) == id):
 					_finish("挑战配置错误 · 未找到刷新区域 " + id)
 					return false
-			var enemy := _resolve_entry_enemy(entry)
-			if not enemy:
-				_finish("挑战配置错误 · " + _definition_error)
+			var enemy: WaveEnemyDefinition
+			var batch_count := mini(entry.batch_size, entry.count)
+			var batch_limit := 0
+			if entry.mixed_horde:
+				if _horde_pool.is_empty():
+					_finish("挑战配置错误 · 混合怪潮需要目录中至少一种怪潮权重大于 0 的怪物")
+					return false
+				batch_limit = _plan_horde(batch_count, _run_waves.size() + 1, {}).size()
+			else:
+				enemy = _resolve_entry_enemy(entry)
+				if not enemy:
+					_finish("挑战配置错误 · " + _definition_error)
+					return false
+				batch_limit = _batch_capacity_limit(enemy, _run_waves.size() + 1)
+			if batch_count > batch_limit:
+				_finish("挑战配置错误 · 怪潮每批数量超过可用容量")
 				return false
 			var copy := entry.duplicate() as WaveSpawnEntry
 			copy.enemy = enemy
@@ -457,6 +523,21 @@ func _prepare_run() -> bool:
 	for definition: WaveEnemyDefinition in _definition_snapshots.values():
 		_navigation_for(definition)
 	return true
+
+func _configure_simulation_population() -> void:
+	_run_endless = false
+	var count := _run_population.simulation_enemy_count
+	_run_population.first_active_limit = count
+	_run_population.max_active = count
+	_run_population.active_growth_per_wave = 0
+	_run_population.role_limits.fill(count)
+	var largest_cost := default_enemy.population_cost if default_enemy else 1
+	if enemy_catalog:
+		for enemy in enemy_catalog.enemies:
+			if enemy: largest_cost = maxi(largest_cost, enemy.population_cost)
+	_run_population.max_population_cost = count * largest_cost
+	_run_population.max_wave_enemies = count
+	_run_population.max_queued_per_wave = count
 
 func _navigation_for(definition: WaveEnemyDefinition) -> TerrainPath:
 	if is_equal_approx(definition.navigation_radius, 0.32): return _path
@@ -500,14 +581,20 @@ func _definition_for_wave(number: int) -> WaveDefinition:
 		var next_allocation := roundi(float(cumulative) * total / base_total)
 		copy.count = next_allocation - allocated
 		allocated = next_allocation
+		if entry.batch_size > 1:
+			var limit := (_run_population.active_limit(number) if _run_population else max_active_enemies) if entry.mixed_horde else _batch_capacity_limit(entry.enemy, number)
+			# 怪潮随数量增长，后期最多使用约一半同场容量，保留场上敌群与特殊怪空间。
+			limit = mini(limit, maxi(entry.batch_size, floori((_run_population.active_limit(number) if _run_population else max_active_enemies) * 0.5)))
+			if entry.mixed_horde: limit = _plan_horde(limit, number, {}).size()
+			copy.batch_size = mini(limit, ceili(float(entry.batch_size) * copy.count / entry.count))
 		# 基础间隔已短于下限时保持原值，不把无尽增长变成减速。
 		copy.interval = minf(entry.interval, maxf(_endless_min_interval, entry.interval * interval_scale))
 		if index > 0:
 			var previous := template.entries[index - 1]
-			var gap := entry.start_delay - previous.start_delay - (previous.count - 1) * previous.interval
+			var gap := entry.start_delay - previous.start_delay - previous.spawn_duration()
 			if gap >= 0.0:
 				var previous_copy := definition.entries[index - 1]
-				copy.start_delay = previous_copy.start_delay + (previous_copy.count - 1) * previous_copy.interval + gap
+				copy.start_delay = previous_copy.start_delay + previous_copy.spawn_duration() + gap
 		definition.entries.append(copy)
 	return definition
 
@@ -557,12 +644,57 @@ func get_enemy_health_multiplier(number := -1) -> float:
 func _spawn_budget_limit() -> int:
 	return _run_population.max_queued_per_wave if _run_population else max_spawns_per_wave
 
-func _has_enemy_capacity(definition: WaveEnemyDefinition) -> bool:
-	if enemies.size() >= get_active_enemy_limit(): return false
-	if definition.max_alive > 0 and int(_alive_by_definition.get(definition, 0)) >= definition.max_alive: return false
+func _batch_capacity_limit(definition: WaveEnemyDefinition, number: int) -> int:
+	var limit := _run_population.active_limit(number) if _run_population else max_active_enemies
+	if definition.max_alive > 0: limit = mini(limit, definition.max_alive)
 	if _run_population:
-		if _population_cost + definition.population_cost > _run_population.max_population_cost: return false
-		if _alive_by_role[definition.role] >= _run_population.role_limits[definition.role]: return false
+		limit = mini(limit, _run_population.role_limits[definition.role])
+		limit = mini(limit, floori(float(_run_population.max_population_cost) / definition.population_cost))
+	return limit
+
+func _has_enemy_capacity(definition: WaveEnemyDefinition, count := 1, batch: Dictionary = {}) -> bool:
+	var reserved := 0
+	var reserved_cost := 0
+	var reserved_role := 0
+	var reserved_kind := 0
+	if not _reserved_batch.is_empty() and _reserved_batch.id != batch.get("id", -1):
+		reserved = _reserved_batch.remaining
+		reserved_cost = _reserved_batch.cost
+		reserved_role = _reserved_batch.roles[definition.role]
+		reserved_kind = int(_reserved_batch.counts.get(definition, 0))
+	if enemies.size() + reserved + count > get_active_enemy_limit(): return false
+	if definition.max_alive > 0 and int(_alive_by_definition.get(definition, 0)) + reserved_kind + count > definition.max_alive: return false
+	if _run_population:
+		if _population_cost + reserved_cost + count * definition.population_cost > _run_population.max_population_cost: return false
+		if _alive_by_role[definition.role] + reserved_role + count > _run_population.role_limits[definition.role]: return false
+	return true
+
+func _plan_horde(count: int, number: int, usage: Dictionary) -> Array[WaveEnemyDefinition]:
+	var limit := _run_population.active_limit(number) if _run_population else max_active_enemies
+	var roles := _run_population.role_limits if _run_population else PackedInt32Array([limit, limit, limit, limit])
+	var cost := _run_population.max_population_cost if _run_population else limit * 128
+	return HORDE_PLANNER.plan(_horde_pool, count, limit, cost, roles, usage)
+
+func _make_batch(members: Array[WaveEnemyDefinition], id: int) -> Dictionary:
+	var counts := {}
+	var roles := [0, 0, 0, 0]
+	var cost := 0
+	var clearance := 0.0
+	for enemy in members:
+		counts[enemy] = int(counts.get(enemy, 0)) + 1
+		roles[enemy.role] += 1
+		cost += enemy.population_cost
+		clearance = maxf(clearance, enemy.spawn_clearance)
+	return {"id":id, "size":members.size(), "remaining":members.size(), "counts":counts, "roles":roles, "cost":cost, "clearance":clearance}
+
+func _has_batch_capacity(batch: Dictionary) -> bool:
+	if enemies.size() + int(batch.remaining) > get_active_enemy_limit(): return false
+	for enemy: WaveEnemyDefinition in batch.counts:
+		if enemy.max_alive > 0 and int(_alive_by_definition.get(enemy, 0)) + int(batch.counts[enemy]) > enemy.max_alive: return false
+	if _run_population:
+		if _population_cost + int(batch.cost) > _run_population.max_population_cost: return false
+		for role in 4:
+			if _alive_by_role[role] + int(batch.roles[role]) > _run_population.role_limits[role]: return false
 	return true
 
 func _release_enemy_capacity(enemy: WaveEnemy) -> void:
@@ -595,18 +727,19 @@ func _begin_wave() -> void:
 	wave += 1
 	_generation += 1
 	_wave_clock = 0.0
+	_reserved_batch.clear()
 	_wave_queued_total = 0
 	_spawned_this_wave = 0
 	_capacity_blocked = false
 	_capacity_waiting = 0
-	_unreachable.clear()
-	_reachability_clock = 0.0
+	_reset_reachability()
 	_attack_root = Node3D.new()
 	_attack_root.name = "EnemyAttacks"
 	add_child(_attack_root)
 	_hurt_clock = 0.5
 	for entry in definition.entries:
-		if not queue_spawn(entry.enemy, entry.count, entry.start_delay, Vector3.INF, entry.spawn_zone_ids, entry.warning_seconds, entry.interval):
+		var queued := _queue_horde(entry) if entry.mixed_horde else queue_spawn(entry.enemy, entry.count, entry.start_delay, Vector3.INF, entry.spawn_zone_ids, entry.warning_seconds, entry.interval, entry.batch_size)
+		if not queued:
 			_preparing_wave = false
 			return
 	_sort_spawn_queue()
@@ -615,19 +748,46 @@ func _begin_wave() -> void:
 	_set_phase(Phase.BATTLE)
 
 ## 所有延迟出怪先登记在同一队列，分裂和召唤也阻止清波。
-func queue_spawn(definition: WaveEnemyDefinition, count := 1, delay := 0.0, position := Vector3.INF, zone_ids := PackedStringArray(), warning := -1.0, interval := 0.0) -> bool:
+func queue_spawn(definition: WaveEnemyDefinition, count := 1, delay := 0.0, position := Vector3.INF, zone_ids := PackedStringArray(), warning := -1.0, interval := 0.0, batch_size := 1) -> bool:
 	if phase != Phase.BATTLE and not _preparing_wave: return false
 	var snapshot := _snapshot_definition(definition)
-	if not snapshot or count <= 0 or _wave_queued_total + count > _spawn_budget_limit() or not is_finite(delay) or delay < 0.0 or not is_finite(interval) or interval < 0.0 or (position != Vector3.INF and not position.is_finite()) or not is_finite(warning) or warning < -1:
+	if not snapshot or count <= 0 or batch_size < 1 or _wave_queued_total + count > _spawn_budget_limit() or not is_finite(delay) or delay < 0.0 or not is_finite(interval) or interval < 0.0 or (position != Vector3.INF and not position.is_finite()) or not is_finite(warning) or warning < -1:
 		_finish("挑战配置错误 · 检查怪物资源与待生成数量")
 		return false
-	for index in count:
-		_queue_sequence += 1
-		_spawn_queue.append({"id":_queue_sequence, "enemy": snapshot, "due": _wave_clock + delay + index * interval, "position": position,
-			"zones":zone_ids.duplicate(), "warning":warning, "next_attempt":0.0, "blocked_since":-1.0})
-	_wave_queued_total += count
-	if not _preparing_wave: _sort_spawn_queue()
+	if mini(batch_size, count) > _batch_capacity_limit(snapshot, wave):
+		_finish("挑战配置错误 · 怪潮每批数量超过可用容量")
+		return false
+	var members: Array[WaveEnemyDefinition] = []
+	members.resize(count)
+	members.fill(snapshot)
+	_queue_members(members, delay, position, zone_ids, warning, interval, batch_size)
 	return true
+
+func _queue_horde(entry: WaveSpawnEntry) -> bool:
+	var members: Array[WaveEnemyDefinition] = []
+	if _wave_queued_total + entry.count > _spawn_budget_limit():
+		_finish("挑战配置错误 · 本波数量超过生成预算")
+		return false
+	while members.size() < entry.count:
+		var count := mini(entry.batch_size, entry.count - members.size())
+		var batch := _plan_horde(count, wave, _horde_usage)
+		if batch.size() != count:
+			_finish("挑战配置错误 · 混合怪潮超过同场、种类、分类或容量点预算")
+			return false
+		members.append_array(batch)
+	_queue_members(members, entry.start_delay, Vector3.INF, entry.spawn_zone_ids, entry.warning_seconds, entry.interval, entry.batch_size)
+	return true
+
+func _queue_members(members: Array[WaveEnemyDefinition], delay: float, position: Vector3, zone_ids: PackedStringArray, warning: float, interval: float, batch_size: int) -> void:
+	var batch: Dictionary = {}
+	for index in members.size():
+		_queue_sequence += 1
+		if batch_size > 1 and index % batch_size == 0:
+			batch = _make_batch(members.slice(index, mini(index + batch_size, members.size())), _queue_sequence)
+		_spawn_queue.append({"id":_queue_sequence, "enemy": members[index], "due": _wave_clock + delay + floorf(float(index) / batch_size) * interval, "position": position,
+			"zones":zone_ids.duplicate(), "warning":warning, "next_attempt":0.0, "blocked_since":-1.0, "batch":batch})
+	_wave_queued_total += members.size()
+	if not _preparing_wave: _sort_spawn_queue()
 
 func _sort_spawn_queue() -> void:
 	_spawn_queue.sort_custom(func(a: Dictionary, b: Dictionary): return a.due < b.due or (a.due == b.due and a.id < b.id))
@@ -673,6 +833,7 @@ func _process_spawns() -> void:
 	_capacity_waiting = 0
 	if _spawn_queue.is_empty():
 		_capacity_blocked = false
+		_reserved_batch.clear()
 		return
 	if enemies.size() >= get_active_enemy_limit():
 		for job in _spawn_queue:
@@ -690,18 +851,33 @@ func _process_spawns() -> void:
 	var spawned := 0
 	var check_budget := _run_population.checks_per_tick if _run_population else max_spawn_checks_per_tick
 	var spawn_budget := _run_population.spawns_per_tick if _run_population else max_spawns_per_tick
+	# 先给已到期怪潮留位，积压的散兵不能在每帧预算耗尽前反复抢满场地。
+	if _reserved_batch.is_empty():
+		for job in _spawn_queue:
+			if job.due > _wave_clock: break
+			if not job.batch.is_empty() and job.next_attempt <= _wave_clock:
+				_reserved_batch = job.batch
+				break
 	# 副本固定本帧任务，怪物 _ready 或通知追加队列也不破坏当前迭代。
 	for job in _spawn_queue.duplicate():
 		if job.due > _wave_clock: break
+		if job.next_attempt > _wave_clock: continue
+		var batch: Dictionary = job.batch
+		if not batch.is_empty():
+			if _reserved_batch.is_empty(): _reserved_batch = batch
+			if _reserved_batch.id != batch.id:
+				job.blocked_since = -1.0
+				_capacity_waiting += 1
+				continue
 		# 容量等待不做位置查询，也不计入堵点超时；继续寻找能出场的其它种类。
-		if not _has_enemy_capacity(job.enemy):
+		var has_capacity := _has_batch_capacity(batch) if not batch.is_empty() else _has_enemy_capacity(job.enemy)
+		if not has_capacity:
 			job.blocked_since = -1.0
 			_capacity_waiting += 1
 			continue
-		if job.next_attempt > _wave_clock: continue
 		if checked >= check_budget or spawned >= spawn_budget or enemies.size() >= get_active_enemy_limit(): break
 		checked += 1
-		var success := _spawn_enemy(job.enemy, job.position, job.zones, job.warning)
+		var success := _spawn_enemy(job.enemy, job.position, job.zones, job.warning, batch)
 		if generation != _generation or phase != Phase.BATTLE: return
 		if success:
 			_spawn_queue.erase(job)
@@ -709,6 +885,11 @@ func _process_spawns() -> void:
 			changed.emit()
 			if generation != _generation or phase != Phase.BATTLE or combat_frozen: return
 		else:
+			# 尚未出场的整批可换另一个允许入口；堵点不占住其它组的容量。
+			if not batch.is_empty() and batch.remaining == batch.size:
+				_reserved_batch = {}
+				batch.erase("points")
+				batch.erase("zone")
 			if job.blocked_since < 0: job.blocked_since = _wave_clock
 			job.next_attempt = _wave_clock + spawn_retry_interval
 			show_notice("等待安全刷新位置 · 已登记怪物不会丢失")
@@ -722,12 +903,19 @@ func _can_damage_player(amount: float, generation: int) -> bool:
 
 func _damage_player(amount: float, generation: int) -> bool:
 	if not _can_damage_player(amount, generation): return false
+	if is_horde_simulation():
+		# 保留怪物命中资格、真实碰撞与共享受击间隔，只跳过最终扣血。
+		_hurt_clock = hurt_interval
+		return true
 	player.take_damage(amount)
 	_hurt_clock = hurt_interval
 	show_notice("受击 -%d" % ceili(amount))
 	return true
 
 func _rebuild_spawn_zones() -> void:
+	for job in _spawn_queue:
+		job.batch.erase("points")
+		job.batch.erase("zone")
 	for zone in _spawn_zones:
 		if is_instance_valid(zone) and zone.settings_changed.is_connected(_queue_path_rebuild): zone.settings_changed.disconnect(_queue_path_rebuild)
 	_spawn_zones.clear()
@@ -785,17 +973,42 @@ func _valid_spawn(point: Vector3, definition: WaveEnemyDefinition, goal: Vector3
 	if not get_world_3d().direct_space_state.intersect_shape(_spawn_query, 1).is_empty(): return false
 	return _navigation_for(definition).shared_reachable(point, goal)
 
-func _find_spawn(definition: WaveEnemyDefinition, requested_position: Vector3, ids: PackedStringArray) -> Vector3:
+func _batch_spawn_points(batch: Dictionary, zones: Array[WaveSpawnZone]) -> PackedVector3Array:
+	if batch.has("points"): return batch.points
+	var center: Vector3
+	var radius := spawn_edge_band
+	if not zones.is_empty():
+		var zone := _pick_zone(zones)
+		batch.zone = zone.get_zone_id()
+		center = zone.global_position
+		radius = zone.radius
+	else:
+		center = _boundary_points[_random.randi_range(0, _boundary_points.size() - 1)]
+	var spacing := _run_population.spawn_spacing if _run_population else spawn_spacing
+	radius = maxf(radius, sqrt(float(batch.size)) * maxf(spacing, float(batch.clearance) * 2.0) * 1.25)
+	var points := PackedVector3Array()
+	for point in _spawn_points:
+		if TerrainPath.horizontal_distance(point, center) <= radius: points.append(point)
+	batch.points = points
+	return points
+
+func _find_spawn(definition: WaveEnemyDefinition, requested_position: Vector3, ids: PackedStringArray, batch: Dictionary = {}) -> Vector3:
 	var zones := _available_zones(ids)
 	if not requested_position.is_finite() and spawn_zone_root and zones.is_empty(): return Vector3.INF
 	if not requested_position.is_finite() and not spawn_zone_root and _boundary_points.is_empty(): return Vector3.INF
 	var goal := _ground_target()
+	var batch_points := PackedVector3Array()
+	if not batch.is_empty() and not requested_position.is_finite():
+		batch_points = _batch_spawn_points(batch, zones)
+		if batch_points.is_empty(): return Vector3.INF
 	for attempt in (_run_population.position_attempts if _run_population else 40):
 		var point: Vector3
 		if requested_position.is_finite():
 			# 分裂和召唤留在指定位置附近；阻塞时不能跳到地图另一端。
 			var offset := Vector3.ZERO if attempt == 0 else Vector3.RIGHT.rotated(Vector3.UP, _random.randf() * TAU) * _random.randf_range(0.4, 3.2)
 			point = requested_position + offset
+		elif not batch_points.is_empty():
+			point = batch_points[_random.randi_range(0, batch_points.size() - 1)]
 		elif spawn_zone_root:
 			var zone := _pick_zone(zones)
 			var points: PackedVector3Array = _zone_points[zone]
@@ -807,15 +1020,15 @@ func _find_spawn(definition: WaveEnemyDefinition, requested_position: Vector3, i
 		if _valid_spawn(point, definition, goal, requested_position.is_finite()): return point
 	return Vector3.INF
 
-func _spawn_enemy(definition: WaveEnemyDefinition = null, requested_position := Vector3.INF, zone_ids := PackedStringArray(), warning := -1.0) -> bool:
+func _spawn_enemy(definition: WaveEnemyDefinition = null, requested_position := Vector3.INF, zone_ids := PackedStringArray(), warning := -1.0, batch: Dictionary = {}) -> bool:
 	if phase != Phase.BATTLE or combat_frozen or not _path_ready: return false
 	if not definition: definition = default_enemy
 	definition = _snapshot_definition(definition)
 	if not definition:
 		_finish("挑战配置错误 · " + _definition_error)
 		return false
-	if not _has_enemy_capacity(definition): return false
-	var spawn := _find_spawn(definition, requested_position, zone_ids)
+	if not _has_enemy_capacity(definition, 1, batch): return false
+	var spawn := _find_spawn(definition, requested_position, zone_ids, batch)
 	if not spawn.is_finite(): return false
 	var generation := _generation
 	var instance := definition.scene.instantiate()
@@ -825,6 +1038,8 @@ func _spawn_enemy(definition: WaveEnemyDefinition = null, requested_position := 
 		return false
 	var enemy := instance as WaveEnemy
 	enemy.configure_wave({
+		"simulate_zero_damage_hits":combat_modifiers.damage_disabled,
+		"enemy_occlusion_outline_enabled":enemy_occlusion_outline_enabled,
 		"wave":wave, "health_multiplier":get_enemy_health_multiplier() if definition.health_growth_enabled else 1.0,
 		"player": player, "terrain": terrain, "camera": player.movement_camera,
 		"navigation": _navigation_for(definition), "attack_root": _attack_root,
@@ -842,15 +1057,24 @@ func _spawn_enemy(definition: WaveEnemyDefinition = null, requested_position := 
 	enemy.tree_exiting.connect(_enemy_exiting.bind(enemy))
 	enemy.position = to_local(spawn + Vector3.UP * 0.03)
 	enemies.append(enemy)
+	_reachability_last[enemy.get_instance_id()] = _reachability_clock
 	_alive_by_definition[definition] = int(_alive_by_definition.get(definition, 0)) + 1
 	_alive_by_role[definition.role] += 1
 	_population_cost += definition.population_cost
 	_spawned_this_wave += 1
 	_spawned_run += 1
+	if not batch.is_empty():
+		batch.remaining -= 1
+		batch.counts[definition] -= 1
+		batch.roles[definition.role] -= 1
+		batch.cost -= definition.population_cost
+		if batch.remaining == 0: _reserved_batch = {}
 	add_child(enemy)
 	if phase != Phase.BATTLE or generation != _generation: return false
 	enemy.reset_physics_interpolation()
 	enemy_spawned.emit(enemy)
+	if not batch.is_empty() and batch.remaining == batch.size - 1 and phase == Phase.BATTLE and generation == _generation:
+		batch_spawned.emit(int(batch.size), enemy.global_position)
 	return true
 
 func _ground_target() -> Vector3:
@@ -861,6 +1085,7 @@ func _enemy_defeated(enemy: WaveEnemy) -> void:
 	enemies.erase(enemy)
 	_release_enemy_capacity(enemy)
 	_unreachable.erase(enemy.get_instance_id())
+	_reachability_last.erase(enemy.get_instance_id())
 	kills += 1
 	enemy_defeated_at.emit(enemy.global_position, enemy.experience_reward)
 	changed.emit()
@@ -869,26 +1094,64 @@ func _enemy_exiting(enemy: WaveEnemy) -> void:
 	# 非死亡销毁也不能留下悬空引用；此类异常结束挑战，不伪造击杀或清波。
 	if enemies.has(enemy):
 		enemies.erase(enemy)
+		_unreachable.erase(enemy.get_instance_id())
+		_reachability_last.erase(enemy.get_instance_id())
 		_release_enemy_capacity(enemy)
 		if is_queued_for_deletion() or (owner and owner.is_queued_for_deletion()): return
 		if phase == Phase.BATTLE: _finish("挑战中断 · 怪物意外移除，请重试")
 
-func _check_reachability(delta: float) -> void:
-	_reachability_clock += delta
-	if _reachability_clock < 1.0: return
-	var elapsed := _reachability_clock
+func _reset_reachability() -> void:
+	_unreachable.clear()
+	_reachability_last.clear()
+	_reachability_queue.clear()
+	_reachability_cursor = 0
+	_reachability_budget = 0.0
 	_reachability_clock = 0.0
-	var goal := _ground_target()
-	for enemy in enemies:
-		if enemy.dead or enemy.spawn_delay > 0.0: continue
-		var id := enemy.get_instance_id()
-		var closest := _path.graph.get_point_position(_path.graph.get_closest_point(enemy.global_position))
-		var on_map := TerrainPath.horizontal_distance(enemy.global_position, closest) <= terrain.data.cell_size
-		var reachable: bool = on_map and enemy.global_position.y >= _path.ground_position(enemy.global_position).y - 1.5 and enemy.navigation.shared_reachable(enemy.global_position, goal)
-		_unreachable[id] = 0.0 if reachable else float(_unreachable.get(id, 0.0)) + elapsed
-		if _unreachable[id] >= unreachable_timeout:
-			_finish("挑战中断 · 残余怪物无法到达，请重试")
+
+## 每秒轮转一遍当前怪物，将真实碰撞查询分散到各物理帧；不在长帧补查同一怪物。
+func _check_reachability(delta: float) -> void:
+	if phase != Phase.BATTLE or combat_frozen or delta <= 0.0: return
+	var generation := _generation
+	_reachability_clock += delta
+	if _reachability_queue.is_empty():
+		if enemies.is_empty():
+			_reachability_budget = 0.0
 			return
+		_reachability_queue = enemies.duplicate()
+		_reachability_cursor = 0
+	_reachability_budget += _reachability_queue.size() * delta
+	var count := mini(_reachability_queue.size() - _reachability_cursor, floori(_reachability_budget + 0.000001))
+	if count == 0: return
+	_reachability_budget = maxf(0.0, _reachability_budget - count)
+	var goal := Vector3.ZERO
+	var goal_ready := false
+	for index in count:
+		var enemy := _reachability_queue[_reachability_cursor]
+		_reachability_cursor += 1
+		if not is_instance_valid(enemy) or enemy.dead or not enemy.is_inside_tree(): continue
+		var id := enemy.get_instance_id()
+		var elapsed := maxf(0.0, _reachability_clock - float(_reachability_last.get(id, _reachability_clock - delta)))
+		_reachability_last[id] = _reachability_clock
+		if enemy.spawn_delay > 0.0: continue
+		if not goal_ready:
+			goal = _ground_target()
+			goal_ready = true
+		_check_enemy_reachability(enemy, goal, elapsed)
+		if phase != Phase.BATTLE or generation != _generation: return
+	if _reachability_cursor == _reachability_queue.size():
+		_reachability_queue.clear()
+		_reachability_cursor = 0
+		_reachability_budget = fmod(_reachability_budget, 1.0)
+
+func _check_enemy_reachability(enemy: WaveEnemy, goal: Vector3, elapsed: float) -> void:
+	var id := enemy.get_instance_id()
+	var closest := _path.graph.get_point_position(_path.closest_point(enemy.global_position))
+	var on_map := TerrainPath.horizontal_distance(enemy.global_position, closest) <= terrain.data.cell_size
+	var reachable: bool = on_map and enemy.global_position.y >= _path.ground_position(enemy.global_position).y - 1.5 and enemy.navigation.shared_reachable(enemy.global_position, goal)
+	_unreachable[id] = 0.0 if reachable else float(_unreachable.get(id, 0.0)) + elapsed
+	if _unreachable[id] >= unreachable_timeout:
+		push_warning("Wave unreachable timeout: wave=%d enemy=%s position=%s target=%s on_map=%s ground_y=%.3f" % [wave, enemy.definition.enemy_id if enemy.definition else enemy.name, enemy.global_position, goal, on_map, _path.ground_position(enemy.global_position).y])
+		_finish("挑战中断 · 残余怪物无法到达，请重试")
 
 func _clear_wave() -> void:
 	if _preparing_wave or phase != Phase.BATTLE or _pending > 0 or not enemies.is_empty(): return
@@ -918,9 +1181,11 @@ func _finish(reason: String, result := Outcome.ERROR) -> void:
 	_starting_run = false
 	set_combat_frozen(false)
 	_spawn_queue.clear()
+	_reserved_batch.clear()
 	_cleanup_attacks()
 	var remaining := enemies.duplicate()
 	enemies.clear()
+	_reset_reachability()
 	for enemy in remaining: enemy.cancel()
 	_spatial_index.clear()
 	_alive_by_definition.clear()
@@ -991,7 +1256,7 @@ func get_run_state() -> Dictionary:
 		if is_instance_valid(enemy) and enemy.spawn_delay > 0: warning_count += 1
 	return {"run_id":_run_serial, "phase":phase, "outcome":outcome, "wave":wave, "wave_count":wave_count(), "endless":is_endless(), "completed_waves":completed_waves,
 		"active_limit":get_active_enemy_limit(), "population_cost":_population_cost, "alive_by_role":_alive_by_role.duplicate(), "capacity_waiting":_capacity_waiting,
-		"enemy_health_multiplier":get_enemy_health_multiplier(),
+		"enemy_health_multiplier":get_enemy_health_multiplier(), "simulation":is_horde_simulation(),
 		"pending":_pending, "alive":enemies.size(), "warning":warning_count, "queued_this_wave":_wave_queued_total,
 		"spawned_this_wave":_spawned_this_wave, "spawned_total":_spawned_run, "kills":kills,
 		"spawn_complete":_pending == 0, "clearing":phase == Phase.BATTLE and _clearing_wave, "combat_frozen":combat_frozen, "navigation_ready":_path_ready,

@@ -2,5 +2,10 @@
 .godot/
 /android/
 
+# Godot atomic-save and resource-rename temporary files
+*.tscn*.tmp
+*.tres*.tmp
+*.uidren
+
 # Local API credentials
 .env

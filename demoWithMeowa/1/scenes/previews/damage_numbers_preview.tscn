@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/previews/damage_numbers_preview.gd" id="preview"]
+[ext_resource type="PackedScene" path="res://scenes/world/world.tscn" id="world"]
+
+[node name="DamageNumbersPreview" type="Node3D"]
+script = ExtResource("preview")
+
+[node name="CurrentWorld" parent="." instance=ExtResource("world")]

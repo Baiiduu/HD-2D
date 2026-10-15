@@ -6,7 +6,7 @@
 
 [sub_resource type="Resource" id="lv1"]
 script = ExtResource("level")
-description = "命中贴印，怪物成为随身移动的反射镜面。"
+description = "命中贴印，怪物成为随身移动的反射镜面，可借镜弹射人物与弹射弹丸。"
 
 [sub_resource type="Resource" id="lv2"]
 script = ExtResource("level")
@@ -48,6 +48,6 @@ parameters = Dictionary[String, float]({
 script = ExtResource("skill")
 id = &"mirror_mark"
 display_name = "反射镜印"
-description = "镜梭先造成伤害，再将怪物变成固定朝向的移动镜面；致死命中仍完成反射。"
+description = "镜梭先造成伤害，再将怪物变成固定朝向的移动镜面；人物与弹射弹丸可借镜反射，消耗各自次数。致死镜梭命中仍完成反射。"
 icon = ExtResource("icon")
 levels = Array[ExtResource("level")]([SubResource("lv1"), SubResource("lv2"), SubResource("lv3"), SubResource("lv4")])

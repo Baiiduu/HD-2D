@@ -26,34 +26,60 @@ func _physics_process(delta: float) -> void:
 	if wave_mode and combat_active.is_valid() and not combat_active.call(): return
 	super._physics_process(delta)
 
+func _on_stun_started() -> void:
+	_release_warning()
+	_visual_action = &""
+	_visual_progress = -1.0
+	super._on_stun_started()
+
 func _move_chase(delta: float, stop: float) -> void:
+	var origin := global_position
+	var goal := target.global_position
+	var away := origin - goal
+	away.y = 0.0
+	var target_distance := TerrainPath.horizontal_distance(origin, goal)
 	var direction := Vector3.ZERO
-	if TerrainPath.horizontal_distance(global_position, target.global_position) > stop:
+	stop = _personal_stop_distance(stop)
+	if target_distance > stop:
 		_route_clock -= delta
 		if _route_clock <= 0.0:
 			_route_clock = route_interval
-			_route = navigation.shared_pursuit_route(global_position, target.global_position)
+			_route = navigation.chase_route(origin, goal, pursuit_lookahead)
 			_waypoint = 1 if _route.size() > 1 else 0
-		if not _route.is_empty() and TerrainPath.horizontal_distance(global_position, _route[-1]) > 0.1:
-			while _waypoint < _route.size() - 1 and TerrainPath.horizontal_distance(global_position, _route[_waypoint]) < 0.14: _waypoint += 1
-			direction = _route[_waypoint] - global_position
+		if not _route.is_empty() and TerrainPath.horizontal_distance(origin, _route[-1]) > 0.1:
+			while _waypoint < _route.size() - 1 and TerrainPath.horizontal_distance(origin, _route[_waypoint]) < 0.14: _waypoint += 1
+			direction = _route[_waypoint] - origin
 			direction.y = 0.0
 			direction = direction.normalized()
-			if spatial_index: direction = (direction + spatial_index.separation(self, separation_radius) * separation_strength).normalized()
-	_move_direction(direction, effective_move_speed(), delta)
+	var intended := direction
+	direction = _pursuit_crowd_direction(direction, origin, target_distance)
+	var actual_speed := effective_move_speed()
+	direction = _personal_space_direction(direction, stop, away, target_distance, actual_speed)
+	_move_direction(direction, actual_speed, delta)
+	_update_chase_facing(intended)
 
 func _move_direction(direction: Vector3, speed: float, delta: float) -> void:
 	velocity.y = 0.0 if is_on_floor() else velocity.y - gravity * delta
 	velocity.x = direction.x * speed
 	velocity.z = direction.z * speed
-	if not direction.is_zero_approx(): _look = direction
 	move_and_slide()
 
 func _move_local(direction: Vector3, delta: float) -> void:
-	var length := effective_move_speed() * delta
-	var ground := navigation.ground_position(global_position)
-	if _surface_collision.ground_limit(navigation, global_position, direction, length, ground.y, 0.2) < length: direction = Vector3.ZERO
-	_move_direction(direction, effective_move_speed(), delta)
+	var intended := direction
+	direction = _crowd_direction(direction)
+	var origin := global_position
+	var away := Vector3.INF
+	if target is Player and (target as Player).crowd_clearance_distance > 0.0:
+		away = origin - target.global_position
+		away.y = 0.0
+	var actual_speed := effective_move_speed()
+	direction = _personal_space_direction(direction, _personal_stop_distance(combat_stop_distance), away, -1.0, actual_speed)
+	var length := direction.length() * actual_speed * delta
+	var ground := navigation.ground_position(origin)
+	if length > 0.0 and _surface_collision.ground_limit(navigation, origin, direction.normalized(), length, ground.y, 0.2) < length: direction = Vector3.ZERO
+	_move_direction(direction, actual_speed, delta)
+	if not intended.is_zero_approx(): _look = intended.normalized()
+	else: _update_chase_facing(Vector3.ZERO)
 
 func _touch_player() -> void:
 	if attack_damage <= 0.0 or not damage_player.is_valid(): return
@@ -61,8 +87,9 @@ func _touch_player() -> void:
 	if can_damage_player.is_valid() and not can_damage_player.call(attack_damage): return
 	if _can_see_target(): damage_player.call(attack_damage)
 
-func _idle_motion(delta: float) -> void:
-	_move_direction(Vector3.ZERO, 0.0, delta)
+func _idle_motion(delta: float, yield_space := false) -> void:
+	if yield_space: _move_local(Vector3.ZERO, delta)
+	else: _move_direction(Vector3.ZERO, 0.0, delta)
 
 ## 所有新怪物共用两处主预告预算；尸体、取消与退出立即释放。
 func _claim_warning() -> bool:
@@ -99,27 +126,25 @@ func _exit_tree() -> void:
 
 func _process(delta: float) -> void:
 	_hit_flash = maxf(0.0, _hit_flash - delta)
-	sprite.modulate = _sprite_color * (1.8 if _hit_flash > 0.0 else 1.0)
-	sprite.modulate.a = _sprite_color.a * (0.4 if spawn_delay > 0.0 else 1.0)
+	var tint := _sprite_color * (1.8 if _hit_flash > 0.0 else 1.0)
+	tint.a = _sprite_color.a * (0.4 if spawn_delay > 0.0 else 1.0)
+	if sprite.modulate != tint: sprite.modulate = tint
 	if not animations or not camera: return
-	var right := camera.global_basis.x
-	var backward := camera.global_basis.z
-	right.y = 0.0
-	backward.y = 0.0
-	var facing := posmod(roundi(atan2(_look.dot(right.normalized()), _look.dot(backward.normalized())) / (TAU / 8.0)), 8)
-	var direction: String = DIRECTIONS[facing]
-	sprite.flip_h = "left" in direction
-	direction = direction.replace("left", "right")
+	var facing := _camera_facing_index()
+	var flip := facing >= 5
+	if sprite.flip_h != flip: sprite.flip_h = flip
 	var action: StringName = _visual_action if not _visual_action.is_empty() else (&"walk" if Vector2(velocity.x, velocity.z).length() > 0.05 else &"idle")
-	var clip := StringName("%s_%s" % [action, direction])
-	if not animations.has_animation(clip): clip = StringName("%s_front" % action)
+	var clips := _clips_for(action)
+	var clip: StringName = clips[MIRRORED_FACINGS[facing]]
+	if not animations.has_animation(clip): clip = clips[0]
 	if not animations.has_animation(clip): return
 	var count := animations.get_frame_count(clip)
 	if count == 0: return
 	if _visual_progress >= 0.0:
-		sprite.texture = animations.get_frame_texture(clip, clampi(roundi(_visual_progress * (count - 1)), 0, count - 1))
+		var texture := animations.get_frame_texture(clip, clampi(roundi(_visual_progress * (count - 1)), 0, count - 1))
+		if sprite.texture != texture: sprite.texture = texture
 		return
-	if String(_clip).get_slice("_", 0) != String(action):
+	if _clip_action(_clip) != action:
 		_frame = 0
 		_elapsed = 0.0
 	_clip = clip
@@ -132,4 +157,5 @@ func _process(delta: float) -> void:
 		_elapsed -= duration
 		_frame = (_frame + 1) % count
 		duration = animations.get_frame_duration(clip, _frame) / fps
-	sprite.texture = animations.get_frame_texture(clip, _frame)
+	var texture := animations.get_frame_texture(clip, _frame)
+	if sprite.texture != texture: sprite.texture = texture

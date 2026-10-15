@@ -47,7 +47,7 @@ func _combat_tick(delta: float) -> void:
 	_move_chase(delta, 2.0)
 	_touch_player()
 	if _attack_clock <= 0.0 and spatial_index and _claim_warning():
-		if _boost_targets().is_empty():
+		if _boost_targets(true).is_empty():
 			_release_warning()
 			return
 		_phase_clock = rules.windup_seconds
@@ -55,7 +55,7 @@ func _combat_tick(delta: float) -> void:
 		_telegraph.ring(navigation.ground_position(global_position), rules.boost_radius)
 		_telegraph.set_opacity(0.25)
 
-func _boost_targets() -> Array[WaveEnemy]:
+func _boost_targets(first_only := false) -> Array[WaveEnemy]:
 	var result: Array[WaveEnemy] = []
 	if not spatial_index: return result
 	var space := get_world_3d().direct_space_state
@@ -63,7 +63,10 @@ func _boost_targets() -> Array[WaveEnemy]:
 		if enemy == self or enemy.dead or enemy.spawn_delay > 0.0 or not enemy.definition or enemy.definition.role != WaveEnemyDefinition.Role.COMMON: continue
 		if absf(global_position.y - enemy.global_position.y) > 0.35: continue
 		var ray := PhysicsRayQueryParameters3D.create(global_position + Vector3.UP * 0.4, enemy.global_position + Vector3.UP * 0.4, 1, [target.get_rid()])
-		if space.intersect_ray(ray).is_empty(): result.append(enemy)
+		if space.intersect_ray(ray).is_empty():
+			result.append(enemy)
+			# Windup only needs existence; the actual pulse still checks everybody.
+			if first_only: return result
 	return result
 
 func _pulse() -> void:
@@ -81,6 +84,12 @@ func _clear_boosts() -> void:
 		var enemy: WaveEnemy = reference.get_ref()
 		if is_instance_valid(enemy): enemy.remove_speed_boost(get_instance_id())
 	_affected.clear()
+
+func _on_stun_started() -> void:
+	attack_phase = AttackPhase.MOVE
+	_phase_clock = 0.0
+	_telegraph.hide()
+	super._on_stun_started()
 
 func _on_defeated() -> void:
 	_clear_boosts()

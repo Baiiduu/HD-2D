@@ -93,7 +93,7 @@ func _process(delta: float) -> void:
 			continue
 		_orient(ghost.mesh, ghost.position, ghost.direction, camera)
 		ghost.mesh.show()
-		ghost.material.set_shader_parameter("opacity", 0.22 * (1.0 - ghost.age / fade_time))
+		EFFECT_LAYER.set_parameter(ghost.material, "opacity", 0.22 * (1.0 - ghost.age / fade_time))
 	if not _flying and _ghosts.is_empty() and _sparks.size() == _idle_sparks.size():
 		set_process(false)
 		finished.emit()
@@ -110,7 +110,6 @@ func _orient(mesh: MeshInstance3D, point: Vector3, direction: Vector3, camera: C
 	mesh.global_basis = facing * Basis(Vector3.BACK, angle).scaled(Vector3(size.x, size.y, 1))
 
 func _material(texture: Texture2D) -> ShaderMaterial:
-	var material := ShaderMaterial.new()
-	material.shader = MirrorMarkEffect.PIXEL_SHADER
-	material.set_shader_parameter("effect_texture", texture)
+	var material := EFFECT_LAYER.material(MirrorMarkEffect.PIXEL_SHADER)
+	EFFECT_LAYER.set_parameter(material, "effect_texture", texture)
 	return material

@@ -1,6 +1,6 @@
 # 南侧战斗区域搭建参考
 
-本文保留 2026-10-13 南侧扩展方案的布局与首轮试走基线。正式地图现已收束为战斗区与外围绕行带，小院及住宅退出主场景；当前入口、范围、障碍与手绘地表以 [正式地图说明](../../demoWithMeowa/1/scenes/world/README.md) 为准，下文的小院连接与截图属于历史搭建状态。
+本文保留 2026-10-13 南侧扩展方案的布局与首轮试走基线。正式地图现已收束为战斗区与外围绕行带，小院及住宅退出主场景；战区地面已取消斜坡和高台地，统一同高，保留手绘铺装与建筑障碍。当前入口、范围、障碍与手绘地表以 [正式地图说明](../../demoWithMeowa/1/scenes/world/README.md) 为准，下文的小院连接、台地与截图属于历史搭建状态。
 
 ![中央实机](../media/battle-area-preview/center.png)
 
@@ -79,6 +79,6 @@
 4. 晴、雨、夜间均在实际渲染器下查看，截图为 1280×800，采用当前 Lumina 与统一像素美术配置。
 5. 地形参数测试、既有基础波次测试与怪物混合波次核心测试通过。实机场地检查 27 项通过；十种攻击、增益及首领招式需在制作后继续验证实际可读性。
 
-检查脚本：`tests/test_battle_area.gd`、`tests/test_wave_prototype.gd`、`tests/test_wave_core.gd`。布局讨论使用 game-assets 的 Game Designer 文本评审，随后由 Godot 实机验证；本轮复用已有美术。
+检查脚本：`tests/test_battle_area.gd`、`tests/test_battle_only_world.gd`、`tests/test_wave_core.gd`。布局讨论使用 game-assets 的 Game Designer 文本评审，随后由 Godot 实机验证；本轮复用已有美术。
 
 侧台地与 QE：[台地截图](../media/battle-area-preview/terrace.png)、[侧向旋转](../media/battle-area-preview/qe.png)、[外围台地](../media/battle-area-preview/edge.png)。天气：[细雨](../media/battle-area-preview/rain.png)、[夜间](../media/battle-area-preview/night.png)。

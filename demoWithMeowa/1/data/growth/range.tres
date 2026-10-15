@@ -1,5 +1,6 @@
 [gd_resource type="Resource" script_class="GrowthBuffDefinition" format=3 uid="uid://jnnk3ikh1uul"]
 
+[ext_resource type="Script" uid="uid://boy8cpvevequv" path="res://scripts/growth/growth_buff_effect.gd" id="1_vo2f4"]
 [ext_resource type="Script" uid="uid://6cmgrb0pgn4m" path="res://scripts/growth/growth_buff_definition.gd" id="buff"]
 [ext_resource type="Texture2D" uid="uid://dh103mus1wr2r" path="res://assets/meowa/ui/journal/symbols/star.png" id="icon"]
 
@@ -7,7 +8,6 @@
 script = ExtResource("buff")
 attribute = 2
 bonus_per_level = 0.15
-bonus_cap = 0.75
 id = &"P03"
 title = "范围扩大"
 icon = ExtResource("icon")

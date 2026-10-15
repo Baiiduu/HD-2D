@@ -1,0 +1,208 @@
+[gd_scene format=4]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uv28y"]
+resource_name = "Blockout | Panel Frames"
+albedo_color = Color(0.42, 0.42, 0.42, 1)
+metallic_specular = 0.0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_tocb3"]
+resource_name = "BaseFootMesh"
+_surfaces = [{
+"aabb": AABB(-1, -0.6, -0.06, 2, 1.2, 0.06),
+"attribute_data": PackedByteArray("AAAAAM3MzD4AAIA/zczMPgAAgD8AAAA/AACAPwAAAD8AAIA/AACAPwAAAD8AAIA/AACAP83MzD4AAAAAzczMPgAAAACamZk+AAAAPwAAgD8AAAAAAACAPwAAAAAAAAA/AAAAAAAAAAAAAIA/AAAAAAAAgD/NzMw9AACAPwAAAD8AAAAAAAAAPwAAAADNzMw+AAAAAJqZmT4AAIA/mpmZPgAAgD/NzMw+AAAAAM3MTD4AAIA/zcxMPgAAgD+amZk+AACAP5qZmT4AAAAAmpmZPgAAAADNzEw+zcwcPwAAAD8AAIA/AAAAPwAAAD8AAIA/AAAAPwAAgD8AAAA/AAAwP83MHD8AAAA/AAAAAM3MzD0AAIA/zczMPQAAgD/NzEw+AAAAPwAAgD8AAAAAAAAAP2Zmxj4AAAA/AACAP83MzD0AAAAAzczMPQAAAAAAAAAAZmbGPgAAAD8AAAA/AAAwPwAAAD8AAIA/AACAP83MTD4AAAAAzcxMPgAAAADNzMw9"),
+"format": 34359738391,
+"material": SubResource("StandardMaterial3D_uv28y"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 48,
+"vertex_data": PackedByteArray("AACAv5qZGb8AAAAAAACAv5qZGb+PwnW9AACAv5qZGT+PwnW9AACAv5qZGT+PwnW9AACAv5qZGb+PwnW9AACAP5qZGb+PwnW9AACAv5qZGb+PwnW9AACAv5qZGb8AAAAAAACAP5qZGb8AAAAAAACAP5qZGb8AAAAAAACAv5qZGb8AAAAAAACAv5qZGT8AAAAAAACAv5qZGT8AAAAAAACAv5qZGT+PwnW9zcwMP5qZGT+PwnW9AACAv5qZGT+PwnW9AACAv5qZGT8AAAAAAACAv5qZGb8AAAAAAACAP5qZGb8AAAAAAACAP5qZGb+PwnW9AACAv5qZGb+PwnW9AACAP5qZGT4AAAAAAACAP5qZGT6PwnW9AACAP5qZGb+PwnW9AACAP5qZGb+PwnW9AACAP5qZGb8AAAAAAACAP5qZGT4AAAAAzcwMP5qZGT+PwnW9AACAv5qZGT+PwnW9AACAP5qZGb+PwnW9AACAP5qZGb+PwnW9AACAP5qZGT6PwnW9zcwMP5qZGT+PwnW9zcwMP5qZGT8AAAAAzcwMP5qZGT+PwnW9AACAP5qZGT6PwnW9AACAP5qZGb8AAAAAAACAv5qZGT8AAAAAzcwMP5qZGT8AAAAAzcwMP5qZGT+PwnW9zcwMP5qZGT8AAAAAAACAv5qZGT8AAAAAzcwMP5qZGT8AAAAAAACAP5qZGT4AAAAAAACAP5qZGb8AAAAAAACAP5qZGT6PwnW9AACAP5qZGT4AAAAAzcwMP5qZGT8AAAAAAAD/f/////8AAP9//////wAA/3///////////wAA/7//////AAD/v/////8AAP+//38AAP//////fwAA//////9/AAD//////3//f////7//f/9/////v/9//3////+//3//////////f/////////9/////////AAD/f/////8AAP9//////wAA/3///////38AAP//////fwAA//////9/AAD/////////f/////////9//////////3//////////f/////////9//////////3///////////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//7//v///////v/+///////+//7///////3//f////7//f/9/////v/9//3////+//3//////////f/////////9//////////3//f////7//f/9/////v/9//3////+//7//v///////v/+///////+//7//////")
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1wexf"]
+resource_name = "Blockout | Stone Base"
+albedo_color = Color(0.78, 0.78, 0.78, 1)
+metallic_specular = 0.0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_trn86"]
+resource_name = "StoneBaseMesh"
+_surfaces = [{
+"aabb": AABB(-1, -0.6, -0.36, 2, 1.2, 0.36),
+"attribute_data": PackedByteArray("AAAAAM3MzD4AAIA/zczMPgAAgD8AAAA/AACAPwAAAD8AAIA/AACAPwAAAD8AAIA/AACAP83MzD4AAAAAzczMPgAAAACamZk+AAAAPwAAgD8AAAAAAACAPwAAAAAAAAA/AAAAAAAAAAAAAIA/AAAAAAAAgD/NzMw9AACAPwAAAD8AAAAAAAAAPwAAAADNzMw+AAAAAJqZmT4AAIA/mpmZPgAAgD/NzMw+AAAAAM3MTD4AAIA/zcxMPgAAgD+amZk+AACAP5qZmT4AAAAAmpmZPgAAAADNzEw+zcwcPwAAAD8AAIA/AAAAPwAAAD8AAIA/AAAAPwAAgD8AAAA/AAAwP83MHD8AAAA/AAAAAM3MzD0AAIA/zczMPQAAgD/NzEw+AAAAPwAAgD8AAAAAAAAAP2Zmxj4AAAA/AACAP83MzD0AAAAAzczMPQAAAAAAAAAAZmbGPgAAAD8AAAA/AAAwPwAAAD8AAIA/AACAP83MTD4AAAAAzcxMPgAAAADNzMw9"),
+"format": 34359738391,
+"material": SubResource("StandardMaterial3D_1wexf"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 48,
+"vertex_data": PackedByteArray("AACAv5qZGb8AAAAAAACAv5qZGb/sUbi+AACAv5qZGT/sUbi+AACAv5qZGT/sUbi+AACAv5qZGb/sUbi+AACAP5qZGb/sUbi+AACAv5qZGb/sUbi+AACAv5qZGb8AAAAAAACAP5qZGb8AAAAAAACAP5qZGb8AAAAAAACAv5qZGb8AAAAAAACAv5qZGT8AAAAAAACAv5qZGT8AAAAAAACAv5qZGT/sUbi+zcwMP5qZGT/sUbi+AACAv5qZGT/sUbi+AACAv5qZGT8AAAAAAACAv5qZGb8AAAAAAACAP5qZGb8AAAAAAACAP5qZGb/sUbi+AACAv5qZGb/sUbi+AACAP5qZGT4AAAAAAACAP5qZGT7sUbi+AACAP5qZGb/sUbi+AACAP5qZGb/sUbi+AACAP5qZGb8AAAAAAACAP5qZGT4AAAAAzcwMP5qZGT/sUbi+AACAv5qZGT/sUbi+AACAP5qZGb/sUbi+AACAP5qZGb/sUbi+AACAP5qZGT7sUbi+zcwMP5qZGT/sUbi+zcwMP5qZGT8AAAAAzcwMP5qZGT/sUbi+AACAP5qZGT7sUbi+AACAP5qZGb8AAAAAAACAv5qZGT8AAAAAzcwMP5qZGT8AAAAAzcwMP5qZGT/sUbi+zcwMP5qZGT8AAAAAAACAv5qZGT8AAAAAzcwMP5qZGT8AAAAAAACAP5qZGT4AAAAAAACAP5qZGb8AAAAAAACAP5qZGT7sUbi+AACAP5qZGT4AAAAAzcwMP5qZGT8AAAAAAAD/f/////8AAP9//////wAA/3///////////wAA/7//////AAD/v/////8AAP+//38AAP//////fwAA//////9/AAD//////3//f////7//f/9/////v/9//3////+//3//////////f/////////9/////////AAD/f/////8AAP9//////wAA/3///////38AAP//////fwAA//////9/AAD/////////f/////////9//////////3//////////f/////////9//////////3///////////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//7//v///////v/+///////+//7///////3//f////7//f/9/////v/9//3////+//3//////////f/////////9//////////3//f////7//f/9/////v/9//3////+//7//v///////v/+///////+//7//////")
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_o08np"]
+resource_name = "Blockout | Caps and Light Placeholder"
+albedo_color = Color(0.9, 0.9, 0.9, 1)
+metallic_specular = 0.0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_bh78t"]
+resource_name = "BaseCapMesh"
+_surfaces = [{
+"aabb": AABB(-1, -0.6, -0.03, 2, 1.2, 0.03),
+"attribute_data": PackedByteArray("AAAAAM3MzD4AAIA/zczMPgAAgD8AAAA/AACAPwAAAD8AAIA/AACAPwAAAD8AAIA/AACAP83MzD4AAAAAzczMPgAAAACamZk+AAAAPwAAgD8AAAAAAACAPwAAAAAAAAA/AAAAAAAAAAAAAIA/AAAAAAAAgD/NzMw9AACAPwAAAD8AAAAAAAAAPwAAAADNzMw+AAAAAJqZmT4AAIA/mpmZPgAAgD/NzMw+AAAAAM3MTD4AAIA/zcxMPgAAgD+amZk+AACAP5qZmT4AAAAAmpmZPgAAAADNzEw+zcwcPwAAAD8AAIA/AAAAPwAAAD8AAIA/AAAAPwAAgD8AAAA/AAAwP83MHD8AAAA/AAAAAM3MzD0AAIA/zczMPQAAgD/NzEw+AAAAPwAAgD8AAAAAAAAAP2Zmxj4AAAA/AACAP83MzD0AAAAAzczMPQAAAAAAAAAAZmbGPgAAAD8AAAA/AAAwPwAAAD8AAIA/AACAP83MTD4AAAAAzcxMPgAAAADNzMw9"),
+"format": 34359738391,
+"material": SubResource("StandardMaterial3D_o08np"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 48,
+"vertex_data": PackedByteArray("AACAv5qZGb8AAAAAAACAv5qZGb+PwvW8AACAv5qZGT+PwvW8AACAv5qZGT+PwvW8AACAv5qZGb+PwvW8AACAP5qZGb+PwvW8AACAv5qZGb+PwvW8AACAv5qZGb8AAAAAAACAP5qZGb8AAAAAAACAP5qZGb8AAAAAAACAv5qZGb8AAAAAAACAv5qZGT8AAAAAAACAv5qZGT8AAAAAAACAv5qZGT+PwvW8zcwMP5qZGT+PwvW8AACAv5qZGT+PwvW8AACAv5qZGT8AAAAAAACAv5qZGb8AAAAAAACAP5qZGb8AAAAAAACAP5qZGb+PwvW8AACAv5qZGb+PwvW8AACAP5qZGT4AAAAAAACAP5qZGT6PwvW8AACAP5qZGb+PwvW8AACAP5qZGb+PwvW8AACAP5qZGb8AAAAAAACAP5qZGT4AAAAAzcwMP5qZGT+PwvW8AACAv5qZGT+PwvW8AACAP5qZGb+PwvW8AACAP5qZGb+PwvW8AACAP5qZGT6PwvW8zcwMP5qZGT+PwvW8zcwMP5qZGT8AAAAAzcwMP5qZGT+PwvW8AACAP5qZGT6PwvW8AACAP5qZGb8AAAAAAACAv5qZGT8AAAAAzcwMP5qZGT8AAAAAzcwMP5qZGT+PwvW8zcwMP5qZGT8AAAAAAACAv5qZGT8AAAAAzcwMP5qZGT8AAAAAAACAP5qZGT4AAAAAAACAP5qZGb8AAAAAAACAP5qZGT6PwvW8AACAP5qZGT4AAAAAzcwMP5qZGT8AAAAAAAD/f/////8AAP9//////wAA/3///////////wAA/7//////AAD/v/////8AAP+//38AAP//////fwAA//////9/AAD//////3//f////7//f/9/////v/9//3////+//3//////////f/////////9/////////AAD/f/////8AAP9//////wAA/3///////38AAP//////fwAA//////9/AAD/////////f/////////9//////////3//////////f/////////9//////////3///////////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//7//v///////v/+///////+//7///////3//f////7//f/9/////v/9//3////+//3//////////f/////////9//////////3//f////7//f/9/////v/9//3////+//7//v///////v/+///////+//7//////")
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fowh5"]
+resource_name = "Blockout | Equipment Shell"
+albedo_color = Color(0.58, 0.58, 0.58, 1)
+metallic_specular = 0.0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_l55if"]
+resource_name = "EquipmentShellMesh"
+_surfaces = [{
+"aabb": AABB(-1, -0.6, -0.75, 2, 1.2, 0.75),
+"attribute_data": PackedByteArray("AAAAAM3MzD4AAIA/zczMPgAAgD8AAAA/AACAPwAAAD8AAIA/AACAPwAAAD8AAIA/AACAP83MzD4AAAAAzczMPgAAAACamZk+AAAAPwAAgD8AAAAAAACAPwAAAAAAAAA/AAAAAAAAAAAAAIA/AAAAAAAAgD/NzMw9AACAPwAAAD8AAAAAAAAAPwAAAADNzMw+AAAAAJqZmT4AAIA/mpmZPgAAgD/NzMw+AAAAAM3MTD4AAIA/zcxMPgAAgD+amZk+AACAP5qZmT4AAAAAmpmZPgAAAADNzEw+zcwcPwAAAD8AAIA/AAAAPwAAAD8AAIA/AAAAPwAAgD8AAAA/AAAwP83MHD8AAAA/AAAAAM3MzD0AAIA/zczMPQAAgD/NzEw+AAAAPwAAgD8AAAAAAAAAP2Zmxj4AAAA/AACAP83MzD0AAAAAzczMPQAAAAAAAAAAZmbGPgAAAD8AAAA/AAAwPwAAAD8AAIA/AACAP83MTD4AAAAAzcxMPgAAAADNzMw9"),
+"format": 34359738391,
+"material": SubResource("StandardMaterial3D_fowh5"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 48,
+"vertex_data": PackedByteArray("AACAv5qZGb8AAAAAAACAv5qZGb8AAEC/AACAv5qZGT8AAEC/AACAv5qZGT8AAEC/AACAv5qZGb8AAEC/AACAP5qZGb8AAEC/AACAv5qZGb8AAEC/AACAv5qZGb8AAAAAAACAP5qZGb8AAAAAAACAP5qZGb8AAAAAAACAv5qZGb8AAAAAAACAv5qZGT8AAAAAAACAv5qZGT8AAAAAAACAv5qZGT8AAEC/zcwMP5qZGT8AAEC/AACAv5qZGT8AAEC/AACAv5qZGT8AAAAAAACAv5qZGb8AAAAAAACAP5qZGb8AAAAAAACAP5qZGb8AAEC/AACAv5qZGb8AAEC/AACAP5qZGT4AAAAAAACAP5qZGT4AAEC/AACAP5qZGb8AAEC/AACAP5qZGb8AAEC/AACAP5qZGb8AAAAAAACAP5qZGT4AAAAAzcwMP5qZGT8AAEC/AACAv5qZGT8AAEC/AACAP5qZGb8AAEC/AACAP5qZGb8AAEC/AACAP5qZGT4AAEC/zcwMP5qZGT8AAEC/zcwMP5qZGT8AAAAAzcwMP5qZGT8AAEC/AACAP5qZGT4AAEC/AACAP5qZGb8AAAAAAACAv5qZGT8AAAAAzcwMP5qZGT8AAAAAzcwMP5qZGT8AAEC/zcwMP5qZGT8AAAAAAACAv5qZGT8AAAAAzcwMP5qZGT8AAAAAAACAP5qZGT4AAAAAAACAP5qZGb8AAAAAAACAP5qZGT4AAEC/AACAP5qZGT4AAAAAzcwMP5qZGT8AAAAAAAD/f/////8AAP9//////wAA/3///////////wAA/7//////AAD/v/////8AAP+//38AAP//////fwAA//////9/AAD//////3//f////7//f/9/////v/9//3////+//3//////////f/////////9/////////AAD/f/////8AAP9//////wAA/3///////38AAP//////fwAA//////9/AAD/////////f/////////9//////////3//////////f/////////9//////////3///////////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//7//v///////v/+///////+//7///////3//f////7//f/9/////v/9//3////+//3//////////f/////////9//////////3//f////7//f/9/////v/9//3////+//7//v///////v/+///////+//7//////")
+}]
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_g5any"]
+resource_name = "TopCoverMesh"
+_surfaces = [{
+"aabb": AABB(-1, -0.6, -0.05, 2, 1.2, 0.05),
+"attribute_data": PackedByteArray("AAAAAM3MzD4AAIA/zczMPgAAgD8AAAA/AACAPwAAAD8AAIA/AACAPwAAAD8AAIA/AACAP83MzD4AAAAAzczMPgAAAACamZk+AAAAPwAAgD8AAAAAAACAPwAAAAAAAAA/AAAAAAAAAAAAAIA/AAAAAAAAgD/NzMw9AACAPwAAAD8AAAAAAAAAPwAAAADNzMw+AAAAAJqZmT4AAIA/mpmZPgAAgD/NzMw+AAAAAM3MTD4AAIA/zcxMPgAAgD+amZk+AACAP5qZmT4AAAAAmpmZPgAAAADNzEw+zcwcPwAAAD8AAIA/AAAAPwAAAD8AAIA/AAAAPwAAgD8AAAA/AAAwP83MHD8AAAA/AAAAAM3MzD0AAIA/zczMPQAAgD/NzEw+AAAAPwAAgD8AAAAAAAAAP2Zmxj4AAAA/AACAP83MzD0AAAAAzczMPQAAAAAAAAAAZmbGPgAAAD8AAAA/AAAwPwAAAD8AAIA/AACAP83MTD4AAAAAzcxMPgAAAADNzMw9"),
+"format": 34359738391,
+"material": SubResource("StandardMaterial3D_o08np"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 48,
+"vertex_data": PackedByteArray("AACAv5qZGb8AAAAAAACAv5qZGb/NzEy9AACAv5qZGT/NzEy9AACAv5qZGT/NzEy9AACAv5qZGb/NzEy9AACAP5qZGb/NzEy9AACAv5qZGb/NzEy9AACAv5qZGb8AAAAAAACAP5qZGb8AAAAAAACAP5qZGb8AAAAAAACAv5qZGb8AAAAAAACAv5qZGT8AAAAAAACAv5qZGT8AAAAAAACAv5qZGT/NzEy9zcwMP5qZGT/NzEy9AACAv5qZGT/NzEy9AACAv5qZGT8AAAAAAACAv5qZGb8AAAAAAACAP5qZGb8AAAAAAACAP5qZGb/NzEy9AACAv5qZGb/NzEy9AACAP5qZGT4AAAAAAACAP5qZGT7NzEy9AACAP5qZGb/NzEy9AACAP5qZGb/NzEy9AACAP5qZGb8AAAAAAACAP5qZGT4AAAAAzcwMP5qZGT/NzEy9AACAv5qZGT/NzEy9AACAP5qZGb/NzEy9AACAP5qZGb/NzEy9AACAP5qZGT7NzEy9zcwMP5qZGT/NzEy9zcwMP5qZGT8AAAAAzcwMP5qZGT/NzEy9AACAP5qZGT7NzEy9AACAP5qZGb8AAAAAAACAv5qZGT8AAAAAzcwMP5qZGT8AAAAAzcwMP5qZGT/NzEy9zcwMP5qZGT8AAAAAAACAv5qZGT8AAAAAzcwMP5qZGT8AAAAAAACAP5qZGT4AAAAAAACAP5qZGb8AAAAAAACAP5qZGT7NzEy9AACAP5qZGT4AAAAAzcwMP5qZGT8AAAAAAAD/f/////8AAP9//////wAA/3///////////wAA/7//////AAD/v/////8AAP+//38AAP//////fwAA//////9/AAD//////3//f////7//f/9/////v/9//3////+//3//////////f/////////9/////////AAD/f/////8AAP9//////wAA/3///////38AAP//////fwAA//////9/AAD/////////f/////////9//////////3//////////f/////////9//////////3///////////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//7//v///////v/+///////+//7///////3//f////7//f/9/////v/9//3////+//3//////////f/////////9//////////3//f////7//f/9/////v/9//3////+//7//v///////v/+///////+//7//////")
+}]
+
+[sub_resource type="BoxMesh" id="BoxMesh_vldov"]
+material = SubResource("StandardMaterial3D_uv28y")
+size = Vector3(0.84, 0.48, 0.014)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y68a6"]
+resource_name = "Blockout | Screen and Vent Placeholders"
+albedo_color = Color(0.22, 0.22, 0.22, 1)
+metallic_specular = 0.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_k0c3v"]
+material = SubResource("StandardMaterial3D_y68a6")
+size = Vector3(0.72, 0.36, 0.004)
+
+[sub_resource type="BoxMesh" id="BoxMesh_dun67"]
+material = SubResource("StandardMaterial3D_uv28y")
+size = Vector3(0.32, 0.42, 0.012)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lj713"]
+material = SubResource("StandardMaterial3D_uv28y")
+size = Vector3(0.014, 0.4, 0.55)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bjcf0"]
+material = SubResource("StandardMaterial3D_y68a6")
+size = Vector3(0.004, 0.3, 0.43)
+
+[sub_resource type="BoxMesh" id="BoxMesh_876xp"]
+material = SubResource("StandardMaterial3D_uv28y")
+size = Vector3(0.22, 0.61, 0.012)
+
+[sub_resource type="BoxMesh" id="BoxMesh_6qm86"]
+material = SubResource("StandardMaterial3D_o08np")
+size = Vector3(0.12, 0.51, 0.004)
+
+[sub_resource type="BoxMesh" id="BoxMesh_1sy8c"]
+material = SubResource("StandardMaterial3D_uv28y")
+size = Vector3(0.39, 0.003, 0.69)
+
+[sub_resource type="BoxMesh" id="BoxMesh_6p32t"]
+material = SubResource("StandardMaterial3D_y68a6")
+size = Vector3(0.6, 0.003, 0.48)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sxy8k"]
+material = SubResource("StandardMaterial3D_uv28y")
+size = Vector3(1.48, 0.46, 0.012)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_hksfs"]
+margin = 0.002
+points = PackedVector3Array(-1, 0, -0.6, 1, 0, -0.6, 1, 0, 0.15, 0.55, 0, 0.6, -1, 0, 0.6, -1, 1.25, -0.6, 1, 1.25, -0.6, 1, 1.25, 0.15, 0.55, 1.25, 0.6, -1, 1.25, 0.6)
+
+[node name="UrbanEquipmentBlockout" type="Node3D" unique_id=571765065 groups=["ricochet_obstacles"]]
+metadata/dimensions_metres = Vector3(2, 1.25, 1.2)
+metadata/corner_cut_metres = 0.45
+
+[node name="Geometry" type="Node3D" parent="." unique_id=157505278]
+
+[node name="BaseFoot" type="MeshInstance3D" parent="Geometry" unique_id=1451327472]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
+mesh = SubResource("ArrayMesh_tocb3")
+
+[node name="StoneBase" type="MeshInstance3D" parent="Geometry" unique_id=450114404]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0.06, 0)
+mesh = SubResource("ArrayMesh_trn86")
+
+[node name="BaseCap" type="MeshInstance3D" parent="Geometry" unique_id=1392454556]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0.42, 0)
+mesh = SubResource("ArrayMesh_bh78t")
+
+[node name="EquipmentShell" type="MeshInstance3D" parent="Geometry" unique_id=1971310873]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0.45, 0)
+mesh = SubResource("ArrayMesh_l55if")
+
+[node name="TopCover" type="MeshInstance3D" parent="Geometry" unique_id=634530730]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 1.2, 0)
+mesh = SubResource("ArrayMesh_g5any")
+
+[node name="ScreenFrame" type="MeshInstance3D" parent="Geometry" unique_id=427443517]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08, 0.85, 0.604)
+mesh = SubResource("BoxMesh_vldov")
+
+[node name="ScreenPlaceholder" type="MeshInstance3D" parent="Geometry" unique_id=1039894990]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08, 0.85, 0.612)
+mesh = SubResource("BoxMesh_k0c3v")
+
+[node name="FrontServicePanel" type="MeshInstance3D" parent="Geometry" unique_id=690421220]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.72, 0.85, 0.605)
+mesh = SubResource("BoxMesh_dun67")
+
+[node name="RightVentFrame" type="MeshInstance3D" parent="Geometry" unique_id=374907560]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.004, 0.82, -0.23)
+mesh = SubResource("BoxMesh_lj713")
+
+[node name="RightVentPlaceholder" type="MeshInstance3D" parent="Geometry" unique_id=426486926]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.012, 0.82, -0.23)
+mesh = SubResource("BoxMesh_bjcf0")
+
+[node name="CornerLightFrame" type="MeshInstance3D" parent="Geometry" unique_id=572254824]
+transform = Transform3D(0.70710677, 0, 0.70710677, 0, 1, 0, -0.70710677, 0, 0.70710677, 0.77924263, 0.835, 0.37924263)
+mesh = SubResource("BoxMesh_876xp")
+
+[node name="CornerLightPlaceholder" type="MeshInstance3D" parent="Geometry" unique_id=610711938]
+transform = Transform3D(0.70710677, 0, 0.70710677, 0, 1, 0, -0.70710677, 0, 0.70710677, 0.7841924, 0.835, 0.38419238)
+mesh = SubResource("BoxMesh_6qm86")
+
+[node name="TopServicePanel" type="MeshInstance3D" parent="Geometry" unique_id=777460140]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6, 1.251, -0.04)
+mesh = SubResource("BoxMesh_1sy8c")
+
+[node name="TopVentPlaceholder" type="MeshInstance3D" parent="Geometry" unique_id=852235582]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.23, 1.251, -0.16)
+mesh = SubResource("BoxMesh_6p32t")
+
+[node name="RearServicePanel" type="MeshInstance3D" parent="Geometry" unique_id=523476722]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 0.85, -0.605)
+mesh = SubResource("BoxMesh_sxy8k")
+
+[node name="RicochetCollision" type="StaticBody3D" parent="." unique_id=464848117 groups=["ricochet_surfaces"]]
+collision_mask = 0
+metadata/movement_surface = 5
+
+[node name="FiveSidedFootprint" type="CollisionShape3D" parent="RicochetCollision" unique_id=2131999750]
+shape = SubResource("ConvexPolygonShape3D_hksfs")

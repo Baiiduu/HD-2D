@@ -7,11 +7,13 @@
 script = ExtResource("definition")
 body_radius = 0.16
 body_height = 0.34
+separation_radius = 0.5
 combat_stop_distance = 0.36
 contact_distance = 0.55
 enemy_id = &"mini_slime"
 scene = ExtResource("actor")
 display_name = "蓝胶幼体"
+horde_weight = 0.0
 health = 8.0
 move_speed = 1.6
 attack_damage = 4.0

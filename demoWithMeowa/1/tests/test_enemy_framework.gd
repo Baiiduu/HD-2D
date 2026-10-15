@@ -124,6 +124,9 @@ func run() -> void:
 	current_scene = world
 	await settle(16)
 	wave = world.get_node("WavePrototype")
+	# 本测试验证普通波次；不受编辑器当前选中的巨量模拟档位影响。
+	wave.population_rules = wave.population_rules.duplicate(true)
+	wave.population_rules.simulation_mode = false
 	player = world.get_node("Player")
 	wave.set_physics_process(false)
 	player.set_physics_process(false)

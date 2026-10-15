@@ -25,9 +25,16 @@ func choose(growth: RunGrowth, id: StringName) -> void:
 	growth.choice_ui.confirm_selection()
 
 func run() -> void:
-	var damage: GrowthBuffDefinition = load("res://data/growth/damage.tres")
-	var cooldown: GrowthBuffDefinition = load("res://data/growth/cooldown.tres")
-	var coverage: GrowthBuffDefinition = load("res://data/growth/range.tres")
+	# 此用例继续验证旧的有限、线性配置；持续成长与专精另有完整专项。
+	var damage: GrowthBuffDefinition = load("res://data/growth/damage.tres").duplicate()
+	var cooldown: GrowthBuffDefinition = load("res://data/growth/cooldown.tres").duplicate()
+	var coverage: GrowthBuffDefinition = load("res://data/growth/range.tres").duplicate()
+	for item in [damage, cooldown, coverage]:
+		item.max_level = 3
+		item.breakthrough_every = 0
+	cooldown.attribute = GrowthBuffDefinition.Attribute.COOLDOWN
+	cooldown.bonus_per_level = 0.1
+	cooldown.bonus_cap = 0.5
 	var modifiers := RunCombatModifiers.new()
 	var preview := modifiers.preview_after(damage)
 	near(preview.damage_multiplier(), 1.2, "Preview shows next coefficient")
@@ -50,6 +57,10 @@ func run() -> void:
 
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
 	world.get_node("LoadoutUI").save_enabled = false
+	world.get_node("Player").sword_rules = null
+	world.get_node("WavePrototype/RunGrowth").enabled = true
+	world.get_node("WavePrototype/FanAutoAttack").enabled = true
+	world.get_node("WavePrototype/RunBuffs").definitions.assign([damage, cooldown, coverage])
 	root.add_child(world)
 	current_scene = world
 	for frame in 12: await physics_frame
@@ -76,7 +87,7 @@ func run() -> void:
 	check(skills.initial_choice.select_option(&"initial:fan_slash"), "Choose actual initial A01 before buff checks")
 	skills.initial_choice.confirm_selection()
 	fan.set_physics_process(false)
-	player.global_position = world.get_node("BattleArea").global_position + Vector3.UP * 0.03
+	player.global_position = world.get_node("BattleArea").global_position + Vector3(-20.0, 0.03, 0.0)
 	(world.get_node("MapEffects/Camera3D") as FollowCamera).snap_to_target()
 	for frame in 8: await process_frame
 	wave._spawn_queue.clear()
@@ -86,6 +97,7 @@ func run() -> void:
 	enemy.set_physics_process(false)
 	enemy.health = 500.0
 	enemy.global_position = player.global_position + Vector3(0, 0, -2.6)
+	wave._spatial_index.update(enemy)
 	check(not fan.start_swing(), "Base attack cannot reach a monster at 2.6 meters")
 	var weather: Node3D = world.get_node("MapEffects/Weather")
 	var weather_clock: float = weather._clock
@@ -96,7 +108,7 @@ func run() -> void:
 	check(descriptions.has(&"skill:fan_slash:2"), "Weapon upgrade stays available alongside buffs")
 	check("×1.00 → ×1.20" in descriptions[&"P01"], "Damage card shows actual coefficient transition")
 	check("0% → 10%" in descriptions[&"P02"], "Cooldown card shows the actual shared reduction")
-	check("0% → 15%" in descriptions[&"P03"], "Range card shows the actual shared coverage gain")
+	check("×1.00 → ×1.15" in descriptions[&"P03"], "Range card shows the actual shared coverage gain")
 	for frame in 3: await process_frame
 	check(not paused and weather._clock > weather_clock, "World and weather run behind frozen combat")
 	if DisplayServer.get_name() != "headless":

@@ -1,0 +1,13 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/damage_numbers.gd" id="numbers"]
+[ext_resource type="Resource" path="res://data/combat/damage_numbers/normal.tres" id="normal"]
+[ext_resource type="Resource" path="res://data/combat/damage_numbers/heavy.tres" id="heavy"]
+[ext_resource type="Resource" path="res://data/combat/damage_numbers/critical.tres" id="critical"]
+[ext_resource type="Resource" path="res://data/combat/damage_numbers/lightning.tres" id="lightning"]
+
+[node name="DamageNumbers" type="CanvasLayer"]
+layer = 5
+script = ExtResource("numbers")
+number_stack_spacing = Vector2(16, 40)
+number_styles = [ExtResource("normal"), ExtResource("heavy"), ExtResource("critical"), ExtResource("lightning")]

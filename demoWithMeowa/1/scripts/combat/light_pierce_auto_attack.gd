@@ -205,9 +205,9 @@ func _advance_shot(shot: Dictionary, delta: float) -> void:
 		shot.hits[enemy.get_instance_id()] = true
 		var before := enemy.health
 		shot.effect.show_hit(session._path.ground_position(enemy.global_position))
-		enemy.take_damage(shot.stats.damage)
+		enemy.take_damage(shot.stats.damage, {"source": &"A02", "style": &"lightning", "direction": shot.direction})
 		var dealt := before - enemy.health
-		if dealt <= 0.0: continue
+		if dealt <= 0.0 and not session.combat_modifiers.damage_disabled: continue
 		shot.hit_count += 1
 		if _active(): _play_hit_audio(enemy.global_position)
 		hit_landed.emit(enemy, dealt)

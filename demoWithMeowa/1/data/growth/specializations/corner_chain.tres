@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="GrowthBuffDefinition" format=3 uid="uid://d3ogee10nn8xm"]
+
+[ext_resource type="Script" uid="uid://6cmgrb0pgn4m" path="res://scripts/growth/growth_buff_definition.gd" id="buff"]
+[ext_resource type="Script" uid="uid://boy8cpvevequv" path="res://scripts/growth/growth_buff_effect.gd" id="effect"]
+[ext_resource type="Texture2D" uid="uid://cyn6odllrs4vf" path="res://assets/meowa/ui/journal/symbols/shield.png" id="icon"]
+
+[sub_resource type="Resource" id="effect_0"]
+script = ExtResource("effect")
+bonus_per_level = 0.12
+
+[sub_resource type="Resource" id="effect_1"]
+script = ExtResource("effect")
+attribute = 3
+bonus_per_level = -0.06
+
+[resource]
+script = ExtResource("buff")
+attribute = 5
+bonus_per_level = 0.35
+max_level = 5
+required_levels = Dictionary[StringName, int]({
+&"R03": 4
+})
+extra_effects = Array[ExtResource("effect")]([SubResource("effect_0"), SubResource("effect_1")])
+id = &"S03"
+title = "折角连击"
+icon = ExtResource("icon")
+category = 3

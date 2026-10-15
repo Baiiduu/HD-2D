@@ -23,6 +23,10 @@ func key(code: Key) -> void:
 	event.physical_keycode = code
 	event.keycode = code
 	event.pressed = true
+	# 无界面测试没有窗口焦点，直接走正式按键处理器验证 F 的续波规则。
+	if DisplayServer.get_name() == "headless":
+		(current_scene.get_node("WavePrototype") as WavePrototype)._unhandled_key_input(event)
+		return
 	Input.parse_input_event(event)
 	event = event.duplicate()
 	event.pressed = false
@@ -65,22 +69,22 @@ func run() -> void:
 	var original_last := wave._run_waves[-1]
 	var fourth := wave._definition_for_wave(4)
 	check(total(fourth) == 48 and total(original_last) == 40, "Fourth wave grows without changing the last template")
-	check(fourth.entries[0].count == 12 and fourth.entries[1].count == 22 and fourth.entries[2].count == 14, "Additional enemies follow the original group proportions")
+	check(fourth.entries.map(func(entry): return entry.count) == [10, 21, 5, 5, 5, 2], "Additional enemies follow the current scouts, mixed horde and reinforcement proportions")
 	for index in fourth.entries.size():
 		var before := original_last.entries[index]
 		var after := fourth.entries[index]
-		check(before.enemy == after.enemy and before.spawn_zone_ids == after.spawn_zone_ids and before.warning_seconds == after.warning_seconds, "Generated group retains monster, zones and warning")
+		check(before.enemy == after.enemy and before.mixed_horde == after.mixed_horde and before.spawn_zone_ids == after.spawn_zone_ids and before.warning_seconds == after.warning_seconds, "Generated group retains monster or catalog mix, zones and warning")
 		check(is_equal_approx(after.interval, before.interval * 0.97), "Fourth wave uses configured interval reduction")
 		if index > 0:
 			var previous := original_last.entries[index - 1]
 			var previous_after := fourth.entries[index - 1]
-			var gap := before.start_delay - previous.start_delay - (previous.count - 1) * previous.interval
-			var actual_gap := after.start_delay - previous_after.start_delay - (previous_after.count - 1) * previous_after.interval
-			check(is_equal_approx(gap, actual_gap), "Group lulls survive increased counts")
+			var gap := before.start_delay - previous.start_delay - previous.spawn_duration()
+			var actual_gap := after.start_delay - previous_after.start_delay - previous_after.spawn_duration()
+			check(is_equal_approx(gap, actual_gap) if gap >= 0.0 else is_equal_approx(after.start_delay, before.start_delay), "Group lulls and deliberately overlapping reinforcements retain their timing")
 	var late := wave._definition_for_wave(1000000000)
 	check(total(late) == 160 and wave._run_waves.size() == 3, "Very late waves stay bounded without accumulating templates")
 	check(late.entries.all(func(entry: WaveSpawnEntry): return entry.interval >= 0.18), "Late spawn rate keeps the configured minimum interval")
-	check(original_last.entries[0].count == 10 and original_last.entries[1].count == 18, "Planning never mutates the source groups")
+	check(original_last.entries[0].count == 8 and original_last.entries[1].count == 18, "Planning never mutates the source groups")
 	# Inspector edits are reserved for the next run, including the mode itself.
 	wave.endless_mode = false
 	wave.endless_enemies_per_wave = 0
@@ -102,6 +106,9 @@ func run() -> void:
 		wave._physics_process(100.0)
 		check(wave._wave_clock == clock and wave._pending == expected[index], "Endless queue and clocks respect combat freeze")
 		wave.set_combat_frozen(false)
+		var expected_spawned: int = expected[index]
+		for job in wave._spawn_queue:
+			if job.enemy.enemy_id == &"pot_brood": expected_spawned += 2
 		var steps := 0
 		while wave.phase == WavePrototype.Phase.BATTLE and steps < 400:
 			steps += 1
@@ -116,16 +123,16 @@ func run() -> void:
 				for enemy in wave.enemies: enemy.set_physics_process(false)
 				check(wave.enemies.size() <= 24, "Endless spawning never exceeds production population cap")
 				# 固定不动的测试怪不会离开出生区，及时击杀以免模拟出人为堵点。
-				if wave._pending == 0 or wave.enemies.size() >= 8:
+				if wave._pending == 0 or wave.enemies.size() >= 8 or wave._capacity_waiting > 0:
 					for enemy in wave.enemies.duplicate():
 						enemy.spawn_delay = 0.0
 						enemy.take_damage(10000.0)
 			await physics_frame
-		killed += expected[index]
+		killed += expected_spawned
 		if wave.phase != WavePrototype.Phase.REST:
 			print("Unexpected wave state: ", JSON.stringify({"expected_wave":number, "steps":steps, "state":wave.get_run_state(), "health":player.current_health}))
 		check(wave.phase == WavePrototype.Phase.REST and wave.completed_waves == number and wave.outcome == WavePrototype.Outcome.NONE, "Every clear enters rest without a final victory")
-		check(wave._spawned_this_wave == expected[index] and wave.kills == killed, "No pending enemy is silently lost")
+		check(wave._spawned_this_wave == expected_spawned and wave.kills == killed, "All planned primary enemies and split children spawn and are defeated")
 		check(wave.enemies.is_empty() and wave._pending == 0 and wave._attack_root == null, "Wave rest cleans up enemies, queue and hazards")
 		check(wave.combat_modifiers.level_for(&"P01") == picked and picked > 0, "Real upgrades persist through every endless wave")
 		wave._physics_process(100.0)
@@ -137,6 +144,10 @@ func run() -> void:
 			await RenderingServer.frame_post_draw
 			root.get_texture().get_image().save_png("D:/.codexfile/work/endless-waves-20261013/rest-wave4.png")
 		if index < expected.size() - 1:
+			# 等升级卡的关闭动画交还输入，再验证真实 F 键；不跳过正式输入占用规则。
+			for frame in 30:
+				if get_first_node_in_group(&"gameplay_input_blockers") == null: break
+				await physics_frame
 			key(KEY_F)
 			for frame in 5: await physics_frame
 			check(wave.phase == WavePrototype.Phase.BATTLE and wave.wave == number + 1, "Actual F input advances beyond the original final wave")
@@ -175,7 +186,9 @@ func run() -> void:
 	check(wave.phase == WavePrototype.Phase.BATTLE and wave._pending == 5, "Empty opening list builds one fallback endless template")
 	check(total(wave._definition_for_wave(2)) == 13 and wave._run_waves.size() == 1, "Fallback opening uses the same endless growth and bounded template storage")
 	wave.retreat()
-	world.free()
-	await create_timer(0.1).timeout
+	for audio in world.find_children("*", "AudioStreamPlayer", true, false): audio.stop()
+	world.queue_free()
+	for frame in 8: await physics_frame
+	await create_timer(0.15).timeout
 	print("Endless waves: %d checks, %d failures" % [checks, failures.size()])
 	quit.call_deferred(0 if failures.is_empty() else 1)

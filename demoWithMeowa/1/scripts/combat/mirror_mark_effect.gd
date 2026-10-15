@@ -1,6 +1,9 @@
 class_name MirrorMarkEffect
 extends Node3D
 
+const EFFECT_LAYER := preload("res://scripts/rendering/combat_effect_layer.gd")
+const MIRROR_SURFACE := preload("res://scripts/combat/mirror_reflection_surface.gd")
+
 signal finished
 
 const PIXEL_SHADER := preload("res://shaders/combat/mirror_pixels.gdshader")
@@ -24,6 +27,7 @@ var _breaking := false
 var _break_position := Vector3.ZERO
 var _break_basis := Basis.IDENTITY
 var _break_opacity := 1.0
+var _surface: MIRROR_SURFACE
 
 func _ready() -> void:
 	_material = _new_material(Rect2(0, 0, 1, 1))
@@ -38,13 +42,18 @@ func attach(target: WaveEnemy, surface_normal: Vector3) -> void:
 	stop()
 	enemy = target
 	normal = surface_normal
+	if not _surface:
+		_surface = MIRROR_SURFACE.new()
+		add_child(_surface)
+		_surface.reflected.connect(glint)
+	_surface.attach(target, normal, mirror_texture.get_size() * pixel_size, attachment_height)
 	_age = 0.0
 	_glint_age = 0.0
 	var camera := get_viewport().get_camera_3d()
 	_update_pose(target.global_position + Vector3.UP * attachment_height, camera.global_basis if camera else Basis.IDENTITY)
-	_material.set_shader_parameter("opacity", 1.0)
-	_material.set_shader_parameter("reveal", 1.0 if target.dead else 0.0)
-	_material.set_shader_parameter("glint", -1.0)
+	EFFECT_LAYER.set_parameter(_material, "opacity", 1.0)
+	EFFECT_LAYER.set_parameter(_material, "reveal", 1.0 if target.dead else 0.0)
+	EFFECT_LAYER.set_parameter(_material, "glint", -1.0)
 	_sprite.show()
 	set_process(true)
 	_process(0.0)
@@ -54,6 +63,7 @@ func glint() -> void:
 
 func shatter(point: Vector3) -> void:
 	if _breaking: return
+	if _surface: _surface.stop()
 	var camera := get_viewport().get_camera_3d()
 	var facing := camera.global_basis if camera else Basis.IDENTITY
 	var reveal := 1.0
@@ -73,8 +83,8 @@ func shatter(point: Vector3) -> void:
 		var size := mirror_texture.get_size() * pixel_size
 		_break_basis = Basis.IDENTITY.scaled(Vector3(size.x, size.y, 1))
 	for material in _piece_materials:
-		material.set_shader_parameter("reveal", reveal)
-		material.set_shader_parameter("glint", glint)
+		EFFECT_LAYER.set_parameter(material, "reveal", reveal)
+		EFFECT_LAYER.set_parameter(material, "glint", glint)
 	enemy = null
 	_breaking = true
 	_age = 0.0
@@ -84,6 +94,7 @@ func shatter(point: Vector3) -> void:
 	_process(0.0)
 
 func stop() -> void:
+	if _surface: _surface.stop()
 	enemy = null
 	_breaking = false
 	if _sprite: _sprite.hide()
@@ -107,14 +118,14 @@ func _process(delta: float) -> void:
 			var offset := side * (Vector2.ONE * 0.25 + travel)
 			_pieces[index].global_position = _break_position + oriented * Vector3(offset.x, offset.y, 0)
 			_pieces[index].global_basis = oriented.scaled_local(Vector3(0.5, 0.5, 1))
-			_piece_materials[index].set_shader_parameter("opacity", _break_opacity * (1.0 - _age / break_time))
+			EFFECT_LAYER.set_parameter(_piece_materials[index], "opacity", _break_opacity * (1.0 - _age / break_time))
 		return
 	if not is_instance_valid(enemy) or enemy.dead:
 		shatter(_sprite.global_position)
 		return
 	_update_pose(enemy.global_position + Vector3.UP * attachment_height, facing)
-	_material.set_shader_parameter("reveal", minf(1.0, _age / maxf(reveal_time, 0.001)))
-	_material.set_shader_parameter("glint", (_glint_age / glint_time) * 48.0 if _glint_age < glint_time else -1.0)
+	EFFECT_LAYER.set_parameter(_material, "reveal", minf(1.0, _age / maxf(reveal_time, 0.001)))
+	EFFECT_LAYER.set_parameter(_material, "glint", (_glint_age / glint_time) * 48.0 if _glint_age < glint_time else -1.0)
 
 func _update_pose(point: Vector3, facing: Basis) -> void:
 	_sprite.global_position = point
@@ -125,10 +136,9 @@ func _update_pose(point: Vector3, facing: Basis) -> void:
 	_sprite.global_basis = facing * Basis(Vector3.BACK, angle).scaled(Vector3(size.x, size.y, 1))
 
 func _new_material(rect: Rect2) -> ShaderMaterial:
-	var material := ShaderMaterial.new()
-	material.shader = PIXEL_SHADER
-	material.set_shader_parameter("effect_texture", mirror_texture)
-	material.set_shader_parameter("frame_rect", Vector4(rect.position.x, rect.position.y, rect.size.x, rect.size.y))
+	var material := EFFECT_LAYER.material(PIXEL_SHADER)
+	EFFECT_LAYER.set_parameter(material, "effect_texture", mirror_texture)
+	EFFECT_LAYER.set_parameter(material, "frame_rect", Vector4(rect.position.x, rect.position.y, rect.size.x, rect.size.y))
 	return material
 
 func _new_quad(material: ShaderMaterial) -> MeshInstance3D:

@@ -31,7 +31,7 @@ func get_combat_stats(modifiers: RunCombatModifiers = null) -> Dictionary:
 func describe_skill_upgrade(from_level: int, to_level: int) -> String:
 	var after := get_attack_stats(to_level)
 	if from_level == 0:
-		return "命中造成伤害、贴印并立即反射\n每次 %d 枚 · 伤害 %s\n最多反射 %d 次 · 镜印 %.1f 秒\n同一弹丸对每只怪物只伤害一次" % [after.count, str(snappedf(after.damage, 0.1)), after.bounces, after.mark_duration]
+		return "命中造成伤害、贴印并立即反射\n每次 %d 枚 · 伤害 %s\n最多反射 %d 次 · 镜印 %.1f 秒\n镜印可反射人物与弹射弹丸\n同一弹丸对每只怪物只伤害一次" % [after.count, str(snappedf(after.damage, 0.1)), after.bounces, after.mark_duration]
 	var before := get_attack_stats(from_level)
 	return "伤害 %s → %s · 反射 %d → %d 次\n齐射 %d → %d 枚 · 镜印 %.1f → %.1f 秒\n%s" % [str(snappedf(before.damage, 0.1)), str(snappedf(after.damage, 0.1)), before.bounces, after.bounces, before.count, after.count, before.mark_duration, after.mark_duration, skill_definition.level_data(to_level).description]
 
@@ -98,11 +98,11 @@ func _hit_mirror(enemy: WaveEnemy, shot: Dictionary) -> void:
 	var point := enemy.global_position
 	shot.hits[id] = true
 	var before := enemy.health
-	enemy.take_damage(shot.stats.damage)
+	enemy.take_damage(shot.stats.damage, {"source": &"mirror_mark", "direction": shot.direction})
 	var dealt := before - enemy.health
 	# 回调可能结束本局；不把旧局镜印带进下一局。
 	if shot not in _shots or shot.generation != session._generation: return
-	if dealt <= 0.0: return
+	if dealt <= 0.0 and not session.combat_modifiers.damage_disabled: return
 	var mark: Dictionary
 	if _marks.has(id):
 		mark = _marks[id]

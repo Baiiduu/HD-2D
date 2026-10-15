@@ -1,6 +1,8 @@
 class_name PrismRicochetEffect
 extends Node3D
 
+const EFFECT_LAYER := preload("res://scripts/rendering/combat_effect_layer.gd")
+
 signal finished
 
 const CRYSTAL_SHADER := preload("res://shaders/combat/prism_crystal.gdshader")
@@ -28,9 +30,8 @@ var _new_leg := true
 
 func _ready() -> void:
 	if not _head_mesh: _head_mesh = QuadMesh.new()
-	_head_material = ShaderMaterial.new()
-	_head_material.shader = CRYSTAL_SHADER
-	_head_material.set_shader_parameter("effect_texture", head_texture)
+	_head_material = EFFECT_LAYER.material(CRYSTAL_SHADER)
+	EFFECT_LAYER.set_parameter(_head_material, "effect_texture", head_texture)
 	_head = _mesh(_head_mesh, _head_material)
 	_feedback = feedback_scene.instantiate() as LightPierceEffect
 	_feedback.head_texture = null
@@ -113,7 +114,7 @@ func _process(delta: float) -> void:
 		leg.mesh.global_position = leg.from
 		leg.mesh.global_basis = Basis(offset, side * trail_width * _strength, forward.cross(side))
 		leg.mesh.visible = true
-		leg.material.set_shader_parameter("opacity", 0.85 * (1.0 - leg.age / fade_time))
+		EFFECT_LAYER.set_parameter(leg.material, "opacity", 0.85 * (1.0 - leg.age / fade_time))
 	if not _flying and _legs.is_empty() and not _feedback.is_processing():
 		set_process(false)
 		finished.emit()
@@ -151,12 +152,11 @@ func _recycle(leg: Dictionary) -> void:
 	_pool.append(leg)
 
 func _material(texture: Texture2D) -> ShaderMaterial:
-	var material := ShaderMaterial.new()
-	material.shader = LightPierceEffect.EFFECT_SHADER
-	material.set_shader_parameter("effect_texture", texture)
-	material.set_shader_parameter("energy", 1.15)
-	material.set_shader_parameter("opacity", 0.9)
-	material.set_shader_parameter("edge_fade", 0.0)
+	var material := EFFECT_LAYER.material(LightPierceEffect.EFFECT_SHADER)
+	EFFECT_LAYER.set_parameter(material, "effect_texture", texture)
+	EFFECT_LAYER.set_parameter(material, "energy", 1.15)
+	EFFECT_LAYER.set_parameter(material, "opacity", 0.9)
+	EFFECT_LAYER.set_parameter(material, "edge_fade", 0.0)
 	return material
 
 func _mesh(mesh: Mesh, material: ShaderMaterial) -> MeshInstance3D:

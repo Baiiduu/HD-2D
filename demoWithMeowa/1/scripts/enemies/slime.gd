@@ -3,6 +3,14 @@ extends WaveEnemy
 
 enum State { IDLE, PATROL, CHASE, RETURN }
 const DIRECTIONS := ["front","front_right","right","back_right","back","back_left","left","front_left"]
+const MIRRORED_FACINGS := [0, 1, 2, 3, 4, 3, 2, 1]
+# Only value data is shared: no cameras, SpriteFrames or textures are retained.
+static var _projection_valid := false
+static var _projection_basis := Basis.IDENTITY
+static var _projection_right := Vector3.RIGHT
+static var _projection_backward := Vector3.BACK
+static var _directional_clips: Dictionary[StringName, Array] = {}
+static var _clip_actions: Dictionary[StringName, StringName] = {&"": &""}
 signal state_changed(state: State)
 
 @export_group("地图连接")
@@ -60,16 +68,157 @@ var _ready_for_ai := false
 var _path_rebuild_pending := false
 var _random := RandomNumberGenerator.new()
 var _look := Vector3.FORWARD
+var _facing_sector := -1
 var _clip: StringName = &""
 var _frame := 0
 var _elapsed := 0.0
 var _hit_flash := 0.0
 var _sprite_scale := Vector3.ONE
 var _sprite_color := Color.WHITE
-var separation_radius := 0.75
+var separation_radius := 1.0
 var separation_strength := 1.5
+var pursuit_lookahead := 4.0
+var pursuit_flank_strength := 0.35
+var _yield_side := 0.0
 var knockback_multiplier := 1.0
+var _push_direction := Vector3.ZERO
+var _push_speed := 0.0
+var _push_remaining := 0.0
+var _push_total := 0.0
+var _push_collision: ProjectileCollision
+var _orbit: EnemyOrbitPath
+var _stun_effect: EnemyStunEffect
 @onready var sprite: Sprite3D = $Sprite
+
+func get_crowd_spacing() -> float:
+	return separation_radius
+
+func get_crowd_body_radius() -> float:
+	return body_radius
+
+func _personal_stop_distance(base_stop: float) -> float:
+	if not target is Player or (target as Player).crowd_clearance_distance <= 0.0: return base_stop
+	var distance := base_stop + (target as Player).crowd_clearance_distance
+	# 接触型留在攻击范围内；原本在范围外停靠的冲锋／远程招式保留自己的距离。
+	if base_stop < contact_distance: distance = minf(distance, maxf(base_stop, contact_distance - 0.05))
+	return distance
+
+func _personal_space_direction(direction: Vector3, stop: float, away := Vector3.INF, distance := -1.0, speed := NAN) -> Vector3:
+	if not target is Player or (target as Player).crowd_clearance_distance <= 0.0: return direction
+	# 独立调用仍读实时状态；普通移动只在本次同步规划内传入已计算的值。
+	if away == Vector3.INF:
+		away = global_position - target.global_position
+		away.y = 0.0
+	if distance < 0.0: distance = away.length()
+	if is_nan(speed): speed = effective_move_speed()
+	away = away / distance if distance > 0.00001 else -_look.normalized()
+	# 平缓限制向内速度，抵住后排压力；已进入范围时按正常移速让位，不瞬移或推玩家。
+	var required := clampf((stop - distance) / (maxf(speed, 0.01) * 0.12), -1.0, 1.0)
+	var radial := direction.dot(away)
+	if radial < required: direction += away * (required - radial)
+	return direction.limit_length(1.0)
+
+func _update_chase_facing(desired: Vector3) -> void:
+	var heading := Vector3(desired.x, 0.0, desired.z).normalized()
+	# 围住目标后，整理间距的微小往返不是转身意图；受阻时继续面对目标。
+	if heading.is_zero_approx() or get_real_velocity().dot(heading) < 0.15:
+		if is_instance_valid(target):
+			heading = target.global_position - global_position
+			heading.y = 0.0
+	if not heading.is_zero_approx(): _look = heading.normalized()
+
+func _facing_index(right: Vector3, backward: Vector3) -> int:
+	var angle := atan2(_look.dot(right), _look.dot(backward))
+	var sector_angle := TAU / 8.0
+	var nearest := posmod(roundi(angle / sector_angle), 8)
+	# 在相邻方向的分界处多留 6 度，真正转向和 Q/E 旋转仍即时切换。
+	if _facing_sector < 0 or absf(wrapf(angle - _facing_sector * sector_angle, -PI, PI)) > sector_angle * 0.5 + deg_to_rad(6.0):
+		_facing_sector = nearest
+	return _facing_sector
+
+func _camera_facing_index() -> int:
+	# A camera or its parent can turn between actors in the same rendered frame.
+	# Compare its actual basis, then preserve the original flatten/normalize order.
+	var basis := camera.global_basis
+	if not _projection_valid or basis != _projection_basis:
+		_projection_valid = true
+		_projection_basis = basis
+		var right := basis.x
+		var backward := basis.z
+		right.y = 0.0
+		backward.y = 0.0
+		_projection_right = right.normalized()
+		_projection_backward = backward.normalized()
+	return _facing_index(_projection_right, _projection_backward)
+
+static func _clips_for(action: StringName) -> Array:
+	if not _directional_clips.has(action):
+		# Custom actions are allowed; bound the cache without holding game resources.
+		if _directional_clips.size() >= 16:
+			_directional_clips.clear()
+			_clip_actions.clear()
+		var clips: Array[StringName] = []
+		for direction in DIRECTIONS:
+			var clip := StringName("%s_%s" % [action, direction])
+			clips.append(clip)
+			_clip_actions[clip] = StringName(String(clip).get_slice("_", 0))
+		_directional_clips[action] = clips
+	return _directional_clips[action]
+
+static func _clip_action(clip: StringName) -> StringName:
+	if not _clip_actions.has(clip):
+		# The previous clip may precede a cache eviction or use a custom name.
+		if _clip_actions.size() >= 144: _clip_actions.clear()
+		_clip_actions[clip] = StringName(String(clip).get_slice("_", 0))
+	return _clip_actions[clip]
+
+func _crowd_direction(desired: Vector3) -> Vector3:
+	if separation_radius <= 0.0 or separation_strength <= 0.0: return desired
+	var separation := Vector3.ZERO
+	if spatial_index:
+		separation = spatial_index.separation(self, separation_radius)
+	else:
+		for other: WaveEnemy in get_tree().get_nodes_in_group(&"wave_enemies"):
+			if other == self or other.dead or other.spawn_delay > 0.0: continue
+			var spacing := (maxf(separation_radius, body_radius * 2.1) + maxf(other.get_crowd_spacing(), other.get_crowd_body_radius() * 2.1)) * 0.5
+			separation += WaveEnemySpatialIndex.crowd_pair_force(global_position - other.global_position, spacing, body_radius + other.get_crowd_body_radius(), get_instance_id(), other.get_instance_id())
+	# 不能 normalized()：抵消前进的避让力应降低速度，后排才能在前排后面停住。
+	return (desired + separation * separation_strength).limit_length(1.0)
+
+## 只用于普通追击：沿局部压力较小的一侧让行，不改停步整理、退步或锁线招式。
+func _pursuit_crowd_direction(desired: Vector3, origin := Vector3.INF, target_distance := -1.0) -> Vector3:
+	var direction := _crowd_direction(desired)
+	if desired.is_zero_approx() or pursuit_flank_strength <= 0.0 or separation_strength <= 0.0: return direction
+	var pressure := clampf(1.0 - direction.dot(desired), 0.0, 1.0)
+	if pressure < 0.35:
+		_yield_side = 0.0
+		return direction
+	if origin == Vector3.INF: origin = global_position
+	if target_distance < 0.0: target_distance = TerrainPath.horizontal_distance(origin, target.global_position)
+	var spacing := maxf(separation_radius, body_radius * 2.1)
+	var approach := smoothstep(combat_stop_distance + spacing * 0.3, combat_stop_distance + spacing * 1.5, target_distance)
+	var amount := pursuit_flank_strength * pressure * approach
+	if amount < 0.02:
+		_yield_side = 0.0
+		return direction
+	var side := Vector3.UP.cross(desired)
+	if _yield_side == 0.0:
+		var lateral := direction.dot(side)
+		_yield_side = signf(lateral) if absf(lateral) > 0.08 else (1.0 if hash(get_instance_id()) % 2 == 0 else -1.0)
+	for choice in [_yield_side, -_yield_side]:
+		var candidate: Vector3 = (direction + side * choice * amount).limit_length(1.0)
+		var next := origin + candidate * maxf(0.35, body_radius)
+		if navigation.data and not navigation.can_walk_direct(origin, navigation.ground_position(next)): continue
+		_yield_side = choice
+		return candidate
+	return direction
+
+## 史莱姆及其具体怪物子类共用实际显示高度，换素材或缩放后自动适配。
+func get_damage_feedback_position() -> Vector3:
+	if is_instance_valid(sprite) and sprite.texture:
+		var pixel := sprite.pixel_size * sprite.global_basis.y.length()
+		return sprite.global_position + Vector3.UP * (sprite.texture.get_height() * pixel * 0.5 + pixel * 3.0)
+	return global_position + Vector3.UP * body_height
 
 func _enter_tree() -> void:
 	if wave_mode: $Sprite.set("shared_materials", true)
@@ -88,6 +237,8 @@ func configure_wave(context: Dictionary, definition: WaveEnemyDefinition, warnin
 		route_interval = melee.route_interval
 		separation_radius = melee.separation_radius
 		separation_strength = melee.separation_strength
+		pursuit_lookahead = melee.pursuit_lookahead
+		pursuit_flank_strength = melee.pursuit_flank_strength
 		knockback_multiplier = melee.knockback_multiplier
 		combat_stop_distance = melee.combat_stop_distance
 		contact_distance = melee.contact_distance
@@ -243,44 +394,136 @@ func _physics_process(delta: float) -> void:
 	else:
 		_stuck_clock = 0.0
 
+func _on_stun_started() -> void:
+	_route.clear()
+	_route_clock = 0.0
+	if not is_instance_valid(_stun_effect):
+		_stun_effect = EnemyStunEffect.new()
+		add_child(_stun_effect)
+	_stun_effect.begin(self, sprite, body_height)
+
+func _on_stun_ended() -> void:
+	_route_clock = 0.0
+	if is_instance_valid(_stun_effect): _stun_effect.stop()
+
+func _stunned_tick(delta: float) -> void:
+	velocity.x = 0.0
+	velocity.z = 0.0
+	velocity.y = 0.0 if is_on_floor() else velocity.y - gravity * delta
+	move_and_slide()
+
 func _combat_tick(delta: float) -> void:
 	velocity.y = 0.0 if is_on_floor() else velocity.y - gravity * delta
+	# 规划期间没有移动；完成 move_and_slide 后的朝向与接触判定继续读取实际落点。
+	var origin := global_position
+	var goal := target.global_position
+	var away := origin - goal
+	away.y = 0.0
+	var target_distance := TerrainPath.horizontal_distance(origin, goal)
 	var direction := Vector3.ZERO
-	if TerrainPath.horizontal_distance(global_position, target.global_position) > combat_stop_distance:
+	var stop := _personal_stop_distance(combat_stop_distance)
+	if target_distance > stop:
 		_route_clock -= delta
 		if _route_clock <= 0.0:
 			_route_clock = route_interval
-			_route = _path.shared_pursuit_route(global_position, target.global_position)
+			_route = _path.chase_route(origin, goal, pursuit_lookahead)
 			_waypoint = 1 if _route.size() > 1 else 0
-		if not _route.is_empty() and TerrainPath.horizontal_distance(global_position, _route[-1]) > 0.1:
-			while _waypoint < _route.size() - 1 and TerrainPath.horizontal_distance(global_position, _route[_waypoint]) < 0.14:
+		if not _route.is_empty() and TerrainPath.horizontal_distance(origin, _route[-1]) > 0.1:
+			while _waypoint < _route.size() - 1 and TerrainPath.horizontal_distance(origin, _route[_waypoint]) < 0.14:
 				_waypoint += 1
-			direction = _route[_waypoint] - global_position
+			direction = _route[_waypoint] - origin
 			direction.y = 0.0
 			direction = direction.normalized()
-			var separation := Vector3.ZERO
-			if spatial_index:
-				separation = spatial_index.separation(self, separation_radius)
-			else:
-				for other in get_tree().get_nodes_in_group(&"wave_enemies"):
-					if other == self or other.dead or other.spawn_delay > 0.0: continue
-					var offset: Vector3 = global_position - other.global_position
-					offset.y = 0.0
-					var distance := offset.length()
-					if distance > 0.01 and distance < separation_radius:
-						separation += offset / distance * (separation_radius - distance)
-			direction = (direction + separation * separation_strength).normalized()
+	var intended := direction
+	direction = _pursuit_crowd_direction(direction, origin, target_distance)
 	var actual_speed := effective_move_speed()
+	direction = _personal_space_direction(direction, stop, away, target_distance, actual_speed)
 	velocity.x = direction.x * actual_speed
 	velocity.z = direction.z * actual_speed
-	if direction != Vector3.ZERO: _look = direction
 	move_and_slide()
+	_update_chase_facing(intended)
 	# 接触范围、高差和遮挡属于史莱姆招式，不放进通用波次控制器。
 	if TerrainPath.horizontal_distance(global_position, target.global_position) < contact_distance and absf(global_position.y - target.global_position.y) < contact_height and (not can_damage_player.is_valid() or can_damage_player.call(attack_damage)) and _can_see_target():
 		damage_player.call(attack_damage)
 
 func _damage_feedback() -> void:
 	_hit_flash = hit_flash_seconds
+
+func apply_push_impulse(heading: Vector3, initial_speed: float, seconds: float) -> bool:
+	if not wave_mode or dead or spawn_delay > 0.0 or not navigation or not heading.is_finite() or not is_finite(initial_speed) or not is_finite(seconds) or initial_speed <= 0.0 or seconds <= 0.0 or knockback_multiplier <= 0.0: return false
+	if combat_active.is_valid() and not combat_active.call(): return false
+	heading.y = 0.0
+	if heading.is_zero_approx(): return false
+	_push_wave = null
+	_orbit = null
+	_push_direction = heading.normalized()
+	_push_speed = initial_speed * knockback_multiplier
+	_push_remaining = seconds
+	_push_total = seconds
+	if not _push_collision: _push_collision = ProjectileCollision.new()
+	return true
+
+func apply_orbit(region: Dictionary, heading: Vector3, speed: float, seconds: float, clockwise: bool) -> bool:
+	if not apply_push_impulse(heading, speed, seconds): return false
+	_orbit = EnemyOrbitPath.new(region, global_position, heading, clockwise, speed, seconds, knockback_multiplier, body_radius)
+	_push_total = _orbit.duration
+	_push_remaining = _push_total
+	_push_speed = _orbit.initial_speed
+	return true
+
+func is_orbiting() -> bool:
+	return _orbit != null and _push_remaining > 0.0
+
+func _advance_push(delta: float) -> void:
+	if _push_remaining <= 0.0 or dead: return
+	if _orbit:
+		_advance_orbit(delta)
+		return
+	var step := minf(delta, _push_remaining)
+	# 对线性衰减速度积分，避免推开距离随物理帧率改变。
+	var distance := _push_speed * (_push_remaining * step - 0.5 * step * step) / _push_total
+	_push_remaining -= step
+	var plane := navigation.ground_position(global_position).y
+	var allowed := _push_collision.ground_limit(navigation, global_position, _push_direction, distance, plane, 0.2)
+	if allowed > 0.00001:
+		var motion := _push_direction * allowed
+		motion.y = navigation.ground_position(global_position + motion).y + 0.02 - global_position.y
+		if move_and_collide(motion): _push_remaining = 0.0
+	if allowed < distance: _push_remaining = 0.0
+	_route_clock = 0.0
+	if spatial_index: spatial_index.update(self)
+
+func _advance_orbit(delta: float) -> void:
+	_push_remaining = maxf(0.0, _push_remaining - delta)
+	var goal := _orbit.distance_at(_push_total - _push_remaining)
+	var blocked := false
+	while _orbit.cursor < _orbit.points.size() and _orbit.travelled < goal - 0.000001:
+		var index := _orbit.cursor
+		var reach := minf(goal, _orbit.distances[index])
+		var fraction := (reach - _orbit.distances[index - 1]) / maxf(_orbit.distances[index] - _orbit.distances[index - 1], 0.000001)
+		var destination := _orbit.points[index - 1].lerp(_orbit.points[index], fraction)
+		var start := global_position
+		var motion := destination - start
+		motion.y = 0.0
+		var length := motion.length()
+		var heading := motion.normalized()
+		var plane := navigation.ground_position(start).y
+		var allowed := _push_collision.ground_limit(navigation, start, heading, length, plane, 0.2)
+		if allowed > 0.000001:
+			motion = heading * allowed
+			motion.y = navigation.ground_position(start + motion).y + 0.02 - start.y
+			blocked = move_and_collide(motion) != null
+		if _push_wave: _push_wave.spread(self, start, global_position, _orbit, _orbit.travelled, _push_layer)
+		_orbit.travelled = reach
+		if blocked or allowed + 0.000001 < length:
+			_push_remaining = 0.0
+			break
+		if reach >= _orbit.distances[index] - 0.000001: _orbit.cursor += 1
+	if _push_remaining <= 0.0:
+		_orbit = null
+		_push_wave = null
+	_route_clock = 0.0
+	if spatial_index: spatial_index.update(self)
 
 func apply_knockback(push: Vector3, distance: float) -> void:
 	if not wave_mode or dead or distance <= 0.0 or push == Vector3.ZERO: return
@@ -290,27 +533,30 @@ func apply_knockback(push: Vector3, distance: float) -> void:
 	# 不击落台地，也不跨断层或穿墙。
 	if absf(destination.y - navigation.ground_position(global_position).y) > 0.2 or navigation.route(global_position, destination).is_empty(): return
 	move_and_collide(push * distance)
+	if is_orbiting():
+		# 新的独立击退接管运动，避免下一帧被旧的绝对轨迹拉回。
+		_orbit = null
+		_push_wave = null
+		_push_remaining = 0.0
 	if spatial_index: spatial_index.update(self)
 	_route_clock = 0.0
 
 func _process(delta: float) -> void:
 	if wave_mode:
 		_hit_flash = maxf(_hit_flash - delta, 0.0)
-		sprite.scale = _sprite_scale * (warning_scale if spawn_delay > 0.0 else 1.0)
-		sprite.modulate = _sprite_color * (1.8 if _hit_flash > 0.0 else 1.0)
-		sprite.modulate.a = _sprite_color.a
+		var target_scale := _sprite_scale * (warning_scale if spawn_delay > 0.0 else 1.0)
+		if sprite.scale != target_scale: sprite.scale = target_scale
+		var tint := _sprite_color * (1.8 if _hit_flash > 0.0 else 1.0)
+		tint.a = _sprite_color.a
+		if sprite.modulate != tint: sprite.modulate = tint
 	if not animations or not camera: return
-	var right := camera.global_basis.x
-	var backward := camera.global_basis.z
-	right.y = 0.0; backward.y = 0.0
-	var angle := atan2(_look.dot(right.normalized()),_look.dot(backward.normalized()))
-	var facing := posmod(roundi(angle/(TAU/8.0)),8)
+	var facing := _camera_facing_index()
 	var moving := Vector2(velocity.x,velocity.z).length() > 0.05
-	var clip := StringName(("hop_" if moving else "idle_")+DIRECTIONS[facing])
+	var clip: StringName = _clips_for(&"hop" if moving else &"idle")[facing]
 	if not animations.has_animation(clip): return
 	if clip != _clip:
 		# Keep the motion phase when Q/E changes the observed direction.
-		if String(_clip).get_slice("_",0) != String(clip).get_slice("_",0):
+		if _clip_action(_clip) != _clip_action(clip):
 			_frame = 0; _elapsed = 0.0
 		_clip = clip
 	var count := animations.get_frame_count(_clip)
@@ -323,4 +569,5 @@ func _process(delta: float) -> void:
 		_elapsed -= duration
 		_frame = (_frame+1)%count
 		duration = animations.get_frame_duration(_clip,_frame)/fps
-	sprite.texture = animations.get_frame_texture(_clip,_frame)
+	var texture := animations.get_frame_texture(_clip,_frame)
+	if sprite.texture != texture: sprite.texture = texture
