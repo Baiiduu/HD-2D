@@ -1,0 +1,20 @@
+layout(push_constant, std430) uniform Parameters {
+	vec4 sizes;  // full xy, half zw
+	vec4 focus;  // distance, focus band, full-res radius, HDR threshold
+	vec4 shape;  // near, far, tilt strength, tilt center
+	vec4 band;   // tilt width, feather, bokeh gain, scatter mode
+	vec4 camera; // near plane, far plane, scatter columns, reserved
+} p;
+
+float luminance(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
+
+float circle_of_confusion(float depth, float uv_y) {
+	// Forward+/D3D12 reverse-Z: near = 1, far = 0. No OpenGL depth remapping.
+	float z = p.camera.x * p.camera.y / max(p.camera.x + depth * (p.camera.y - p.camera.x), 0.00001);
+	float delta = z - p.focus.x;
+	float magnitude = smoothstep(0.0, p.focus.y * 1.5, max(abs(delta) - p.focus.y * 0.5, 0.0));
+	float coc = magnitude * (delta < 0.0 ? -p.shape.x : p.shape.y);
+	float tilt = p.shape.z * smoothstep(0.0, max(p.band.y, 0.001), abs(uv_y - p.shape.w) - p.band.x * 0.5);
+	if (tilt > abs(coc)) coc = tilt * (abs(delta) > p.focus.y * 0.5 ? sign(delta) : (uv_y < p.shape.w ? -1.0 : 1.0));
+	return coc * p.focus.z;
+}

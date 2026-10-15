@@ -1,0 +1,39 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/city_pack/lamp_warm.glb" id="model"]
+
+[ext_resource type="Script" path="res://scripts/city/city_asset.gd" id="script"]
+
+[sub_resource type="BoxShape3D" id="shape_0"]
+
+size = Vector3(0.42, 0.2, 0.42)
+
+[node name="lamp_warm" type="Node3D"]
+
+script = ExtResource("script")
+
+[node name="Model" parent="." instance=ExtResource("model")]
+
+[node name="Collision" type="StaticBody3D" parent="."]
+
+[node name="Shape0" type="CollisionShape3D" parent="Collision"]
+
+position = Vector3(0, 0.1, 0)
+
+shape = SubResource("shape_0")
+
+[node name="Light" type="OmniLight3D" parent="."]
+
+position = Vector3(0, 2.55, 0)
+
+light_color = Color(1, 0.76, 0.47, 1)
+
+light_energy = 1.8
+
+omni_range = 4.8
+
+omni_attenuation = 1.5
+
+shadow_enabled = true
+
+light_size = 0.18

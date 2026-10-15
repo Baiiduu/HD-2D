@@ -1,0 +1,93 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/city_pack/maintenance_frame.glb" id="model"]
+
+[ext_resource type="Script" path="res://scripts/city/city_asset.gd" id="script"]
+
+[sub_resource type="BoxShape3D" id="shape_0"]
+
+size = Vector3(0.26, 12, 0.3)
+
+[sub_resource type="BoxShape3D" id="shape_1"]
+
+size = Vector3(0.76, 0.36, 0.85)
+
+[sub_resource type="BoxShape3D" id="shape_2"]
+
+size = Vector3(0.26, 12, 0.3)
+
+[sub_resource type="BoxShape3D" id="shape_3"]
+
+size = Vector3(0.76, 0.36, 0.85)
+
+[sub_resource type="BoxShape3D" id="shape_4"]
+
+size = Vector3(0.26, 12, 0.3)
+
+[sub_resource type="BoxShape3D" id="shape_5"]
+
+size = Vector3(0.76, 0.36, 0.85)
+
+[sub_resource type="BoxShape3D" id="shape_6"]
+
+size = Vector3(0.26, 12, 0.3)
+
+[sub_resource type="BoxShape3D" id="shape_7"]
+
+size = Vector3(0.76, 0.36, 0.85)
+
+[node name="maintenance_frame" type="Node3D"]
+
+script = ExtResource("script")
+
+[node name="Model" parent="." instance=ExtResource("model")]
+
+[node name="Collision" type="StaticBody3D" parent="."]
+
+[node name="Shape0" type="CollisionShape3D" parent="Collision"]
+
+position = Vector3(-3.2, 6, -1.8)
+
+shape = SubResource("shape_0")
+
+[node name="Shape1" type="CollisionShape3D" parent="Collision"]
+
+position = Vector3(-3.2, 0.18, -1.8)
+
+shape = SubResource("shape_1")
+
+[node name="Shape2" type="CollisionShape3D" parent="Collision"]
+
+position = Vector3(-3.2, 6, 1.8)
+
+shape = SubResource("shape_2")
+
+[node name="Shape3" type="CollisionShape3D" parent="Collision"]
+
+position = Vector3(-3.2, 0.18, 1.8)
+
+shape = SubResource("shape_3")
+
+[node name="Shape4" type="CollisionShape3D" parent="Collision"]
+
+position = Vector3(3.2, 6, -1.8)
+
+shape = SubResource("shape_4")
+
+[node name="Shape5" type="CollisionShape3D" parent="Collision"]
+
+position = Vector3(3.2, 0.18, -1.8)
+
+shape = SubResource("shape_5")
+
+[node name="Shape6" type="CollisionShape3D" parent="Collision"]
+
+position = Vector3(3.2, 6, 1.8)
+
+shape = SubResource("shape_6")
+
+[node name="Shape7" type="CollisionShape3D" parent="Collision"]
+
+position = Vector3(3.2, 0.18, 1.8)
+
+shape = SubResource("shape_7")

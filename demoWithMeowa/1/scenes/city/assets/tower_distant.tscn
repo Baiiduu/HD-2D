@@ -1,0 +1,33 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/city_pack/tower_distant.glb" id="model"]
+
+[ext_resource type="Script" path="res://scripts/city/city_asset.gd" id="script"]
+
+[sub_resource type="BoxShape3D" id="shape_0"]
+
+size = Vector3(5.3, 0.36, 4.6)
+
+[sub_resource type="BoxShape3D" id="shape_1"]
+
+size = Vector3(5.2, 17, 4.5)
+
+[node name="tower_distant" type="Node3D"]
+
+script = ExtResource("script")
+
+[node name="Model" parent="." instance=ExtResource("model")]
+
+[node name="Collision" type="StaticBody3D" parent="."]
+
+[node name="Shape0" type="CollisionShape3D" parent="Collision"]
+
+position = Vector3(0, 0.18, 0)
+
+shape = SubResource("shape_0")
+
+[node name="Shape1" type="CollisionShape3D" parent="Collision"]
+
+position = Vector3(0, 8.5, 0)
+
+shape = SubResource("shape_1")

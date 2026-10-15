@@ -50,7 +50,7 @@ extends Camera3D
 @export_group("景深")
 @export var dof_enabled: bool = true
 ## 深度景深按前后距离虚化；椭圆虚化在画面中保留人物周围的清晰区。
-@export_enum("深度景深", "椭圆虚化") var dof_mode: int = 1
+@export_enum("深度景深", "椭圆虚化", "HDR 散景") var dof_mode: int = 1
 ## 焦点前后保持清晰的距离（米）
 @export var dof_far_margin: float = 2.5
 @export var dof_far_transition: float = 5.0
@@ -241,11 +241,15 @@ func reset_horizontal_rotation() -> void:
 		_apply_transform()
 		_update_dof()
 
+func get_focus_depth() -> float:
+	# Camera-space depth stays on the player's chest when bounds clamp the rig's focus.
+	return maxf(near, -(global_transform.affine_inverse() * _target_point()).z)
+
 func _update_dof() -> void:
 	var practical := attributes as CameraAttributesPractical
 	if not practical:
 		return
-	var focus_distance := global_position.distance_to(_target_point())
+	var focus_distance := get_focus_depth()
 	practical.dof_blur_far_enabled = dof_enabled and dof_mode == 0
 	practical.dof_blur_near_enabled = dof_enabled and dof_mode == 0
 	practical.dof_blur_far_distance = focus_distance + dof_far_margin

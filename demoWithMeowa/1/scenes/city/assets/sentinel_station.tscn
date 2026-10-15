@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/city/assets/sentinel_mech.tscn" id="mech"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/maintenance_frame.tscn" id="frame"]
+
+[node name="SentinelStation" type="Node3D"]
+
+[node name="Mech" parent="." instance=ExtResource("mech")]
+
+[node name="MaintenanceFrame" parent="." instance=ExtResource("frame")]
