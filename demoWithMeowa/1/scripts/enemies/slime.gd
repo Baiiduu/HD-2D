@@ -44,6 +44,8 @@ signal state_changed(state: State)
 @export_range(0.1,2.0,0.05) var route_interval := 0.45
 ## 动画速度独立于怪物移动速度，1 为美术默认帧率。
 @export_range(0.25,2.0,0.05) var animation_speed := 1.0
+## 仅普通史莱姆追击：同高地面水平扫掠；关闭即恢复 CharacterBody 移动。
+@export var ground_movement_enabled := false
 
 @export_group("波次接触攻击")
 ## 战斗模式持续追击，到此距离停下；展示模式仍使用 Stop Distance。
@@ -88,6 +90,8 @@ var _push_total := 0.0
 var _push_collision: ProjectileCollision
 var _orbit: EnemyOrbitPath
 var _stun_effect: EnemyStunEffect
+var _ground_moved := false
+var _ground_real_velocity := Vector3.ZERO
 @onready var sprite: Sprite3D = $Sprite
 
 func get_crowd_spacing() -> float:
@@ -121,7 +125,8 @@ func _personal_space_direction(direction: Vector3, stop: float, away := Vector3.
 func _update_chase_facing(desired: Vector3) -> void:
 	var heading := Vector3(desired.x, 0.0, desired.z).normalized()
 	# 围住目标后，整理间距的微小往返不是转身意图；受阻时继续面对目标。
-	if heading.is_zero_approx() or get_real_velocity().dot(heading) < 0.15:
+	var real_velocity := _ground_real_velocity if _ground_moved else get_real_velocity()
+	if heading.is_zero_approx() or real_velocity.dot(heading) < 0.15:
 		if is_instance_valid(target):
 			heading = target.global_position - global_position
 			heading.y = 0.0
@@ -407,6 +412,7 @@ func _on_stun_ended() -> void:
 	if is_instance_valid(_stun_effect): _stun_effect.stop()
 
 func _stunned_tick(delta: float) -> void:
+	_ground_moved = false
 	velocity.x = 0.0
 	velocity.z = 0.0
 	velocity.y = 0.0 if is_on_floor() else velocity.y - gravity * delta
@@ -440,11 +446,55 @@ func _combat_tick(delta: float) -> void:
 	direction = _personal_space_direction(direction, stop, away, target_distance, actual_speed)
 	velocity.x = direction.x * actual_speed
 	velocity.z = direction.z * actual_speed
-	move_and_slide()
+	_move_combat_body(delta)
 	_update_chase_facing(intended)
 	# 接触范围、高差和遮挡属于史莱姆招式，不放进通用波次控制器。
 	if TerrainPath.horizontal_distance(global_position, target.global_position) < contact_distance and absf(global_position.y - target.global_position.y) < contact_height and (not can_damage_player.is_valid() or can_damage_player.call(attack_damage)) and _can_see_target():
 		damage_player.call(attack_damage)
+
+func _supports_ground_movement() -> bool:
+	return true
+
+func _move_combat_body(delta: float) -> void:
+	_ground_moved = false
+	if not ground_movement_enabled or not _supports_ground_movement():
+		move_and_slide()
+		return
+	var start := global_position
+	var requested_velocity := velocity
+	var motion := Vector3(velocity.x, 0.0, velocity.z) * delta
+	# Special enemies have their own motion rules; opting in a derived scene cannot
+	# silently switch its movement. Airborne/externally driven bodies use the old solver.
+	if navigation and delta > 0.0 and _push_remaining <= 0.0 and global_basis == Basis.IDENTITY and velocity.y <= 0.0 and velocity.y >= -gravity * delta * 1.01:
+		var floor_y := navigation.flat_ground_height(start, start + motion, body_radius + safe_margin)
+		# Spawn/knockback offsets must finish falling first, rather than hovering
+		# at the spawn height. This path only retains the native contact skin.
+		if not is_nan(floor_y) and start.y >= floor_y - safe_margin and start.y <= floor_y + maxf(0.0025, safe_margin * 2.0):
+			velocity.y = 0.0
+			# Engine capsule sweeps include recovery and live walls, even when idle.
+			# Project onto each wall rather than dropping the entire requested motion.
+			for slide in max_slides:
+				if slide > 0 and is_nan(navigation.flat_ground_height(global_position, global_position + motion, body_radius + safe_margin)):
+					global_position = start
+					velocity = requested_velocity
+					move_and_slide()
+					return
+				var hit := move_and_collide(motion, false, safe_margin)
+				if not hit: break
+				var normal := hit.get_normal()
+				if absf(normal.y) > 0.01:
+					# A step, slope or nonvertical prop needs the full original solver.
+					global_position = start
+					velocity = requested_velocity
+					move_and_slide()
+					return
+				motion = hit.get_remainder().slide(normal)
+				velocity = velocity.slide(normal)
+				if motion.is_zero_approx(): break
+			_ground_moved = true
+			_ground_real_velocity = (global_position - start) / delta
+			return
+	move_and_slide()
 
 func _damage_feedback() -> void:
 	_hit_flash = hit_flash_seconds

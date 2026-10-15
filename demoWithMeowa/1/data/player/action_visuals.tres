@@ -4,3 +4,4 @@
 
 [resource]
 script = ExtResource("visuals")
+coalesce_charge_preview = true

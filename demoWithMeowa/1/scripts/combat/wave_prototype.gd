@@ -1,6 +1,8 @@
 class_name WavePrototype
 extends Node3D
 
+const CROWD_BATCH_INDEX = preload("res://scripts/combat/crowd_batch_enemy_spatial_index.gd")
+
 signal changed
 signal phase_changed(phase: Phase)
 signal combat_frozen_changed(frozen: bool)
@@ -47,6 +49,23 @@ var _attack_surface_query := ATTACK_SURFACE_QUERY.new()
 @export var enemy_catalog: WaveEnemyCatalog
 ## 数量档位为空时沿用现有参数；正式地图用 horde_128，更大档位须单独压测，下一轮开始时生效。
 @export var population_rules: WavePopulationRules
+## 普通避让在当前物理步统一计算精确成对力；关闭恢复逐怪实时累计。
+## 只冻结本步避让规划，真实墙体移动和战斗空间查询继续立即提交／读取。
+@export var batch_crowd_enabled := false:
+	set(value):
+		batch_crowd_enabled = value
+		_sync_batch_crowd_index()
+## 普通追击用原生局部寻路，减少目标移动时的整图构建；关闭恢复共享追击树。
+@export var native_chase_enabled := false:
+	set(value):
+		native_chase_enabled = value
+		_sync_native_chase_paths()
+## 仅普通史莱姆的平地追击；关闭立即恢复旧移动，特殊怪物不受影响。
+@export var slime_ground_movement_enabled := false:
+	set(value):
+		slime_ground_movement_enabled = value
+		for enemy in enemies:
+			if enemy is SlimeEnemy: enemy.ground_movement_enabled = value
 ## 仅无尽模式应用；新挑战建立快照，当前局不受 Inspector 修改影响。
 @export var health_growth_rules: WaveHealthGrowthRules
 ## 控制现有和后续生成的全部波次怪物；各 Sprite 自身关闭时仍保持关闭，不影响玩家。
@@ -129,7 +148,7 @@ var _horde_pool: Array[WaveEnemyDefinition] = []
 var _horde_usage: Dictionary = {}
 var _run_population: WavePopulationRules
 var _run_health_growth: WaveHealthGrowthRules
-var _spatial_index := WaveEnemySpatialIndex.new()
+var _spatial_index: WaveEnemySpatialIndex = CROWD_BATCH_INDEX.new()
 var _alive_by_definition: Dictionary = {}
 var _alive_by_role := PackedInt32Array([0, 0, 0, 0])
 var _population_cost := 0
@@ -177,6 +196,7 @@ var _frozen_modes: Dictionary = {}
 var _clearing_wave := false
 
 func _ready() -> void:
+	_sync_batch_crowd_index()
 	_random.seed = random_seed
 	_ui = UI_SCRIPT.new()
 	_ui.controller = self
@@ -198,6 +218,10 @@ func _ready() -> void:
 		changed.connect(loadout._queue_refresh)
 		loadout._queue_refresh()
 	_queue_path_rebuild()
+
+func _sync_batch_crowd_index() -> void:
+	if _spatial_index is CROWD_BATCH_INDEX:
+		(_spatial_index as CROWD_BATCH_INDEX).batch_enabled = batch_crowd_enabled
 
 func _initialize_path() -> void:
 	var tree := get_tree()
@@ -539,10 +563,15 @@ func _configure_simulation_population() -> void:
 	_run_population.max_wave_enemies = count
 	_run_population.max_queued_per_wave = count
 
+func _sync_native_chase_paths() -> void:
+	if _path: _path.native_chase_enabled = native_chase_enabled
+	for path: TerrainPath in _paths_by_radius.values(): path.native_chase_enabled = native_chase_enabled
+
 func _navigation_for(definition: WaveEnemyDefinition) -> TerrainPath:
 	if is_equal_approx(definition.navigation_radius, 0.32): return _path
 	if not _paths_by_radius.has(definition.navigation_radius):
 		var path := TerrainPath.new()
+		path.native_chase_enabled = native_chase_enabled
 		var exclude: Array[RID] = [player.get_rid()]
 		for enemy in enemies: exclude.append(enemy.get_rid())
 		path.build(terrain, definition.navigation_radius, exclude, battle_area.grow(terrain.data.cell_size))
@@ -1056,6 +1085,7 @@ func _spawn_enemy(definition: WaveEnemyDefinition = null, requested_position := 
 	enemy.defeated.connect(_enemy_defeated)
 	enemy.tree_exiting.connect(_enemy_exiting.bind(enemy))
 	enemy.position = to_local(spawn + Vector3.UP * 0.03)
+	if enemy is SlimeEnemy: enemy.ground_movement_enabled = slime_ground_movement_enabled
 	enemies.append(enemy)
 	_reachability_last[enemy.get_instance_id()] = _reachability_clock
 	_alive_by_definition[definition] = int(_alive_by_definition.get(definition, 0)) + 1

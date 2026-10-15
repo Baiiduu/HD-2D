@@ -9,6 +9,9 @@ var _visual_progress := -1.0
 var _feedback: EnemyFeedbackPool
 var _surface_collision := ProjectileCollision.new()
 
+func _supports_ground_movement() -> bool:
+	return false
+
 func _ready() -> void:
 	super._ready()
 	# 预告用透明度，保留完整原生像素尺寸。
@@ -21,10 +24,6 @@ func _ready() -> void:
 			_feedback = EnemyFeedbackPool.new()
 			_feedback.name = "EnemyFeedbackPool"
 			attack_root.add_child(_feedback)
-
-func _physics_process(delta: float) -> void:
-	if wave_mode and combat_active.is_valid() and not combat_active.call(): return
-	super._physics_process(delta)
 
 func _on_stun_started() -> void:
 	_release_warning()

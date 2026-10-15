@@ -4,6 +4,8 @@
 
 [resource]
 script = ExtResource("rules")
+preview_spatial_queries_enabled = true
+flat_ground_certificate_enabled = true
 minimum_launch_speed = 5.0
 maximum_launch_speed = 10.5
 flight_deceleration = 3.5

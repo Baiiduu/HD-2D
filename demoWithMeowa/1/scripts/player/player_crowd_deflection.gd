@@ -1,6 +1,10 @@
 class_name PlayerCrowdDeflection
 extends RefCounted
 
+const PreviewQueryView = preload("res://scripts/combat/preview_spatial_query_view.gd")
+var _query_view: PreviewQueryView
+var _nearby_slots: Array[int] = []
+
 ## 一次发射／一次预览的几何状态。只查询场景，不移动、扣血或拨怪。
 var rules: PlayerRicochetRules
 var session: WavePrototype
@@ -15,10 +19,11 @@ var _ray := PhysicsRayQueryParameters3D.new()
 var _nearby: Array[WaveEnemy] = []
 var _candidates: Array[Dictionary] = []
 
-func _init(settings: PlayerRicochetRules, battle: WavePrototype, shared: EnemyPushWave = null) -> void:
+func _init(settings: PlayerRicochetRules, battle: WavePrototype, shared: EnemyPushWave = null, view: PreviewQueryView = null) -> void:
+	_query_view = view
 	rules = settings
 	session = battle
-	regions = shared if shared else EnemyPushWave.new(settings)
+	regions = shared if shared else EnemyPushWave.new(settings, view)
 	# 已有镜片优先使用真实反射碰撞，不被怪群转向提前截住。
 	_ray.collision_mask = ProjectileCollision.REFLECTION_MASK
 
@@ -56,6 +61,11 @@ func _release_locks(position: Vector3) -> void:
 func contact(start: Vector3, end: Vector3, heading: Vector3) -> Dictionary:
 	_release_locks(start)
 	if not is_instance_valid(session) or not session.combat_active(): return {}
+	# Check after the single combat predicate, which a custom session may override.
+	if _query_view and _query_view.is_current(session._spatial_index): return _view_contact(start, end, heading)
+	return _legacy_contact(start, end, heading)
+
+func _legacy_contact(start: Vector3, end: Vector3, heading: Vector3) -> Dictionary:
 	var radius := rules.crowd_contact_radius
 	var length := TerrainPath.horizontal_distance(start, end)
 	session._spatial_index.nearby_into((start + end) * 0.5, radius + length * 0.5, _ignored, _nearby)
@@ -86,6 +96,41 @@ func contact(start: Vector3, end: Vector3, heading: Vector3) -> Dictionary:
 			hit = candidate
 			break
 	_candidates.clear()
+	return hit
+
+
+func _view_contact(start: Vector3, end: Vector3, heading: Vector3) -> Dictionary:
+	var radius := rules.crowd_contact_radius
+	var length := TerrainPath.horizontal_distance(start, end)
+	_query_view.nearby_slots_into((start + end) * 0.5, radius + length * 0.5, _ignored, _nearby_slots)
+	for enemy_slot in _nearby_slots:
+		if _query_view.active[enemy_slot] == 0: continue
+		var enemy_position: Vector3 = _query_view.positions[enemy_slot]
+		if absf(enemy_position.y - start.y) > rules.push_height_tolerance: continue
+		var entry := PlayerRicochet.circle_entry(start, end, enemy_position, radius)
+		if entry < 0.0: continue
+		var point := start.lerp(end, entry)
+		var radial := point - enemy_position
+		radial.y = 0.0
+		if not radial.is_zero_approx() and radial.dot(heading) >= -0.00001: continue
+		_candidates.append({"enemy": _query_view.owners[enemy_slot], "entry": entry, "slot": enemy_slot})
+	_nearby_slots.clear()
+	# 沿弧线的大多数查询没有新目标，不创建排序回调或取得物理空间。
+	if _candidates.is_empty(): return {}
+	if _candidates.size() > 1:
+		_candidates.sort_custom(func(a: Dictionary, b: Dictionary):
+			return _query_view.ids[a.slot] < _query_view.ids[b.slot] if is_equal_approx(a.entry, b.entry) else a.entry < b.entry)
+	_ray.exclude = [session.player.get_rid()]
+	var space := session.get_world_3d().direct_space_state
+	var hit: Dictionary = {}
+	for candidate in _candidates:
+		_ray.from = start.lerp(end, candidate.entry) + Vector3.UP * 0.45
+		_ray.to = _query_view.positions[candidate.slot] + Vector3.UP * 0.45
+		if space.intersect_ray(_ray).is_empty():
+			hit = candidate
+			break
+	_candidates.clear()
+	if not hit.is_empty(): hit.erase("slot")
 	return hit
 
 func begin_contact(hit: Dictionary, point: Vector3, incoming: Vector3) -> bool:

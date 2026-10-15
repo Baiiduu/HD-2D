@@ -1,6 +1,8 @@
 class_name AimPathPreview
 extends Node3D
 
+const IMPORTED_IMAGE := preload("res://scripts/rendering/imported_texture_image.gd")
+
 ## 可复用的虚线路径／接触点／单目标角标显示。消费世界路径，不读取技能或怪物规则。
 static var _quad: QuadMesh
 static var _users := 0
@@ -14,6 +16,9 @@ var _contact_material: ShaderMaterial
 var _target_material: ShaderMaterial
 var _target_sprite: Sprite3D
 var _bounds: Dictionary[Texture2D, Rect2i] = {}
+var _source_images: Dictionary[Texture2D, Image] = {}
+var _image_watches: Dictionary[Texture2D, bool] = {}
+var _source_image_bytes := 0
 var _pixel := 0.016
 var _height := 0.0
 var _skip := 0.0
@@ -45,6 +50,7 @@ func _ready() -> void:
 	stop()
 
 func _exit_tree() -> void:
+	_clear_image_facts()
 	_users -= 1
 	if _users == 0: _quad = null
 
@@ -129,21 +135,24 @@ func _update_target() -> void:
 	if not _target.visible: return
 	var sprite := _target_sprite
 	var texture := sprite.texture
+	var rect: Rect2
 	if not _bounds.has(texture):
 		# 有效期随纹理资源，最多保留 64 个原生帧；只读透明边界，不处理或重采样素材。
 		if _bounds.size() >= 64: _bounds.clear()
 		var atlas := texture as AtlasTexture
 		var source := atlas.atlas if atlas else texture
-		var image := source.get_image()
-		if image and image.is_compressed(): image.decompress()
+		var cacheable := _watch_bounds_texture(texture)
+		var image := _bounds_source_image(source, cacheable)
 		if atlas and image:
 			var region := atlas.region
 			if region.size == Vector2.ZERO: region.size = source.get_size()
 			image = image.get_region(region)
 		var used := image.get_used_rect() if image and not image.is_empty() else Rect2i(Vector2i.ZERO, texture.get_size())
 		if atlas: used.position += Vector2i(atlas.margin.position)
-		_bounds[texture] = used
-	var rect := Rect2(_bounds[texture])
+		if cacheable: _bounds[texture] = used
+		rect = Rect2(used)
+	else:
+		rect = Rect2(_bounds[texture])
 	var camera_basis := _camera.global_basis.orthonormalized() if is_instance_valid(_camera) else Basis.IDENTITY
 	var right := camera_basis.x
 	var up := camera_basis.y
@@ -160,3 +169,56 @@ func _update_target() -> void:
 	_target.position = sprite.get_global_transform_interpolated().origin + right * center.x * density.x + up * center.y * density.y
 	_target.basis = Basis(right * size.x, up * size.y, right.cross(up))
 	_target_material.set_shader_parameter("size_pixels", size / _pixel)
+
+## Images are private facts owned by this preview, bounded by sheet count and
+## decoded bytes. A changed texture clears both sheet images and frame bounds.
+func _watch_bounds_texture(texture: Texture2D) -> bool:
+	var chain: Array[Texture2D] = []
+	var current: Texture2D = texture
+	var seen: Dictionary[int, bool] = {}
+	while current:
+		var id := current.get_instance_id()
+		if seen.has(id) or chain.size() >= 128:
+			return false
+		seen[id] = true
+		chain.append(current)
+		current = current.atlas if current is AtlasTexture else null
+	if _image_watches.size() + chain.size() > 128:
+		_clear_image_facts()
+	for item in chain:
+		if not _image_watches.has(item):
+			item.changed.connect(_on_bounds_texture_changed)
+			_image_watches[item] = true
+	return true
+
+func _on_bounds_texture_changed() -> void:
+	_clear_image_facts()
+
+func _clear_image_facts() -> void:
+	for texture in _image_watches:
+		if texture.changed.is_connected(_on_bounds_texture_changed):
+			texture.changed.disconnect(_on_bounds_texture_changed)
+	_image_watches.clear()
+	_source_images.clear()
+	_source_image_bytes = 0
+	_bounds.clear()
+
+func _bounds_source_image(source: Texture2D, cacheable: bool) -> Image:
+	if cacheable and _source_images.has(source):
+		return _source_images[source]
+	var image: Image = _read_bounds_image(source)
+	if image and image.is_compressed():
+		image.decompress()
+	if cacheable and image:
+		var bytes := image.get_data().size()
+		# A large source can still be read exactly without retaining it.
+		if bytes <= 8 * 1024 * 1024:
+			if _source_images.size() >= 32 or _source_image_bytes + bytes > 8 * 1024 * 1024:
+				_source_images.clear()
+				_source_image_bytes = 0
+			_source_images[source] = image
+			_source_image_bytes += bytes
+	return image
+
+func _read_bounds_image(source: Texture2D) -> Image:
+	return IMPORTED_IMAGE.read(source)

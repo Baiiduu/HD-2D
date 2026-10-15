@@ -32,6 +32,9 @@ var _surface_cache: Dictionary[Vector2i, PackedFloat32Array] = {}
 # Static surface chunks contain no obstacle results. Physics sweeps stay live.
 const FLAT_CHUNK_SIZE := 8
 var _flat_chunks: Dictionary[Vector2i, float] = {}
+var _flat_rect := Rect2()
+var _flat_cells := Rect2i()
+var _flat_rect_height := NAN
 var _flat_data: TerrainData
 var _flat_transform := Transform3D.IDENTITY
 var _flat_origin := Vector2i.ZERO
@@ -48,6 +51,10 @@ var _point_neighbors: Array[PackedInt64Array] = []
 var _point_lengths: Array[PackedFloat64Array] = []
 var _nearest_cells: Dictionary[Vector2i, PackedInt64Array] = {}
 var _nearest_cell_size := 1.0
+
+## 普通追击可用原生点到点寻路；共享路线、连通资格与特殊移动仍保留原流程。
+var native_chase_enabled := false
+var _native_standard_costs := false
 
 # Prediction only. A missing or unfinished exact result never delays gameplay.
 var prefetch_enabled := true
@@ -252,6 +259,8 @@ func _clear_surface_cache() -> void:
 func _surface_changed() -> void:
 	_clear_surface_cache()
 	_flat_chunks.clear()
+	_flat_rect = Rect2()
+	_flat_cells = Rect2i()
 	_invalidate_prefetch()
 
 func build(source: Terrain, radius: float, exclude: Array[RID], world_bounds := Rect2()) -> void:
@@ -369,6 +378,11 @@ func _cache_graph() -> void:
 	if is_instance_valid(terrain) and terrain.is_inside_tree():
 		_prefetch_transform = terrain.global_transform
 		_prefetch_valid = terrain.data == data
+	_native_standard_costs = graph.get_script() == null
+	for id in _cached_point_ids:
+		if graph.get_point_weight_scale(id) != 1.0:
+			_native_standard_costs = false
+			break
 
 func _can_prefetch() -> bool:
 	if not prefetch_enabled or not _prefetch_valid: return false
@@ -491,12 +505,15 @@ func _edges_meet(cell: Vector2i,next: Vector2i) -> bool:
 		return is_equal_approx(a[1],b[0]) and is_equal_approx(a[2],b[3])
 	return is_equal_approx(a[2],b[1]) and is_equal_approx(a[3],b[0])
 
+func _bind_surface_data() -> void:
+	if _height_data == data: return
+	if _height_data and _height_data.changed.is_connected(_surface_changed): _height_data.changed.disconnect(_surface_changed)
+	_height_data = data
+	_height_data.changed.connect(_surface_changed)
+	_surface_changed()
+
 func _surface_heights(cell: Vector2i) -> PackedFloat32Array:
-	if _height_data != data:
-		if _height_data and _height_data.changed.is_connected(_surface_changed): _height_data.changed.disconnect(_surface_changed)
-		_height_data = data
-		_height_data.changed.connect(_surface_changed)
-		_surface_changed()
+	_bind_surface_data()
 	var frame := Engine.get_physics_frames()
 	if frame != _height_frame or _height_layer != data.layer_height:
 		_clear_surface_cache()
@@ -644,10 +661,9 @@ func _endpoint_surface_clear(from: Vector3, to: Vector3) -> bool:
 func _field_has(id: int) -> bool:
 	return id >= 0 and id < _pursuit_dense.size() and _pursuit_dense[id] >= 0 if _dense_pursuit else _pursuit_next.has(id)
 
-func _pursuit_start_id(from: Vector3, closest: int) -> int:
+func _pursuit_start_id(from: Vector3, closest: int, start: Array = []) -> int:
 	var cell := data.world_to_cell(terrain.to_local(from))
 	if not data.has_cell(cell) or (data.has_overlay(cell, TerrainData.OVERLAY_WATER) and not data.has_overlay(cell, TerrainData.OVERLAY_BRIDGE)): return -1
-	var start: Array = []
 	if _field_has(closest) and _pursuit_start_clear_local(from, graph.get_point_position(closest), start): return closest
 	for id in _nearby_endpoint_ids(from):
 		if id == closest or not _field_has(id): continue
@@ -787,14 +803,32 @@ func _pop_frontier() -> void:
 
 ## 只构造路径点，不对每只追击怪物重新执行 A*。物理移动仍逐帧保留真实碰撞。
 func shared_pursuit_route(from: Vector3, target: Vector3) -> PackedVector3Array:
+	return _build_pursuit_route(from, target, 0.0)
+
+func _build_pursuit_route(from: Vector3, target: Vector3, lookahead: float) -> PackedVector3Array:
 	var result := PackedVector3Array()
 	if not from.is_finite() or not _prepare_pursuit_field(target): return result
 	var closest := closest_point(from)
-	var start := _pursuit_start_id(from, closest)
+	# Only this synchronous query owns these origin overlap/contact results.
+	# Every direction still sweeps the current world and tests its endpoint.
+	var origin_checks: Array = []
+	var start := _pursuit_start_id(from, closest, origin_checks)
 	if start < 0:
 		# 保留原来的屋顶／隔断局部靠近行为，不能给刷怪和残怪判定伪造连通。
-		if not _field_has(closest): return pursuit_route(from, target, true)
+		if not _field_has(closest): return _smooth_chase_route(from, pursuit_route(from, target, true), lookahead)
 		return result
+	# Resolve and validate the same endpoint before materialising the field chain.
+	# A clear short chase needs only two points; start eligibility, connectivity,
+	# wall escape and the live final segment are still checked above/below.
+	var end := graph.get_point_position(_pursuit_goal_id)
+	if _goal_blocked:
+		if _point_blocked(end): return result
+	else:
+		if not _segment_clear(end, _goal_position): return result
+		end = _goal_position
+	var at_least_two := start != closest or start != _pursuit_goal_id or not _goal_blocked
+	if lookahead > 0.0 and at_least_two and horizontal_distance(from, end) <= lookahead * 2.0 and can_walk_direct(from, end, origin_checks):
+		return PackedVector3Array([from, end])
 	var first := graph.get_point_position(start)
 	# 怪物从索引 1 开始行走；补选时保留首段，避免跳过转角连接而切墙。
 	if start != closest: result.append(from)
@@ -803,31 +837,37 @@ func shared_pursuit_route(from: Vector3, target: Vector3) -> PackedVector3Array:
 	while point != _pursuit_goal_id:
 		point = _pursuit_dense[point] if _dense_pursuit else _pursuit_next[point]
 		result.append(graph.get_point_position(point))
-	if _goal_blocked:
-		if _point_blocked(result[-1]): return PackedVector3Array()
-	else:
-		if not _segment_clear(result[-1], _goal_position): return PackedVector3Array()
-		result.append(_goal_position)
-	return result
+	if not _goal_blocked: result.append(_goal_position)
+	return _lookahead_route(from, result, lookahead, origin_checks)
 
 ## 实际追击在共享路线内前视，跳过空地上的格心；严格路线与连通判定保持独立。
-func chase_route(from: Vector3, target: Vector3, lookahead := 4.0) -> PackedVector3Array:
-	var route := shared_pursuit_route(from, target)
+func _legacy_chase_route(from: Vector3, target: Vector3, lookahead := 4.0) -> PackedVector3Array:
+	# Unbuilt/custom paths retain the raw-route override used by standalone actors.
+	if not data or lookahead <= 0.0: return shared_pursuit_route(from, target)
+	return _build_pursuit_route(from, target, lookahead)
+
+func _smooth_chase_route(from: Vector3, route: PackedVector3Array, lookahead: float) -> PackedVector3Array:
 	if lookahead <= 0.0 or route.size() < 2 or not data: return route
-	if horizontal_distance(from, route[-1]) <= lookahead * 2.0 and can_walk_direct(from, route[-1]):
+	var origin_checks: Array = []
+	if horizontal_distance(from, route[-1]) <= lookahead * 2.0 and can_walk_direct(from, route[-1], origin_checks):
 		return PackedVector3Array([from, route[-1]])
+	return _lookahead_route(from, route, lookahead, origin_checks)
+
+func _lookahead_route(from: Vector3, route: PackedVector3Array, lookahead: float, origin_checks: Array) -> PackedVector3Array:
+	if lookahead <= 0.0 or route.size() < 2 or not data: return route
 	for index in range(route.size() - 2, 1, -1):
 		if horizontal_distance(from, route[index]) > lookahead: continue
-		if not can_walk_direct(from, route[index]): continue
+		if not can_walk_direct(from, route[index], origin_checks): continue
 		var result := PackedVector3Array([from])
 		result.append_array(route.slice(index))
 		return result
 	return route
 
 ## 静态通路可前视，身体扫掠仍检查当前墙体；地表沿中心和身体两侧逐段检查。
-func can_walk_direct(from: Vector3, to: Vector3) -> bool:
+## origin_checks may only be reused inside one synchronous search at this origin.
+func can_walk_direct(from: Vector3, to: Vector3, origin_checks: Array = []) -> bool:
 	if not data or not from.is_finite() or not to.is_finite(): return false
-	if not _pursuit_start_clear(from, to): return false
+	if not _pursuit_start_clear_local(from, to, origin_checks): return false
 	if _flat_surface_between(from, to): return true
 	var offset := to - from
 	offset.y = 0.0
@@ -872,34 +912,69 @@ func _flat_chunk_height(chunk: Vector2i) -> float:
 ## A conservative rectangle includes all three sampled lines. A chunk is only
 ## accepted when every corner is exactly coplanar and every cell walkable.
 func _flat_surface_between(from: Vector3, to: Vector3) -> bool:
+	return not is_nan(flat_ground_height(from, to))
+
+## Only certifies terrain, never obstacles. Callers must still sweep their real body.
+## NAN means water, slope, boundary or changed/unavailable terrain: use normal physics.
+func flat_ground_height(from: Vector3, to: Vector3, body_radius := 0.0) -> float:
+	# Existing navigation/body callers retain their conservative body width.
+	if not _query.shape: return NAN
+	return _certified_ground_height(from, to, maxf(_query.shape.radius, body_radius))
+
+## Terrain-only centerline certificate for flight's original center samples.
+## Does not require a built AStar/query shape and never certifies live obstacles.
+func flat_center_ground_height(from: Vector3, to: Vector3) -> float:
+	# A custom ground_position can define a different surface. Only the known
+	# ordinary path implementation may replace its original sampled results.
+	if get_script() != TerrainPath: return NAN
+	return _certified_ground_height(from, to, 0.0)
+
+func _certified_ground_height(from: Vector3, to: Vector3, radius: float) -> float:
+	if not is_instance_valid(terrain) or not data: return NAN
 	# Data replacement precedes the controller's deferred navigation rebuild.
 	if terrain.data != data:
 		_flat_chunks.clear()
-		return false
+		_flat_rect = Rect2()
+		_flat_cells = Rect2i()
+		return NAN
+	# Bind before checking any cache, including a first all-water chunk that
+	# exits before _surface_heights. Same-frame edits must invalidate failures.
+	_bind_surface_data()
 	var transform := terrain.global_transform
 	if _flat_data != data or _flat_transform != transform or _flat_origin != data.origin or _flat_size != data.size or _flat_cell_size != data.cell_size or _flat_layer_height != data.layer_height:
 		_flat_chunks.clear()
+		_flat_rect = Rect2()
+		_flat_cells = Rect2i()
 		_flat_data = data
 		_flat_transform = transform
 		_flat_origin = data.origin
 		_flat_size = data.size
 		_flat_cell_size = data.cell_size
 		_flat_layer_height = data.layer_height
-	if transform.basis != Basis.IDENTITY: return false
-	var radius: float = _query.shape.radius
+	if transform.basis != Basis.IDENTITY: return NAN
+	# Reuse only a fully certified terrain rectangle, expanded by this body's
+	# actual radius. Use the sampler's real world_to_cell rounding: at negative
+	# half-cell boundaries, a floating rectangle's inclusive low edge belongs
+	# to the previous cell. No wall, cast or actor result is retained here.
 	var first := data.world_to_cell(Vector3(minf(from.x, to.x) - radius, 0.0, minf(from.z, to.z) - radius) - transform.origin)
 	var last := data.world_to_cell(Vector3(maxf(from.x, to.x) + radius, 0.0, maxf(from.z, to.z) + radius) - transform.origin)
-	if not data.has_cell(first) or not data.has_cell(last): return false
+	if _flat_cells.has_point(first) and _flat_cells.has_point(last): return _flat_rect_height + transform.origin.y
+	if not data.has_cell(first) or not data.has_cell(last): return NAN
 	first = Vector2i(floori(float(first.x) / FLAT_CHUNK_SIZE), floori(float(first.y) / FLAT_CHUNK_SIZE))
 	last = Vector2i(floori(float(last.x) / FLAT_CHUNK_SIZE), floori(float(last.y) / FLAT_CHUNK_SIZE))
 	var height := NAN
 	for z in range(first.y, last.y + 1):
 		for x in range(first.x, last.x + 1):
 			var next := _flat_chunk_height(Vector2i(x, z))
-			if is_nan(next): return false
+			if is_nan(next): return NAN
 			if is_nan(height): height = next
-			elif next != height: return false
-	return true
+			elif next != height: return NAN
+	var low_cell := (first * FLAT_CHUNK_SIZE).max(data.origin)
+	var high_cell := ((last + Vector2i.ONE) * FLAT_CHUNK_SIZE).min(data.origin + data.size)
+	_flat_rect = Rect2((Vector2(low_cell) - Vector2.ONE * 0.5) * data.cell_size + Vector2(transform.origin.x, transform.origin.z), Vector2(high_cell - low_cell) * data.cell_size)
+	_flat_cells = Rect2i(low_cell, high_cell - low_cell)
+	_flat_rect_height = height
+	return height + transform.origin.y
 
 func _connected_start_id(from: Vector3, end: int) -> int:
 	var cell := data.world_to_cell(terrain.to_local(from))
@@ -930,3 +1005,65 @@ func shared_reachable(from: Vector3, target: Vector3) -> bool:
 
 static func horizontal_distance(a: Vector3,b: Vector3) -> float:
 	return Vector2(a.x-b.x,a.z-b.z).length()
+
+
+func _native_graph_eligible() -> bool:
+	return data != null and _native_standard_costs and graph == _cached_graph and _cached_point_count > 0 and graph.get_point_count() == _cached_point_count and not graph.neighbor_filter_enabled
+
+func chase_route(from: Vector3, target: Vector3, lookahead := 4.0) -> PackedVector3Array:
+	if not native_chase_enabled or lookahead <= 0.0 or not _native_graph_eligible():
+		return _legacy_chase_route(from, target, lookahead)
+	var result := PackedVector3Array()
+	if not from.is_finite(): return result
+	var goal := _prepare_pursuit_goal(target)
+	if goal < 0: return result
+	# Disabled-goal semantics and custom native filters retain the original implementation.
+	if graph.is_point_disabled(goal):
+		return _legacy_chase_route(from, target, lookahead)
+	var closest := closest_point(from)
+	var start := -1
+	var closest_checked := false
+	var closest_reachable := false
+	var ids := PackedInt64Array()
+	var origin_checks: Array = []
+	var cell := data.world_to_cell(terrain.to_local(from))
+	var valid_origin := data.has_cell(cell) and not (data.has_overlay(cell, TerrainData.OVERLAY_WATER) and not data.has_overlay(cell, TerrainData.OVERLAY_BRIDGE))
+	if valid_origin:
+		# Fuse _connected_start_id's reachability proof and route acquisition: a successful
+		# get_id_path is retained, never immediately repeated with get_point_path.
+		if closest >= 0:
+			ids = graph.get_id_path(goal, closest)
+			closest_checked = true
+			closest_reachable = not ids.is_empty()
+			if closest_reachable and _pursuit_start_clear_local(from, graph.get_point_position(closest), origin_checks): start = closest
+		if start < 0:
+			for id in _nearby_endpoint_ids(from):
+				if id == closest: continue
+				var point := graph.get_point_position(id)
+				if not _endpoint_surface_clear(from, point) or not _pursuit_start_clear_local(from, point, origin_checks): continue
+				var connected := graph.get_id_path(goal, id)
+				if connected.is_empty(): continue
+				start = id
+				ids = connected
+				break
+	if start < 0:
+		if not closest_checked and closest >= 0:
+			closest_reachable = not graph.get_id_path(goal, closest).is_empty()
+		# Preserve rooftop/disconnected local partial pursuit; no reachability is fabricated.
+		if not closest_reachable:
+			return _smooth_chase_route(from, pursuit_route(from, target, true), lookahead)
+		return result
+	var end := graph.get_point_position(goal)
+	if _goal_blocked:
+		if _point_blocked(end): return result
+	else:
+		if not _segment_clear(end, _goal_position): return result
+		end = _goal_position
+	var at_least_two := start != closest or start != goal or not _goal_blocked
+	if at_least_two and horizontal_distance(from, end) <= lookahead * 2.0 and can_walk_direct(from, end, origin_checks):
+		return PackedVector3Array([from, end])
+	if start != closest: result.append(from)
+	# Native path is goal -> start. Reverse only when materialising the chase route.
+	for index in range(ids.size() - 1, -1, -1): result.append(graph.get_point_position(ids[index]))
+	if not _goal_blocked: result.append(_goal_position)
+	return _lookahead_route(from, result, lookahead, origin_checks)

@@ -31,7 +31,8 @@ func run() -> void:
 	player.set_physics_process(false)
 	player.global_position = wave.global_position + Vector3.UP*0.03
 	var skills: RunSkills = wave.get_node("RunSkills")
-	skills.initial_cards_per_draw = 4
+	# This fixture requires mirror_mark, independent of the random opening draw.
+	skills.initial_cards_per_draw = skills.skill_paths.size()
 	check(wave.start_run(), "Actual mirror-skill challenge can start")
 	skills.initial_choice.close()
 	skills._choose_initial(&"initial:mirror_mark")

@@ -1,6 +1,7 @@
 @tool
 extends Node3D
 
+const EMPTY_WATER_SHADOW_GATE := preload("res://scripts/rendering/empty_water_shadow_gate.gd")
 const BEAM_LAYER := 1 << 17
 
 ## 每盏灯独立调节；选择预设或点击恢复会重置本灯参数。
@@ -81,6 +82,9 @@ const BEAM_LAYER := 1 << 17
 var _apply_queued := false
 var _restoring_missing := false
 
+func _enter_tree() -> void:
+	_queue_apply()
+
 func _ready() -> void:
 	apply()
 
@@ -154,7 +158,7 @@ func apply() -> void:
 		water.omni_range = water_range
 		water.light_specular = specular_strength
 		water.light_volumetric_fog_energy = 0.0
-		water.shadow_enabled = shadows_enabled
+		EMPTY_WATER_SHADOW_GATE.set_shadow_enabled(water, shadows_enabled)
 		water.shadow_opacity = shadow_opacity
 		water.shadow_bias = shadow_bias
 		water.shadow_normal_bias = shadow_normal_bias

@@ -9,6 +9,7 @@ var _collision := ProjectileCollision.new()
 func trace(body: CharacterBody3D, heading: Vector3, speed: float, seconds: float,
 		bounce_limit: int, retention: float, path: TerrainPath, bounds: Rect2,
 		tolerance: float, output: AimPathData, max_distance := 12.0, crowd: PlayerCrowdDeflection = null, speed_rules: PlayerRicochetRules = null) -> void:
+	_collision.center_certificate_enabled = speed_rules != null and speed_rules.flat_ground_certificate_enabled
 	# body_test_motion 沿用身体的查询层；同步查询结束后还原，早退也不影响正常走路。
 	var mask := PhysicsServer3D.body_get_collision_mask(body.get_rid())
 	PhysicsServer3D.body_set_collision_mask(body.get_rid(), mask | ProjectileCollision.MIRROR_SURFACE.COLLISION_LAYER)

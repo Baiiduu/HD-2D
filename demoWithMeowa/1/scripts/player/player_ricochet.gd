@@ -1,6 +1,8 @@
 class_name PlayerRicochet
 extends Node
 
+const PreviewQueryView = preload("res://scripts/combat/preview_spatial_query_view.gd")
+
 signal state_changed(state: State)
 signal launched(direction: Vector3, speed: float, charge: float)
 signal wall_bounced(point: Vector3, normal: Vector3)
@@ -101,6 +103,7 @@ func begin_charge(movement: Vector3) -> bool:
 	_settings = _player.ricochet_rules.duplicate()
 	var stats := get_stats()
 	for property in stats: _settings.set(property, stats[property])
+	_collision.center_certificate_enabled = _settings.flat_ground_certificate_enabled
 	direction = movement
 	direction.y = 0.0
 	if direction.is_zero_approx(): direction = _player.facing_direction()
@@ -316,7 +319,7 @@ func predict_path(query: BodyPathPrediction, output: AimPathData, max_distance: 
 	query.trace(_player, direction, speed,
 		_settings.coast_seconds(speed), preview_bounces, _settings.bounce_speed_retention,
 		_path, _player.bounds, _settings.ground_height_tolerance, output, max_distance,
-		PlayerCrowdDeflection.new(_settings, _session) if _settings.crowd_deflection_enabled and is_instance_valid(_session) else null, _settings)
+		PlayerCrowdDeflection.new(_settings, _session, null, PreviewQueryView.new(_session._spatial_index, _session) if _settings.preview_spatial_queries_enabled else null) if _settings.crowd_deflection_enabled and is_instance_valid(_session) else null, _settings)
 
 func _push_segment(start: Vector3, end: Vector3) -> void:
 	if not _settings.enemy_push_enabled: return
@@ -413,6 +416,7 @@ func _update_visual_context() -> void:
 			_charge_effect = PlayerChargeEffect.new()
 			_charge_effect.name = "ChargeEffect"
 			_player.add_child(_charge_effect)
+		_charge_effect.coalesce_preview_updates = visuals.coalesce_charge_preview
 		_charge_effect.display(_player, self, visuals)
 	elif is_instance_valid(_charge_effect): _charge_effect.stop()
 	var show_ring := visuals != null and flying and _settings.enemy_push_enabled and visuals.show_push_ring
@@ -432,6 +436,7 @@ func _change_state(value: State) -> void:
 	state_changed.emit(state)
 
 func _end_flight(reason: StringName) -> void:
+	_collision.center_certificate_enabled = false
 	_crowd = null
 	flight_speed = 0.0
 	_player.velocity = Vector3.ZERO
@@ -441,6 +446,7 @@ func _end_flight(reason: StringName) -> void:
 	finished.emit(reason)
 
 func cancel(reset_cooldown := false) -> void:
+	_collision.center_certificate_enabled = false
 	var was_active := state != State.IDLE
 	if flying: _player.velocity = Vector3.ZERO
 	flight_speed = 0.0

@@ -1,6 +1,9 @@
 class_name ProjectileCollision
 extends RefCounted
 
+## Owned per query/flight instance. Other callers retain original sampling.
+var center_certificate_enabled := false
+
 const MIRROR_SURFACE := preload("res://scripts/combat/mirror_reflection_surface.gd")
 const REFLECTION_MASK := 1 | MIRROR_SURFACE.COLLISION_LAYER
 
@@ -90,6 +93,14 @@ func enemy_contacts(space: PhysicsDirectSpaceState3D, start: Vector3, end: Vecto
 
 ## 水面、断层和地图边界终止飞行；地形不作为可弹射的墙体。
 func ground_limit(path: TerrainPath, start: Vector3, direction: Vector3, distance: float, plane_height: float, tolerance: float) -> float:
+	# This only proves all original sampled centerline points have equal terrain
+	# height and are walkable. Real body/wall/mirror sweeps remain unchanged.
+	if center_certificate_enabled and distance > 0.0 and is_finite(distance) and start.is_finite() and direction.is_finite():
+		var end := start + direction * distance
+		if end.is_finite():
+			var height := path.flat_center_ground_height(start, end)
+			# Match ground_position's real_t Y rounding at exact tolerance edges.
+			if not is_nan(height) and absf(Vector3(0.0, height, 0.0).y - plane_height) <= tolerance: return distance
 	var terrain := path.terrain
 	var steps := maxi(1, ceili(distance / 0.15))
 	for index in steps + 1:

@@ -19,6 +19,9 @@ extends Resource
 @export_range(0.0, 1.0, 0.05) var charge_effect_energy := 0.35
 @export_group("碰撞路线预览")
 @export var show_aim_guide := true
+## Merge invisible intermediate physics previews into the next render update.
+## Only display work changes; release, damage and real collisions stay physical.
+@export var coalesce_charge_preview := false
 @export var preview_show_target := true
 @export_range(0, 8, 1) var preview_bounces := 1
 @export_range(1.0, 20.0, 0.5, "suffix:m") var preview_distance := 12.0

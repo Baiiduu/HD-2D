@@ -92,6 +92,9 @@ func run() -> void:
 	player.set_physics_process(false)
 	wave.set_physics_process(false)
 	player.global_position = wave.global_position + Vector3.UP * 0.03
+	# Pursuit assertions require a running challenge, not a random fan card draw.
+	var skills: RunSkills = wave.get_node("RunSkills")
+	skills.initial_cards_per_draw = skills.skill_paths.size()
 	var requested := wave.start_run()
 	var initial_choice := scene.get_node_or_null("WavePrototype/RunSkills/InitialSkillChoice") as GrowthChoiceUI
 	if initial_choice and initial_choice.is_open:

@@ -65,6 +65,12 @@ extends Resource
 ## 传递后的速度不足时停止；不限制一层能带动的怪物数量。
 @export_range(0.0, 10.0, 0.1, "suffix:m/s") var push_chain_min_speed := 1.5
 
+@export_group("性能（等效实现对照）")
+## 仅本次同步预览读取已提交索引；未知索引或输入变更回原查询。
+@export var preview_spatial_queries_enabled := false
+## 预览和本体飞行复用同高无水地表证明；实际身体／墙体扫掠不变。
+@export var flat_ground_certificate_enabled := false
+
 @export_group("旧版兼容（不参与当前人物弹射）")
 ## 仅保留旧资源字段，当前运动不再读取倒计时或次数上限。
 @export var flight_seconds := 0.9

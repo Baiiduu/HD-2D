@@ -8,6 +8,9 @@ static var _mote_material: ShaderMaterial
 static var _users := 0
 var _player: Player
 var _body: PlayerRicochet
+## Visual-only A/B. Physics requests coalesce; actual release/motion are separate.
+var coalesce_preview_updates := false
+var _preview_pending := false
 var _visuals: PlayerActionVisuals
 var _ring: MeshInstance3D
 var _aim: AimPathPreview
@@ -93,10 +96,18 @@ func display(player: Player, body: PlayerRicochet, visuals: PlayerActionVisuals)
 		_full_at = -1.0
 		show()
 		set_process(true)
+	if coalesce_preview_updates and not ProjectSettings.get_setting("physics/3d/run_on_separate_thread", false):
+		# Preserve the legacy full-charge edge timestamp before the real process
+		# advances visual age. No intermediate geometry/uniform upload is needed.
+		if body.charge_fraction >= 1.0 and _full_at < 0.0: _full_at = _age
+		_preview_pending = true
+		return
+	_preview_pending = false
 	_update_aim()
-	_process(0.0)
+	_sync_visuals(0.0)
 
 func stop() -> void:
+	_preview_pending = false
 	hide()
 	set_process(false)
 	if is_instance_valid(_aim): _aim.stop()
@@ -104,6 +115,16 @@ func stop() -> void:
 	_route.clear()
 
 func _process(delta: float) -> void:
+	if not is_instance_valid(_body) or not _body.charging or not _visuals or not _visuals.show_charge_effect:
+		stop()
+		return
+	if _preview_pending and not _body.is_frozen() and not ProjectSettings.get_setting("physics/3d/run_on_separate_thread", false):
+		_preview_pending = false
+		_update_aim()
+	_sync_visuals(delta)
+
+## A synchronous legacy display must not impersonate an actual process flush.
+func _sync_visuals(delta: float) -> void:
 	if not is_instance_valid(_body) or not _body.charging or not _visuals.show_charge_effect:
 		stop()
 		return
@@ -134,7 +155,8 @@ func _process(delta: float) -> void:
 	if not is_instance_valid(_target_enemy) or _target_enemy.dead or _target_enemy.spawn_delay > 0.0:
 		_aim.mark_target(null)
 
-## 每物理帧重新读取动态世界；渲染只消费路线，镜头旋转不重做碰撞查询。
+## Read the live world for the latest request; render projection keeps its own
+## priority 3 pass after this priority 2 producer. No motion or attack consumes it.
 func _update_aim() -> void:
 	if not _visuals.show_aim_guide:
 		_aim.stop()
