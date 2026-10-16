@@ -27,7 +27,7 @@ $groups = @{
         'test_wave_core', 'test_wave_spawning', 'test_crowd_batch_lifecycle'
         'test_spawn_sync_gate', 'test_surround_spawning', 'test_local_spawn_safety',
         'test_run_score', 'test_score_settings', 'test_combat_extension_framework',
-        'test_player_sword', 'test_crowd_deflection'
+        'test_player_sword', 'test_crowd_deflection', 'test_native_query_policy'
     )
     render = @(
         'test_aim_target_image_cache', 'test_billboard_shadow_updates',

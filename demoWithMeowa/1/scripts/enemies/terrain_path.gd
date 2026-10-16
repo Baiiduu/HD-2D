@@ -591,7 +591,7 @@ func _prepare_query_config() -> bool:
 
 func _query_certified_clear(from: Vector3, to: Vector3) -> bool:
 	# Custom paths can override collision semantics; retain their original calls.
-	if _building_graph or get_script() != TerrainPath or not is_instance_valid(terrain) or not terrain.obstacle_certificates_enabled: return false
+	if _building_graph or get_script() != TerrainPath or not is_instance_valid(terrain) or not terrain.obstacle_certificates_enabled or terrain.obstacle_query_backend == Terrain.ObstacleQueryBackend.NATIVE_QUERIES: return false
 	if not from.is_finite() or not to.is_finite() or not _prepare_query_config(): return false
 	var start := AABB(_query_local_bounds.position + from + Vector3.UP * _clearance, _query_local_bounds.size)
 	var swept := start.merge(AABB(start.position + to - from, start.size))

@@ -597,6 +597,7 @@ enabled = false
 
 [node name="Homestead" type="Node3D" parent="." unique_id=632530697]
 script = ExtResource("homestead")
+obstacle_query_backend = 2
 data = ExtResource("terrain_data")
 top_material = SubResource("ShaderMaterial_v6xt8")
 wall_material = SubResource("ShaderMaterial_tb5gq")

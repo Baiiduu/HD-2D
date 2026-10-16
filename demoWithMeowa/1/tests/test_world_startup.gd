@@ -41,6 +41,8 @@ func run() -> void:
 	var aurora := world.get_node("MapEffects/Aurora")
 	var sky := world.get_node("MapEffects/WorldEnvironment").environment.sky.sky_material as ShaderMaterial
 	var ground := (world.get_node("Homestead") as Terrain).top_material
+	var terrain := world.get_node("Homestead") as Terrain
+	check(terrain.obstacle_certificates_enabled and terrain.obstacle_query_backend == Terrain.ObstacleQueryBackend.NATIVE_QUERIES, "World uses native pure queries while preserving its established body movement")
 	check(aurora.enabled and aurora.is_processing(), "World explicitly enables the flowing aurora")
 	check(sky.get_shader_parameter("aurora_enabled") == true and ground.get_shader_parameter("aurora_enabled") == true, "World binds the aurora to both sky and wet ground")
 	check(sky.get_shader_parameter("aurora_texture") != null and sky.get_shader_parameter("aurora_texture") == ground.get_shader_parameter("aurora_texture"), "Sky and ground use the same live aurora field")
@@ -84,6 +86,7 @@ func run() -> void:
 	root.add_child(city)
 	await frames(12)
 	var city_profile := city.get_node("BattleConfiguration").configuration as SceneCombatConfiguration
+	check((city.get_node("WavePrototype") as WavePrototype).terrain.obstacle_query_backend == Terrain.ObstacleQueryBackend.SCRIPT_CERTIFICATES, "City retains its independent query backend")
 	check(city_profile != profile and city_profile.default_enemy != profile.default_enemy and city_profile.default_enemy.health == 200.0, "City keeps its independent combat profile and authored enemy balance")
 	check(not city.get_node("MapEffects/Aurora").enabled and not city_profile.action_visuals.show_fire_trail and city_profile.sword_rules.effect_mode == PlayerSwordRules.SlashVisual.FRAME_ANIMATION, "World visual restoration leaves City's authored opt-ins unchanged")
 	city.free()

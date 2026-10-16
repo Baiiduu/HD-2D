@@ -104,6 +104,9 @@ var _water_collision_body: StaticBody3D
 var _collision_is_flat := false
 ## 固定建筑空地证明；关闭后保留逐体实时水平扫掠，供功能对照。
 @export var obstacle_certificates_enabled := true
+enum ObstacleQueryBackend { SCRIPT_CERTIFICATES, NATIVE_RAYS, NATIVE_QUERIES }
+## Body movement stays independent; the master switch still disables all proofs.
+@export var obstacle_query_backend := ObstacleQueryBackend.SCRIPT_CERTIFICATES
 var _obstacle_field: StaticObstacleField
 var _wall_ray := PhysicsRayQueryParameters3D.new()
 ## Opt-in call counts, with no process callback or geometry queries of their own.
@@ -553,7 +556,7 @@ func get_query_metrics() -> Dictionary:
 ## and exclusions. Works without a navigation graph, including standalone previews.
 func ray_clear(from: Vector3, to: Vector3, mask: int, excluded: Array[RID]) -> bool:
 	if query_diagnostics_enabled: _ray_metrics[0] += 1
-	if obstacle_certificates_enabled and obstacle_field().clear_ray(from, to, mask, excluded):
+	if obstacle_certificates_enabled and obstacle_query_backend == ObstacleQueryBackend.SCRIPT_CERTIFICATES and obstacle_field().clear_ray(from, to, mask, excluded):
 		if query_diagnostics_enabled: _ray_metrics[1] += 1
 		return true
 	if query_diagnostics_enabled: _ray_metrics[2] += 1
