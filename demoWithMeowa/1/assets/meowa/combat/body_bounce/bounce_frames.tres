@@ -1,0 +1,53 @@
+[gd_resource type="SpriteFrames" format=3 uid="uid://b6mvb2n71m2n3"]
+
+[ext_resource type="Texture2D" uid="uid://cfpiswpmmh5gm" path="res://assets/meowa/combat/body_bounce/bounce_atlas.png" id="atlas"]
+
+[sub_resource type="AtlasTexture" id="frame_0"]
+atlas = ExtResource("atlas")
+region = Rect2(0, 0, 56, 48)
+
+[sub_resource type="AtlasTexture" id="frame_1"]
+atlas = ExtResource("atlas")
+region = Rect2(56, 0, 56, 48)
+
+[sub_resource type="AtlasTexture" id="frame_2"]
+atlas = ExtResource("atlas")
+region = Rect2(112, 0, 56, 48)
+
+[sub_resource type="AtlasTexture" id="frame_3"]
+atlas = ExtResource("atlas")
+region = Rect2(0, 48, 56, 48)
+
+[sub_resource type="AtlasTexture" id="frame_4"]
+atlas = ExtResource("atlas")
+region = Rect2(56, 48, 56, 48)
+
+[sub_resource type="AtlasTexture" id="frame_5"]
+atlas = ExtResource("atlas")
+region = Rect2(112, 48, 56, 48)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("frame_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("frame_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("frame_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("frame_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("frame_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("frame_5")
+}],
+"loop": 0,
+"name": &"bounce",
+"speed": 33.333333
+}]

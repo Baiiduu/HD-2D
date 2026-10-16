@@ -74,8 +74,14 @@ func initialize() -> void:
 	if "--no-reflection" in OS.get_cmdline_user_args():
 		enabled = false
 	set_process(not views.is_empty())
+	_refresh_static_batches()
+
+func _refresh_static_batches() -> void:
+	var controller := geometry_root.get_node_or_null("StaticGeometryBatch") if geometry_root else null
+	if controller and controller.has_method("request_rebuild"): controller.request_rebuild()
 
 func rebuild() -> void:
+	_refresh_static_batches()
 	set_process(false)
 	for child in get_children():
 		remove_child(child)
@@ -193,6 +199,8 @@ func _water_visible(cells: Array, frustum: Array[Plane]) -> bool:
 func _prepare_geometry(sources: Array[Node], index: int, height: float) -> void:
 	var bit: int = MIRROR_BITS[index]
 	for source in sources:
+		# 源表面继续负责反射准备，合批替身不能再次生成一份反射。
+		if source.is_in_group(&"static_geometry_batches"): continue
 		if source.is_in_group("light_beams") or source.is_in_group("atmospheric_beams") or source.is_in_group("occlusion_outlines"):
 			continue # Visibility outlines and volumetric accents belong to the main view.
 		if source is Sprite3D:

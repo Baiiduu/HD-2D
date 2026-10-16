@@ -740,6 +740,17 @@ func _release_enemy_capacity(enemy: WaveEnemy) -> void:
 func get_nearby_enemies(point: Vector3, radius: float) -> Array[WaveEnemy]:
 	return _spatial_index.nearby(point, radius)
 
+## Hot loops own and reuse result; do not retain/iterate it across a callback
+## which can query into the same buffer. Ordering matches the allocating query.
+func get_nearby_enemies_into(point: Vector3, radius: float,
+		excluded: Dictionary[int, bool], result: Array[WaveEnemy]) -> void:
+	_spatial_index.nearby_into(point, radius, excluded, result)
+
+## Capture for delayed attacks; compare again after callbacks/resume. This
+## identifies attack-root lifetime, not geometry/position cache validity.
+func get_combat_generation() -> int:
+	return _generation
+
 func queue_spawn_by_id(id: StringName, count := 1, delay := 0.0, position := Vector3.INF) -> bool:
 	if phase != Phase.BATTLE and not _preparing_wave: return false
 	if not _catalog_snapshots.has(id):
@@ -769,7 +780,11 @@ func _begin_wave() -> void:
 	_attack_root.name = "EnemyAttacks"
 	add_child(_attack_root)
 	_hurt_clock = 0.5
-	for entry in definition.entries:
+	for source_entry in definition.entries:
+		var entry: WaveSpawnEntry = source_entry
+		if _surround_spawns():
+			entry = source_entry.duplicate() as WaveSpawnEntry
+			entry.spawn_zone_ids = PackedStringArray()
 		var queued := _queue_horde(entry) if entry.mixed_horde else queue_spawn(entry.enemy, entry.count, entry.start_delay, Vector3.INF, entry.spawn_zone_ids, entry.warning_seconds, entry.interval, entry.batch_size)
 		if not queued:
 			_preparing_wave = false
@@ -875,12 +890,11 @@ func _process_spawns() -> void:
 			for job in _spawn_queue: job.blocked_since = -1.0
 		_capacity_blocked = true
 		return
-	# 真正尝试出场前同步外部位移；没有待生成任务或满员时不重复扫描场上实体。
-	_spatial_index.synchronize(enemies)
 	_capacity_blocked = false
 	var generation := _generation
 	var checked := 0
 	var spawned := 0
+	var synchronized := false
 	var check_budget := _run_population.checks_per_tick if _run_population else max_spawn_checks_per_tick
 	var spawn_budget := _run_population.spawns_per_tick if _run_population else max_spawns_per_tick
 	# 先给已到期怪潮留位，积压的散兵不能在每帧预算耗尽前反复抢满场地。
@@ -908,6 +922,11 @@ func _process_spawns() -> void:
 			_capacity_waiting += 1
 			continue
 		if checked >= check_budget or spawned >= spawn_budget or enemies.size() >= get_active_enemy_limit(): break
+		# Future/retry/capacity waits need no full scan. Refresh external moves
+		# once, immediately before this call's first actual spawn attempt.
+		if not synchronized:
+			_spatial_index.synchronize(enemies)
+			synchronized = true
 		checked += 1
 		var success := _spawn_enemy(job.enemy, job.position, job.zones, job.warning, batch)
 		if generation != _generation or phase != Phase.BATTLE: return
@@ -926,6 +945,7 @@ func _process_spawns() -> void:
 			job.next_attempt = _wave_clock + spawn_retry_interval
 			show_notice("等待安全刷新位置 · 已登记怪物不会丢失")
 			if _wave_clock - float(job.blocked_since) >= spawn_block_timeout:
+				push_warning("Wave spawn blocked: wave=%d enemy=%s requested=%s player=%s zones=%s batch_remaining=%d alive=%d pending=%d" % [wave, job.enemy.enemy_id, job.position, player.global_position, job.zones, int(batch.get("remaining", 0)), enemies.size(), _pending])
 				_finish("挑战中断 · 刷新位置持续不可用，请检查区域或重试")
 				return
 
@@ -948,6 +968,7 @@ func _rebuild_spawn_zones() -> void:
 	for job in _spawn_queue:
 		job.batch.erase("points")
 		job.batch.erase("zone")
+		job.batch.erase("front_points")
 	for zone in _spawn_zones:
 		if is_instance_valid(zone) and zone.settings_changed.is_connected(_queue_path_rebuild): zone.settings_changed.disconnect(_queue_path_rebuild)
 	_spawn_zones.clear()
@@ -989,11 +1010,14 @@ func _pick_zone(zones: Array[WaveSpawnZone]) -> WaveSpawnZone:
 func _valid_spawn(point: Vector3, definition: WaveEnemyDefinition, goal: Vector3, local_spawn := false) -> bool:
 	var xz := Vector2(point.x, point.z)
 	if not battle_area.grow(-maxf(0.6, definition.spawn_clearance)).has_point(xz): return false
-	# 有预告的分裂／召唤须留在原地附近；普通边界刷新仍使用完整安全距离。
+	# 分裂／召唤来自已进入战区的母体，保留近身留空；普通外围刷新使用完整安全距离。
 	var safe_distance := definition.spawn_clearance + 0.3 if local_spawn else maxf(spawn_safe_distance, definition.spawn_clearance + 0.3)
 	if TerrainPath.horizontal_distance(point, player.global_position) < safe_distance: return false
-	for excluded in spawn_excluded_areas:
-		if excluded.grow(definition.spawn_clearance).has_point(xz): return false
+	# 入口禁刷区防止外围增援直接刷入休整点，不阻止走进该区的母体原地分裂。
+	# 否则局部搜索圆可能完全落在禁刷矩形里，所有重试都不可能成功。
+	if not local_spawn:
+		for excluded in spawn_excluded_areas:
+			if excluded.grow(definition.spawn_clearance).has_point(xz): return false
 	var spacing := _run_population.spawn_spacing if _run_population else spawn_spacing
 	for enemy in _spatial_index.nearby(point, maxf(spacing, definition.spawn_clearance + _largest_spawn_clearance)):
 		if TerrainPath.horizontal_distance(point, enemy.global_position) < maxf(spacing, definition.spawn_clearance + enemy.spawn_clearance): return false
@@ -1024,21 +1048,82 @@ func _batch_spawn_points(batch: Dictionary, zones: Array[WaveSpawnZone]) -> Pack
 	batch.points = points
 	return points
 
+func _surround_spawns() -> bool:
+	return _run_endless and _run_population != null and _run_population.surround_start_wave > 0 and wave >= _run_population.surround_start_wave
+
+## 仅在一批真正尝试进场时建立扇区；世界方位随人物位置确定，不读取相机朝向。
+func _surround_spawn_points(batch: Dictionary) -> Array:
+	if batch.has("front_points"): return batch.front_points
+	var count := mini(int(batch.size), mini(_run_population.surround_max_fronts, maxi(2, floori(float(get_active_enemy_limit()) / 16.0))))
+	var sectors: Array[PackedVector3Array] = []
+	for index in count: sectors.append(PackedVector3Array())
+	var origin := player.global_position
+	var phase_angle := _random.randf() * TAU
+	var safe := maxf(spawn_safe_distance, float(batch.clearance) + 0.3)
+	var inset := battle_area.grow(-maxf(0.6, float(batch.clearance)))
+	for point in _boundary_points:
+		var xz := Vector2(point.x, point.z)
+		if not inset.has_point(xz): continue
+		var excluded := false
+		for area in spawn_excluded_areas:
+			if area.grow(float(batch.clearance)).has_point(xz):
+				excluded = true
+				break
+		if excluded: continue
+		var offset := Vector2(point.x - origin.x, point.z - origin.z)
+		if offset.length_squared() < safe * safe: continue
+		var sector := mini(count - 1, floori(fposmod(offset.angle() - phase_angle, TAU) * count / TAU))
+		sectors[sector].append(point)
+	var spacing := maxf(_run_population.spawn_spacing, float(batch.clearance) * 2.0)
+	var radius := maxf(spawn_edge_band, sqrt(ceilf(float(batch.size) / count)) * spacing * 1.25)
+	var fronts: Array[PackedVector3Array] = []
+	for index in count:
+		var points := sectors[index]
+		if points.is_empty(): continue
+		var direction := Vector2.from_angle(phase_angle + (index + 0.5) * TAU / count)
+		var center := points[0]
+		var best := -INF
+		for point in points:
+			var offset := Vector2(point.x - origin.x, point.z - origin.z)
+			var score := offset.normalized().dot(direction)
+			if score > best:
+				best = score
+				center = point
+		var compact := PackedVector3Array()
+		for point in points:
+			if TerrainPath.horizontal_distance(point, center) <= radius: compact.append(point)
+		fronts.append(compact)
+	if not fronts.is_empty(): batch.front_points = fronts
+	return fronts
+
 func _find_spawn(definition: WaveEnemyDefinition, requested_position: Vector3, ids: PackedStringArray, batch: Dictionary = {}) -> Vector3:
+	var surround := _surround_spawns() and not requested_position.is_finite() and ids.is_empty()
 	var zones := _available_zones(ids)
-	if not requested_position.is_finite() and spawn_zone_root and zones.is_empty(): return Vector3.INF
+	if surround and _boundary_points.is_empty(): return Vector3.INF
+	if not surround and not requested_position.is_finite() and spawn_zone_root and zones.is_empty(): return Vector3.INF
 	if not requested_position.is_finite() and not spawn_zone_root and _boundary_points.is_empty(): return Vector3.INF
 	var goal := _ground_target()
 	var batch_points := PackedVector3Array()
-	if not batch.is_empty() and not requested_position.is_finite():
+	var fronts: Array = []
+	if surround and not batch.is_empty():
+		fronts = _surround_spawn_points(batch)
+		if fronts.is_empty(): return Vector3.INF
+	elif not batch.is_empty() and not requested_position.is_finite():
 		batch_points = _batch_spawn_points(batch, zones)
 		if batch_points.is_empty(): return Vector3.INF
 	for attempt in (_run_population.position_attempts if _run_population else 40):
 		var point: Vector3
+		var front := -1
 		if requested_position.is_finite():
 			# 分裂和召唤留在指定位置附近；阻塞时不能跳到地图另一端。
 			var offset := Vector3.ZERO if attempt == 0 else Vector3.RIGHT.rotated(Vector3.UP, _random.randf() * TAU) * _random.randf_range(0.4, 3.2)
 			point = requested_position + offset
+		elif not fronts.is_empty():
+			front = (int(batch.get("next_front", 0)) + attempt) % fronts.size()
+			var points: PackedVector3Array = fronts[front]
+			point = points[_random.randi_range(0, points.size() - 1)]
+		elif surround:
+			point = _boundary_points[_random.randi_range(0, _boundary_points.size() - 1)]
 		elif not batch_points.is_empty():
 			point = batch_points[_random.randi_range(0, batch_points.size() - 1)]
 		elif spawn_zone_root:
@@ -1049,7 +1134,11 @@ func _find_spawn(definition: WaveEnemyDefinition, requested_position: Vector3, i
 			point = _boundary_points[_random.randi_range(0, _boundary_points.size() - 1)]
 		if not terrain.data.has_cell(terrain.data.world_to_cell(terrain.to_local(point))): continue
 		point = _path.ground_position(point)
-		if _valid_spawn(point, definition, goal, requested_position.is_finite()): return point
+		if _valid_spawn(point, definition, goal, requested_position.is_finite()):
+			if front >= 0: batch.next_front = (front + 1) % fronts.size()
+			return point
+	# 人物移动或新墙阻塞旧扇区时，下次重试重新选合法外围；保留整批容量与已出生成员。
+	if surround: batch.erase("front_points")
 	return Vector3.INF
 
 func _spawn_enemy(definition: WaveEnemyDefinition = null, requested_position := Vector3.INF, zone_ids := PackedStringArray(), warning := -1.0, batch: Dictionary = {}) -> bool:

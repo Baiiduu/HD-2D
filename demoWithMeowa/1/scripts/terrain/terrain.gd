@@ -29,6 +29,8 @@ const WATER_LIGHT_LAYER := 1 << 16 # Layer 17; beam accents use 18, mirrors use 
 @export var water_material: Material
 @export var waterfall_material: Material
 @export var bridge_material: Material
+## 人物弹射直接使用既有水域阻挡形状反弹；关闭时仍沿用遇水终止。
+@export var water_boundary_reflection_enabled := false
 ## 地图外缘崖壁向下延伸到的层级
 @export var skirt_level := -2
 
@@ -98,10 +100,15 @@ var _map_texture: ImageTexture
 var _rebuild_queued := false
 var _generated: Node3D
 var _collision_body: StaticBody3D
+var _water_collision_body: StaticBody3D
 var _collision_is_flat := false
 ## 固定建筑空地证明；关闭后保留逐体实时水平扫掠，供功能对照。
 @export var obstacle_certificates_enabled := true
 var _obstacle_field: StaticObstacleField
+var _wall_ray := PhysicsRayQueryParameters3D.new()
+## Opt-in call counts, with no process callback or geometry queries of their own.
+var query_diagnostics_enabled := false
+var _ray_metrics := PackedInt64Array([0, 0, 0])
 var _transition_apply_queued := false
 var _edge_surface_values := Vector4(-1.0, -1.0, -1.0, -1.0)
 var _palette_apply_queued := false
@@ -224,6 +231,9 @@ func _rebuild() -> void:
 	if _generated:
 		_generated.free()
 		_generated = null
+	_collision_body = null
+	_water_collision_body = null
+	_collision_is_flat = false
 	if not data or data.size.x <= 0 or data.size.y <= 0:
 		return
 	_generated = Node3D.new()
@@ -242,6 +252,8 @@ func _rebuild() -> void:
 	_add_mesh("Waterfalls", waterfalls, waterfall_material, false)
 	_add_mesh("Bridges", bridges, bridge_material)
 	_build_collision(collision_faces)
+	if is_instance_valid(_obstacle_field):
+		_obstacle_field.register_generated_collision(_collision_body, _water_collision_body)
 	_upload_map()
 
 # ---------- 格子高度 ----------
@@ -484,11 +496,19 @@ func _bridge_end(cell: Vector2i) -> bool:
 ## Only this generated body may be omitted after a full flat-surface certificate.
 ## Other buildings/props remain live obstacles. Rebuilds replace this reference.
 func ground_collision_body() -> StaticBody3D:
-	# Bridges/ramps/water share this body and may include railings or blockers.
-	# Only the compact, wholly flat terrain can be omitted as one collider.
+	# A locally certified dry surface may omit the sheet only when every dry
+	# cell is coplanar and all remaining faces are at/below it. Water blockers
+	# are a separate live obstacle; bridges and ramps retain the native fallback.
 	if not _collision_is_flat or not is_instance_valid(_collision_body): return null
 	if _collision_body.transform != Transform3D.IDENTITY or _collision_body.get_child_count() != 1: return null
 	return _collision_body
+
+## 只识别水域阻挡形状，地面、崖壁和桥仍沿用各自的接触规则。
+func is_reflective_water_shape(collider: Object, shape_index: int) -> bool:
+	if not water_boundary_reflection_enabled or not is_instance_valid(_water_collision_body) or collider != _water_collision_body or shape_index < 0: return false
+	var shape_owner := _water_collision_body.shape_find_owner(shape_index)
+	var shape := _water_collision_body.shape_owner_get_owner(shape_owner) as CollisionShape3D
+	return shape != null and shape.get_meta(&"water_boundary", false)
 
 func obstacle_field() -> StaticObstacleField:
 	if not is_instance_valid(_obstacle_field):
@@ -497,6 +517,51 @@ func obstacle_field() -> StaticObstacleField:
 		_obstacle_field.name = "ObstacleCertificates"
 		add_child(_obstacle_field)
 	return _obstacle_field
+
+## Invoke BEFORE native binding/owner edits. A cold map needs no raster bake.
+func prepare_obstacle_change(body: PhysicsBody3D) -> void:
+	if not is_instance_valid(body): return
+	# Native floor edits no longer agree with TerrainData's generated support.
+	# Only the terrain generator may restore the dry-land qualification.
+	if body == _collision_body: _collision_is_flat = false
+	if is_instance_valid(_obstacle_field): _obstacle_field.make_dynamic(body)
+
+## A shared Shape edit can affect several bodies, including the floor. Use
+## this before margin/PhysicsServer edits that do not emit Resource.changed.
+func prepare_obstacle_shape_change(shape: Shape3D) -> void:
+	if _collision_is_flat and is_instance_valid(_collision_body) and _collision_body.get_child_count() == 1:
+		var collider := _collision_body.get_child(0) as CollisionShape3D
+		if collider and collider.shape == shape: _collision_is_flat = false
+	if is_instance_valid(_obstacle_field): _obstacle_field.invalidate_shape(shape)
+
+func replace_obstacle_shape(collider: CollisionShape3D, shape: Shape3D) -> bool:
+	if not is_instance_valid(collider): return false
+	var body := collider.get_parent() as PhysicsBody3D
+	if not body: return false
+	prepare_obstacle_change(body)
+	collider.shape = shape
+	return true
+
+func reset_query_metrics() -> void:
+	_ray_metrics.fill(0)
+
+## Reading metrics performs no spatial queries. Counts are not CPU/FPS timings.
+func get_query_metrics() -> Dictionary:
+	return {"ray_requests":_ray_metrics[0], "ray_certified":_ray_metrics[1], "ray_native":_ray_metrics[2]}
+
+## Shared fixed-space proof plus live guards; failure retains the exact ray mask
+## and exclusions. Works without a navigation graph, including standalone previews.
+func ray_clear(from: Vector3, to: Vector3, mask: int, excluded: Array[RID]) -> bool:
+	if query_diagnostics_enabled: _ray_metrics[0] += 1
+	if obstacle_certificates_enabled and obstacle_field().clear_ray(from, to, mask, excluded):
+		if query_diagnostics_enabled: _ray_metrics[1] += 1
+		return true
+	if query_diagnostics_enabled: _ray_metrics[2] += 1
+	_wall_ray.from = from
+	_wall_ray.to = to
+	_wall_ray.collision_mask = mask
+	_wall_ray.exclude = excluded
+	return get_world_3d().direct_space_state.intersect_ray(_wall_ray).is_empty()
 
 func _build_collision(collision_faces: PackedVector3Array) -> void:
 	var body := StaticBody3D.new()
@@ -514,25 +579,46 @@ func _build_collision(collision_faces: PackedVector3Array) -> void:
 			var cell := data.origin + Vector2i(x, z)
 			if not _is(cell, TerrainData.OVERLAY_WATER) or _is(cell, TerrainData.OVERLAY_BRIDGE):
 				continue
+			if not _water_collision_body:
+				_water_collision_body = StaticBody3D.new()
+				_water_collision_body.name = "WaterBlockers"
+				_water_collision_body.set_meta(&"obstacle_layout_managed", true)
+				_generated.add_child(_water_collision_body)
 			var bottom := _level(cell) * data.layer_height
 			var height := data.layer_height * 4.0
 			var blocker := CollisionShape3D.new()
 			var box := BoxShape3D.new()
 			box.size = Vector3(data.cell_size, height, data.cell_size)
 			blocker.shape = box
+			blocker.set_meta(&"water_boundary", true)
 			blocker.position = Vector3(cell.x * data.cell_size, bottom + height * 0.5, cell.y * data.cell_size)
-			body.add_child(blocker)
+			_water_collision_body.add_child(blocker)
 
 ## Only merge an entirely flat rectangle. Preserve the open-bottom concave
 ## surface, wall winding and exact outer corners; render meshes stay per cell.
 func _compact_collision_faces(faces: PackedVector3Array) -> PackedVector3Array:
 	_collision_is_flat = false
-	var level := _level(data.origin)
+	var level := 0
+	var water_level := 0
+	var has_land := false
+	var has_water := false
 	for z in data.size.y:
 		for x in data.size.x:
 			var cell := data.origin + Vector2i(x, z)
-			if _level(cell) != level or data.has_overlay(cell, TerrainData.OVERLAY_WATER | TerrainData.OVERLAY_BRIDGE | TerrainData.OVERLAY_RAMP): return faces
+			if data.has_overlay(cell, TerrainData.OVERLAY_BRIDGE | TerrainData.OVERLAY_RAMP): return faces
+			var own := _level(cell)
+			if _is(cell, TerrainData.OVERLAY_WATER):
+				water_level = maxi(water_level, own) if has_water else own
+				has_water = true
+			else:
+				if has_land and own != level: return faces
+				level = own
+				has_land = true
+	if not has_land or (has_water and water_level > level): return faces
 	_collision_is_flat = true
+	# Keep every shoreline/basin triangle. Qualification does not flatten holes
+	# or extend support into water; TerrainPath still proves the full dry sweep.
+	if has_water: return faces
 	var first := _corner_points(data.origin)[0]
 	var last := _corner_points(data.origin + data.size - Vector2i.ONE)[2]
 	var height := _corner_heights(data.origin)[0]

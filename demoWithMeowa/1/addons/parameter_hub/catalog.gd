@@ -3,6 +3,9 @@ extends RefCounted
 
 const CATEGORIES := ["视觉", "人物", "战斗与成长", "地图与地编", "UI", "声音", "物品与规则"]
 const LABELS := {
+	"sky_strength": "天空极光亮度", "reflection_strength": "极光倒影强度", "flow_speed": "极光流动速度",
+	"green_color": "极光青绿主色", "purple_color": "极光紫色边缘", "reflection_regions": "极光倒影区域（中心 X/Z、半径 X/Z）",
+	"blue_color": "极光青蓝过渡", "pink_color": "极光粉红边缘",
 	"crowd_deflection_enabled": "人物接群偏转开关", "crowd_contact_radius": "人物接群距离",
 	"crowd_turn_distance": "绕群接入与脱离过渡长度", "crowd_exit_outward": "接群出射外向分量",
 	"crowd_arc_degrees": "人物沿怪群绕行角度", "enemy_push_enabled": "旧版拨怪开关",
@@ -12,6 +15,13 @@ const LABELS := {
 	"eccentric_edge_clearance": "偏心外沿额外间隔", "eccentric_outward_sway": "偏心外摆幅度",
 	"eccentric_search_radius": "环绕怪群搜索距离",
 	"eccentric_capture_margin": "环绕提前捕获余量",
+	"show_bounce_effect": "碰墙反弹特效开关", "bounce_frames": "反弹火花原生帧",
+	"bounce_anchor_pixels": "反弹火花碰点像素锚点", "bounce_duration": "反弹火花持续时间",
+	"bounce_opacity": "反弹火花透明度", "bounce_energy": "反弹火花亮度", "bounce_height": "反弹火花显示高度",
+	"show_fire_trail": "弹射地面火带开关", "fire_trail_width": "地面火带宽度",
+	"fire_trail_fresh_seconds": "火带新生亮火时间", "fire_trail_burn_seconds": "火带持续燃烧时间",
+	"fire_trail_ember_seconds": "火带暗红余烬时间", "fire_trail_energy": "地面火带亮度",
+	"fire_trail_pixels_per_meter": "火带世界像素密度",
 	"playlists": "BGM 场合曲池", "default_context": "默认音乐场合", "music_transition_time": "曲间切换时长",
 	"follow_battle_session": "音乐跟随波次状态", "exploration_context": "准备与结算曲池", "combat_context": "战斗与波间曲池",
 	"track_id": "曲目标识", "track_title": "曲目名称", "stream": "音乐文件", "loop_crossfade": "曲尾衔接时长",
@@ -23,6 +33,11 @@ const LABELS := {
 	"patch_enabled": "成片电涌开关", "patch_duration": "成片电涌停留时间", "patch_opacity": "成片电涌强度", "patch_height": "成片电涌高度",
 	"mixed_horde": "自动目录混合怪潮", "horde_weight": "怪潮出场权重（0 排除）",
 	"action_volume_db": "核心动作音量", "enemy_volume_db": "怪物反馈音量", "feedback_volume_db": "成长与波次音量",
+	"bounce_gain_db": "人物反弹碰撞音量增益",
+	"water_boundary_reflection_enabled": "人物遇水边界反弹",
+	"flight_audio_enabled": "弹射动能气流开关", "flight_gain_db": "弹射气流音量增益",
+	"flight_low_speed_gain_db": "低速气流额外音量", "flight_reference_speed": "气流满音量参考速度",
+	"flight_volume_smoothing": "气流音量平滑时间", "flight_fade_out_seconds": "停止弹射气流淡出时间",
 	"low_health_ratio": "濒危提示血量比例", "pickup_interval": "经验音提示间隔",
 	"propagation_sounds": "雷潮传导音源", "propagation_layer_gain_db": "雷潮逐层音量变化",
 	"ricochet_camera_settings": "弹射镜头反馈配置", "launch_lag_seconds": "起射镜头滞后时间",
@@ -48,10 +63,13 @@ const LABELS := {
 	"flight_echo_saturation": "人物残影饱和度", "flight_echo_brightness": "人物残影亮度",
 	"flight_trail_max_length": "人物残影尾迹长度", "flight_trail_lifetime": "人物残影消散时间",
 	"flight_trail_opacity": "人物残影透明度", "flight_trail_energy": "人物残影自发光",
-	"sword_rules": "人物自带基础剑术", "normal_interval": "普攻出手间隔", "flight_interval": "弹射挥剑间隔",
+	"sword_rules": "人物自带基础剑术", "normal_interval": "普攻出手间隔", "flight_interval": "弹射挥剑间隔", "minimum_attack_interval": "剑术最短出手间隔",
 	"normal_range": "普攻半径", "flight_range": "弹射挥剑半径", "normal_angle": "普攻扇角", "flight_angle": "弹射挥剑扇角",
 	"sweep_seconds": "基础剑术扫击时间", "fade_seconds": "基础剑术收尾时间", "art_radius_pixels": "剑光原生半径像素",
 	"effect_height": "刀光中心高度", "effect_tilt_degrees": "刀光斜切角度",
+	"effect_mode": "剑光显示方式", "arc_width": "窄弧刀痕厚度", "arc_trail_degrees": "窄弧尾迹角度",
+	"arc_blade_color": "窄弧刀锋颜色", "arc_tail_color": "窄弧尾迹颜色", "arc_pixel_size": "窄弧原生像素尺寸",
+	"meowa_body_opacity": "Meowa 白刃存在感", "meowa_tail_spread": "Meowa 拖尾展开倍率", "meowa_tail_inner_ratio": "Meowa 拖尾内端半径比例", "meowa_tail_seconds": "Meowa 破碎消散时长",
 	"tree_local_light_softness": "树图近灯柔化", "lamp_canopy_clearance": "灯头树冠间隙",
 	"ricochet_rules": "人物本体弹射规则", "action_visuals": "人物动作资源槽位",
 	"full_charge_seconds": "蓄满所需时间", "minimum_launch_speed": "起步弹射速度", "maximum_launch_speed": "满蓄力弹射速度",
@@ -135,6 +153,7 @@ const LABELS := {
 	"max_active": "同场容量终值", "max_population_cost": "同场容量点预算", "role_limits": "四类怪物同场上限",
 	"enemies_per_wave_increment": "每波总数增量", "max_wave_enemies": "单波怪物总数上限", "max_queued_per_wave": "单波含召唤登记预算",
 	"interval_reduction_per_wave": "每波刷新间隔减幅", "max_interval_reduction": "刷新间隔最大减幅", "min_spawn_interval": "最短出怪间隔",
+	"surround_start_wave": "多向进场起始波（0 停用）", "surround_max_fronts": "怪潮同时进场方向上限",
 	"spawns_per_tick": "每物理帧生成上限", "checks_per_tick": "每物理帧检查上限", "position_attempts": "每任务位置尝试上限",
 	"spawn_interval": "出怪间隔", "spawn_warning": "出场预告", "retry_key": "重试按键", "rules": "规则资源",
 	"max_active_enemies": "同场怪物上限", "top_margin": "顶部边距", "hint_font_size": "波次提示字号", "hint_opacity": "波次提示透明度",
@@ -168,15 +187,16 @@ const LABELS := {
 	"limiter_ceiling_db": "总输出峰值上限",
 }
 const COMMON := {
+	"aurora_sky.gd": ["enabled", "sky_strength", "reflection_strength", "flow_speed", "green_color", "blue_color", "purple_color", "pink_color", "reflection_regions"],
 	"ricochet_camera_settings.gd": ["enabled", "launch_lag_seconds", "lookahead_ratio", "lead_settle_seconds", "bounce_inertia_seconds", "return_seconds", "max_offset_ratio", "impact_shake_pixels"],
 	"damage_numbers.gd": ["enabled", "number_styles", "number_stack_columns", "number_stack_spacing", "number_idle_limit"],
 	"damage_number_style.gd": ["number_font", "number_font_size", "number_color", "number_lifetime", "rise_pixels", "drift_pixels", "pop_scale"],
 	"ricochet_storm.gd": ["enabled", "damage", "attack_interval", "trigger_radius", "spread_radius", "max_propagation_radius", "spread_layers", "targets_per_layer", "layer_interval", "skill_definition", "effect_scene"],
 	"ricochet_storm_effect.gd": ["pixel_size", "arc_duration", "reveal_seconds", "sky_height", "effect_energy", "arc_energy_multiplier", "effect_opacity", "impact_frames", "patch_enabled", "patch_duration", "patch_opacity", "patch_height"],
 	"player_flight_trail_settings.gd": ["enabled", "flight_echo_count", "flight_echo_spacing", "flight_trail_color", "flight_echo_saturation", "flight_echo_brightness", "flight_trail_max_length", "flight_trail_lifetime", "flight_trail_opacity", "flight_trail_energy"],
-	"player_sword_rules.gd": ["enabled", "damage", "normal_interval", "flight_interval", "normal_range", "flight_range", "normal_angle", "flight_angle", "frames", "art_radius_pixels", "effect_height", "effect_tilt_degrees"],
+	"player_sword_rules.gd": ["enabled", "damage", "normal_interval", "flight_interval", "minimum_attack_interval", "normal_range", "flight_range", "normal_angle", "flight_angle", "effect_mode", "frames", "arc_width", "arc_trail_degrees", "meowa_body_opacity", "meowa_tail_spread", "meowa_tail_inner_ratio", "meowa_tail_seconds", "effect_height", "effect_tilt_degrees", "effect_opacity", "effect_energy"],
 	"player_ricochet_rules.gd": ["eccentric_enabled", "eccentric_capture_margin", "eccentric_step_distance", "eccentric_edge_clearance", "eccentric_outward_sway", "eccentric_search_radius", "crowd_deflection_enabled", "crowd_arc_degrees", "crowd_arc_distance", "enemy_push_enabled", "crowd_contact_radius", "crowd_turn_distance", "crowd_exit_outward", "crowd_speed_retention", "crowd_release_clearance", "full_charge_seconds", "minimum_launch_speed", "maximum_launch_speed", "bounce_speed_retention", "minimum_bounce_speed", "flight_deceleration", "bounce_speed_cost", "push_radius", "push_initial_speed", "push_seconds", "push_stun_seconds", "push_group_link_distance", "push_group_search_radius", "push_group_edge_margin", "push_arrival_arc_degrees", "push_chain_layers", "push_chain_speed_retention", "push_chain_stun_retention", "push_chain_min_speed", "clockwise"],
-	"player_action_visuals.gd": ["normal_attack", "charge", "flight", "flight_attack", "recovery", "show_charge_effect", "show_aim_guide", "charge_radius_pixels", "charge_effect_opacity", "charge_effect_energy", "preview_show_target", "preview_bounces", "preview_distance", "preview_followup_distance", "preview_color", "preview_opacity", "preview_line_width_pixels"],
+	"player_action_visuals.gd": ["normal_attack", "charge", "flight", "flight_attack", "recovery", "show_bounce_effect", "bounce_frames", "bounce_anchor_pixels", "bounce_duration", "bounce_opacity", "bounce_energy", "bounce_height", "show_fire_trail", "fire_trail_width", "fire_trail_fresh_seconds", "fire_trail_burn_seconds", "fire_trail_ember_seconds", "fire_trail_energy", "fire_trail_pixels_per_meter", "show_charge_effect", "show_aim_guide", "charge_radius_pixels", "charge_effect_opacity", "charge_effect_energy", "preview_show_target", "preview_bounces", "preview_distance", "preview_followup_distance", "preview_color", "preview_opacity", "preview_line_width_pixels"],
 	"leaf_charger_definition.gd": ["health", "attack_damage", "move_speed", "trigger_distance", "charge_speed", "charge_distance", "windup_seconds", "recovery_seconds", "attack_interval", "max_alive"],
 	"lantern_spitter_definition.gd": ["health", "attack_damage", "shooting_range", "retreat_distance", "projectile_speed", "projectile_distance", "windup_seconds", "attack_interval", "max_alive"],
 	"pot_brood_definition.gd": ["health", "move_speed", "attack_damage", "child_enemy_id", "split_delay", "max_alive"],
@@ -198,7 +218,7 @@ const COMMON := {
 	"combat_skill_level.gd": ["parameters"],
 	"wave_enemy_definition.gd": ["health", "move_speed", "attack_damage", "experience_reward", "health_growth_enabled"],
 	"wave_melee_enemy_definition.gd": ["enemy_id", "health", "move_speed", "attack_damage", "experience_reward", "health_growth_enabled", "body_radius", "contact_distance", "knockback_multiplier", "population_cost", "max_alive"],
-	"wave_population_rules.gd": ["simulation_mode", "simulation_enemy_count", "simulation_skills", "first_active_limit", "max_active", "max_wave_enemies", "max_population_cost", "role_limits"],
+	"wave_population_rules.gd": ["simulation_mode", "simulation_enemy_count", "simulation_skills", "first_active_limit", "max_active", "max_wave_enemies", "max_population_cost", "role_limits", "surround_start_wave", "surround_max_fronts"],
 	"simulation_skill_entry.gd": ["skill_definition", "skill_level"],
 	"wave_spawn_entry.gd": ["mixed_horde", "enemy", "count", "batch_size", "start_delay", "interval", "spawn_zone_ids"],
 	"wave_health_growth_rules.gd": ["start_wave", "bonus_per_wave", "minimum_multiplier", "maximum_multiplier"],
@@ -218,7 +238,7 @@ const COMMON := {
 	"experience_pickup.gd": ["medium_threshold", "large_threshold", "gem_height", "bob_amplitude", "trail_length", "trail_brightness"],
 	"item_quickbar.gd": ["slot_size", "slot_spacing", "background_opacity"],
 	"ui_audio.gd": ["volume_db"],
-	"core_feedback_audio.gd": ["enabled", "action_volume_db", "enemy_volume_db", "feedback_volume_db", "sounds"],
+	"core_feedback_audio.gd": ["enabled", "action_volume_db", "bounce_gain_db", "flight_audio_enabled", "flight_gain_db", "flight_low_speed_gain_db", "flight_reference_speed", "flight_volume_smoothing", "flight_fade_out_seconds", "enemy_volume_db", "feedback_volume_db", "sounds"],
 }
 
 var entries: Array[Dictionary] = []
@@ -239,6 +259,7 @@ func _visit(node: Node, scene: Node) -> void:
 		if child.owner != null: _visit(child, scene)
 
 func category(filename: String, group: String) -> String:
+	if filename == "aurora_sky.gd": return "视觉"
 	if filename in ["core_feedback_audio.gd", "core_sound_bank.gd"]: return "声音"
 	if filename == "ricochet_camera_settings.gd": return "视觉"
 	if filename in ["damage_numbers.gd", "damage_number_style.gd"]: return "战斗与成长"

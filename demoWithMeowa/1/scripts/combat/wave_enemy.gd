@@ -104,7 +104,13 @@ func _ready() -> void:
 	if wave_mode:
 		add_to_group(&"enemies")
 		add_to_group(&"wave_enemies")
-		if spatial_index: spatial_index.update(self)
+		commit_spatial_state()
+
+## Call after external movement, teleport or crowd-parameter/activation edits,
+## before another spatial query. Ordinary ticks and spawning already do this.
+## This publishes state only; the feature still owns its movement/action rules.
+func commit_spatial_state() -> void:
+	if spatial_index: spatial_index.update(self)
 
 func _exit_tree() -> void:
 	if spatial_index: spatial_index.remove(self)
@@ -125,7 +131,7 @@ func _physics_process(delta: float) -> void:
 		else:
 			_combat_tick(delta)
 		_advance_push(delta)
-	if spatial_index: spatial_index.update(self)
+	commit_spatial_state()
 
 func _combat_tick(_delta: float) -> void:
 	pass

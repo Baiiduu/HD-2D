@@ -248,6 +248,16 @@ func stop_cue(source: Node, cue: StringName) -> void:
 	for slot in _voices:
 		if slot.active and slot.source == source and slot.cue == cue: _release(slot)
 
+## 更新持续动作的音量；按来源与事件定位，避免修改已被抢占复用的声道。
+func set_cue_volume(source: Node, cue: StringName, volume_db: float) -> bool:
+	if not is_finite(volume_db): return false
+	for slot in _voices:
+		if slot.active and slot.source == source and slot.cue == cue:
+			slot.gain_db = volume_db
+			_update_spatial(slot)
+			return true
+	return false
+
 func stop_all() -> void:
 	for slot in _voices: _release(slot)
 	_recent.clear()

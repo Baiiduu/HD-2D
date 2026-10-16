@@ -46,7 +46,10 @@ func _build_geometry() -> void:
 		var x: float = side * arm_span * 0.5
 		_box(Vector3(x, height - 0.36, 0), Vector3(0.05, 0.12, 0.05), "metal")
 		# Squared lanterns with a tapered dark roof, four ribs and a narrow brass lip.
-		_box(Vector3(x, lamp_y - 0.24, 0), Vector3(0.36, 0.065, 0.36), "metal")
+		# 底框保留真实投影，中央留出玻璃出光口，避免实心底盖挡住向下照明。
+		for edge: float in [-1.0, 1.0]:
+			_box(Vector3(x + edge * 0.16, lamp_y - 0.24, 0), Vector3(0.04, 0.065, 0.36), "metal")
+			_box(Vector3(x, lamp_y - 0.24, edge * 0.16), Vector3(0.28, 0.065, 0.04), "metal")
 		_box(Vector3(x, lamp_y + 0.22, 0), Vector3(0.36, 0.05, 0.36), "brass")
 		_cylinder(Vector3(x, lamp_y + 0.285, 0), 0.27, 0.07, 0.1, "metal", 4, Vector3(0, PI * 0.25, 0))
 		for edge_x in [-1.0, 1.0]:
@@ -60,6 +63,9 @@ func _build_geometry() -> void:
 		mesh.size = Vector3(0.25, 0.39, 0.25)
 		mesh.material = (glass.mesh.surface_get_material(0) as StandardMaterial3D).duplicate()
 		glass.mesh = mesh
+		# 真实出光点贴在底部开口外侧，防止近场底框吞掉聚光、补光和水面反射。
+		for light_name in ["Cone", "Light", "WaterLight"]:
+			head.get_node(light_name).position.y = 0.93
 		_heads.append(head)
 	if collision_enabled:
 		var body := _body("LampCollision")

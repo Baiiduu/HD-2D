@@ -14,20 +14,40 @@ extends Node3D
 			_choice_banks[index].confirm = sounds.clips_for(&"growth_apply")[0] if value else _original_confirms[index]
 		if not value:
 			_stop_charge()
+			_stop_flight()
 			if is_instance_valid(_audio): _audio.stop_source(self)
-		set_physics_process(value and is_instance_valid(_body) and _body.charging)
+		_refresh_processing()
 @export_group("音量与反馈")
 @export_range(-30.0, 6.0, 0.5) var action_volume_db := -7.0
+@export_range(-12.0, 12.0, 0.5) var bounce_gain_db := 3.0
 @export_range(-30.0, 6.0, 0.5) var enemy_volume_db := -14.0
 @export_range(-30.0, 6.0, 0.5) var feedback_volume_db := -10.0
 @export_range(0.1, 0.5, 0.05) var low_health_ratio := 0.25
 @export_range(0.03, 0.3, 0.01) var pickup_interval := 0.10
+@export_group("弹射飞行动能气流")
+@export var flight_audio_enabled := true:
+	set(value):
+		flight_audio_enabled = value
+		if not is_node_ready(): return
+		if not value: _stop_flight()
+		_refresh_processing()
+## 相对于核心动作音量，参考速度时达到此增益。
+@export_range(-30.0, 12.0, 0.5) var flight_gain_db := -5.0
+## 接近零速时相对于参考速度额外降低的音量。
+@export_range(-30.0, 0.0, 0.5) var flight_low_speed_gain_db := -12.0
+@export_range(0.1, 60.0, 0.1, "suffix:m/s") var flight_reference_speed := 12.0
+@export_range(0.0, 1.0, 0.01, "suffix:s") var flight_volume_smoothing := 0.10
+@export_range(0.0, 2.0, 0.01, "suffix:s") var flight_fade_out_seconds := 0.22
 
 @onready var _ui: UIAudio = $UIAudio
 var _audio: GameAudio
 var _body: PlayerRicochet
 var _ready_chime := false
 var _loop_clips: Array[AudioStream] = []
+var _flight_clips: Array[AudioStream] = []
+var _flight_level := 0.0
+var _flight_fade_rate := 0.0
+var _flight_retry := 0.0
 var _health := 0.0
 var _health_max := 0.0
 var _low_warned := false
@@ -51,14 +71,8 @@ func _bind() -> void:
 		_body.surface_bounced.connect(_bounced)
 		_body.enemy_pushed.connect(_pushed)
 		_body.finished.connect(_flight_finished)
-	var loops := sounds.clips_for(&"charge_loop")
-	if not loops.is_empty():
-		var clip := loops[0].duplicate() as AudioStreamWAV
-		clip.set_meta(&"mix_source_path", loops[0].resource_path)
-		clip.loop_mode = AudioStreamWAV.LOOP_FORWARD
-		clip.loop_begin = 0
-		clip.loop_end = roundi(clip.get_length() * clip.mix_rate)
-		_loop_clips.append(clip)
+	_loop_clips = _prepare_loop(&"charge_loop")
+	_flight_clips = _prepare_loop(&"flight_loop")
 	_health = player.current_health
 	_health_max = player.max_health
 	player.vitals_changed.connect(_vitals)
@@ -76,6 +90,18 @@ func _bind() -> void:
 	for enemy in session.enemies: _enemy_spawned(enemy)
 	_ui.enabled = enabled
 
+func _prepare_loop(cue: StringName) -> Array[AudioStream]:
+	var result: Array[AudioStream] = []
+	var clips := sounds.clips_for(cue)
+	if clips.is_empty() or not clips[0] is AudioStreamWAV: return result
+	var clip := clips[0].duplicate() as AudioStreamWAV
+	clip.set_meta(&"mix_source_path", clips[0].resource_path)
+	clip.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	clip.loop_begin = 0
+	clip.loop_end = roundi(clip.get_length() * clip.mix_rate)
+	result.append(clip)
+	return result
+
 func _bind_choices(choices: GrowthChoiceUI) -> void:
 	choices.cards_turned.connect(func(): _play_ui(&"card_reveal", -4.0))
 	choices.cards_redrawn.connect(func(): _play_ui(&"reroll", -2.0))
@@ -90,6 +116,7 @@ func _bind_choices(choices: GrowthChoiceUI) -> void:
 
 func _exit_tree() -> void:
 	_stop_charge()
+	_stop_flight()
 	if is_instance_valid(_audio): _audio.stop_source(self)
 
 func _play_world(cue: StringName, point: Vector3, kind := GameAudio.Kind.ATTACK, gain := 0.0, priority := -1, pitch := 1.0) -> void:
@@ -114,27 +141,77 @@ func _play_ui(cue: StringName, gain := 0.0, pitch := 1.0) -> void:
 func _body_state(state: PlayerRicochet.State) -> void:
 	_stop_charge()
 	_ready_chime = false
-	set_physics_process(enabled and state == PlayerRicochet.State.CHARGING)
+	_refresh_processing()
 	if not enabled or state != PlayerRicochet.State.CHARGING: return
 	_play_world(&"charge_start", player.global_position, GameAudio.Kind.ATTACK, -2.0, 50)
 	if is_instance_valid(_audio) and not _loop_clips.is_empty():
 		_audio.request({"source":player, "cue":&"core:charge_loop", "clips":_loop_clips, "kind":GameAudio.Kind.ATTACK,
 			"position":player.global_position, "volume_db":action_volume_db - 3.0, "priority":20, "follow_source":true})
 
-func _physics_process(_delta: float) -> void:
-	if not enabled or not is_instance_valid(_body) or not _body.charging:
+func _refresh_processing() -> void:
+	set_physics_process(enabled and is_instance_valid(_body) and (
+		_body.charging or (_body.flying and flight_audio_enabled) or _flight_level > 0.0))
+
+func _physics_process(delta: float) -> void:
+	if not enabled or not is_instance_valid(_body):
+		_stop_flight()
 		set_physics_process(false)
 		return
 	if session.combat_frozen: return
-	if not _ready_chime and _body.charge_fraction >= 1.0:
+	if _body.charging and not _ready_chime and _body.charge_fraction >= 1.0:
 		_ready_chime = true
 		_play_world(&"charge_ready", player.global_position, GameAudio.Kind.ATTACK, -2.0, 55)
+	_update_flight(delta)
+	_refresh_processing()
+
+func _flight_speed_level(speed: float) -> float:
+	var fraction := clampf(speed / maxf(flight_reference_speed, 0.1), 0.0, 1.0)
+	return db_to_linear(lerpf(flight_low_speed_gain_db, 0.0, fraction))
+
+func _update_flight(delta: float) -> void:
+	var flying := flight_audio_enabled and _body.flying
+	if not flying and _flight_level <= 0.0: return
+	if flying:
+		_flight_fade_rate = 0.0
+		var weight := 1.0 if flight_volume_smoothing <= 0.0 else 1.0 - exp(-delta / flight_volume_smoothing)
+		_flight_level = lerpf(_flight_level, _flight_speed_level(_body.flight_speed), weight)
+	else:
+		_flight_level = move_toward(_flight_level, 0.0, _flight_fade_rate * delta)
+		if _flight_level <= 0.00001:
+			_stop_flight()
+			return
+	if not is_instance_valid(_audio) or _flight_clips.is_empty(): return
+	var gain := action_volume_db + flight_gain_db + linear_to_db(maxf(_flight_level, 0.00001))
+	_flight_retry = maxf(0.0, _flight_retry - delta)
+	if _audio.set_cue_volume(player, &"core:flight_loop", gain): return
+	# 被更重要的声音抢占后低频重试；已经结束的飞行不重新创建尾音。
+	if not flying or _flight_retry > 0.0: return
+	_flight_retry = 0.20
+	_audio.request({"source":player, "cue":&"core:flight_loop", "clips":_flight_clips, "kind":GameAudio.Kind.ATTACK,
+		"position":player.global_position, "volume_db":gain, "priority":25, "follow_source":true})
+
+func _fade_flight() -> void:
+	if flight_fade_out_seconds <= 0.0 or _flight_level <= 0.00001:
+		_stop_flight()
+	elif _flight_fade_rate <= 0.0:
+		_flight_fade_rate = _flight_level / flight_fade_out_seconds
+	_refresh_processing()
+
+func _stop_flight() -> void:
+	if is_instance_valid(_audio) and is_instance_valid(player): _audio.stop_cue(player, &"core:flight_loop")
+	_flight_level = 0.0
+	_flight_fade_rate = 0.0
+	_flight_retry = 0.0
 
 func _stop_charge() -> void:
 	if is_instance_valid(_audio) and is_instance_valid(player): _audio.stop_cue(player, &"core:charge_loop")
 
 func _launched(_heading: Vector3, _speed: float, _charge: float) -> void:
 	_play_world(&"launch", player.global_position, GameAudio.Kind.ATTACK, 0.0, 60)
+	if not enabled or not flight_audio_enabled: return
+	_flight_retry = 0.0
+	_update_flight(0.0)
+	_refresh_processing()
 
 func _bounced(collision: KinematicCollision3D) -> void:
 	var node := collision.get_collider() as Node
@@ -155,13 +232,14 @@ func _bounced(collision: KinematicCollision3D) -> void:
 				RicochetProp.Kind.CRATE_STACK, RicochetProp.Kind.BARREL_CLUSTER: cue = &"bounce_wood"
 			break
 		node = node.get_parent()
-	_play_world(cue, collision.get_position(), GameAudio.Kind.ATTACK, 0.0, 60, 1.0 + minf(3, _body.bounce_count - 1) * 0.025)
+	_play_world(cue, collision.get_position(), GameAudio.Kind.ATTACK, bounce_gain_db, 60, 1.0 + minf(3, _body.bounce_count - 1) * 0.025)
 
 func _pushed(enemy: WaveEnemy, _heading: Vector3) -> void:
 	_play_world(&"push_stun", enemy.global_position, GameAudio.Kind.ATTACK, -3.0, 50)
 
 func _flight_finished(reason: StringName) -> void:
 	_stop_charge()
+	_fade_flight()
 	if reason != &"cancelled": _play_world(&"flight_end", player.global_position, GameAudio.Kind.ATTACK, -5.0)
 
 func _vitals() -> void:
@@ -178,6 +256,8 @@ func _vitals() -> void:
 
 func _phase_changed(phase: WavePrototype.Phase) -> void:
 	_stop_charge()
+	if phase != WavePrototype.Phase.REST: _stop_flight()
+	_refresh_processing()
 	if phase == WavePrototype.Phase.BATTLE: _play_ui(&"wave_start", -3.0)
 	elif phase == WavePrototype.Phase.RESULT and player.current_health <= 0.0: _play_ui(&"defeat")
 	elif phase == WavePrototype.Phase.READY:

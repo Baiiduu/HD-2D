@@ -232,8 +232,7 @@ func _clear_path(from: Vector3, to: Vector3) -> bool:
 	if distance < 0.0001: return true
 	var direction := offset / distance
 	if _collision.ground_limit(session._path, from, direction, distance, from.y, height_tolerance) < distance - 0.01: return false
-	var ray := PhysicsRayQueryParameters3D.create(from + Vector3.UP * contact_height, to + Vector3.UP * contact_height, 1, [session.player.get_rid()])
-	return get_world_3d().direct_space_state.intersect_ray(ray).is_empty()
+	return session.terrain.ray_clear(from + Vector3.UP * contact_height, to + Vector3.UP * contact_height, 1, [session.player.get_rid()])
 
 func _within_propagation(origin: Vector3, from: Vector3, to: Vector3, radius: float, limit: float, outward: bool) -> bool:
 	var distance := TerrainPath.horizontal_distance(origin, to)
@@ -280,6 +279,7 @@ func discharge(origin: Vector3, stats: Dictionary = {}) -> bool:
 		frontier = layer
 	if layers.is_empty(): return false
 	var burst := {"layers": layers, "next": 0, "wait": 0.0, "stats": stats.duplicate(), "generation": session._generation, "landed": {0: origin}, "blocked": {}, "seen": seen}
+	burst.flight_id = _body.flight_serial if is_instance_valid(_body) and _body.flying else 0
 	_bursts.append(burst)
 	discharge_started.emit(origin)
 	_deliver_layer(burst)
@@ -338,7 +338,8 @@ func _deliver_layer(burst: Dictionary) -> void:
 		burst.patch_points.append(contact.point)
 		var before := enemy.health
 		burst.seen[contact.id] = 1
-		enemy.take_damage(float(burst.stats.damage), {"source": &"ricochet_storm", "style": &"lightning", "direction": enemy.global_position - contact.from})
+		var scoring_flight := int(burst.get("flight_id", 0)) if is_instance_valid(_body) and _body.flying and _body.flight_serial == int(burst.get("flight_id", 0)) else 0
+		enemy.take_damage(float(burst.stats.damage), {"source": &"ricochet_storm", "style": &"lightning", "direction": enemy.global_position - contact.from, "flight_id": scoring_flight})
 		var dealt := before - enemy.health
 		if dealt > 0.0 or session.combat_modifiers.damage_disabled: hit_landed.emit(enemy, dealt)
 	if not _active(): return

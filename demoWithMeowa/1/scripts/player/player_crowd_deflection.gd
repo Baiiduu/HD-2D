@@ -21,7 +21,7 @@ var _ignored: Dictionary[int, bool] = {}
 var _points := PackedVector3Array()
 var _cursor := 0
 var _turn_region: Dictionary = {}
-var _ray := PhysicsRayQueryParameters3D.new()
+var _ray_excluded: Array[RID] = []
 var _nearby: Array[WaveEnemy] = []
 var _candidates: Array[Dictionary] = []
 ## 只在实机调试开启时记录；不增加碰撞、轮廓或导航查询。
@@ -61,8 +61,10 @@ func _init(settings: PlayerRicochetRules, battle: WavePrototype, shared: EnemyPu
 	session = battle
 	regions = shared if shared else EnemyPushWave.new(settings, view)
 	if rules.eccentric_enabled: _eccentric = EccentricPath.new(rules)
-	# 已有镜片优先使用真实反射碰撞，不被怪群转向提前截住。
-	_ray.collision_mask = ProjectileCollision.REFLECTION_MASK
+
+func _ray_clear(from: Vector3, to: Vector3) -> bool:
+	# Existing mirrors still interrupt capture/continuation before crowd turning.
+	return session.terrain.ray_clear(from, to, ProjectileCollision.REFLECTION_MASK, _ray_excluded)
 
 func step(position: Vector3, heading: Vector3, distance: float) -> Dictionary:
 	# 支点死亡时立即改用存活成员；正常只在走完一小段后重读轮廓。
@@ -160,7 +162,7 @@ func contact(start: Vector3, end: Vector3, heading: Vector3) -> Dictionary:
 func _legacy_contact(start: Vector3, end: Vector3, heading: Vector3) -> Dictionary:
 	var radius := rules.crowd_contact_radius + (rules.eccentric_capture_margin if _eccentric else 0.0)
 	var length := TerrainPath.horizontal_distance(start, end)
-	session._spatial_index.nearby_into((start + end) * 0.5, radius + length * 0.5, _ignored, _nearby)
+	session.get_nearby_enemies_into((start + end) * 0.5, radius + length * 0.5, _ignored, _nearby)
 	for enemy in _nearby:
 		if enemy.spawn_delay > 0.0: continue
 		var enemy_position := enemy.global_position
@@ -178,16 +180,13 @@ func _legacy_contact(start: Vector3, end: Vector3, heading: Vector3) -> Dictiona
 	if _candidates.size() > 1:
 		_candidates.sort_custom(func(a: Dictionary, b: Dictionary):
 			return a.enemy.get_instance_id() < b.enemy.get_instance_id() if is_equal_approx(a.entry, b.entry) else a.entry < b.entry)
-	_ray.exclude = [session.player.get_rid()]
-	var space := session.get_world_3d().direct_space_state
+	_ray_excluded = [session.player.get_rid()]
 	var hit: Dictionary = {}
 	for candidate in _candidates:
 		if not hit.is_empty() and float(candidate.entry) >= float(hit.entry): break
 		var contact := _resolve_contact(candidate, start, end, heading)
 		if contact.is_empty() or (not hit.is_empty() and float(contact.entry) >= float(hit.entry)): continue
-		_ray.from = start.lerp(end, contact.entry) + Vector3.UP * 0.45
-		_ray.to = contact.enemy.global_position + Vector3.UP * 0.45
-		if space.intersect_ray(_ray).is_empty():
+		if _ray_clear(start.lerp(end, contact.entry) + Vector3.UP * 0.45, contact.enemy.global_position + Vector3.UP * 0.45):
 			hit = contact
 	_candidates.clear()
 	return hit
@@ -214,16 +213,13 @@ func _view_contact(start: Vector3, end: Vector3, heading: Vector3) -> Dictionary
 	if _candidates.size() > 1:
 		_candidates.sort_custom(func(a: Dictionary, b: Dictionary):
 			return _query_view.ids[a.slot] < _query_view.ids[b.slot] if is_equal_approx(a.entry, b.entry) else a.entry < b.entry)
-	_ray.exclude = [session.player.get_rid()]
-	var space := session.get_world_3d().direct_space_state
+	_ray_excluded = [session.player.get_rid()]
 	var hit: Dictionary = {}
 	for candidate in _candidates:
 		if not hit.is_empty() and float(candidate.entry) >= float(hit.entry): break
 		var contact := _resolve_contact(candidate, start, end, heading)
 		if contact.is_empty() or (not hit.is_empty() and float(contact.entry) >= float(hit.entry)): continue
-		_ray.from = start.lerp(end, contact.entry) + Vector3.UP * 0.45
-		_ray.to = _query_view.positions[contact.slot] + Vector3.UP * 0.45
-		if space.intersect_ray(_ray).is_empty():
+		if _ray_clear(start.lerp(end, contact.entry) + Vector3.UP * 0.45, _query_view.positions[contact.slot] + Vector3.UP * 0.45):
 			hit = contact
 	_candidates.clear()
 	if not hit.is_empty(): hit.erase("slot")
@@ -322,20 +318,17 @@ func begin_contact(hit: Dictionary, point: Vector3, incoming: Vector3) -> bool:
 func _eccentric_outline(seed: WaveEnemy, point: Vector3, allowed: Dictionary[int, WaveEnemy] = {}) -> Dictionary:
 	var anchor := seed.global_position
 	var radius := minf(rules.eccentric_search_radius, rules.push_group_search_radius)
-	session._spatial_index.nearby_into(anchor, radius, {}, _nearby)
+	session.get_nearby_enemies_into(anchor, radius, {}, _nearby)
 	var visible: Dictionary[int, Vector3] = {}
 	var bodies: Dictionary[int, float] = {}
 	var members: Dictionary[int, WaveEnemy] = {}
-	_ray.exclude = [session.player.get_rid()]
-	var space := session.get_world_3d().direct_space_state
+	_ray_excluded = [session.player.get_rid()]
 	for actor in _nearby:
 		if actor.spawn_delay > 0.0: continue
 		if not allowed.is_empty() and not allowed.has(actor.get_instance_id()): continue
 		var position := actor.global_position
 		if absf(position.y - point.y) > rules.push_height_tolerance: continue
-		_ray.from = point + Vector3.UP * 0.45
-		_ray.to = position + Vector3.UP * 0.45
-		if not space.intersect_ray(_ray).is_empty(): continue
+		if not _ray_clear(point + Vector3.UP * 0.45, position + Vector3.UP * 0.45): continue
 		visible[actor.get_instance_id()] = position
 		bodies[actor.get_instance_id()] = actor.get_crowd_body_radius()
 	_nearby.clear()
@@ -355,13 +348,11 @@ func _eccentric_outline(seed: WaveEnemy, point: Vector3, allowed: Dictionary[int
 		cursor += 1
 		var distance := TerrainPath.horizontal_distance(position, anchor)
 		spread = maxf(spread, distance)
-		session._spatial_index.nearby_into(position, rules.push_group_link_distance, visited, _nearby)
+		session.get_nearby_enemies_into(position, rules.push_group_link_distance, visited, _nearby)
 		for actor in _nearby:
 			var id := actor.get_instance_id()
 			if not visible.has(id): continue
-			_ray.from = position + Vector3.UP * 0.45
-			_ray.to = visible[id] + Vector3.UP * 0.45
-			if not space.intersect_ray(_ray).is_empty(): continue
+			if not _ray_clear(position + Vector3.UP * 0.45, visible[id] + Vector3.UP * 0.45): continue
 			visited[id] = true
 			members[id] = actor
 			body_radius = maxf(body_radius, bodies[id])

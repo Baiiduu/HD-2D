@@ -106,6 +106,12 @@ func run() -> void:
 	player.position.x += 1.0
 	audio._process(0.01)
 	check(following.global_position == player.global_position, "Following attacks keep their existing voice at the moving emitter")
+	check(audio.set_cue_volume(player, &"following", -18.0), "A continuous cue can update its gain without requesting another voice")
+	check(is_equal_approx(following.volume_db, -18.0), "Cue gain changes are applied immediately")
+	check(not audio.set_cue_volume(owners[1], &"following", -30.0) and is_equal_approx(following.volume_db, -18.0), "Gain updates cannot affect a different source")
+	check(not audio.set_cue_volume(player, &"following", NAN), "Invalid gains do not enter an existing voice")
+	audio.stop_cue(player, &"following")
+	check(not audio.set_cue_volume(player, &"following", -30.0) and second.playing, "Updating a finished cue does not touch unrelated pooled voices")
 	player.position.x -= 1.0
 	audio.set_frozen(true)
 	await frames()

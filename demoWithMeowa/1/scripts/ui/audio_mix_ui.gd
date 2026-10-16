@@ -1,6 +1,8 @@
 class_name AudioMixUI
 extends CanvasLayer
 
+signal settings_requested
+
 @export var audio: GameAudio
 @export var feedback: CoreFeedbackAudio
 @export var loadout: LoadoutUI
@@ -24,6 +26,8 @@ var _bus_labels: Array[Label] = []
 var _preview: AudioStreamPlayer
 var _save_timer: Timer
 var _dirty := false
+var _embedded := false
+var _close_button: Button
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -104,11 +108,12 @@ func _build_ui() -> void:
 	scroll.add_child(content)
 	var header := HBoxContainer.new()
 	content.add_child(header)
-	var title := _label("声音调试")
+	var title := _label("声音设置")
 	title.add_theme_font_size_override("font_size", 25)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
-	header.add_child(_button("关闭 · ESC", close_menu))
+	_close_button = _button("关闭 · ESC", close_menu)
+	header.add_child(_close_button)
 	content.add_child(_label("实时生效 · 本机自动保存 · 0 dB 为游戏默认音量"))
 	content.add_child(HSeparator.new())
 	for index in AudioMixSettings.BUSES.size():
@@ -185,7 +190,7 @@ func _build_ui() -> void:
 	add_child(_save_timer)
 
 func _fit() -> void:
-	if not _root: return
+	if not _root or _embedded: return
 	var viewport := get_viewport().get_visible_rect().size
 	_launcher.position = Vector2(viewport.x - 148, 22)
 	_launcher.size = Vector2(126, 42)
@@ -193,6 +198,9 @@ func _fit() -> void:
 	_panel.position = Vector2(viewport.x - _panel.size.x - 16, 16)
 
 func open_menu() -> void:
+	if _embedded:
+		settings_requested.emit()
+		return
 	if not _root or get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null: return
 	menu_open = true
 	add_to_group(&"gameplay_input_blockers")
@@ -201,6 +209,9 @@ func open_menu() -> void:
 	_refresh()
 
 func close_menu() -> void:
+	if _embedded:
+		set_embedded_visible(false)
+		return
 	if not menu_open: return
 	stop_preview()
 	if _dirty: save_mix()
@@ -210,9 +221,30 @@ func close_menu() -> void:
 	_launcher.show()
 
 func _input(event: InputEvent) -> void:
-	if menu_open and event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+	if not _embedded and menu_open and event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
 		close_menu()
 		get_viewport().set_input_as_handled()
+
+func embed_in(host: Control, settings_theme: Theme) -> void:
+	if not _panel: return
+	_embedded = true
+	_launcher.hide()
+	_close_button.hide()
+	_panel.reparent(host)
+	_panel.theme = settings_theme
+	_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	set_embedded_visible(false)
+
+func set_embedded_visible(value: bool) -> void:
+	menu_open = value
+	_panel.visible = value
+	if value:
+		_refresh()
+	else:
+		stop_preview()
+		if _dirty: save_mix()
 
 func _unhandled_key_input(_event: InputEvent) -> void:
 	if menu_open: get_viewport().set_input_as_handled()
@@ -251,6 +283,9 @@ func _refresh() -> void:
 		_preview.volume_db = _event_volume(entry.cue) + audio.mix.clip_gain_db(_preview.stream)
 
 func _event_volume(cue: StringName) -> float:
+	if cue == &"flight_loop": return feedback.action_volume_db + feedback.flight_gain_db
+	if cue in [&"bounce_stone", &"bounce_wood", &"bounce_metal"]:
+		return feedback.action_volume_db + feedback.bounce_gain_db
 	if cue in [&"storm_strike", &"storm_chain"]:
 		var storm := feedback.session.get_node_or_null("RicochetStorm") as RicochetStorm if feedback.session else null
 		if storm: return storm.hit_volume_db + (storm.propagation_layer_gain_db if cue == &"storm_chain" else 0.0)

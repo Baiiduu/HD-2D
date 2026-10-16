@@ -19,7 +19,12 @@ var _grid := PackedByteArray()
 var _prefix := PackedInt32Array()
 var _dirty := true
 var _bound_shapes: Dictionary[Shape3D, Array] = {}
+var _body_shapes: Dictionary[int, Array] = {}
 var _checked_frame := -1
+var _support: StaticBody3D
+var _support_entry: Dictionary = {}
+var _support_bounds := AABB(Vector3.INF, Vector3.ZERO)
+var _support_margin := 0.0
 var _baking := false
 var enabled := true
 
@@ -28,8 +33,12 @@ func _ready() -> void:
 	tree.node_added.connect(_node_added)
 	tree.node_removed.connect(_node_removed)
 	_baking = true
+	var support: StaticBody3D = source.call("ground_collision_body")
 	for object in tree.root.find_children("*", "PhysicsBody3D", true, false):
-		if object.get_world_3d() != get_world_3d() or object == source.call("ground_collision_body"): continue
+		if object.get_world_3d() != get_world_3d(): continue
+		if object == support:
+			if object.get_script() == null: _register_static(object, true)
+			continue
 		if object.collision_layer == 2 and object.get("wave_mode") == true: continue
 		if object is StaticBody3D and object.get_script() == null:
 			_register_static(object)
@@ -38,7 +47,18 @@ func _ready() -> void:
 	_baking = false
 	_rebuild()
 
-func _register_static(body: StaticBody3D) -> void:
+## Only the terrain generator registers its newly completed collision bodies.
+## No world rescan or requalification of externally edited bodies is needed.
+func register_generated_collision(sheet: StaticBody3D, water: StaticBody3D) -> void:
+	_baking = true
+	for body in [sheet, water]:
+		if not is_instance_valid(body) or body.get_script() != null: continue
+		_dynamic.erase(body)
+		_register_static(body, body == source.call("ground_collision_body"))
+	_baking = false
+	_dirty = true
+
+func _register_static(body: StaticBody3D, support := false) -> void:
 	var shapes: Array[CollisionShape3D] = []
 	for child in body.get_children():
 		if not child is CollisionShape3D or child.get_script() != null:
@@ -52,6 +72,8 @@ func _register_static(body: StaticBody3D) -> void:
 	body.set_script(BODY_WATCH)
 	body.set("obstacle_field", weakref(self))
 	var resources: Array[Shape3D] = []
+	var id := body.get_instance_id()
+	_body_shapes[id] = []
 	for collider in shapes:
 		collider.force_update_transform()
 		collider.set_script(SHAPE_WATCH)
@@ -61,13 +83,23 @@ func _register_static(body: StaticBody3D) -> void:
 			if not _bound_shapes.has(collider.shape):
 				_bound_shapes[collider.shape] = []
 				collider.shape.changed.connect(_shape_changed.bind(collider.shape.get_instance_id()))
-			var id := body.get_instance_id()
 			if not _bound_shapes[collider.shape].has(id):
 				_bound_shapes[collider.shape].append(id)
-	_static[body] = {"nodes": shapes, "shapes": resources, "layer": body.collision_layer}
+				_body_shapes[id].append(collider.shape)
+	var entry := {"nodes": shapes, "shapes": resources, "layer": body.collision_layer}
+	if support:
+		_support = body
+		_support_entry = entry
+		_support_bounds = world_bounds(shapes[0])
+		_support_margin = resources[0].margin if resources[0] else 0.0
+	else:
+		_static[body] = entry
 	# The generators own managed shape bindings and rebuild whole subtrees.
 	# Unknown sources retain the once-per-step identity check as a safety net.
-	if not body.get_meta(&"obstacle_layout_managed", false): _polled[body] = _static[body]
+	if not support and not body.get_meta(&"obstacle_layout_managed", false):
+		entry["margins"] = PackedFloat64Array()
+		for shape in resources: entry.margins.append(shape.margin if shape else 0.0)
+		_polled[body] = entry
 	body.script_changed.connect(_binding_script_changed.bind(body.get_instance_id()))
 	for collider in shapes:
 		collider.script_changed.connect(_binding_script_changed.bind(body.get_instance_id()))
@@ -85,17 +117,30 @@ func _shape_changed(id: int) -> void:
 		var body := instance_from_id(owner) as Node
 		if body: make_dynamic(body)
 
+## Revoke every baked owner before a shared Resource edit without a signal.
+## Replacing one collider's binding instead only needs make_dynamic(parent).
+func invalidate_shape(shape: Shape3D) -> void:
+	if shape: _shape_changed(shape.get_instance_id())
+
 func make_dynamic(body: Node) -> void:
-	if _baking or not _static.has(body): return
+	if _baking: return
+	if is_instance_valid(_support) and body == _support:
+		_support = null
+		_support_entry.clear()
+		_support_bounds = AABB(Vector3.INF, Vector3.ZERO)
+		_dynamic[body] = true
+	if not _static.has(body): return
 	_static.erase(body)
 	_polled.erase(body)
 	_dynamic[body] = true
 	_dirty = true
 
-## Use before native shape replacement or PhysicsServer/shape-owner edits.
+## Use before native shape replacement, unsignalled Shape.margin edits or
+## PhysicsServer/shape-owner edits.
 ## Managed generator bindings are immutable until revoked, even across frames.
 ## Ordinary Node transforms, shape-resource edits and hierarchy changes are watched.
 func invalidate_layout() -> void:
+	if is_instance_valid(_support): make_dynamic(_support)
 	for body in _static.keys(): make_dynamic(body)
 
 func _node_added(node: Node) -> void:
@@ -107,16 +152,34 @@ func _node_added(node: Node) -> void:
 		make_dynamic(node.get_parent())
 
 func _node_removed(node: Node) -> void:
+	if node == _support:
+		_support = null
+		_support_entry.clear()
 	if _static.erase(node): _dirty = true
 	_polled.erase(node)
 	_dynamic.erase(node)
+	if node is PhysicsBody3D: _release_body_shapes(node.get_instance_id())
 	if node is CollisionShape3D or node is CollisionPolygon3D:
 		make_dynamic(node.get_parent())
+
+func _release_body_shapes(id: int) -> void:
+	# Repeated terrain rebuilds must not retain obsolete shape resources/owners.
+	for shape: Shape3D in _body_shapes.get(id, []):
+		var owners: Array = _bound_shapes[shape]
+		owners.erase(id)
+		if not owners.is_empty(): continue
+		shape.changed.disconnect(_shape_changed.bind(shape.get_instance_id()))
+		_bound_shapes.erase(shape)
+	_body_shapes.erase(id)
 
 func _validate_bindings() -> void:
 	var frame := Engine.get_physics_frames()
 	if frame == _checked_frame: return
 	_checked_frame = frame
+	# The floor is omitted only from the XZ raster. Rays retain its actual 3D
+	# bound, watched by the same transform/resource/hierarchy invalidation.
+	if is_instance_valid(_support) and _support_entry.nodes[0].shape != _support_entry.shapes[0]:
+		make_dynamic(_support)
 	# Replacing a native shape property has no changed signal. Check identities,
 	# not geometry, once for the entire batch; changed sources become live guards.
 	for body in _polled.keys():
@@ -125,7 +188,7 @@ func _validate_bindings() -> void:
 			make_dynamic(body)
 			continue
 		for i in entry.nodes.size():
-			if entry.nodes[i].get_script() != SHAPE_WATCH or entry.nodes[i].shape != entry.shapes[i]:
+			if entry.nodes[i].get_script() != SHAPE_WATCH or entry.nodes[i].shape != entry.shapes[i] or (entry.shapes[i] and entry.shapes[i].margin != entry.margins[i]):
 				make_dynamic(body)
 				break
 
@@ -273,6 +336,24 @@ func clear_query_bounds(swept: AABB, mask: int, excluded: Array[RID]) -> bool:
 	if not is_instance_valid(support): return false
 	if not excluded.has(support.get_rid()): return false
 	return _clear_swept(swept, mask, excluded)
+
+## Body-only ray absence proof. Unlike navigation, these callers do NOT exclude
+## the floor. Reject any ray touching its actual 3D bound; uncertain floors keep
+## native rays. No endpoint, visibility or dynamic result survives a call.
+func clear_ray(from: Vector3, to: Vector3, mask: int, excluded: Array[RID]) -> bool:
+	if not enabled or not from.is_finite() or not to.is_finite(): return false
+	if not is_instance_valid(_support) or not _support_bounds.position.is_finite(): return false
+	var swept := AABB(from, Vector3.ZERO).expand(to).grow(PADDING)
+	if not _fixed_clear(swept, mask): return false
+	var support: StaticBody3D = source.call("ground_collision_body")
+	if not is_instance_valid(support) or support != _support: return false
+	# Shape3D.margin does not emit Resource.changed in this engine. The floor
+	# bound must still be revoked for a same-step edit before accepting a ray.
+	if _support_entry.shapes[0].margin != _support_margin:
+		make_dynamic(support)
+		return false
+	if (support.collision_layer & mask) != 0 and not excluded.has(support.get_rid()) and _support_bounds.intersects(swept): return false
+	return _dynamic_clear(swept, mask, excluded)
 
 func _fixed_clear(swept: AABB, mask: int) -> bool:
 	# Wave enemies on layer 2 are deliberately absent from this obstacle field.

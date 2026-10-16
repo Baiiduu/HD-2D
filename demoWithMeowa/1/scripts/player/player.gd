@@ -128,6 +128,8 @@ var _has_landed_once := false
 var _blink: PlayerBlink
 var body_ricochet: PlayerRicochet
 var flight_trail: PlayerFlightTrail
+var bounce_effect: PlayerBounceEffect
+var fire_trail: PlayerFireTrail
 var action_animator: PlayerActionAnimator
 var sword: PlayerSword
 
@@ -210,6 +212,13 @@ func _ready() -> void:
 		sword = PlayerSword.new()
 		sword.name = "BasicSword"
 		add_child(sword)
+	if action_visuals:
+		bounce_effect = PlayerBounceEffect.new()
+		bounce_effect.name = "BounceEffect"
+		add_child(bounce_effect)
+		fire_trail = PlayerFireTrail.new()
+		fire_trail.name = "GroundFireTrail"
+		add_child(fire_trail)
 
 func _process(delta: float) -> void:
 	if _blink.active and _blink.movement_locked:

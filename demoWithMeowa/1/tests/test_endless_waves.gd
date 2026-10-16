@@ -69,7 +69,7 @@ func run() -> void:
 	var original_last := wave._run_waves[-1]
 	var fourth := wave._definition_for_wave(4)
 	check(total(fourth) == 48 and total(original_last) == 40, "Fourth wave grows without changing the last template")
-	check(fourth.entries.map(func(entry): return entry.count) == [10, 21, 5, 5, 5, 2], "Additional enemies follow the current scouts, mixed horde and reinforcement proportions")
+	check(fourth.entries.map(func(entry): return entry.count) == [17, 21, 4, 2, 3, 1], "Additional enemies follow the current scouts, mixed horde and reinforcement proportions")
 	for index in fourth.entries.size():
 		var before := original_last.entries[index]
 		var after := fourth.entries[index]
@@ -84,7 +84,7 @@ func run() -> void:
 	var late := wave._definition_for_wave(1000000000)
 	check(total(late) == 160 and wave._run_waves.size() == 3, "Very late waves stay bounded without accumulating templates")
 	check(late.entries.all(func(entry: WaveSpawnEntry): return entry.interval >= 0.18), "Late spawn rate keeps the configured minimum interval")
-	check(original_last.entries[0].count == 8 and original_last.entries[1].count == 18, "Planning never mutates the source groups")
+	check(original_last.entries[0].count == 14 and original_last.entries[1].count == 18, "Planning never mutates the source groups")
 	# Inspector edits are reserved for the next run, including the mode itself.
 	wave.endless_mode = false
 	wave.endless_enemies_per_wave = 0

@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scripts/world/map_effects.gd" id="map_effects"]
+[ext_resource type="Script" path="res://scripts/world/aurora_sky.gd" id="aurora_sky"]
 [ext_resource type="PackedScene" path="res://scenes/audio/game_audio.tscn" id="game_audio"]
 
 [ext_resource type="Script" uid="uid://srckk3f4b30t" path="res://scripts/world/art_direction.gd" id="art_direction"]
@@ -220,3 +221,6 @@ mouse_filter = 2
 script = ExtResource("water_reflection")
 source_camera = NodePath("../Camera3D")
 world_environment = NodePath("../WorldEnvironment")
+
+[node name="Aurora" type="Node" parent="."]
+script = ExtResource("aurora_sky")

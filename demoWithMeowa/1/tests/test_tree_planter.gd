@@ -50,7 +50,8 @@ func run() -> void:
 	var image: Image = first.tree_texture.get_image()
 	if image.is_compressed(): image.decompress()
 	check(image.get_pixel(0, 0).a == 0.0 and image.get_pixel(63, 95).a > 0.5, "Transparent background and solid trunk")
-	check(first.get_node("PlanterGeometry/Lamp").get("beam_strength") == 0.0, "No ground beam added")
+	var lamp := first.get_node("PlanterGeometry/Lamp") as PlazaStreetlamp
+	check(lamp._heads.size() == 2 and lamp._heads.all(func(head): return head.get("beam_strength") == 0.0), "Twin-head planter lamp keeps ground beams disabled")
 	check((first.get_node("PlanterGeometry/Plant00").mesh.surface_get_material(0) as ShaderMaterial).get_shader_parameter("stable_shadows"), "Planter vegetation uses stable soft clump shadows")
 	first.position += Vector3(6, 0, 3)
 	first.rotation_degrees.y = 90.0

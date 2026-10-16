@@ -43,6 +43,9 @@ var _show_ranges := true
 var _end_reason := ""
 var _distance := 0.0
 var _elapsed := 0.0
+var _embedded := false
+var _embedded_visible := false
+var _collapse_button: Button
 
 func _ready() -> void:
 	layer = 24
@@ -116,7 +119,8 @@ func _build_ui() -> void:
 	_drag_handle.mouse_default_cursor_shape = Control.CURSOR_DRAG
 	_drag_handle.gui_input.connect(_drag_input)
 	header.add_child(_drag_handle)
-	header.add_child(_button("收起", func(): set_details_visible(false)))
+	_collapse_button = _button("收起", func(): set_details_visible(false))
+	header.add_child(_collapse_button)
 	_lock = _check("锁定记录（世界继续运行）", false, func(value):
 		locked = value
 		if not locked: clear_record())
@@ -144,6 +148,7 @@ func _build_ui() -> void:
 	content.add_child(_button("清空记录", clear_record))
 
 func _fit() -> void:
+	if _embedded: return
 	var size := get_viewport().get_visible_rect().size
 	_launcher.position = Vector2(maxf(8, size.x - 286), 22)
 	_launcher.size = Vector2(126, 42)
@@ -157,6 +162,7 @@ func _clamp_panel(point: Vector2) -> Vector2:
 	return Vector2(clampf(point.x, 8, maxf(8, size.x - _panel.size.x - 8)), clampf(point.y, 8, maxf(8, size.y - _panel.size.y - 8)))
 
 func _drag_input(event: InputEvent) -> void:
+	if _embedded: return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		_dragging = event.pressed
 		_drag_handle.accept_event()
@@ -167,7 +173,7 @@ func _drag_input(event: InputEvent) -> void:
 
 func set_details_visible(value: bool) -> void:
 	_details_visible = value and debug_enabled
-	_panel.visible = _details_visible
+	_panel.visible = _embedded_visible if _embedded else _details_visible
 	_details_button.text = "收起" if _details_visible else "读数"
 	_dragging = false
 	if _details_visible:
@@ -179,7 +185,7 @@ func set_debug_enabled(value: bool) -> void:
 	if not _body: return
 	_body.orbit_debug_enabled = value
 	if _body._crowd: _body._crowd.debug_enabled = value
-	_details_button.visible = value
+	_details_button.visible = value and not _embedded
 	set_details_visible(false)
 	_overlay.visible = value
 	_launcher.text = "关闭环绕调试" if value else "环绕调试"
@@ -189,6 +195,25 @@ func set_debug_enabled(value: bool) -> void:
 		if _body._crowd: _body._crowd.debug_events.clear()
 	set_process(value)
 	if value: _process(0.0)
+
+func embed_in(host: Control, settings_theme: Theme) -> void:
+	_embedded = true
+	_launcher.hide()
+	_details_button.hide()
+	_collapse_button.hide()
+	_drag_handle.text = "环绕诊断"
+	_drag_handle.mouse_default_cursor_shape = Control.CURSOR_ARROW
+	_status.custom_minimum_size.x = 0
+	_panel.reparent(host)
+	_panel.theme = settings_theme
+	_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	set_embedded_visible(false)
+
+func set_embedded_visible(value: bool) -> void:
+	_embedded_visible = value
+	set_details_visible(value and debug_enabled)
+	if value and not debug_enabled: _status.text = "开启环绕调试后记录真实路线、怪群轮廓和攻击距离。"
 
 func clear_record() -> void:
 	locked = false

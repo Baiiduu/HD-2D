@@ -11,7 +11,7 @@
 [sub_resource type="Resource" id="sides"]
 script = ExtResource("entry")
 enemy = ExtResource("slime")
-count = 8
+count = 14
 start_delay = 0.6
 interval = 0.5
 spawn_zone_ids = PackedStringArray("WestNorth", "EastNorth")
@@ -28,7 +28,7 @@ spawn_zone_ids = PackedStringArray("WestSouth", "EastSouth")
 [sub_resource type="Resource" id="chargers"]
 script = ExtResource("entry")
 enemy = ExtResource("leaf")
-count = 4
+count = 3
 start_delay = 4.0
 interval = 4.0
 spawn_zone_ids = PackedStringArray("WestNorth", "EastNorth")
@@ -36,7 +36,7 @@ spawn_zone_ids = PackedStringArray("WestNorth", "EastNorth")
 [sub_resource type="Resource" id="flowers"]
 script = ExtResource("entry")
 enemy = ExtResource("flower")
-count = 4
+count = 2
 start_delay = 14.0
 interval = 4.5
 spawn_zone_ids = PackedStringArray("WestSouth", "EastSouth")
@@ -44,7 +44,7 @@ spawn_zone_ids = PackedStringArray("WestSouth", "EastSouth")
 [sub_resource type="Resource" id="pots"]
 script = ExtResource("entry")
 enemy = ExtResource("pot")
-count = 4
+count = 2
 start_delay = 18.0
 interval = 3.0
 spawn_zone_ids = PackedStringArray("SouthWest", "SouthEast")
@@ -52,12 +52,12 @@ spawn_zone_ids = PackedStringArray("SouthWest", "SouthEast")
 [sub_resource type="Resource" id="frogs"]
 script = ExtResource("entry")
 enemy = ExtResource("frog")
-count = 2
+count = 1
 start_delay = 24.0
 interval = 7.0
 spawn_zone_ids = PackedStringArray("WestSouth", "EastSouth")
 
 [resource]
 script = ExtResource("wave")
-description = "40 只：8 只史莱姆试探、18 只目录混合怪潮、4 冲锋虫、4 花兽、4 壶兽、2 苔蛙；幼体仅由壶兽分裂"
+description = "40 只：14 只史莱姆、18 只目录混合怪潮、3 冲锋虫、2 花兽、2 壶兽、1 苔蛙；幼体仅由壶兽分裂"
 entries = Array[ExtResource("entry")]([SubResource("sides"), SubResource("cross"), SubResource("chargers"), SubResource("flowers"), SubResource("pots"), SubResource("frogs")])

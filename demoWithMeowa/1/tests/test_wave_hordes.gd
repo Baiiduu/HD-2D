@@ -306,7 +306,7 @@ func run() -> void:
 		var batch: WaveSpawnEntry = definition.entries.filter(func(item): return item.batch_size > 1)[0]
 		check(batch.batch_size >= 18 and batch.batch_size <= wave._run_population.active_limit(number), "无尽怪潮受当前波容量约束")
 	var late := wave._definition_for_wave(25)
-	check(wave._wave_total(late) == 384 and late.entries[1].batch_size > 18 and late.entries[1].batch_size <= 64, "后期怪潮扩大并为其它敌人保留空间")
+	check(wave._wave_total(late) == 512 and late.entries[1].batch_size > 18 and late.entries[1].batch_size <= 64, "后期怪潮扩大并为其它敌人保留空间")
 	check(source_waves[2].entries[1].batch_size == 18, "无尽规划不修改原始怪潮资源")
 	var births: Array[Dictionary] = []
 	var record := func(mob: WaveEnemy): births.append({"wave":wave.wave, "time":wave._wave_clock, "kind":mob.definition.enemy_id})

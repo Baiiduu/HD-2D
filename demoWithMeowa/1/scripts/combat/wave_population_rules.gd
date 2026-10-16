@@ -25,6 +25,11 @@ extends Resource
 @export_range(0.0, 0.1, 0.005) var interval_reduction_per_wave := 0.04
 @export_range(0.0, 0.99, 0.01) var max_interval_reduction := 0.92
 @export_range(0.005, 2.0, 0.005, "suffix:s") var min_spawn_interval := 0.025
+@export_group("无尽多向进场")
+## 0 沿用模板入口；启用后从该波起使用整个合法战区外围，新挑战／重试生效。
+@export_range(0, 100, 1) var surround_start_wave := 0
+## 小容量先双向夹入，容量增长后逐步增加；每批共用原容量预留和创建预算。
+@export_range(2, 4, 1) var surround_max_fronts := 4
 @export_group("刷新工作预算")
 @export_range(1, 32, 1) var spawns_per_tick := 4
 @export_range(1, 64, 1) var checks_per_tick := 8
@@ -54,6 +59,8 @@ func validation_error() -> String:
 		if limit < 0: return "分类容量上限不能为负数"
 	if enemies_per_wave_increment < 0 or max_wave_enemies < 1 or max_queued_per_wave < max_wave_enemies:
 		return "单波总数或登记预算无效"
+	if surround_start_wave < 0 or surround_max_fronts < 2 or surround_max_fronts > 4:
+		return "多向进场起始波须非负，方向上限须为 2～4"
 	if spawns_per_tick < 1 or checks_per_tick < 1 or position_attempts < 1: return "刷新工作预算须为正数"
 	for value in [min_spawn_interval, spawn_spacing]:
 		if not is_finite(value) or value <= 0.0: return "刷新间隔和间距须为正数"

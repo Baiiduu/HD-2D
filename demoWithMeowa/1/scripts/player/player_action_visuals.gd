@@ -31,6 +31,25 @@ extends Resource
 @export var preview_color := Color(0.9, 0.82, 0.66)
 @export_range(0.0, 1.0, 0.05) var preview_opacity := 0.45
 @export_range(0.5, 2.0, 0.25) var preview_line_width_pixels := 1.0
+@export_group("碰墙反弹特效")
+@export var show_bounce_effect := true
+@export var bounce_frames: SpriteFrames
+## 同一画布内的碰撞核心像素坐标，旋转时保持该点锚定真实墙面。
+@export var bounce_anchor_pixels := Vector2(16, 24)
+@export_range(0.08, 0.4, 0.01, "suffix:s") var bounce_duration := 0.18
+@export_range(0.0, 1.0, 0.05) var bounce_opacity := 0.95
+@export_range(0.0, 2.0, 0.05) var bounce_energy := 0.65
+@export_range(0.0, 1.0, 0.01, "suffix:m") var bounce_height := 0.45
+@export_group("弹射地面火带")
+## 视觉试玩；只记录真实飞行路径，暂不结算伤害或加入成长池。
+@export var show_fire_trail := false
+@export_range(0.1, 0.8, 0.01, "suffix:m") var fire_trail_width := 0.36
+@export_range(0.05, 0.6, 0.01, "suffix:s") var fire_trail_fresh_seconds := 0.18
+@export_range(0.1, 1.5, 0.05, "suffix:s") var fire_trail_burn_seconds := 0.65
+@export_range(0.1, 3.0, 0.05, "suffix:s") var fire_trail_ember_seconds := 1.35
+@export_range(0.0, 3.0, 0.05) var fire_trail_energy := 1.1
+## 世界坐标像素密度；不把镜头透视烘焙进素材。
+@export_range(20.0, 80.0, 1.0) var fire_trail_pixels_per_meter := 40.0
 @export_group("框架观察")
 ## 仅用于观察拨怪圆周，不改变真实范围。
 @export var show_push_ring := false

@@ -9,7 +9,7 @@
 [sub_resource type="Resource" id="west"]
 script = ExtResource("entry")
 enemy = ExtResource("slime")
-count = 6
+count = 10
 start_delay = 0.6
 interval = 0.55
 spawn_zone_ids = PackedStringArray("WestNorth", "WestSouth")
@@ -26,7 +26,7 @@ spawn_zone_ids = PackedStringArray("EastNorth", "EastSouth")
 [sub_resource type="Resource" id="chargers"]
 script = ExtResource("entry")
 enemy = ExtResource("leaf")
-count = 4
+count = 2
 start_delay = 12.0
 interval = 3.2
 spawn_zone_ids = PackedStringArray("WestNorth", "EastSouth")
@@ -34,12 +34,12 @@ spawn_zone_ids = PackedStringArray("WestNorth", "EastSouth")
 [sub_resource type="Resource" id="flowers"]
 script = ExtResource("entry")
 enemy = ExtResource("flower")
-count = 4
+count = 2
 start_delay = 16.0
 interval = 4.0
 spawn_zone_ids = PackedStringArray("EastNorth", "SouthWest")
 
 [resource]
 script = ExtResource("wave")
-description = "28 只：6 只史莱姆试探、14 只目录混合怪潮、4 冲锋虫与 4 花兽穿插"
+description = "28 只：10 只史莱姆、14 只目录混合怪潮、2 冲锋虫与 2 花兽穿插"
 entries = Array[ExtResource("entry")]([SubResource("west"), SubResource("east"), SubResource("chargers"), SubResource("flowers")])

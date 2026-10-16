@@ -514,7 +514,7 @@ func _advance_push(delta: float) -> void:
 		if move_and_collide(motion): _push_remaining = 0.0
 	if allowed < distance: _push_remaining = 0.0
 	_route_clock = 0.0
-	if spatial_index: spatial_index.update(self)
+	commit_spatial_state()
 
 func _advance_orbit(delta: float) -> void:
 	_push_remaining = maxf(0.0, _push_remaining - delta)
@@ -546,7 +546,7 @@ func _advance_orbit(delta: float) -> void:
 		_orbit = null
 		_push_wave = null
 	_route_clock = 0.0
-	if spatial_index: spatial_index.update(self)
+	commit_spatial_state()
 
 func apply_knockback(push: Vector3, distance: float) -> void:
 	if not wave_mode or dead or distance <= 0.0 or push == Vector3.ZERO: return
@@ -561,7 +561,7 @@ func apply_knockback(push: Vector3, distance: float) -> void:
 		_orbit = null
 		_push_wave = null
 		_push_remaining = 0.0
-	if spatial_index: spatial_index.update(self)
+	commit_spatial_state()
 	_route_clock = 0.0
 
 func _process(delta: float) -> void:

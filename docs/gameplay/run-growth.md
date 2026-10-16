@@ -20,15 +20,15 @@
 
 ## 参数
 
-以下是可调测试基线，非正式平衡。正式地图选择 `WavePrototype/RunGrowth`，可展开规则资源，也可直接打开 `data/growth/experience_rules.tres`。
+以下是正式地图第一版成长平衡基线，仍需试玩校准。选择 `WavePrototype/RunGrowth` 可展开规则资源，也可直接打开 `data/growth/experience_rules.tres`。当前完整清波模型的前三波累计升级选择为 3／5／8 次，详见[无尽成长基线](endless-waves.md#成长与割草基线)；模型包含壶兽幼体，不包含免费初始技能。
 
-| 参数 | 默认值 | 含义 |
+| 参数 | 正式值 | 含义 |
 | --- | ---: | --- |
 | Enabled | true | 是否接入本局成长；关闭会清理当前掉落、升级界面与冻结 |
-| First Level Experience | 10 | 从 1 级升到 2 级需要的经验 |
-| Per Level Increase | 5 | 每级增加的需求，默认为 10、15、20、25…… |
+| First Level Experience | 12 | 从 1 级升到 2 级需要的经验 |
+| Per Level Increase | 8 | 每级增加的需求，为 12、20、28、36…… |
 | Curve Increase | 0 | 二次增量；需求为基础值 + 线性增量 × `(等级 − 1)` + 二次增量 × `(等级 − 1)²` |
-| Level Cap | 100 | 可调等级上限，到达后不继续积累升级经验 |
+| Level Cap | 1000 | 可调的远期等级上限，避免较早停止无尽成长；到达后不继续积累升级经验 |
 | Experience Reward | 3 | 配在各 `WaveEnemyDefinition` 上，每只实际击败后的经验；0 不产生掉落 |
 | Attraction Radius | 2.0 米 | 开始吸取的水平距离 |
 | Collection Radius | 0.3 米 | 宝石抵达人物收取点后入账的距离 |

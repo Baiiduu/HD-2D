@@ -5,3 +5,5 @@
 [resource]
 resource_name = "无尽生命成长 · 1 至 10 倍"
 script = ExtResource("rules")
+start_wave = 7
+bonus_per_wave = 0.08

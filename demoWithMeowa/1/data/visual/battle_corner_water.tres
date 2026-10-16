@@ -1,0 +1,42 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://blaw6ickmus8i"]
+
+[ext_resource type="Texture2D" uid="uid://netuv20ao0uy" path="res://assets/ground/references/elevation/01_liquid_water_shallow.png" id="texture"]
+[ext_resource type="Shader" uid="uid://ckds5ydk553f1" path="res://shaders/water/water.gdshader" id="water"]
+
+[resource]
+resource_local_to_scene = true
+resource_name = "BattleCornerWater"
+render_priority = 0
+shader = ExtResource("water")
+shader_parameter/water_texture = ExtResource("texture")
+shader_parameter/map_origin = Vector2i(-7, -6)
+shader_parameter/shallow_color = Color(0.26, 0.46, 0.5, 1)
+shader_parameter/deep_color = Color(0.1, 0.25, 0.3, 1)
+shader_parameter/foam_color = Color(0.78, 0.85, 0.85, 1)
+shader_parameter/foam_scale = 1.0
+shader_parameter/foam_density = 0.55
+shader_parameter/foam_motion = 0.08
+shader_parameter/bank_foam_width = 0.14
+shader_parameter/foam_strength = 0.8
+shader_parameter/flow = Vector2(0.025, 0.04)
+shader_parameter/cell_size = 1.6
+shader_parameter/texture_pixels = 64.0
+shader_parameter/foam_distance = 0.12
+shader_parameter/depth_fade = 1.6
+shader_parameter/opacity = 0.96
+shader_parameter/wave_strength = 0.08
+shader_parameter/highlight_strength = 1.0
+shader_parameter/highlight_roughness = 0.22
+shader_parameter/glint_strength = 0.8
+shader_parameter/reflection_strength = 0.85
+shader_parameter/reflection_matrix_0 = Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+shader_parameter/reflection_matrix_1 = Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+shader_parameter/reflection_heights = Vector2(-0.32, 0.48)
+shader_parameter/reflection_enabled_0 = false
+shader_parameter/reflection_enabled_1 = false
+shader_parameter/rain_amount = 0.0
+shader_parameter/rain_clock = 470.06445196285273
+shader_parameter/rain_density = 1.8
+shader_parameter/rain_radius = 0.28
+shader_parameter/rain_lifetime = 0.8
+shader_parameter/rain_strength = 0.35

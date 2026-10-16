@@ -41,6 +41,7 @@
 | [无尽波次](gameplay/endless-waves.md) | 无限续波、清波休整、数量和节奏增长、上限与参数 |
 | [地图效果接入](visuals/map-effects.md) | 通用效果场景、正式地图连接与调节入口 |
 | [参数总览与 Style](technical/parameters-and-styles.md) | Godot 七类参数入口、控制对象、R 切光影天气与 T 重试 |
+| [计分、得分 HUD 与排行榜接口](technical/leaderboard-api.md) | 真实击杀与清波计分、数字动效、独立后端及 PostgreSQL 部署；登录与上传待定 |
 | [游戏启动性能](technical/startup-performance.md) | 正式地图草花区域检索瓶颈、优化前后计时与后续方案 |
 | [攻击性能与资源复用](gameplay/attack-performance.md) | A01 网格与查询优化、A02 拖尾及星芒复用、敌方受击资格和后续攻击要求 |
 | [正式地图说明](../demoWithMeowa/1/scenes/world/README.md) | 当前战斗区、外围绕行带、弹射障碍与手绘地表 |
