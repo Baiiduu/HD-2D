@@ -26,6 +26,10 @@ func run() -> void:
 	root.add_child(world)
 	await frames()
 	var player := world.get_node("Player") as Player
+	var authored_visuals := load("res://data/player/action_visuals.tres") as PlayerActionVisuals
+	check(player.action_visuals == profile.action_visuals and player.action_visuals.show_fire_trail, "World's bound scene profile preserves the authored ground fire trail")
+	check(player.action_visuals.bounce_frames == authored_visuals.bounce_frames and player.action_visuals.bounce_anchor_pixels == authored_visuals.bounce_anchor_pixels, "World's independent visuals retain the authored bounce animation and contact anchor")
+	check(player.fire_trail != null and player.body_ricochet.flight_segment_travelled.is_connected(player.fire_trail._travelled), "The character-owned ricochet still feeds actual travel segments to the player's fire trail")
 	var manager := player.skill_manager
 	var run_manager := world.get_node("WavePrototype/RunSkillManager") as RunSkillManager
 	check(manager == player.get_node("CharacterSkillManager") and manager != run_manager, "The player owns a separate character skill manager")

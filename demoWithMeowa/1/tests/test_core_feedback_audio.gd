@@ -145,7 +145,9 @@ func run() -> void:
 	var flight_level := feedback._flight_level
 	wave.set_combat_frozen(true)
 	feedback._physics_process(1.0)
-	await settle(2) # Let the audio server commit pause on the newly started flight voice.
+	# 物理追帧可能在同一进程帧完成；给独立混音线程提交新声道暂停的时间。
+	await settle(2)
+	await create_timer(0.05).timeout
 	check(is_equal_approx(feedback._flight_level, flight_level) and flight_loops[0].voice.stream_paused, "升级冻结暂停飞行循环及其音量过渡")
 	wave.set_combat_frozen(false)
 	check(not flight_loops[0].voice.stream_paused, "解冻继续原循环，不叠加新的气流")

@@ -38,8 +38,9 @@ enabled=PackedStringArray("res://addons/game_manager/plugin.cfg", "res://addons/
 
 [game_manager]
 
-systems/upgrades=false
-systems/draft=false
+systems/upgrades=true
+systems/draft=true
+systems/run_skills=true
 
 [input]
 

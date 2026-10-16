@@ -15,7 +15,7 @@ $projectDirectory = Split-Path -Parent $PSScriptRoot
 $groups = @{
     core = @('test_run_skill_manager_standalone', 'test_run_skill_manager_contract', 'test_character_skill_ownership', 'test_game_system_switches', 'test_projectile_geometry', 'test_wave_schedule', 'test_spawn_queue_contract', 'test_enemy_roster_contract')
     regression = @(
-        'test_run_skill_manager_standalone', 'test_run_skill_manager_contract', 'test_character_skill_ownership', 'test_game_system_switches', 'test_game_system_scene', 'test_scene_configuration_contract',
+        'test_run_skill_manager_standalone', 'test_run_skill_manager_contract', 'test_character_skill_ownership', 'test_game_system_switches', 'test_game_system_scene', 'test_scene_configuration_contract', 'test_world_startup',
         'test_run_skills', 'test_growth_draw', 'test_combat_buffs',
         'test_battle_only_world', 'test_ricochet_growth',
         'test_ricochet_storm', 'test_horde_simulation',

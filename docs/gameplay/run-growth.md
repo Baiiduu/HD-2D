@@ -2,7 +2,7 @@
 
 2026-10-16。用户已确认：本局等级与经验在新挑战、重试时重置；每次升级立即选择，临时冻结战斗，环境与声音继续运行。经验宝石、经验条与真实成长候选已接入，升级选择复用现有组件。正式六类成长及数值见 [本局共有成长](combat-buffs.md)。
 
-已接到正式地图的 `WavePrototype/RunGrowth`：真实怪物死亡生成经验拾取节点，人物靠近后自动吸取，经验达到阈值就从有效成长池抽 3 张选 1 张。`RunSkills` 合并技能学习、技能升级和 `RunBuffs` 的三条弹射、三条通用成长，确认后在恢复战斗前应用效果。池子不足 3 张时展示所有有效候选，满级、无收益和禁用条目退出池子。游走收集暂不加入，旧重复增益与专精不再登记到正式池。现有吸取和清波自动收取保持原有配置。
+已接到正式地图的 `WavePrototype/RunGrowth`：真实怪物死亡生成经验拾取节点，人物靠近后自动吸取，经验达到阈值就从有效成长池抽 3 张选 1 张。`RunSkillManager` 管理技能学习和升级，`SkillDraft` 汇合它与 `RunBuffs` 的三条弹射、三条通用成长候选，确认后在恢复战斗前应用效果。池子不足 3 张时展示所有有效候选，满级、无收益和禁用条目退出池子。游走收集暂不加入，旧重复增益与专精不再登记到正式池。现有吸取和清波自动收取保持原有配置。World 的经验和成长资源位于 `data/combat/scenes/world/`；项目及组件开关、City 独立配置与兼容入口见[场景配置与启动](../technical/combat-extension-framework.md#场景配置与启动)。
 
 ![真实经验触发的升级界面](../media/run-growth-preview/level-up.png)
 
@@ -20,9 +20,11 @@
 
 ## 参数
 
-以下是正式地图第一版成长平衡基线，仍需试玩校准。选择 `WavePrototype/RunGrowth` 可展开规则资源，也可直接打开 `data/growth/experience_rules.tres`。当前完整清波模型的前三波累计升级选择为 3／5／8 次，详见[无尽成长基线](endless-waves.md#成长与割草基线)；模型包含壶兽幼体，不包含免费初始技能。
+当前玩法请调整 `BattleConfiguration.configuration.experience_rules`；World／City 分别读取 `data/combat/scenes/world/growth/experience_rules.tres`、`data/combat/scenes/city/growth/experience_rules.tres`，均保留 10 点起始、每级增加 5 点、上限 100 级的独立配置。
 
-| 参数 | 正式值 | 含义 |
+下表是 `data/growth/experience_rules.tres` 等共享模板的平衡参考，未自动覆盖到独立场景。前三波累计升级选择 3／5／8 次的[完整清波模型](endless-waves.md#成长与割草基线)也只对应该参考曲线；模型包含壶兽幼体，不包含免费初始技能，不能视作两张地图当前的实机结果。
+
+| 参数 | 共享模板参考值 | 含义 |
 | --- | ---: | --- |
 | Enabled | true | 是否接入本局成长；关闭会清理当前掉落、升级界面与冻结 |
 | First Level Experience | 12 | 从 1 级升到 2 级需要的经验 |

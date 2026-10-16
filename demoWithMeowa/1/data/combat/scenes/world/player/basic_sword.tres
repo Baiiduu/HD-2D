@@ -2,8 +2,13 @@
 
 [ext_resource type="AudioStream" path="res://assets/meowa/audio/combat/hit_01.wav" id="1_qt6x3"]
 [ext_resource type="AudioStream" path="res://assets/meowa/audio/combat/hit_02.wav" id="2_g2n16"]
+[ext_resource type="SpriteFrames" uid="uid://dg1nehjf03ubl" path="res://assets/meowa/combat/basic_sword/frames.tres" id="meowa_frames"]
 [ext_resource type="Script" path="res://scripts/player/player_sword_rules.gd" id="3_wbysx"]
 
 [resource]
 script = ExtResource("3_wbysx")
+effect_mode = 2
+frames = ExtResource("meowa_frames")
+effect_energy = 0.08
+arc_width = 0.25
 hit_sounds = Array[AudioStream]([ExtResource("1_qt6x3"), ExtResource("2_g2n16")])

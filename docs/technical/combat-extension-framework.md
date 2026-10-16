@@ -2,6 +2,16 @@
 
 新增怪物、技能和障碍物以这里的公共入口接入。当前实现使用纯 GDScript，保留原有碰撞、视觉、攻击时序与冻结规则；不增加常驻的全世界刷新器。示例位于 `demoWithMeowa/1/examples/combat/`，未注册到正式地图、波次或技能池。
 
+## 场景配置与启动
+
+World 与 City 分别以 `data/combat/scenes/world/configuration.tres`、`data/combat/scenes/city/configuration.tres` 为实际配置来源。场景中的 `BattleConfiguration` 在人物和战斗组件进入树前绑定独立资源；修改旧的 `data/player/`、`data/enemies/` 等共享模板不会自动更新这两张地图。兼容表现与启动开关时保留两张地图当前的战斗数值和怪群避让，不将共享模板的新平衡覆盖进独立配置；不能只检查共享模板或 Inspector 中尚未绑定的旧引用。
+
+F5 启动 World，采用普通战斗：Game Manager 的升级、抽卡和局内技能管理器三个项目开关均开启，仍须与各组件本地 `enabled` 同时生效。修改项目开关后重新运行；怪潮模拟由地图自身 `population_rules.simulation_mode` 单独开启，模拟直接配装、免伤和锁血，不经过正常初选与成长流程。World 保留自动环绕、基础剑术、奔雷与渐进怪潮，极光由 `MapEffects/Aurora` 明确开启，火带／反弹素材和剑光由 World 的人物资源选择；City 继续使用自己的配置和表现开关。
+
+`Player/CharacterSkillManager` 只管理本体弹射与 `Dash`；Dash 沿用 `PlayerBlink` 和 `blink` 输入，即 Shift 闪身，无需抽卡。基础剑术是独立基础动作，`WavePrototype/RunSkillManager` 管理五种局内可选技能，`SkillDraft` 管理选卡交互，`RunGrowth` 管理经验和升级。旧 `RunSkills` 脚本保留兼容入口。
+
+`tests/test_world_startup.gd` 检查落盘项目开关、World 的实际资源绑定、极光材质与时钟、初选和首次升级，并确认 City 独立配置保留；统一测试入口为 `tools/run_tests.ps1 -Test test_world_startup -UseProjectSystemSwitches`。该回归只检查无界面逻辑与数据，画面、动画和战斗手感仍须人工试玩。
+
 ## 接入入口
 
 下列源码路径相对于 Godot 项目 `demoWithMeowa/1`。

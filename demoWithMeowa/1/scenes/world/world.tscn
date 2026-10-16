@@ -761,6 +761,9 @@ terrain = NodePath("../../Homestead")
 surface_source = NodePath("../../Homestead")
 geometry_root = NodePath("../..")
 
+[node name="Aurora" parent="MapEffects" index="11"]
+enabled = true
+
 [node name="CoreFeedbackAudio" parent="MapEffects" unique_id=412139722 node_paths=PackedStringArray("player", "session") instance=ExtResource("core_audio")]
 player = NodePath("../../Player")
 session = NodePath("../../WavePrototype")
