@@ -44,7 +44,7 @@ signal state_changed(state: State)
 @export_range(0.1,2.0,0.05) var route_interval := 0.45
 ## 动画速度独立于怪物移动速度，1 为美术默认帧率。
 @export_range(0.25,2.0,0.05) var animation_speed := 1.0
-## 仅普通史莱姆追击：同高地面水平扫掠；关闭即恢复 CharacterBody 移动。
+## 普通追击的同高地面水平扫掠；关闭即恢复 CharacterBody 移动。
 @export var ground_movement_enabled := false
 
 @export_group("波次接触攻击")
@@ -52,8 +52,8 @@ signal state_changed(state: State)
 @export_range(0.3,1.5,0.05) var combat_stop_distance := 0.65
 @export_range(0.4,2.0,0.05) var contact_distance := 0.85
 @export_range(0.2,1.5,0.05) var contact_height := 0.8
-## 出场预告期间缩小显示，不移动、攻击或受伤。
-@export_range(0.1,0.8,0.05) var warning_scale := 0.35
+## 旧资源兼容字段；不再使用出生缩放或半透明预警。
+@export_storage var warning_scale := 0.35
 @export_range(0.0,0.5,0.01) var hit_flash_seconds := 0.15
 
 var state := State.IDLE
@@ -92,6 +92,7 @@ var _orbit: EnemyOrbitPath
 var _stun_effect: EnemyStunEffect
 var _ground_moved := false
 var _ground_real_velocity := Vector3.ZERO
+var _flat_motion: FlatGroundMotion
 @onready var sprite: Sprite3D = $Sprite
 
 func get_crowd_spacing() -> float:
@@ -249,7 +250,6 @@ func configure_wave(context: Dictionary, definition: WaveEnemyDefinition, warnin
 		contact_distance = melee.contact_distance
 		contact_height = melee.contact_height
 		animation_speed = melee.animation_speed
-		warning_scale = melee.warning_scale
 		hit_flash_seconds = melee.hit_flash_seconds
 
 func _ready() -> void:
@@ -267,7 +267,6 @@ func _ready() -> void:
 	_sprite_color = sprite.modulate
 	if wave_mode:
 		_set_state(State.CHASE)
-		sprite.scale = _sprite_scale * warning_scale
 	else:
 		_initialize.call_deferred()
 
@@ -419,7 +418,7 @@ func _stunned_tick(delta: float) -> void:
 	move_and_slide()
 
 func _combat_tick(delta: float) -> void:
-	velocity.y = 0.0 if is_on_floor() else velocity.y - gravity * delta
+	velocity.y = 0.0 if _ground_moved or is_on_floor() else velocity.y - gravity * delta
 	# 规划期间没有移动；完成 move_and_slide 后的朝向与接触判定继续读取实际落点。
 	var origin := global_position
 	var goal := target.global_position
@@ -461,36 +460,10 @@ func _move_combat_body(delta: float) -> void:
 		move_and_slide()
 		return
 	var start := global_position
-	var requested_velocity := velocity
-	var motion := Vector3(velocity.x, 0.0, velocity.z) * delta
-	# Special enemies have their own motion rules; opting in a derived scene cannot
-	# silently switch its movement. Airborne/externally driven bodies use the old solver.
-	if navigation and delta > 0.0 and _push_remaining <= 0.0 and global_basis == Basis.IDENTITY and velocity.y <= 0.0 and velocity.y >= -gravity * delta * 1.01:
-		var floor_y := navigation.flat_ground_height(start, start + motion, body_radius + safe_margin)
-		# Spawn/knockback offsets must finish falling first, rather than hovering
-		# at the spawn height. This path only retains the native contact skin.
-		if not is_nan(floor_y) and start.y >= floor_y - safe_margin and start.y <= floor_y + maxf(0.0025, safe_margin * 2.0):
-			velocity.y = 0.0
-			# Engine capsule sweeps include recovery and live walls, even when idle.
-			# Project onto each wall rather than dropping the entire requested motion.
-			for slide in max_slides:
-				if slide > 0 and is_nan(navigation.flat_ground_height(global_position, global_position + motion, body_radius + safe_margin)):
-					global_position = start
-					velocity = requested_velocity
-					move_and_slide()
-					return
-				var hit := move_and_collide(motion, false, safe_margin)
-				if not hit: break
-				var normal := hit.get_normal()
-				if absf(normal.y) > 0.01:
-					# A step, slope or nonvertical prop needs the full original solver.
-					global_position = start
-					velocity = requested_velocity
-					move_and_slide()
-					return
-				motion = hit.get_remainder().slide(normal)
-				velocity = velocity.slide(normal)
-				if motion.is_zero_approx(): break
+	# Only ordinary grounded motion opts in. Special actions keep their own solver.
+	if navigation and delta > 0.0 and _push_remaining <= 0.0 and global_basis == Basis.IDENTITY and up_direction == Vector3.UP and motion_mode == MOTION_MODE_GROUNDED and velocity.y <= 0.0 and velocity.y >= -gravity * delta * 1.01:
+		if not _flat_motion: _flat_motion = FlatGroundMotion.new()
+		if _flat_motion.try_move(self, navigation, delta, body_radius):
 			_ground_moved = true
 			_ground_real_velocity = (global_position - start) / delta
 			return
@@ -594,7 +567,7 @@ func apply_knockback(push: Vector3, distance: float) -> void:
 func _process(delta: float) -> void:
 	if wave_mode:
 		_hit_flash = maxf(_hit_flash - delta, 0.0)
-		var target_scale := _sprite_scale * (warning_scale if spawn_delay > 0.0 else 1.0)
+		var target_scale := _sprite_scale
 		if sprite.scale != target_scale: sprite.scale = target_scale
 		var tint := _sprite_color * (1.8 if _hit_flash > 0.0 else 1.0)
 		tint.a = _sprite_color.a

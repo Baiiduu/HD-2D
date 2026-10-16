@@ -2,8 +2,14 @@ class_name PlayerCrowdDeflection
 extends RefCounted
 
 const PreviewQueryView = preload("res://scripts/combat/preview_spatial_query_view.gd")
+const EccentricPath = preload("res://scripts/player/player_eccentric_ricochet.gd")
 var _query_view: PreviewQueryView
 var _nearby_slots: Array[int] = []
+var _eccentric: EccentricPath
+var _orbit_members: Dictionary[int, WaveEnemy] = {}
+var _orbit_seed: WaveEnemy
+var orbiting: bool:
+	get: return _eccentric != null and _eccentric.turning and not _orbit_members.is_empty()
 
 ## 一次发射／一次预览的几何状态。只查询场景，不移动、扣血或拨怪。
 var rules: PlayerRicochetRules
@@ -18,35 +24,120 @@ var _turn_region: Dictionary = {}
 var _ray := PhysicsRayQueryParameters3D.new()
 var _nearby: Array[WaveEnemy] = []
 var _candidates: Array[Dictionary] = []
+## 只在实机调试开启时记录；不增加碰撞、轮廓或导航查询。
+var debug_enabled := false
+var debug_events: Array[String] = []
+var debug_reason := "等待接群"
+var debug_capture_reason := "尚未判群"
+var debug_revision := 0
+var debug_replans := 0
+
+func _debug_event(message: String) -> void:
+	if not debug_enabled: return
+	debug_reason = message
+	debug_revision += 1
+	if debug_events.is_empty() or debug_events[-1] != message:
+		debug_events.append(message)
+		if debug_events.size() > 8: debug_events.pop_front()
+
+## 诊断快照仅复制现有结果，不预测未来环绕或重新寻找怪物。
+func debug_snapshot() -> Dictionary:
+	var members: Array[Dictionary] = []
+	for actor in _orbit_members.values():
+		if is_instance_valid(actor) and not actor.dead:
+			members.append({"point": actor.global_position, "radius": actor.get_crowd_body_radius(), "seed": actor == _orbit_seed})
+	var outline := PackedVector3Array()
+	if _eccentric:
+		var height := session.player.global_position.y if is_instance_valid(session) and is_instance_valid(session.player) else 0.0
+		for point in _eccentric._outline: outline.append(Vector3(point.x, height, point.y))
+	return {"orbiting": orbiting, "planned": _points.slice(_cursor), "outline": outline,
+		"members": members, "outgoing": target_heading, "reason": debug_reason,
+		"capture_reason": debug_capture_reason, "revision": debug_revision, "replans": debug_replans, "events": debug_events.duplicate(),
+		"locks": _locks.size(), "ignored": _ignored.size(), "detached": _eccentric != null and _eccentric.detached}
 
 func _init(settings: PlayerRicochetRules, battle: WavePrototype, shared: EnemyPushWave = null, view: PreviewQueryView = null) -> void:
 	_query_view = view
 	rules = settings
 	session = battle
 	regions = shared if shared else EnemyPushWave.new(settings, view)
+	if rules.eccentric_enabled: _eccentric = EccentricPath.new(rules)
 	# 已有镜片优先使用真实反射碰撞，不被怪群转向提前截住。
 	_ray.collision_mask = ProjectileCollision.REFLECTION_MASK
 
 func step(position: Vector3, heading: Vector3, distance: float) -> Dictionary:
+	# 支点死亡时立即改用存活成员；正常只在走完一小段后重读轮廓。
+	if orbiting and (not is_instance_valid(_orbit_seed) or _orbit_seed.dead):
+		if not _continue_orbit(position, heading):
+			heading = departure_heading(position, heading)
+			cancel_turn(&"支点丢失，无法安全续接")
 	while _cursor < _points.size() and TerrainPath.horizontal_distance(position, _points[_cursor]) < 0.0001:
 		_cursor += 1
+	if _cursor >= _points.size() and not _points.is_empty():
+		heading = target_heading
+		if not orbiting or not _continue_orbit(position, heading):
+			if orbiting: heading = departure_heading(position, heading)
+			cancel_turn(&"环绕无法续接" if orbiting else &"短弧完成")
 	if _cursor < _points.size():
 		var offset := _points[_cursor] - position
 		offset.y = 0.0
 		# 实际运动已离开旧弧线时顺势脱离，不把人物拉回路径上的旧点。
 		if offset.dot(heading) < -0.00001:
-			cancel_turn()
+			cancel_turn(&"实际来向已离开旧路线")
 			return {"heading": heading, "distance": distance}
 		return {"heading": offset.normalized(), "distance": minf(distance, offset.length())}
-	if not _points.is_empty():
-		_points.clear()
-		_turn_region = {}
-		heading = target_heading
 	return {"heading": heading, "distance": distance}
 
-func cancel_turn() -> void:
+func cancel_turn(reason: StringName = &"路线被中断") -> void:
+	_debug_event(String(reason))
 	_points.clear()
 	_turn_region = {}
+	_orbit_members.clear()
+	_orbit_seed = null
+	if _eccentric: _eccentric.interrupt()
+
+## 续段不是一次新碰撞，不补速、不扣碰撞费用，也不重发伤害或接群事件。
+func _continue_orbit(position: Vector3, heading: Vector3) -> bool:
+	if not is_instance_valid(session) or not session.combat_active():
+		_debug_event("战斗结束，停止续接")
+		return false
+	var seed: WaveEnemy
+	var nearest := rules.crowd_contact_radius + rules.eccentric_step_distance
+	for actor in _orbit_members.values():
+		if not is_instance_valid(actor) or actor.dead or actor.spawn_delay > 0.0: continue
+		var distance := TerrainPath.horizontal_distance(position, actor.global_position)
+		if distance < nearest:
+			nearest = distance
+			seed = actor
+	if not seed:
+		_debug_event("存活成员已清空或离人物过远")
+		return false
+	var surface := _eccentric_outline(seed, position, _orbit_members)
+	if surface.is_empty():
+		_debug_event("续接失败：" + debug_capture_reason)
+		return false
+	var points := _eccentric.build(position, heading, surface)
+	if points.is_empty():
+		_debug_event("新轮廓侵入当前位置，停止环绕")
+		return false
+	_points = points
+	_cursor = 0
+	_orbit_members = surface.members
+	_orbit_seed = seed
+	target_heading = _eccentric.outgoing
+	if debug_enabled:
+		debug_replans += 1
+		_debug_event("续接外沿：%d 只" % _orbit_members.size())
+	return true
+
+## 主动脱离只撤销当前与后续贴边路线；来向、余速和真实碰撞由人物继续处理。
+func detach() -> bool:
+	if not _eccentric or _eccentric.detached: return false
+	_eccentric.detach()
+	cancel_turn(&"右键主动脱离，本次不再接群")
+	return true
+
+func departure_heading(point: Vector3, heading: Vector3) -> Vector3:
+	return _eccentric.departure_heading(point, heading) if _eccentric else heading
 
 func _release_locks(position: Vector3) -> void:
 	for index in range(_locks.size() - 1, -1, -1):
@@ -59,6 +150,7 @@ func _release_locks(position: Vector3) -> void:
 		_locks.remove_at(index)
 
 func contact(start: Vector3, end: Vector3, heading: Vector3) -> Dictionary:
+	if _eccentric and (_eccentric.detached or _eccentric.turning): return {}
 	_release_locks(start)
 	if not is_instance_valid(session) or not session.combat_active(): return {}
 	# Check after the single combat predicate, which a custom session may override.
@@ -66,7 +158,7 @@ func contact(start: Vector3, end: Vector3, heading: Vector3) -> Dictionary:
 	return _legacy_contact(start, end, heading)
 
 func _legacy_contact(start: Vector3, end: Vector3, heading: Vector3) -> Dictionary:
-	var radius := rules.crowd_contact_radius
+	var radius := rules.crowd_contact_radius + (rules.eccentric_capture_margin if _eccentric else 0.0)
 	var length := TerrainPath.horizontal_distance(start, end)
 	session._spatial_index.nearby_into((start + end) * 0.5, radius + length * 0.5, _ignored, _nearby)
 	for enemy in _nearby:
@@ -90,17 +182,19 @@ func _legacy_contact(start: Vector3, end: Vector3, heading: Vector3) -> Dictiona
 	var space := session.get_world_3d().direct_space_state
 	var hit: Dictionary = {}
 	for candidate in _candidates:
-		_ray.from = start.lerp(end, candidate.entry) + Vector3.UP * 0.45
-		_ray.to = candidate.enemy.global_position + Vector3.UP * 0.45
+		if not hit.is_empty() and float(candidate.entry) >= float(hit.entry): break
+		var contact := _resolve_contact(candidate, start, end, heading)
+		if contact.is_empty() or (not hit.is_empty() and float(contact.entry) >= float(hit.entry)): continue
+		_ray.from = start.lerp(end, contact.entry) + Vector3.UP * 0.45
+		_ray.to = contact.enemy.global_position + Vector3.UP * 0.45
 		if space.intersect_ray(_ray).is_empty():
-			hit = candidate
-			break
+			hit = contact
 	_candidates.clear()
 	return hit
 
 
 func _view_contact(start: Vector3, end: Vector3, heading: Vector3) -> Dictionary:
-	var radius := rules.crowd_contact_radius
+	var radius := rules.crowd_contact_radius + (rules.eccentric_capture_margin if _eccentric else 0.0)
 	var length := TerrainPath.horizontal_distance(start, end)
 	_query_view.nearby_slots_into((start + end) * 0.5, radius + length * 0.5, _ignored, _nearby_slots)
 	for enemy_slot in _nearby_slots:
@@ -124,18 +218,58 @@ func _view_contact(start: Vector3, end: Vector3, heading: Vector3) -> Dictionary
 	var space := session.get_world_3d().direct_space_state
 	var hit: Dictionary = {}
 	for candidate in _candidates:
-		_ray.from = start.lerp(end, candidate.entry) + Vector3.UP * 0.45
-		_ray.to = _query_view.positions[candidate.slot] + Vector3.UP * 0.45
+		if not hit.is_empty() and float(candidate.entry) >= float(hit.entry): break
+		var contact := _resolve_contact(candidate, start, end, heading)
+		if contact.is_empty() or (not hit.is_empty() and float(contact.entry) >= float(hit.entry)): continue
+		_ray.from = start.lerp(end, contact.entry) + Vector3.UP * 0.45
+		_ray.to = _query_view.positions[contact.slot] + Vector3.UP * 0.45
 		if space.intersect_ray(_ray).is_empty():
-			hit = candidate
-			break
+			hit = contact
 	_candidates.clear()
 	if not hit.is_empty(): hit.erase("slot")
 	return hit
 
+## 提前识别只服务于持续环绕，不能把单怪短弧也推到近身技能射程之外。
+func _resolve_contact(candidate: Dictionary, start: Vector3, end: Vector3, heading: Vector3) -> Dictionary:
+	if not _eccentric or rules.eccentric_capture_margin <= 0.0: return candidate
+	var point := start.lerp(end, candidate.entry)
+	var focus := _eccentric_outline(candidate.enemy, point)
+	if not focus.is_empty():
+		candidate.focus = focus
+		return candidate
+	var position: Vector3 = _query_view.positions[candidate.slot] if candidate.has("slot") else candidate.enemy.global_position
+	var entry := PlayerRicochet.circle_entry(start, end, position, rules.crowd_contact_radius)
+	if entry < 0.0: return {}
+	var radial := start.lerp(end, entry) - position
+	radial.y = 0.0
+	if not radial.is_zero_approx() and radial.dot(heading) >= -0.00001: return {}
+	# 保留宽查询的原始排序键；普通接触的位置可能比下一只可环绕目标更晚。
+	var contact := candidate.duplicate()
+	contact.entry = entry
+	contact.focus = focus
+	return contact
+
 func begin_contact(hit: Dictionary, point: Vector3, incoming: Vector3) -> bool:
 	var enemy := hit.enemy as WaveEnemy
 	if not is_instance_valid(enemy) or enemy.dead or enemy.spawn_delay > 0.0: return false
+	if _eccentric:
+		var focus: Dictionary = hit.focus if hit.has("focus") else _eccentric_outline(enemy, point)
+		if not focus.is_empty():
+			var points := _eccentric.build(point, incoming, focus)
+			if not points.is_empty():
+				_points = points
+				_cursor = 0
+				_turn_region = {}
+				_orbit_members = focus.members
+				_orbit_seed = enemy
+				target_heading = _eccentric.outgoing
+				if debug_enabled:
+					debug_replans += 1
+					_debug_event("接入持续环绕：%d 只" % _orbit_members.size())
+				return true
+			# 群体外沿不适合接入时仍走原有短弧，并按原规则锁住这群。
+			_debug_event("接入点已在外包线内，回退短弧")
+		elif debug_enabled: _debug_event("回退短弧：" + debug_capture_reason)
 	var region := regions.region_for(enemy, incoming)
 	# 单怪使用自身圆心；拨怪轮廓为怪物位移保留的偏置不适用于人物绕行。
 	if region.members.size() == 1:
@@ -181,7 +315,68 @@ func begin_contact(hit: Dictionary, point: Vector3, incoming: Vector3) -> bool:
 	if not _locks.any(func(locked): return is_same(locked, region)):
 		_locks.append(region)
 		for id in region.members: _ignored[id] = true
+	if debug_enabled: debug_revision += 1
 	return true
+
+## 首次捕获或续段时读取外沿；续段只读取已捕获群的存活相连成员。
+func _eccentric_outline(seed: WaveEnemy, point: Vector3, allowed: Dictionary[int, WaveEnemy] = {}) -> Dictionary:
+	var anchor := seed.global_position
+	var radius := minf(rules.eccentric_search_radius, rules.push_group_search_radius)
+	session._spatial_index.nearby_into(anchor, radius, {}, _nearby)
+	var visible: Dictionary[int, Vector3] = {}
+	var bodies: Dictionary[int, float] = {}
+	var members: Dictionary[int, WaveEnemy] = {}
+	_ray.exclude = [session.player.get_rid()]
+	var space := session.get_world_3d().direct_space_state
+	for actor in _nearby:
+		if actor.spawn_delay > 0.0: continue
+		if not allowed.is_empty() and not allowed.has(actor.get_instance_id()): continue
+		var position := actor.global_position
+		if absf(position.y - point.y) > rules.push_height_tolerance: continue
+		_ray.from = point + Vector3.UP * 0.45
+		_ray.to = position + Vector3.UP * 0.45
+		if not space.intersect_ray(_ray).is_empty(): continue
+		visible[actor.get_instance_id()] = position
+		bodies[actor.get_instance_id()] = actor.get_crowd_body_radius()
+	_nearby.clear()
+	var minimum := 3 if allowed.is_empty() else 1
+	if visible.size() < minimum or not visible.has(seed.get_instance_id()):
+		if debug_enabled: debug_capture_reason = "可见同层成员不足 %d 只（隔墙／异层对象已排除）" % minimum
+		return {}
+	# 段间死亡或移动可能拆开旧群；只纳入本次仍与接触怪物相连的可见样本。
+	var connected: Array[Vector3] = [anchor]
+	var visited: Dictionary[int, bool] = {seed.get_instance_id(): true}
+	members[seed.get_instance_id()] = seed
+	var cursor := 0
+	var body_radius := bodies[seed.get_instance_id()]
+	var spread := 0.0
+	while cursor < connected.size():
+		var position := connected[cursor]
+		cursor += 1
+		var distance := TerrainPath.horizontal_distance(position, anchor)
+		spread = maxf(spread, distance)
+		session._spatial_index.nearby_into(position, rules.push_group_link_distance, visited, _nearby)
+		for actor in _nearby:
+			var id := actor.get_instance_id()
+			if not visible.has(id): continue
+			_ray.from = position + Vector3.UP * 0.45
+			_ray.to = visible[id] + Vector3.UP * 0.45
+			if not space.intersect_ray(_ray).is_empty(): continue
+			visited[id] = true
+			members[id] = actor
+			body_radius = maxf(body_radius, bodies[id])
+			connected.append(visible[id])
+	_nearby.clear()
+	if connected.size() < minimum or (allowed.is_empty() and spread < 0.3):
+		if debug_enabled: debug_capture_reason = "相连成员不足 %d 只" % minimum if connected.size() < minimum else "群体重叠，分布不足 0.3 米"
+		return {}
+	if debug_enabled: debug_capture_reason = "相连 %d 只，分布 %.2f 米" % [connected.size(), spread]
+	var player_radius := 0.0
+	for child in session.player.get_children():
+		if child is CollisionShape3D and not child.disabled and child.shape is CapsuleShape3D:
+			var capsule := child.shape as CapsuleShape3D
+			player_radius = maxf(player_radius, capsule.radius * maxf(child.global_basis.x.length(), child.global_basis.z.length()))
+	return {"positions": PackedVector3Array(connected), "body_radius": body_radius, "player_radius": player_radius, "members": members}
 
 func _point(region: Dictionary, radii: Vector2, angle: float, height: float) -> Vector3:
 	var point: Vector3 = region.center + region.u * (cos(angle) * radii.x) + region.v * (sin(angle) * radii.y)

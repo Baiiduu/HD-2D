@@ -7,7 +7,7 @@
 script = ExtResource("style")
 style_id = &"heavy"
 number_font = ExtResource("font")
-number_font_size = 56
+number_font_size = 32
 number_color = Color(1, 0.76, 0.3, 1)
 number_lifetime = 0.9
 apex_seconds = 0.1

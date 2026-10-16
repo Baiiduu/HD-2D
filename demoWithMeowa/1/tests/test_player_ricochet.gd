@@ -169,8 +169,10 @@ func movement_checks() -> void:
 	world.add_child(camera)
 	player.movement_camera = camera
 	camera.rotation.y = PI / 2.0
+	body.advance(0.05, Vector3.ZERO, false)
+	check(body.flying and body.direction == heading, "仅旋转相机仍保留弹射世界方向")
 	body.advance(0.05, Vector3.FORWARD, false)
-	check(body.direction == heading, "飞行过程中旋转相机和移动输入不改变世界方向")
+	check(not body.flying and body.state == PlayerRicochet.State.IDLE, "方向移动输入立即停止弹射并恢复行走")
 	player.movement_camera = null
 	camera.queue_free()
 	await reset()

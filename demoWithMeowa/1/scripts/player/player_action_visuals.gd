@@ -23,8 +23,11 @@ extends Resource
 ## Only display work changes; release, damage and real collisions stay physical.
 @export var coalesce_charge_preview := false
 @export var preview_show_target := true
-@export_range(0, 8, 1) var preview_bounces := 1
-@export_range(1.0, 20.0, 0.5, "suffix:m") var preview_distance := 12.0
+## 仅首次碰墙可显示一次反射；后续接触只截断短尾段。
+@export_range(0, 1, 1) var preview_bounces := 1
+@export_range(1.0, 20.0, 0.5, "suffix:m") var preview_distance := 8.0
+## 首次响应后的短方向提示，不推演完整怪群绕行；0 在接触点结束。
+@export_range(0.0, 2.0, 0.1, "suffix:m") var preview_followup_distance := 1.0
 @export var preview_color := Color(0.9, 0.82, 0.66)
 @export_range(0.0, 1.0, 0.05) var preview_opacity := 0.45
 @export_range(0.5, 2.0, 0.25) var preview_line_width_pixels := 1.0

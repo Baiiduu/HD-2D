@@ -163,8 +163,10 @@ func path_checks() -> void:
 	session._path_ready = true
 	session._path = navigation
 	session.combat_modifiers.damage_disabled = true
-	for actor in session.enemies: actor.simulate_zero_damage_hits = true
+	for actor in session.enemies: actor.health_loss_disabled = true
 	var lightning := {}
+	var rounds := [0]
+	storm.discharge_started.connect(func(_point): rounds[0] += 1)
 	storm.hit_landed.connect(func(actor, _damage): lightning[actor.get_instance_id()] = int(lightning.get(actor.get_instance_id(), 0)) + 1)
 	await settle()
 	storm.set_physics_process(false)
@@ -175,7 +177,7 @@ func path_checks() -> void:
 		player.sword._physics_process(1.0 / 60.0)
 		storm._physics_process(1.0 / 60.0)
 	check(hits[0] > 0, "弹射挥剑沿真实弧线继续命中")
-	check(not lightning.is_empty() and lightning.values().all(func(count): return count == 1), "奔雷沿实际路线传播，整次发射每怪仍最多一次")
+	check(not lightning.is_empty() and lightning.values().all(func(count): return count <= rounds[0]), "奔雷沿实际路线分轮传播，每怪命中次数不超过实际雷潮轮数")
 	check(session.enemies.all(func(actor): return actor.stun_remaining == 0.0 and actor._push_remaining == 0.0), "剑术和奔雷回调也不触发旧拨怪或眩晕")
 	check(not body.push_after_sword_hit(session.enemies[0], session.enemies[0].global_position, Vector3.RIGHT), "延后剑伤拨怪入口同样被关闭")
 	body.cancel(true)

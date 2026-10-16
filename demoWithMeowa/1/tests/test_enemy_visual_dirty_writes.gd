@@ -1,19 +1,19 @@
 extends SceneTree
 
-## Instrument the real update bodies in memory; the legacy prefix is the oracle
-## for the changed assignments. Animation and pose logic execute unchanged.
+## Compare unconditional setters with the real dirty-write optimization.
+## Both paths use full-size, original-opacity spawns; pose logic is unchanged.
 const LIGHTING := preload("res://scripts/rendering/character_lighting.gd")
 const LEGACY_SLIME := """func _process(delta: float) -> void:
 	if wave_mode:
 		_hit_flash = maxf(_hit_flash - delta, 0.0)
-		sprite.scale = _sprite_scale * (warning_scale if spawn_delay > 0.0 else 1.0)
+		sprite.scale = _sprite_scale
 		sprite.modulate = _sprite_color * (1.8 if _hit_flash > 0.0 else 1.0)
 		sprite.modulate.a = _sprite_color.a
 """
 const LEGACY_CREATURE := """func _process(delta: float) -> void:
 	_hit_flash = maxf(0.0, _hit_flash - delta)
 	sprite.modulate = _sprite_color * (1.8 if _hit_flash > 0.0 else 1.0)
-	sprite.modulate.a = _sprite_color.a * (0.4 if spawn_delay > 0.0 else 1.0)
+	sprite.modulate.a = _sprite_color.a
 """
 const PROBE_METHODS := """
 var probe_color_writes := 0
@@ -136,13 +136,13 @@ func stable_phase(before: SlimeEnemy, after: SlimeEnemy, warning: bool, flashing
 		actor.reset_probe()
 	for frame in 36: sync_and_compare(before, after, 0.01, label + " frame %d" % frame)
 	check(after.get("probe_color_writes") <= 1 and after.get("probe_color_changes") <= 1, label + ": a stable final tint is written at most once")
-	var exact_alpha := after._sprite_color.a * (0.4 if warning and is_creature else 1.0)
+	var exact_alpha := after._sprite_color.a
 	var alphas: Array = after.get("probe_alphas")
 	check(alphas.all(func(value: float): return value == exact_alpha), label + ": no temporary amplified or un-warned alpha is written")
 	if not is_creature:
 		check(after.get("probe_scale_writes") <= 1 and after.sprite.get("local_changes") <= 1, label + ": stable scale emits at most one native transform change")
 		check(before.get("probe_scale_writes") == 36 and before.sprite.get("local_changes") >= 36, label + ": the legacy repeated scale setter really dirties the native transform")
-	if flashing or (warning and is_creature):
+	if flashing:
 		check(before.get("probe_color_changes") >= 36, label + ": the legacy intermediate alpha really changes the native color repeatedly")
 
 func actor_checks(id: String) -> void:

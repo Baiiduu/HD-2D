@@ -17,10 +17,10 @@ func clear() -> void:
 	total_seconds = 0.0
 	end_reason = &""
 
-func append(start: Vector3, end: Vector3, heading: Vector3, seconds: float) -> void:
+func append(start: Vector3, end: Vector3, heading: Vector3, seconds: float, orbiting := false) -> void:
 	var length := Vector2(end.x - start.x, end.z - start.z).length()
 	if length <= 0.00001: return
 	segments.append({"start": start, "end": end, "heading": heading, "seconds": seconds,
-		"distance": total_distance, "time": total_seconds, "bounce": contacts.size()})
+		"distance": total_distance, "time": total_seconds, "bounce": contacts.size(), "orbiting": orbiting})
 	total_distance += length
 	total_seconds += seconds

@@ -4,7 +4,7 @@ const SLIME := preload("res://scripts/enemies/slime.gd")
 const OLD_SLIME := """func _process(delta: float) -> void:
 	if wave_mode:
 		_hit_flash = maxf(_hit_flash - delta, 0.0)
-		var target_scale := _sprite_scale * (warning_scale if spawn_delay > 0.0 else 1.0)
+		var target_scale := _sprite_scale
 		if sprite.scale != target_scale: sprite.scale = target_scale
 		var tint := _sprite_color * (1.8 if _hit_flash > 0.0 else 1.0)
 		tint.a = _sprite_color.a
@@ -36,7 +36,7 @@ const OLD_SLIME := """func _process(delta: float) -> void:
 const OLD_CREATURE := """func _process(delta: float) -> void:
 	_hit_flash = maxf(0.0, _hit_flash - delta)
 	var tint := _sprite_color * (1.8 if _hit_flash > 0.0 else 1.0)
-	tint.a = _sprite_color.a * (0.4 if spawn_delay > 0.0 else 1.0)
+	tint.a = _sprite_color.a
 	if sprite.modulate != tint: sprite.modulate = tint
 	if not animations or not camera: return
 	var right := camera.global_basis.x

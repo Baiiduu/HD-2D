@@ -11,3 +11,4 @@ source_file="res://shaders/visual/dof_gather.glsl"
 dest_files=["res://.godot/imported/dof_gather.glsl-cf6938a9405b690ee35cb537523605b4.res"]
 
 [params]
+

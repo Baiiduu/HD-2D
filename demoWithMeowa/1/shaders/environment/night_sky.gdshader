@@ -23,6 +23,21 @@ uniform bool hemisphere_fill_enabled = false;
 uniform vec3 hemisphere_sky_color : source_color = vec3(0.416, 0.510, 0.780);
 uniform vec3 hemisphere_ground_color : source_color = vec3(0.318, 0.275, 0.329);
 
+// 单幅纯远景：只画可见背景，照明立方体仍使用原有天空。
+uniform bool city_matte_enabled = false;
+uniform sampler2D city_matte : source_color, filter_linear_mipmap, repeat_disable;
+uniform float city_matte_brightness : hint_range(0.1, 2.0) = 0.85;
+
+vec3 city_background(vec2 screen_uv) {
+	// 按视口比例等比铺满，顶部对齐保留地标；移动、弹射运镜不改变图片坐标。
+	float view_aspect = abs(dFdy(screen_uv.y)) / max(abs(dFdx(screen_uv.x)), 0.000001);
+	vec2 image_size = vec2(textureSize(city_matte, 0));
+	float image_aspect = image_size.x / max(image_size.y, 1.0);
+	vec2 scale = vec2(min(view_aspect / image_aspect, 1.0), min(image_aspect / view_aspect, 1.0));
+	vec2 uv = vec2((screen_uv.x - 0.5) * scale.x + 0.5, screen_uv.y * scale.y);
+	return texture(city_matte, uv).rgb * city_matte_brightness;
+}
+
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
 }
@@ -101,6 +116,9 @@ void sky() {
 	// 最近一排松林以下：雾气笼罩的林地，往下渐暗
 	if (elevation < -0.125) {
 		color = mix(mix(fog_color, silhouette_color, 0.85), fog_color, 0.5 * smoothstep(-0.4, -0.125, elevation));
+	}
+	if (city_matte_enabled && !AT_CUBEMAP_PASS) {
+		color = city_background(SCREEN_UV);
 	}
 	COLOR = hemisphere_fill_enabled && AT_CUBEMAP_PASS
 		? mix(hemisphere_ground_color, hemisphere_sky_color, dir.y * 0.5 + 0.5) : color;

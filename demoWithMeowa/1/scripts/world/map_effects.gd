@@ -19,6 +19,8 @@ extends Node3D
 @export_tool_button("连接地图节点", "Reload") var refresh_connections = connect_map
 
 var _bound_data: TerrainData
+var _boundary: StaticBody3D
+var _boundary_rect := Rect2()
 
 func _enter_tree() -> void:
 	connect_map()
@@ -109,9 +111,47 @@ func _update_bounds() -> void:
 	var rect := terrain.get_world_rect()
 	get_map_camera().set_world_rect(rect)
 	if player is Player:
-		(player as Player).bounds = rect.grow(-0.3)
+		var movement_bounds := rect.grow(-0.3)
+		var battle := get_parent().get_node_or_null("BattleArea") as BattleArea
+		if battle and get_parent().get_meta("battle_only", false):
+			movement_bounds = movement_bounds.intersection(battle.get_activity_rect())
+		(player as Player).bounds = movement_bounds
+		_update_boundary_collision(movement_bounds, terrain.global_position.y)
 	if not Engine.is_editor_hint() and get_map_camera().is_node_ready():
 		get_map_camera().snap_to_target()
+
+## 活动边缘提供真实墙面，人物与弹丸复用原有扫掠、反弹和反馈。
+## 四个形状只随活动范围改变而更新；不生成可见模型或逐帧查询。
+func _update_boundary_collision(rect: Rect2, ground_y: float) -> void:
+	if not rect.has_area() or not rect.position.is_finite() or not rect.end.is_finite():
+		if is_instance_valid(_boundary): _boundary.queue_free()
+		_boundary = null
+		return
+	var center := rect.get_center()
+	var placement := Transform3D(Basis.IDENTITY, Vector3(center.x, ground_y, center.y))
+	if is_instance_valid(_boundary) and _boundary_rect == rect and _boundary.global_transform.is_equal_approx(placement): return
+	if not is_instance_valid(_boundary):
+		_boundary = StaticBody3D.new()
+		_boundary.name = "MapBoundary"
+		_boundary.collision_layer = 1
+		_boundary.collision_mask = 0
+		add_child(_boundary)
+		for index in 4:
+			var wall := CollisionShape3D.new()
+			wall.name = ["West", "East", "North", "South"][index]
+			wall.shape = BoxShape3D.new()
+			_boundary.add_child(wall)
+	_boundary.global_transform = placement
+	_boundary_rect = rect
+	var thickness := 0.5
+	var height := 32.0
+	var half := rect.size * 0.5
+	var positions := [Vector3(-half.x - thickness * 0.5, 0, 0), Vector3(half.x + thickness * 0.5, 0, 0),
+		Vector3(0, 0, -half.y - thickness * 0.5), Vector3(0, 0, half.y + thickness * 0.5)]
+	for index in 4:
+		var wall := _boundary.get_child(index) as CollisionShape3D
+		wall.position = positions[index]
+		(wall.shape as BoxShape3D).size = Vector3(thickness, height, rect.size.y + thickness * 2.0) if index < 2 else Vector3(rect.size.x + thickness * 2.0, height, thickness)
 
 func _apply_effects() -> void:
 	if not is_inside_tree():

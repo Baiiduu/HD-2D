@@ -24,6 +24,8 @@ var charging: bool:
 	get: return state == State.CHARGING
 var flying: bool:
 	get: return state == State.FLYING
+var orbiting: bool:
+	get: return flying and _crowd != null and _crowd.orbiting
 var charge_fraction: float:
 	get: return clampf(_charge_age / _settings.full_charge_seconds, 0.0, 1.0) if _settings else 0.0
 var _player: Player
@@ -40,6 +42,9 @@ var _release_pending := false
 var _attack_pending := false
 var _aim_pending := false
 var _mouse_charge := false
+## 持续采样输入边沿，发射前已按住的键不算新的移动接管。
+var _movement_keys := 0
+var _movement_active := false
 var _pushed: Dictionary[int, bool] = {}
 var _push_wave: EnemyPushWave
 var _crowd: PlayerCrowdDeflection
@@ -51,6 +56,9 @@ var _plane := 0.0
 var _foot_offset := 0.02
 var _guide: EnemyTelegraph
 var _charge_effect: PlayerChargeEffect
+## 由非阻塞诊断界面开启；战斗结束前保存最后实际路线，便于停留检查。
+var orbit_debug_enabled := false
+var orbit_debug_last: Dictionary = {}
 
 func _ready() -> void:
 	_player = get_parent() as Player
@@ -109,6 +117,7 @@ func begin_charge(movement: Vector3) -> bool:
 	if direction.is_zero_approx(): direction = _player.facing_direction()
 	direction = direction.normalized()
 	_charge_age = 0.0
+	orbit_debug_last = {}
 	_pushed.clear()
 	_push_wave = null
 	_crowd = null
@@ -140,6 +149,7 @@ func release_charge() -> bool:
 	if _settings.crowd_deflection_enabled and is_instance_valid(_session):
 		_push_wave = EnemyPushWave.new(_settings)
 		_crowd = PlayerCrowdDeflection.new(_settings, _session, _push_wave)
+		_crowd.debug_enabled = orbit_debug_enabled
 	_cooldown = _settings.cooldown_seconds
 	_path.terrain = _session.terrain if is_instance_valid(_session) else null
 	_path.data = _path.terrain.data if is_instance_valid(_path.terrain) else null
@@ -151,8 +161,17 @@ func release_charge() -> bool:
 	return true
 
 ## 返回 true 表示本帧的位移已由弹射接管；人物普通物理不再重复移动。
-func advance(delta: float, movement: Vector3, input_blocked: bool) -> bool:
+func advance(delta: float, movement: Vector3, input_blocked: bool, movement_keys := -1) -> bool:
 	_travel_segments.clear()
+	var was_flying := flying
+	var moving := not movement.is_zero_approx()
+	# 外部／摇杆输入沿用归零后重新推动；键盘按物理键分别识别新按下。
+	var movement_pressed := moving and not _movement_active
+	if movement_keys >= 0:
+		movement_pressed = (movement_keys & ~_movement_keys) != 0
+		_movement_keys = movement_keys
+	# 冻结或面板占用时也吸收按键状态，恢复后不补发旧的移动请求。
+	_movement_active = moving or input_blocked
 	if not _enabled() or _player.current_health <= 0.0:
 		cancel()
 		return false
@@ -168,7 +187,8 @@ func advance(delta: float, movement: Vector3, input_blocked: bool) -> bool:
 		_attack_pending = false
 		if charging: cancel()
 	if _press_pending:
-		_mouse_charge = begin_charge(movement)
+		if flying: detach_from_crowd()
+		else: _mouse_charge = begin_charge(movement)
 		_press_pending = false
 	if charging:
 		if not _player.is_on_floor(): cancel()
@@ -179,6 +199,10 @@ func advance(delta: float, movement: Vector3, input_blocked: bool) -> bool:
 			elif _mouse_charge and not Input.is_action_pressed(&"body_charge"): cancel()
 	_aim_pending = false
 	_release_pending = false
+	# 发射首帧及原键持续按住不打断；飞行后的新移动按下才交回行走。
+	if was_flying and flying and not input_blocked and moving and movement_pressed:
+		cancel()
+		return false
 	if _attack_pending:
 		request_normal_attack()
 		_attack_pending = false
@@ -190,6 +214,15 @@ func advance(delta: float, movement: Vector3, input_blocked: bool) -> bool:
 		if _recovery_remaining <= 0.0: _change_state(State.IDLE)
 	_update_visual_context()
 	return owns_motion
+
+## 与右键二次短按共用；外部输入可调用，不提前停止飞行或刷新攻击状态。
+func detach_from_crowd() -> bool:
+	if not flying or not _crowd or is_frozen() or _player.current_health <= 0.0: return false
+	if get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null: return false
+	var heading := _crowd.departure_heading(_player.global_position, direction)
+	if not _crowd.detach(): return false
+	direction = heading
+	return true
 
 func request_normal_attack() -> bool:
 	if _player.sword: return _player.sword.request_manual(cursor_direction())
@@ -275,7 +308,7 @@ func _advance_flight(delta: float) -> void:
 			if reached_edge: _end_flight(&"ground_edge")
 			if curved and flying: continue
 			break
-		if _crowd: _crowd.cancel_turn()
+		if _crowd: _crowd.cancel_turn(&"真实墙面／镜面／地形接触中断路线")
 		var normal := ProjectileCollision.reflection_normal(hit.get_collider(), hit.get_normal(), direction)
 		if normal.y > 0.65:
 			if travelled <= 0.00001: _end_flight(&"ground_contact")
@@ -310,16 +343,18 @@ func motion_timing(seconds: float) -> Vector2:
 	return Vector2(flight_speed + _settings.flight_deceleration * seconds, _settings.flight_deceleration) if flying and _settings else Vector2.ZERO
 
 ## 沿本次蓄力快照预览；输出可供其它显示方式消费，不产生位移、攻击或拨怪事件。
-func predict_path(query: BodyPathPrediction, output: AimPathData, max_distance: float, preview_bounces: int) -> void:
+func predict_path(query: BodyPathPrediction, output: AimPathData, max_distance: float, preview_bounces: int, followup_distance := -1.0) -> void:
 	output.clear()
 	if not charging or not _settings: return
 	_path.terrain = _session.terrain if is_instance_valid(_session) else null
 	_path.data = _path.terrain.data if is_instance_valid(_path.terrain) else null
 	var speed := lerpf(_settings.minimum_launch_speed, _settings.maximum_launch_speed, charge_fraction)
+	# 短预测只查首次接触，无需为单次查询复制整份怪物空间快照。
+	var view := PreviewQueryView.new(_session._spatial_index, _session) if followup_distance < 0.0 and _settings.preview_spatial_queries_enabled and _settings.crowd_deflection_enabled and is_instance_valid(_session) else null
 	query.trace(_player, direction, speed,
-		_settings.coast_seconds(speed), preview_bounces, _settings.bounce_speed_retention,
+		_settings.coast_seconds(speed), mini(preview_bounces, 1) if followup_distance >= 0.0 else preview_bounces, _settings.bounce_speed_retention,
 		_path, _player.bounds, _settings.ground_height_tolerance, output, max_distance,
-		PlayerCrowdDeflection.new(_settings, _session, null, PreviewQueryView.new(_session._spatial_index, _session) if _settings.preview_spatial_queries_enabled else null) if _settings.crowd_deflection_enabled and is_instance_valid(_session) else null, _settings)
+		PlayerCrowdDeflection.new(_settings, _session, null, view) if _settings.crowd_deflection_enabled and is_instance_valid(_session) else null, _settings, followup_distance)
 
 func _push_segment(start: Vector3, end: Vector3) -> void:
 	if not _settings.enemy_push_enabled: return
@@ -437,6 +472,7 @@ func _change_state(value: State) -> void:
 
 func _end_flight(reason: StringName) -> void:
 	_collision.center_certificate_enabled = false
+	if orbit_debug_enabled and _crowd: orbit_debug_last = _crowd.debug_snapshot()
 	_crowd = null
 	flight_speed = 0.0
 	_player.velocity = Vector3.ZERO
@@ -447,6 +483,7 @@ func _end_flight(reason: StringName) -> void:
 
 func cancel(reset_cooldown := false) -> void:
 	_collision.center_certificate_enabled = false
+	if orbit_debug_enabled and _crowd: orbit_debug_last = _crowd.debug_snapshot()
 	var was_active := state != State.IDLE
 	if flying: _player.velocity = Vector3.ZERO
 	flight_speed = 0.0

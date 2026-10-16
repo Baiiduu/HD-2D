@@ -60,7 +60,7 @@ var _attack_surface_query := ATTACK_SURFACE_QUERY.new()
 	set(value):
 		native_chase_enabled = value
 		_sync_native_chase_paths()
-## 仅普通史莱姆的平地追击；关闭立即恢复旧移动，特殊怪物不受影响。
+## 所有怪物的普通平地追击；关闭恢复旧移动，冲锋、退步和预告不受影响。
 @export var slime_ground_movement_enabled := false:
 	set(value):
 		slime_ground_movement_enabled = value
@@ -80,7 +80,8 @@ var _attack_surface_query := ATTACK_SURFACE_QUERY.new()
 @export_range(1, 30, 1) var first_wave_enemies := 5
 @export_range(0, 10, 1) var enemies_per_wave := 2
 @export_range(0.2, 5.0, 0.1, "suffix:s") var spawn_interval := 1.3
-@export_range(0.2, 2.0, 0.1, "suffix:s") var spawn_warning := 0.8
+## 旧资源兼容字段；出生预警已取消，不再用于生成。
+@export_storage var spawn_warning := 0.0
 ## 达到上限时延后生成，不丢弃怪物或提前清波。
 @export_range(1, 4096, 1) var max_active_enemies := 30
 @export_range(1.0, 10.0, 0.1, "suffix:m") var spawn_safe_distance := 5.0
@@ -239,6 +240,8 @@ func _initialize_path() -> void:
 		if battle_area.grow(-0.6).has_point(Vector2(point.x, point.z)):
 			_spawn_points.append(point)
 	_path_ready = not _spawn_points.is_empty()
+	if terrain.obstacle_certificates_enabled and terrain.ground_collision_body():
+		terrain.obstacle_field()
 	_path_rebuild_pending = false
 	if _bound_data != terrain.data:
 		if _bound_data and _bound_data.changed.is_connected(_queue_path_rebuild): _bound_data.changed.disconnect(_queue_path_rebuild)
@@ -480,7 +483,7 @@ func _prepare_run() -> bool:
 		entry.count = _run_population.simulation_enemy_count
 		entry.batch_size = entry.count
 		var definition := WaveDefinition.new()
-		definition.description = "%d 只 · 集中怪潮模拟 · 人物零伤害且免伤" % entry.count
+		definition.description = "%d 只 · 集中怪潮模拟 · 真实伤害飘字 · 双方不扣血" % entry.count
 		definition.entries.append(entry)
 		definitions.append(definition)
 	elif waves.is_empty():
@@ -1067,7 +1070,7 @@ func _spawn_enemy(definition: WaveEnemyDefinition = null, requested_position := 
 		return false
 	var enemy := instance as WaveEnemy
 	enemy.configure_wave({
-		"simulate_zero_damage_hits":combat_modifiers.damage_disabled,
+		"health_loss_disabled":combat_modifiers.damage_disabled,
 		"enemy_occlusion_outline_enabled":enemy_occlusion_outline_enabled,
 		"wave":wave, "health_multiplier":get_enemy_health_multiplier() if definition.health_growth_enabled else 1.0,
 		"player": player, "terrain": terrain, "camera": player.movement_camera,
@@ -1078,7 +1081,7 @@ func _spawn_enemy(definition: WaveEnemyDefinition = null, requested_position := 
 		"request_spawn_by_id": _request_spawn_by_id.bind(_generation),
 		"spatial_index": _spatial_index,
 		"combat_active": combat_active,
-	}, definition, spawn_warning if warning < 0 else warning)
+	}, definition, 0.0)
 	if phase != Phase.BATTLE or generation != _generation:
 		enemy.free()
 		return false

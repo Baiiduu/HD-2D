@@ -19,6 +19,9 @@ var _bodies := PackedFloat64Array()
 var _free_slots: Array[int] = []
 ## 本次索引生命周期的保守上界；移除大怪后可偏大，不能漏查新加入的大体型。
 var _max_crowd_spacing := 0.0
+## Candidate-list validity: position-only commits do not change this revision.
+## Birth, removal, activation, body and spacing changes always do.
+var _crowd_revision := 0
 var candidate_checks := 0
 
 func _key(point: Vector3) -> Vector2i:
@@ -32,6 +35,9 @@ func update(enemy: WaveEnemy) -> void:
 	var registered := slot >= 0
 	var body := enemy.get_crowd_body_radius()
 	var spacing := maxf(enemy.get_crowd_spacing(), body * 2.1)
+	var active := 1 if enemy.spawn_delay <= 0.0 else 0
+	if not registered or _bodies[slot] != body or _spacing[slot] != spacing or _active[slot] != active:
+		_crowd_revision += 1
 	if not registered:
 		if _free_slots.is_empty():
 			slot = _owners.size()
@@ -48,7 +54,7 @@ func update(enemy: WaveEnemy) -> void:
 			_ids[slot] = enemy.get_instance_id()
 		_entries[enemy] = slot
 	_positions[slot] = point
-	_active[slot] = 1 if enemy.spawn_delay <= 0.0 else 0
+	_active[slot] = active
 	_bodies[slot] = body
 	_spacing[slot] = spacing
 	_max_crowd_spacing = maxf(_max_crowd_spacing, spacing)
@@ -71,6 +77,7 @@ func remove(enemy: WaveEnemy) -> void:
 	_owners[slot] = null
 	_active[slot] = 0
 	_free_slots.append(slot)
+	_crowd_revision += 1
 
 func clear() -> void:
 	_cells.clear()
@@ -84,6 +91,7 @@ func clear() -> void:
 	_bodies.clear()
 	_free_slots.clear()
 	_max_crowd_spacing = 0.0
+	_crowd_revision += 1
 	candidate_checks = 0
 
 func synchronize(enemies: Array[WaveEnemy]) -> void:

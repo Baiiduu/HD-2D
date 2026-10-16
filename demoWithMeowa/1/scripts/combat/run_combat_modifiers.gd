@@ -4,7 +4,7 @@ extends Resource
 ## 一局唯一的战斗属性状态；不改写武器、弹射基础参数、装备或训练存档。
 var levels: Dictionary[StringName, int] = {}
 var _bonuses: Dictionary[int, float] = {}
-## 仅当前巨量怪潮模拟生效；基础剑术和技能继续运行，伤害统一归零。
+## 巨量怪潮模拟只关闭怪物扣血；基础剑术、技能和成长仍计算真实攻击数值。
 var damage_disabled := false
 
 func reset() -> void:
@@ -55,7 +55,6 @@ func preview_after(definition: GrowthBuffDefinition) -> RunCombatModifiers:
 	return preview
 
 func damage_multiplier() -> float:
-	if damage_disabled: return 0.0
 	return multiplier(GrowthBuffDefinition.Attribute.DAMAGE)
 
 func interval_multiplier() -> float:
@@ -70,10 +69,13 @@ func multiplier(attribute: GrowthBuffDefinition.Attribute) -> float:
 ## 蓄力、收尾与发射冷却以效率相除，避免叠到零；不加速动作动画。
 func ricochet_value(attribute: GrowthBuffDefinition.Attribute, base: float) -> float:
 	var gain := bonus(attribute)
+	var momentum := multiplier(GrowthBuffDefinition.Attribute.MOMENTUM_EFFICIENCY)
 	match attribute:
 		GrowthBuffDefinition.Attribute.RICOCHET_DURATION, GrowthBuffDefinition.Attribute.RICOCHET_BOUNCES:
-			return base / multiplier(attribute)
-		GrowthBuffDefinition.Attribute.RICOCHET_RETENTION: return clampf(base + gain, 0.05, 1.0)
+			return base / multiplier(attribute) / momentum
+		GrowthBuffDefinition.Attribute.RICOCHET_RETENTION:
+			# 统一缩减损失，有限正收益不会把基础损失直接加成零。
+			return clampf(1.0 - (1.0 - clampf(base + gain, 0.05, 1.0)) / momentum, 0.05, 1.0)
 		GrowthBuffDefinition.Attribute.CHARGE_EFFICIENCY, GrowthBuffDefinition.Attribute.RECOVERY_EFFICIENCY, GrowthBuffDefinition.Attribute.RICOCHET_COOLDOWN_EFFICIENCY:
 			return base / multiplier(attribute)
 	return base * multiplier(attribute)

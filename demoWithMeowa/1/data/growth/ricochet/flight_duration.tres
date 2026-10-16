@@ -6,9 +6,9 @@
 
 [resource]
 script = ExtResource("buff")
-attribute = 4
-bonus_per_level = 0.15
+attribute = 17
+bonus_per_level = 0.25
 id = &"R02"
-title = "滑行续航"
+title = "动能维持"
 icon = ExtResource("icon")
 category = 3

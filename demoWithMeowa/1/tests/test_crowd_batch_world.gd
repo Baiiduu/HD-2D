@@ -89,6 +89,9 @@ func manual_attack(value: bool) -> void:
 	manual_attack_held = value
 
 func spawned(enemy: WaveEnemy) -> void:
+	# 仅夹具在开测前冻结已生成成员；正式出生不再有预警等待。
+	enemy.spawn_delay = 1000.0
+	wave._spatial_index.update(enemy)
 	var point := enemy.global_position
 	spawn_plan.append({"type": String(enemy.definition.enemy_id), "position": [point.x, point.y, point.z]})
 	enemy.damaged.connect(func(_event):
@@ -210,9 +213,7 @@ func run_case(population: int, batch: bool) -> Dictionary:
 	wave.batch_crowd_enabled = batch
 	wave.native_chase_enabled = batch and combine_native_chase
 	wave.random_seed = SEED
-	# Real spawning and controller callbacks keep running; the common preparation
-	# warning prevents earlier-born AI from changing later safe spawn choices.
-	wave.spawn_warning = 1000.0
+	# Real spawning keeps running; spawned() freezes earlier members until setup ends.
 	wave.population_rules = wave.population_rules.duplicate(true)
 	wave.population_rules.simulation_mode = true
 	wave.population_rules.simulation_enemy_count = population

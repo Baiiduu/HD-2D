@@ -97,6 +97,11 @@ const RAIL_HEIGHT := 0.55
 var _map_texture: ImageTexture
 var _rebuild_queued := false
 var _generated: Node3D
+var _collision_body: StaticBody3D
+var _collision_is_flat := false
+## 固定建筑空地证明；关闭后保留逐体实时水平扫掠，供功能对照。
+@export var obstacle_certificates_enabled := true
+var _obstacle_field: StaticObstacleField
 var _transition_apply_queued := false
 var _edge_surface_values := Vector4(-1.0, -1.0, -1.0, -1.0)
 var _palette_apply_queued := false
@@ -476,8 +481,26 @@ func _bridge_end(cell: Vector2i) -> bool:
 
 # ---------- 碰撞 ----------
 
+## Only this generated body may be omitted after a full flat-surface certificate.
+## Other buildings/props remain live obstacles. Rebuilds replace this reference.
+func ground_collision_body() -> StaticBody3D:
+	# Bridges/ramps/water share this body and may include railings or blockers.
+	# Only the compact, wholly flat terrain can be omitted as one collider.
+	if not _collision_is_flat or not is_instance_valid(_collision_body): return null
+	if _collision_body.transform != Transform3D.IDENTITY or _collision_body.get_child_count() != 1: return null
+	return _collision_body
+
+func obstacle_field() -> StaticObstacleField:
+	if not is_instance_valid(_obstacle_field):
+		_obstacle_field = StaticObstacleField.new()
+		_obstacle_field.source = self
+		_obstacle_field.name = "ObstacleCertificates"
+		add_child(_obstacle_field)
+	return _obstacle_field
+
 func _build_collision(collision_faces: PackedVector3Array) -> void:
 	var body := StaticBody3D.new()
+	_collision_body = body
 	body.name = "Body"
 	_generated.add_child(body)
 	var shape := ConcavePolygonShape3D.new()
@@ -503,11 +526,13 @@ func _build_collision(collision_faces: PackedVector3Array) -> void:
 ## Only merge an entirely flat rectangle. Preserve the open-bottom concave
 ## surface, wall winding and exact outer corners; render meshes stay per cell.
 func _compact_collision_faces(faces: PackedVector3Array) -> PackedVector3Array:
+	_collision_is_flat = false
 	var level := _level(data.origin)
 	for z in data.size.y:
 		for x in data.size.x:
 			var cell := data.origin + Vector2i(x, z)
 			if _level(cell) != level or data.has_overlay(cell, TerrainData.OVERLAY_WATER | TerrainData.OVERLAY_BRIDGE | TerrainData.OVERLAY_RAMP): return faces
+	_collision_is_flat = true
 	var first := _corner_points(data.origin)[0]
 	var last := _corner_points(data.origin + data.size - Vector2i.ONE)[2]
 	var height := _corner_heights(data.origin)[0]

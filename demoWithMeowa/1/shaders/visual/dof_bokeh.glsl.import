@@ -11,3 +11,4 @@ source_file="res://shaders/visual/dof_bokeh.glsl"
 dest_files=["res://.godot/imported/dof_bokeh.glsl-2ef32c6a146164f3cd4e8299013ba4b4.res"]
 
 [params]
+

@@ -1410,9 +1410,77 @@ position = Vector2(24.8, 47.2)
 layer_order = 51
 size_meters = Vector2(0.8, 0.8)
 
+[sub_resource type="Resource" id="Resource_nmrr1"]
+script = ExtResource("2_te4ac")
+code = 256
+position = Vector2(-14.4, 60.8)
+layer_order = 58
+
+[sub_resource type="Resource" id="Resource_e0ib0"]
+script = ExtResource("2_te4ac")
+code = 256
+position = Vector2(-12.799999, 60.8)
+layer_order = 60
+
+[sub_resource type="Resource" id="Resource_8vb6g"]
+script = ExtResource("2_te4ac")
+code = 256
+position = Vector2(-11.2, 60.8)
+layer_order = 62
+
+[sub_resource type="Resource" id="Resource_k0nrb"]
+script = ExtResource("2_te4ac")
+code = 256
+position = Vector2(-9.599999, 60.8)
+layer_order = 64
+
+[sub_resource type="Resource" id="Resource_8ndbo"]
+script = ExtResource("2_te4ac")
+code = 256
+position = Vector2(-6.3999996, 60.8)
+layer_order = 66
+
+[sub_resource type="Resource" id="Resource_otwx1"]
+script = ExtResource("2_te4ac")
+code = 256
+position = Vector2(-8.8, 60.8)
+layer_order = 68
+
+[sub_resource type="Resource" id="Resource_dhgym"]
+script = ExtResource("2_te4ac")
+code = 256
+position = Vector2(-4.799999, 60.8)
+layer_order = 70
+
+[sub_resource type="Resource" id="Resource_8fndw"]
+script = ExtResource("2_te4ac")
+code = 256
+position = Vector2(-3.2, 60.8)
+layer_order = 72
+
+[sub_resource type="Resource" id="Resource_4vfhk"]
+script = ExtResource("2_te4ac")
+code = 256
+position = Vector2(-7.1999993, 60.8)
+layer_order = 74
+
+[sub_resource type="Resource" id="Resource_uoydx"]
+script = ExtResource("2_te4ac")
+code = 18
+position = Vector2(-7.5999994, 59.600002)
+layer_order = 76
+size_meters = Vector2(2.4, 2.4)
+
+[sub_resource type="Resource" id="Resource_c472v"]
+script = ExtResource("2_te4ac")
+code = 18
+position = Vector2(7.6000004, 59.600002)
+layer_order = 78
+size_meters = Vector2(2.4, 2.4)
+
 [resource]
 script = ExtResource("1_orfav")
-drawing_serial = 56
+drawing_serial = 78
 chunks = Dictionary[Vector2i, Image]({
 Vector2i(-3, 4): SubResource("Image_bbrb0"),
 Vector2i(-3, 5): SubResource("Image_3ipa6"),
@@ -1451,4 +1519,4 @@ Vector2i(2, 7): SubResource("Image_rp4qa"),
 Vector2i(2, 8): SubResource("Image_3ssir"),
 Vector2i(2, 9): SubResource("Image_wygcf")
 })
-stamps = Array[ExtResource("2_te4ac")]([SubResource("Resource_m2rbn"), SubResource("Resource_umagc"), SubResource("Resource_pc6qd"), SubResource("Resource_evigb"), SubResource("Resource_fqwck"), SubResource("Resource_cqau1"), SubResource("Resource_6tggc"), SubResource("Resource_flth8"), SubResource("Resource_8xgd7"), SubResource("Resource_tgiih"), SubResource("Resource_8y6ml"), SubResource("Resource_40065"), SubResource("Resource_at3kd"), SubResource("Resource_yyv1y"), SubResource("Resource_lxcfg"), SubResource("Resource_bjh6w"), SubResource("Resource_rk8t8"), SubResource("Resource_awvmk"), SubResource("Resource_hk8o8"), SubResource("Resource_htht3"), SubResource("Resource_twdu6"), SubResource("Resource_xogre"), SubResource("Resource_fqefk"), SubResource("Resource_chjen"), SubResource("Resource_axcsk"), SubResource("Resource_14hci"), SubResource("Resource_0dm1f"), SubResource("Resource_s70ps"), SubResource("Resource_rafxg"), SubResource("Resource_xklex"), SubResource("Resource_kwmm7"), SubResource("Resource_cbgfh"), SubResource("Resource_rde8j"), SubResource("Resource_vwrhd"), SubResource("Resource_lwurn"), SubResource("Resource_w8eis"), SubResource("Resource_c85aw"), SubResource("Resource_hoogb"), SubResource("Resource_p2kx2"), SubResource("Resource_3i3s3"), SubResource("Resource_3vxhx"), SubResource("Resource_37m8f"), SubResource("Resource_obty4"), SubResource("Resource_qmov6"), SubResource("Resource_tag0w"), SubResource("Resource_7h2t8"), SubResource("Resource_a36lk"), SubResource("Resource_nooob"), SubResource("Resource_qyi3r"), SubResource("Resource_m8ogg"), SubResource("Resource_4elq0"), SubResource("Resource_khd5g"), SubResource("Resource_l40l5"), SubResource("Resource_bwh2u"), SubResource("Resource_f27yq"), SubResource("Resource_oo2fa"), SubResource("Resource_uf7ik"), SubResource("Resource_bxeks"), SubResource("Resource_tqexa"), SubResource("Resource_68bv7"), SubResource("Resource_plxhw"), SubResource("Resource_nxy2t"), SubResource("Resource_hwnm8"), SubResource("Resource_d28yy"), SubResource("Resource_2335u"), SubResource("Resource_3tna8"), SubResource("Resource_ywnjr"), SubResource("Resource_nt266"), SubResource("Resource_0fj5e"), SubResource("Resource_37c7e"), SubResource("Resource_ofvxw"), SubResource("Resource_xexp5"), SubResource("Resource_ie5n1"), SubResource("Resource_62ahb"), SubResource("Resource_222qv"), SubResource("Resource_ao8i1"), SubResource("Resource_va1sb"), SubResource("Resource_hi1s0"), SubResource("Resource_1f5ng"), SubResource("Resource_ia8qo"), SubResource("Resource_ije5o"), SubResource("Resource_i4v7b"), SubResource("Resource_27udw"), SubResource("Resource_mwdro"), SubResource("Resource_cxp5v"), SubResource("Resource_putqj"), SubResource("Resource_78wbm"), SubResource("Resource_4dtto"), SubResource("Resource_y7whr"), SubResource("Resource_elm7b"), SubResource("Resource_j60bk"), SubResource("Resource_6ist3"), SubResource("Resource_fu5pw"), SubResource("Resource_2jhng"), SubResource("Resource_hir3a"), SubResource("Resource_aubke"), SubResource("Resource_3yk61"), SubResource("Resource_ljxqw"), SubResource("Resource_x0mow"), SubResource("Resource_prf5w"), SubResource("Resource_8gbd6"), SubResource("Resource_s4dcu"), SubResource("Resource_atayd"), SubResource("Resource_4mlmg"), SubResource("Resource_icqwn"), SubResource("Resource_8cpl0"), SubResource("Resource_f7uog"), SubResource("Resource_l7thw"), SubResource("Resource_jkcvl"), SubResource("Resource_nk4bx"), SubResource("Resource_pvyw1"), SubResource("Resource_5eu0q"), SubResource("Resource_kmakx"), SubResource("Resource_uck2n"), SubResource("Resource_468ie"), SubResource("Resource_wmb2p"), SubResource("Resource_tp88i"), SubResource("Resource_wokjk"), SubResource("Resource_xfn5h"), SubResource("Resource_31782"), SubResource("Resource_bb4m0"), SubResource("Resource_i3tw5"), SubResource("Resource_gwbid"), SubResource("Resource_om6k6"), SubResource("Resource_v6gqo"), SubResource("Resource_fqtrb"), SubResource("Resource_plyai"), SubResource("Resource_orfav"), SubResource("Resource_te4ac"), SubResource("Resource_8g7gc"), SubResource("Resource_7uqet"), SubResource("Resource_ynes8"), SubResource("Resource_ndsm7"), SubResource("Resource_v62i5"), SubResource("Resource_3tbx2"), SubResource("Resource_jaihn"), SubResource("Resource_fv4dk"), SubResource("Resource_24tva"), SubResource("Resource_8r3fo"), SubResource("Resource_sfv4o"), SubResource("Resource_5nppp"), SubResource("Resource_hbp3p"), SubResource("Resource_g1lnq"), SubResource("Resource_pnu1a"), SubResource("Resource_u36ov"), SubResource("Resource_ks6wa"), SubResource("Resource_dcuv8"), SubResource("Resource_5g8vg"), SubResource("Resource_odpss"), SubResource("Resource_7dxyj"), SubResource("Resource_ldei6"), SubResource("Resource_f63ru"), SubResource("Resource_fqr5y"), SubResource("Resource_n6gn6"), SubResource("Resource_qs175"), SubResource("Resource_bi0gx"), SubResource("Resource_jp5c5"), SubResource("Resource_3itcx"), SubResource("Resource_a2552"), SubResource("Resource_ym4qg"), SubResource("Resource_i7nl0")])
+stamps = Array[ExtResource("2_te4ac")]([SubResource("Resource_m2rbn"), SubResource("Resource_umagc"), SubResource("Resource_pc6qd"), SubResource("Resource_evigb"), SubResource("Resource_fqwck"), SubResource("Resource_cqau1"), SubResource("Resource_6tggc"), SubResource("Resource_flth8"), SubResource("Resource_8xgd7"), SubResource("Resource_tgiih"), SubResource("Resource_8y6ml"), SubResource("Resource_40065"), SubResource("Resource_at3kd"), SubResource("Resource_yyv1y"), SubResource("Resource_lxcfg"), SubResource("Resource_bjh6w"), SubResource("Resource_rk8t8"), SubResource("Resource_awvmk"), SubResource("Resource_hk8o8"), SubResource("Resource_htht3"), SubResource("Resource_twdu6"), SubResource("Resource_xogre"), SubResource("Resource_fqefk"), SubResource("Resource_chjen"), SubResource("Resource_axcsk"), SubResource("Resource_14hci"), SubResource("Resource_0dm1f"), SubResource("Resource_s70ps"), SubResource("Resource_rafxg"), SubResource("Resource_xklex"), SubResource("Resource_kwmm7"), SubResource("Resource_cbgfh"), SubResource("Resource_rde8j"), SubResource("Resource_vwrhd"), SubResource("Resource_lwurn"), SubResource("Resource_w8eis"), SubResource("Resource_c85aw"), SubResource("Resource_hoogb"), SubResource("Resource_p2kx2"), SubResource("Resource_3i3s3"), SubResource("Resource_3vxhx"), SubResource("Resource_37m8f"), SubResource("Resource_obty4"), SubResource("Resource_qmov6"), SubResource("Resource_tag0w"), SubResource("Resource_7h2t8"), SubResource("Resource_a36lk"), SubResource("Resource_nooob"), SubResource("Resource_qyi3r"), SubResource("Resource_m8ogg"), SubResource("Resource_4elq0"), SubResource("Resource_khd5g"), SubResource("Resource_l40l5"), SubResource("Resource_bwh2u"), SubResource("Resource_f27yq"), SubResource("Resource_oo2fa"), SubResource("Resource_uf7ik"), SubResource("Resource_bxeks"), SubResource("Resource_tqexa"), SubResource("Resource_68bv7"), SubResource("Resource_plxhw"), SubResource("Resource_nxy2t"), SubResource("Resource_hwnm8"), SubResource("Resource_d28yy"), SubResource("Resource_2335u"), SubResource("Resource_3tna8"), SubResource("Resource_ywnjr"), SubResource("Resource_nt266"), SubResource("Resource_0fj5e"), SubResource("Resource_37c7e"), SubResource("Resource_ofvxw"), SubResource("Resource_xexp5"), SubResource("Resource_ie5n1"), SubResource("Resource_62ahb"), SubResource("Resource_222qv"), SubResource("Resource_ao8i1"), SubResource("Resource_va1sb"), SubResource("Resource_hi1s0"), SubResource("Resource_1f5ng"), SubResource("Resource_ia8qo"), SubResource("Resource_ije5o"), SubResource("Resource_i4v7b"), SubResource("Resource_27udw"), SubResource("Resource_mwdro"), SubResource("Resource_cxp5v"), SubResource("Resource_putqj"), SubResource("Resource_78wbm"), SubResource("Resource_4dtto"), SubResource("Resource_y7whr"), SubResource("Resource_elm7b"), SubResource("Resource_j60bk"), SubResource("Resource_6ist3"), SubResource("Resource_fu5pw"), SubResource("Resource_2jhng"), SubResource("Resource_hir3a"), SubResource("Resource_aubke"), SubResource("Resource_3yk61"), SubResource("Resource_ljxqw"), SubResource("Resource_x0mow"), SubResource("Resource_prf5w"), SubResource("Resource_8gbd6"), SubResource("Resource_s4dcu"), SubResource("Resource_atayd"), SubResource("Resource_4mlmg"), SubResource("Resource_icqwn"), SubResource("Resource_8cpl0"), SubResource("Resource_f7uog"), SubResource("Resource_l7thw"), SubResource("Resource_jkcvl"), SubResource("Resource_nk4bx"), SubResource("Resource_pvyw1"), SubResource("Resource_5eu0q"), SubResource("Resource_kmakx"), SubResource("Resource_uck2n"), SubResource("Resource_468ie"), SubResource("Resource_wmb2p"), SubResource("Resource_tp88i"), SubResource("Resource_wokjk"), SubResource("Resource_xfn5h"), SubResource("Resource_31782"), SubResource("Resource_bb4m0"), SubResource("Resource_i3tw5"), SubResource("Resource_gwbid"), SubResource("Resource_om6k6"), SubResource("Resource_v6gqo"), SubResource("Resource_fqtrb"), SubResource("Resource_plyai"), SubResource("Resource_orfav"), SubResource("Resource_te4ac"), SubResource("Resource_8g7gc"), SubResource("Resource_7uqet"), SubResource("Resource_ynes8"), SubResource("Resource_ndsm7"), SubResource("Resource_v62i5"), SubResource("Resource_3tbx2"), SubResource("Resource_jaihn"), SubResource("Resource_fv4dk"), SubResource("Resource_24tva"), SubResource("Resource_8r3fo"), SubResource("Resource_sfv4o"), SubResource("Resource_5nppp"), SubResource("Resource_hbp3p"), SubResource("Resource_g1lnq"), SubResource("Resource_pnu1a"), SubResource("Resource_u36ov"), SubResource("Resource_ks6wa"), SubResource("Resource_dcuv8"), SubResource("Resource_5g8vg"), SubResource("Resource_odpss"), SubResource("Resource_7dxyj"), SubResource("Resource_ldei6"), SubResource("Resource_f63ru"), SubResource("Resource_fqr5y"), SubResource("Resource_n6gn6"), SubResource("Resource_qs175"), SubResource("Resource_bi0gx"), SubResource("Resource_jp5c5"), SubResource("Resource_3itcx"), SubResource("Resource_a2552"), SubResource("Resource_ym4qg"), SubResource("Resource_i7nl0"), SubResource("Resource_nmrr1"), SubResource("Resource_e0ib0"), SubResource("Resource_8vb6g"), SubResource("Resource_k0nrb"), SubResource("Resource_8ndbo"), SubResource("Resource_otwx1"), SubResource("Resource_dhgym"), SubResource("Resource_8fndw"), SubResource("Resource_4vfhk"), SubResource("Resource_uoydx"), SubResource("Resource_c472v")])

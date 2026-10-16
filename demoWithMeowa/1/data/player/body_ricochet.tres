@@ -4,12 +4,14 @@
 
 [resource]
 script = ExtResource("rules")
-preview_spatial_queries_enabled = true
-flat_ground_certificate_enabled = true
-minimum_launch_speed = 5.0
-maximum_launch_speed = 10.5
-flight_deceleration = 3.5
+full_charge_seconds = 0.5
+minimum_launch_speed = 4.0
+maximum_launch_speed = 12.0
+recovery_seconds = 0.06
+cooldown_seconds = 0.2
+flight_deceleration = 0.5
 bounce_speed_cost = 0.25
+bounce_speed_retention = 0.92
 crowd_deflection_enabled = true
 crowd_contact_radius = 1.05
 crowd_turn_distance = 0.45
@@ -17,6 +19,10 @@ crowd_arc_degrees = 100.0
 crowd_arc_distance = 2.4
 crowd_exit_outward = 0.6
 crowd_release_clearance = 0.7
+eccentric_enabled = true
+eccentric_capture_margin = 0.25
 enemy_push_enabled = false
 push_initial_speed = 24.0
 push_seconds = 0.36
+preview_spatial_queries_enabled = true
+flat_ground_certificate_enabled = true

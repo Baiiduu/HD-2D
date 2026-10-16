@@ -7,6 +7,7 @@ var player: Player
 var checks := 0
 var failures: Array[String] = []
 var original_exclusions: Array[Rect2] = []
+var immediate_spawns := true
 
 func _initialize() -> void:
 	create_timer(45.0).timeout.connect(func(): quit(2))
@@ -93,6 +94,9 @@ func run() -> void:
 	current_scene = world
 	await frames(12)
 	wave = world.get_node("WavePrototype")
+	# 旧预警配置不应让普通怪、怪潮或分裂幼体在生成后额外等待。
+	wave.spawn_warning = 0.8
+	wave.enemy_spawned.connect(func(enemy: WaveEnemy): immediate_spawns = immediate_spawns and enemy.spawn_delay == 0.0)
 	wave.endless_mode = false # 有限模式仍覆盖原三波胜利与刷新边界。
 	wave.population_rules = null
 	wave.health_growth_rules = null
@@ -150,6 +154,7 @@ func run() -> void:
 			check(wave.phase == WavePrototype.Phase.REST, "Production clear enters a safe break")
 			check(wave.start_next_wave(), "Production next wave requires an explicit start")
 	check(peak_population > 0 and peak_population <= 24, "Mixed production hordes respect the requested simultaneous cap")
+	check(immediate_spawns, "All primary and split-child spawns are active immediately")
 	check(wave.outcome == WavePrototype.Outcome.VICTORY and wave.kills == wave._spawned_run and wave._spawned_run > 86, "Full production run completes all 86 primary monsters and their split children without losing queued jobs")
 	# 开始通知中的清波请求不能把新波次当成空波。
 	reset()
@@ -184,7 +189,7 @@ func run() -> void:
 	wave._physics_process(.01)
 	hold()
 	check(wave.enemies.size() == 2 and wave._pending == 0, "Killing releases a slot to waiting spawn")
-	# 时间排序、每组预告和本局配置快照。
+	# 时间排序、旧预告配置兼容和本局配置快照。
 	reset()
 	var early := definition(40)
 	var first := entry(early, 3)
@@ -200,7 +205,7 @@ func run() -> void:
 	wave._physics_process(2)
 	hold()
 	check(wave.enemies.size() == 1 and wave.enemies[0].health == 40 and wave._pending == 3, "Earliest deadline wins; source edits do not change run queue")
-	check(is_equal_approx(wave.enemies[0].spawn_delay, .25), "Group warning override applies")
+	check(wave.enemies[0].spawn_delay == 0.0, "Old group warning configuration cannot delay activation")
 	check(wave.wave_count() == 1, "Run wave count stays fixed")
 	var before := wave.get_run_state()
 	wave.set_combat_frozen(true)

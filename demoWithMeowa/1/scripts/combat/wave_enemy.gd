@@ -16,9 +16,10 @@ var move_speed := 1.35
 var attack_damage := 8.0
 var spawn_clearance := 0.35
 var experience_reward := 0
-var spawn_delay := 0.8
+var spawn_delay := 0.0
 var dead := false
-var simulate_zero_damage_hits := false
+## 模拟怪物不扣血、不死亡，仍按真实命中发出反馈事件。
+var health_loss_disabled := false
 var stun_remaining := 0.0
 var definition: WaveEnemyDefinition
 var spatial_index: WaveEnemySpatialIndex
@@ -66,9 +67,9 @@ func _tick_speed_boosts(delta: float) -> void:
 		var source: WaveEnemy = boost.source.get_ref()
 		if boost.remaining <= 0.0 or not is_instance_valid(source) or source.dead: _speed_boosts.erase(id)
 
-func configure_wave(context: Dictionary, definition: WaveEnemyDefinition, warning: float) -> void:
+func configure_wave(context: Dictionary, definition: WaveEnemyDefinition, _warning: float) -> void:
 	self.definition = definition
-	simulate_zero_damage_hits = context.get("simulate_zero_damage_hits", false)
+	health_loss_disabled = context.get("health_loss_disabled", false)
 	spatial_index = context.get("spatial_index")
 	wave_mode = true
 	wave_target = context.player
@@ -87,7 +88,8 @@ func configure_wave(context: Dictionary, definition: WaveEnemyDefinition, warnin
 	attack_damage = definition.attack_damage
 	spawn_clearance = definition.spawn_clearance
 	experience_reward = definition.experience_reward
-	spawn_delay = maxf(warning, 0.0)
+	# 波次已负责生成排期；怪物实例出生后直接激活，不再追加出生预警。
+	spawn_delay = 0.0
 	collision_layer = 2
 	collision_mask = 1
 	set_occlusion_outline_allowed(context.get("enemy_occlusion_outline_enabled", true))
@@ -151,12 +153,12 @@ func _stunned_tick(_delta: float) -> void:
 	pass
 
 func take_damage(amount: float, feedback: Dictionary = {}) -> void:
-	if not wave_mode or dead or spawn_delay > 0.0 or not is_finite(amount) or amount < 0.0 or (amount == 0.0 and not simulate_zero_damage_hits): return
+	if not wave_mode or dead or spawn_delay > 0.0 or not is_finite(amount) or amount <= 0.0: return
 	if combat_active.is_valid() and not combat_active.call(): return
 	var before := health
-	health = maxf(health - amount, 0.0)
+	if not health_loss_disabled: health = maxf(health - amount, 0.0)
 	_damage_feedback()
-	if (health < before or simulate_zero_damage_hits) and damaged.has_connections():
+	if (health < before or health_loss_disabled) and damaged.has_connections():
 		damaged.emit(CombatDamageEvent.from_hit(self, before - health, amount, feedback))
 	if health <= 0.0:
 		dead = true

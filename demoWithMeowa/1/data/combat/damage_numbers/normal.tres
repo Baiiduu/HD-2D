@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("style")
 number_font = ExtResource("font")
-number_font_size = 40
 apex_seconds = 0.08
 rise_pixels = 36.0
 pop_scale = 1.3

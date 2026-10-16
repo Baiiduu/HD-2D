@@ -99,6 +99,7 @@ func _end_run(_reason: String) -> void:
 	_draft_started = false
 	_candidate_pool.clear()
 	_previous_draw.clear()
+	_draw_pool.clear_followup()
 
 func _phase_changed(phase: int) -> void:
 	# 在公共结算通知中的重试/返回回调之前释放自己的界面与输入。
@@ -246,6 +247,7 @@ func _confirm_choice(option_id: StringName) -> void:
 		if option and option.enabled and option.id == option_id: accepted = true; break
 	if not accepted: _try_open_choice(); return
 	var chosen_level := _choice_level
+	_draw_pool.record_choice(option_id, choice_options)
 	_previous_draw = choice_options.duplicate()
 	state.complete_choice()
 	growth_chosen.emit(chosen_level, option_id)

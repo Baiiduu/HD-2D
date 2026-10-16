@@ -144,6 +144,9 @@ func _body(label: String) -> StaticBody3D:
 	body.name = label
 	body.collision_layer = 1
 	body.collision_mask = 0
+	# Generated bindings are immutable between build() calls, which remove the
+	# old subtree. Direct native binding edits must revoke the obstacle raster first.
+	body.set_meta(&"obstacle_layout_managed", true)
 	_generated.add_child(body)
 	return body
 

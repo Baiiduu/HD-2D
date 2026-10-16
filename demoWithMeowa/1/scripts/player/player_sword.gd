@@ -123,19 +123,19 @@ func _physics_process(delta: float) -> void:
 	for piece in _motion:
 		if piece.seconds <= 0.000001: continue
 		_piece_time = used
-		_simulate(piece.start, piece.end, piece.seconds, true, piece.heading, piece.get("speed", 0.0), piece.get("deceleration", 0.0))
+		_simulate(piece.start, piece.end, piece.seconds, true, piece.heading, piece.get("speed", 0.0), piece.get("deceleration", 0.0), piece.get("orbiting", false))
 		used += piece.seconds
 		cursor = piece.end
 	if used < delta - 0.000001:
 		_piece_time = used
-		_simulate(cursor, player.global_position, delta - used, player.body_ricochet.flying, player.body_ricochet.direction)
+		_simulate(cursor, player.global_position, delta - used, player.body_ricochet.flying, player.body_ricochet.direction, 0.0, 0.0, player.body_ricochet.orbiting)
 	_motion.clear()
 	_last_position = player.global_position
 	# 先记录本帧真实运动中的全部刀锋接触，再扣血；升级中断时保留未结算接触。
 	_drain_hits()
 	_update_effect()
 
-func _simulate(start: Vector3, end: Vector3, seconds: float, flying: bool, heading: Vector3, speed := 0.0, deceleration := 0.0) -> void:
+func _simulate(start: Vector3, end: Vector3, seconds: float, flying: bool, heading: Vector3, speed := 0.0, deceleration := 0.0, orbiting := false) -> void:
 	var time := 0.0
 	while time < seconds - 0.000001:
 		var fraction := PlayerRicochetRules.segment_fraction(time, seconds, speed, deceleration)
@@ -151,14 +151,14 @@ func _simulate(start: Vector3, end: Vector3, seconds: float, flying: bool, headi
 				continue
 			var can_start := not player.body_ricochet.charging and not player._blink.active
 			if flying and can_start:
-				var entry := _first_target(position, end, heading, stats)
-				if entry < 0.0:
+				var target := _first_target(position, end, heading, stats, orbiting)
+				if float(target.entry) < 0.0:
 					_since_strike += remaining
 					return
-				var delay := maxf(0.0, PlayerRicochetRules.segment_time(lerpf(fraction, 1.0, entry), seconds, speed, deceleration) - time)
+				var delay := maxf(0.0, PlayerRicochetRules.segment_time(lerpf(fraction, 1.0, float(target.entry)), seconds, speed, deceleration) - time)
 				time += delay
 				_since_strike += delay
-				_begin(heading, true)
+				_begin(target.heading, true)
 			elif can_start and player.body_ricochet.state != PlayerRicochet.State.RECOVERY and not _blocked() and (_tap or _manual_held):
 				var aim := _requested_heading if not _requested_heading.is_zero_approx() else player.body_ricochet.cursor_direction()
 				_begin(aim, false)
@@ -220,22 +220,32 @@ func _can_reach(origin: Vector3, enemy: WaveEnemy) -> bool:
 	var ray := PhysicsRayQueryParameters3D.create(point + Vector3.UP * 0.45, target + Vector3.UP * 0.45, 1, [player.get_rid()])
 	return get_world_3d().direct_space_state.intersect_ray(ray).is_empty()
 
-func _first_target(start: Vector3, end: Vector3, heading: Vector3, stats: Dictionary) -> float:
-	if not _combat_active(): return -1.0
+func _first_target(start: Vector3, end: Vector3, heading: Vector3, stats: Dictionary, auto_aim := false) -> Dictionary:
+	var result := {"entry": -1.0, "heading": heading}
+	if not _combat_active(): return result
 	var best := INF
+	var nearest := INF
 	for enemy in session.get_nearby_enemies((start + end) * 0.5, stats.range + TerrainPath.horizontal_distance(start, end) * 0.5):
-		var entry := _target_entry(enemy, start, end, heading, stats, best)
-		if entry >= 0.0: best = entry
-	return best if is_finite(best) else -1.0
+		var entry := _target_entry(enemy, start, end, heading, stats, best + (0.000001 if auto_aim else 0.0), auto_aim)
+		if entry < 0.0: continue
+		var offset := enemy.global_position - start.lerp(end, entry)
+		offset.y = 0.0
+		var distance := offset.length_squared()
+		if auto_aim and is_equal_approx(entry, best) and distance >= nearest: continue
+		best = entry
+		nearest = distance
+		result = {"entry": entry, "heading": offset.normalized() if auto_aim and not offset.is_zero_approx() else heading}
+	return result
 
-func _target_entry(enemy: WaveEnemy, start: Vector3, end: Vector3, heading: Vector3, stats: Dictionary, best: float) -> float:
+func _target_entry(enemy: WaveEnemy, start: Vector3, end: Vector3, heading: Vector3, stats: Dictionary, best: float, auto_aim := false) -> float:
 	if not _eligible(enemy): return -1.0
 	var entry := PlayerRicochet.circle_entry(start, end, enemy.global_position, stats.range)
 	if entry < 0.0 or entry >= best: return -1.0
 	var origin := start.lerp(end, entry)
 	var offset := enemy.global_position - origin
 	offset.y = 0.0
-	if absf(heading.signed_angle_to(offset, Vector3.UP)) > deg_to_rad(stats.angle * 0.5) + 0.00001 or not _can_reach(origin, enemy): return -1.0
+	if not auto_aim and absf(heading.signed_angle_to(offset, Vector3.UP)) > deg_to_rad(stats.angle * 0.5) + 0.00001: return -1.0
+	if not _can_reach(origin, enemy): return -1.0
 	return entry
 
 ## 当前怪物位置下首个可触及目标；复用真实挥剑资格，不结算伤害或修改出手时钟。
@@ -246,7 +256,7 @@ func preview_target(route: AimPathData) -> WaveEnemy:
 		var best := INF
 		var target: WaveEnemy
 		for enemy in session.get_nearby_enemies((piece.start + piece.end) * 0.5, stats.range + TerrainPath.horizontal_distance(piece.start, piece.end) * 0.5):
-			var entry := _target_entry(enemy, piece.start, piece.end, piece.heading, stats, best)
+			var entry := _target_entry(enemy, piece.start, piece.end, piece.heading, stats, best, piece.get("orbiting", false))
 			if entry >= 0.0:
 				best = entry
 				target = enemy
@@ -335,7 +345,7 @@ func _play_sound(hit: bool, point: Vector3) -> void:
 
 func _on_flight_segment(start: Vector3, end: Vector3, heading: Vector3, seconds: float) -> void:
 	var timing := player.body_ricochet.motion_timing(seconds)
-	_motion.append({"start": start, "end": end, "heading": heading, "seconds": seconds, "speed": timing.x, "deceleration": timing.y})
+	_motion.append({"start": start, "end": end, "heading": heading, "seconds": seconds, "speed": timing.x, "deceleration": timing.y, "orbiting": player.body_ricochet.orbiting})
 
 func _on_blink(_start: Vector3, end: Vector3) -> void:
 	_motion.clear()

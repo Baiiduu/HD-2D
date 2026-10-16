@@ -35,6 +35,17 @@ extends Resource
 @export_range(0.5, 1.0, 0.01) var crowd_speed_retention := 1.0
 ## 离开本次接触区域多远才允许再次受同一片怪群转向。
 @export_range(0.05, 1.0, 0.05, "suffix:m") var crowd_release_clearance := 0.35
+@export_group("偏心回旋（试玩）")
+## 接群一次后自动沿外围持续绕行，自动朝沿途怪物出剑；右键主动脱离。
+@export var eccentric_enabled := false
+## 仅可形成持续环绕的怪群提前捕获；单怪与普通短弧仍使用原接群距离。
+@export_range(0.0, 0.6, 0.01, "suffix:m") var eccentric_capture_margin := 0.0
+## 路径走完这段距离后重读存活怪群轮廓，不是绕行长度或次数上限。
+@export_range(0.6, 3.0, 0.05, "suffix:m") var eccentric_step_distance := 1.8
+## 怪物实际体型和人物胶囊之外额外留出的贴边间隔。
+@export_range(0.05, 0.5, 0.01, "suffix:m") var eccentric_edge_clearance := 0.18
+@export_range(0.0, 0.4, 0.01, "suffix:m") var eccentric_outward_sway := 0.16
+@export_range(2.0, 30.0, 0.5, "suffix:m") var eccentric_search_radius := 12.0
 @export_group("旧拨怪（正式关闭）")
 ## 保留旧拨怪接口与参数供独立原型使用；正式地图关闭。
 @export var enemy_push_enabled := true
@@ -126,6 +137,12 @@ func validation_error() -> String:
 			if not is_finite(value) or value <= 0.0: return "接群距离、短弧长度和脱离间距须为有限正数"
 		if not is_finite(crowd_exit_outward) or crowd_exit_outward <= 0.0 or crowd_exit_outward >= 1.0: return "接群出射外向分量须在 0～1 之间"
 		if not is_finite(crowd_speed_retention) or crowd_speed_retention <= 0.0 or crowd_speed_retention > 1.0: return "接群保速须在 0～1 之间"
+	if eccentric_enabled:
+		if not crowd_deflection_enabled: return "偏心回旋需要开启人物接群偏转"
+		if not is_finite(eccentric_capture_margin) or eccentric_capture_margin < 0.0: return "环绕提前捕获余量须为有限非负数"
+		for value in [eccentric_step_distance, eccentric_edge_clearance, eccentric_search_radius]:
+			if not is_finite(value) or value <= 0.0: return "环绕轮廓更新路程、外沿间隔和搜索距离须为有限正数"
+		if not is_finite(eccentric_outward_sway) or eccentric_outward_sway < 0.0: return "偏心外摆幅度须为有限非负数"
 	for value in [push_chain_speed_retention, push_chain_stun_retention]:
 		if not is_finite(value) or value < 0.0 or value > 1.0: return "绕行接力的速度与眩晕保留比例须在 0～1 之间"
 	return ""

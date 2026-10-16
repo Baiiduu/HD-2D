@@ -15,8 +15,8 @@ extends Resource
 @export_range(0.1, 10.0, 0.1) var interval := 1.3
 ## 留空使用全部启用区域；填写 WaveSpawnZone 的 Zone Id 或节点名。
 @export var spawn_zone_ids := PackedStringArray()
-## -1 沿用控制器预告时间；每组可单独调整，0 表示立即激活。
-@export_range(-1.0, 5.0, 0.1, "suffix:s") var warning_seconds := -1.0
+## 旧资源兼容字段；不再追加出生预警，生成排期由 Start Delay 和 Interval 控制。
+@export_storage var warning_seconds := 0.0
 
 func spawn_duration() -> float:
 	return maxf(ceilf(float(count) / maxi(batch_size, 1)) - 1.0, 0.0) * interval

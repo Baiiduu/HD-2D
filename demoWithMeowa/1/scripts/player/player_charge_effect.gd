@@ -162,7 +162,7 @@ func _update_aim() -> void:
 		_aim.stop()
 		_target_enemy = null
 		return
-	_body.predict_path(_prediction, _route, _visuals.preview_distance, _visuals.preview_bounces)
+	_body.predict_path(_prediction, _route, _visuals.preview_distance, _visuals.preview_bounces, _visuals.preview_followup_distance)
 	_target_enemy = _player.sword.preview_target(_route) if _visuals.preview_show_target and is_instance_valid(_player.sword) else null
 	_aim.display(_route, _player.movement_camera, _pixel, _foot_height, _radius + _pixel * 5.0,
 		_visuals.preview_line_width_pixels, _visuals.preview_color, _visuals.preview_opacity)

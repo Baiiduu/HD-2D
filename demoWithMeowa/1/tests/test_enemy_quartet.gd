@@ -260,7 +260,7 @@ func split_checks() -> void:
 	check(wave.enemies.size() == 2 and wave._pending == 0, "近身击杀不被普通五米安全距离堵住，幼体实际出场")
 	for child in wave.enemies:
 		child.set_physics_process(false)
-		check(child is MiniSlimeEnemy and TerrainPath.horizontal_distance(child.global_position, player.global_position) < wave.spawn_safe_distance and child.spawn_delay > 0.0, "幼体留在母体附近，拥有出场保护")
+		check(child is MiniSlimeEnemy and TerrainPath.horizontal_distance(child.global_position, player.global_position) < wave.spawn_safe_distance and child.spawn_delay == 0.0, "幼体留在母体附近，出生后立即参与战斗")
 	var children := wave.enemies.duplicate()
 	for child in children:
 		child.spawn_delay = 0.0
@@ -302,6 +302,9 @@ func run() -> void:
 	current_scene = world
 	await settle(16)
 	wave = world.get_node("WavePrototype")
+	# 本夹具验证普通混编波次，不继承编辑器当前选择的巨量怪潮模式。
+	wave.population_rules = wave.population_rules.duplicate(true)
+	wave.population_rules.simulation_mode = false
 	player = wave.player
 	player.set_physics_process(false)
 	wave.set_physics_process(false)

@@ -23,7 +23,8 @@ extends WaveEnemyDefinition
 @export_range(0.0, 6.0, 0.05, "suffix:m") var contact_height := 0.8
 @export_group("动画与反馈")
 @export_range(0.25, 4.0, 0.05) var animation_speed := 1.0
-@export_range(0.1, 1.0, 0.05) var warning_scale := 0.35
+## 旧资源兼容字段；不再使用出生缩放或半透明预警。
+@export_storage var warning_scale := 0.35
 @export_range(0.0, 1.0, 0.01, "suffix:s") var hit_flash_seconds := 0.15
 
 func validation_error() -> String:

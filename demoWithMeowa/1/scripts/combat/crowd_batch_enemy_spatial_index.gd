@@ -27,6 +27,9 @@ var batch_queries := 0
 var fallback_calls := 0
 var plan_candidate_pairs := 0
 var plan_accepted_pairs := 0
+var neighbor_rebuilds := 0
+var neighbor_reuses := 0
+var neighbor_search_pairs := 0
 var _planner := BatchPlanner.new()
 var _plan_frame := -1
 var _fallback_frame := -1
@@ -36,6 +39,7 @@ func _reset_plan() -> void:
 	_plan_frame = -1
 	_fallback_frame = -1
 	_forces.clear()
+	_planner.clear()
 
 func reset_metrics() -> void:
 	batch_builds = 0
@@ -43,6 +47,9 @@ func reset_metrics() -> void:
 	fallback_calls = 0
 	plan_candidate_pairs = 0
 	plan_accepted_pairs = 0
+	neighbor_rebuilds = 0
+	neighbor_reuses = 0
+	neighbor_search_pairs = 0
 	candidate_checks = 0
 
 func clear() -> void:
@@ -51,22 +58,11 @@ func clear() -> void:
 	reset_metrics()
 
 func update(enemy: WaveEnemy) -> void:
-	# Outside a current plan there is no extra Dictionary/Node metadata work.
-	if not batch_enabled or _plan_frame != Engine.get_physics_frames() or _fallback_frame == _plan_frame:
-		super.update(enemy)
-		return
-	var slot: int = _entries.get(enemy, -1)
-	if slot < 0:
-		super.update(enemy)
-		_fallback_frame = _plan_frame
-		return
-	var body := _bodies[slot]
-	var spacing := _spacing[slot]
-	var active := _active[slot]
+	var revision := _crowd_revision
 	super.update(enemy)
-	# The base update is the only place that reads the neighbor's Node getters.
-	# Its before/after values replace four complete per-step metadata copies.
-	if _bodies[slot] != body or _spacing[slot] != spacing or _active[slot] != active:
+	# Position commits preserve this step's coherent plan. Metadata changes
+	# invalidate it and the reusable neighbor list, without rereading Node data.
+	if batch_enabled and _plan_frame == Engine.get_physics_frames() and revision != _crowd_revision:
 		_fallback_frame = _plan_frame
 
 func remove(enemy: WaveEnemy) -> void:
@@ -80,6 +76,7 @@ func remove(enemy: WaveEnemy) -> void:
 	if _entries.is_empty():
 		_forces.clear()
 		_plan_frame = -1
+		_planner.clear()
 
 func legacy_separation(enemy: WaveEnemy, radius: float) -> Vector3:
 	return super.separation(enemy, radius)
@@ -87,12 +84,15 @@ func legacy_separation(enemy: WaveEnemy, radius: float) -> Vector3:
 func _prepare_current_step(frame: int) -> void:
 	# No await/callback occurs during planning. The packed input describes one
 	# common current snapshot even though later movement commits mutate it.
-	_forces = _planner.plan(_cells, _positions, _ids, _active, _spacing, _bodies, CELL_SIZE)
+	_forces = _planner.plan(_cells, _positions, _ids, _active, _spacing, _bodies, CELL_SIZE, _crowd_revision)
 	_plan_frame = frame
 	if diagnostics_enabled:
 		batch_builds += 1
 		plan_candidate_pairs += _planner.candidate_pairs
 		plan_accepted_pairs += _planner.accepted_pairs
+		if _planner.neighbors_rebuilt: neighbor_rebuilds += 1
+		else: neighbor_reuses += 1
+		neighbor_search_pairs += _planner.search_pairs
 
 func separation(enemy: WaveEnemy, radius: float) -> Vector3:
 	if radius <= 0.0: return Vector3.ZERO

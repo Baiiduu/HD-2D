@@ -30,7 +30,7 @@ func begin(hit: CombatDamageEvent, profile: DamageNumberStyle, slot: int, spacin
 	age = 0.0
 	lane = slot
 	active = true
-	_text = style.format_amount(event.amount)
+	_text = style.format_amount(event.display_amount())
 	_font = style.number_font if style.number_font else ThemeDB.fallback_font
 	var extent := _font.get_string_size(_text, HORIZONTAL_ALIGNMENT_LEFT, -1, style.number_font_size)
 	# 大字与多位数字即使锚点移出画面，仍保留可见的字面部分。

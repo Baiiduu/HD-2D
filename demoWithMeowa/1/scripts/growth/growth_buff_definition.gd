@@ -40,3 +40,6 @@ func available_gain(current: float, current_level := 0) -> float:
 
 func ricochet_property() -> StringName:
 	return RICOCHET_PROPERTIES.get(attribute, &"")
+
+func is_ricochet() -> bool:
+	return attribute == Attribute.MOMENTUM_EFFICIENCY or not ricochet_property().is_empty()

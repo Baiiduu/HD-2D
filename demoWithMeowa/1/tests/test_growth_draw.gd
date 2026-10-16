@@ -96,14 +96,51 @@ func ui_checks() -> void:
 	ui.queue_free()
 	await process_frame
 
+func ricochet_followup_checks() -> void:
+	var options: Array[GrowthChoiceOption] = []
+	for index in 8:
+		var option := GrowthChoiceOption.new()
+		option.id = StringName("followup%d" % index)
+		option.category = GrowthChoiceOption.Category.LEARN_SKILL if index < 2 else GrowthChoiceOption.Category.GLOBAL_BUFF
+		option.ricochet_growth = index in [2, 3, 4]
+		options.append(option)
+	var draw = POOL.new()
+	draw.reset(927)
+	draw.record_choice(options[2].id, [options[2]])
+	var misses := 0
+	for round in 120:
+		var cards: Array[GrowthChoiceOption] = draw.draw(options, 3)
+		check(cards.any(func(option): return option.ricochet_growth) and cards.any(func(option): return option.category == GrowthChoiceOption.Category.LEARN_SKILL), "每轮各保留一个技能和弹射候选")
+		var before: int = draw._followup_misses
+		var rerolled: Array[GrowthChoiceOption] = draw.draw(options, 3, cards)
+		check(ids(cards) != ids(rerolled) and draw._followup_misses == before, "重抽改变候选但不推进跟进计数")
+		var found := rerolled.any(func(option): return option.id == options[2].id)
+		misses = 0 if found else misses + 1
+		check(misses < 3, "最近选择的弹射方向在三次确认升级内展示一次")
+		for option in rerolled:
+			if not option.ricochet_growth:
+				draw.record_choice(option.id, rerolled)
+				break
+	var narrow: Array[GrowthChoiceOption] = [options[0], options[2], options[7]]
+	check(not draw.can_redraw(narrow, [options[0], options[2]]), "两张保留候选均唯一时，池外辅助卡不能制造付费原样重抽")
+	draw._followup_misses = 2
+	check(draw.draw(options, 3).any(func(option): return option.id == options[2].id), "跟进到期后不被上一轮避重策略排除")
+	options[2].enabled = false
+	check(draw.draw(options, 3).all(func(option): return option.enabled), "方向失效时使用其他有效候选")
+	draw.reset(927)
+	check(draw._preferred_ricochet.is_empty() and draw._followup_misses == 0, "新局清空跟进方向与计数")
+
 func run() -> void:
 	pool_checks()
+	ricochet_followup_checks()
 	await ui_checks()
 	AudioServer.set_bus_mute(0, true)
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("MapEffects/BGM").music_enabled = false
 	var wave: WavePrototype = world.get_node("WavePrototype")
+	wave.population_rules = wave.population_rules.duplicate(true)
+	wave.population_rules.simulation_mode = false
 	var skills: RunSkills = wave.get_node("RunSkills")
 	var growth: RunGrowth = wave.get_node("RunGrowth")
 	growth.draw_seed = 617

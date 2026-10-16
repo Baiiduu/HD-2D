@@ -98,7 +98,7 @@ func coalescing_checks() -> void:
 	var expected := AimPathData.new()
 	var before := gameplay_state()
 	await effect.processed
-	body.predict_path(query, expected, player.action_visuals.preview_distance, player.action_visuals.preview_bounces)
+	body.predict_path(query, expected, player.action_visuals.preview_distance, player.action_visuals.preview_bounces, player.action_visuals.preview_followup_distance)
 	var expected_target := player.sword.preview_target(expected)
 	check(effect.get("predictions") == 1 and not effect.get("_preview_pending"), "one actual process consumes all eight pending updates exactly once")
 	if effect._route.segments != expected.segments or effect._route.contacts != expected.contacts or effect._target_enemy != expected_target:

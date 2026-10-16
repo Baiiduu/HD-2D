@@ -9,12 +9,9 @@ var _visual_progress := -1.0
 var _feedback: EnemyFeedbackPool
 var _surface_collision := ProjectileCollision.new()
 
-func _supports_ground_movement() -> bool:
-	return false
-
 func _ready() -> void:
 	super._ready()
-	# 预告用透明度，保留完整原生像素尺寸。
+	# 出生直接保留完整原生像素尺寸。
 	sprite.scale = _sprite_scale
 	if wave_target and is_instance_valid(wave_target.sprite):
 		sprite.pixel_size = wave_target.sprite.pixel_size * wave_target.sprite.global_basis.x.length()
@@ -54,14 +51,17 @@ func _move_chase(delta: float, stop: float) -> void:
 	direction = _pursuit_crowd_direction(direction, origin, target_distance)
 	var actual_speed := effective_move_speed()
 	direction = _personal_space_direction(direction, stop, away, target_distance, actual_speed)
-	_move_direction(direction, actual_speed, delta)
+	_move_direction(direction, actual_speed, delta, true)
 	_update_chase_facing(intended)
 
-func _move_direction(direction: Vector3, speed: float, delta: float) -> void:
-	velocity.y = 0.0 if is_on_floor() else velocity.y - gravity * delta
+func _move_direction(direction: Vector3, speed: float, delta: float, ordinary_chase := false) -> void:
+	velocity.y = 0.0 if is_on_floor() or (ordinary_chase and _ground_moved) else velocity.y - gravity * delta
 	velocity.x = direction.x * speed
 	velocity.z = direction.z * speed
-	move_and_slide()
+	if ordinary_chase: _move_combat_body(delta)
+	else:
+		_ground_moved = false
+		move_and_slide()
 
 func _move_local(direction: Vector3, delta: float) -> void:
 	var intended := direction
@@ -126,7 +126,7 @@ func _exit_tree() -> void:
 func _process(delta: float) -> void:
 	_hit_flash = maxf(0.0, _hit_flash - delta)
 	var tint := _sprite_color * (1.8 if _hit_flash > 0.0 else 1.0)
-	tint.a = _sprite_color.a * (0.4 if spawn_delay > 0.0 else 1.0)
+	tint.a = _sprite_color.a
 	if sprite.modulate != tint: sprite.modulate = tint
 	if not animations or not camera: return
 	var facing := _camera_facing_index()

@@ -50,7 +50,9 @@ func _on_run_ended(_reason: String) -> void:
 
 ## 也可供独立预览或其它已结算的伤害来源接入；不会反向修改战斗。
 func present(event: CombatDamageEvent) -> void:
-	if not enabled or not is_inside_tree() or not event or not is_finite(event.amount) or event.amount <= 0.0 or not event.world_position.is_finite(): return
+	if not enabled or not is_inside_tree() or not event or not event.world_position.is_finite(): return
+	var amount := event.display_amount()
+	if not is_finite(amount) or amount <= 0.0: return
 	var profile := style_for(event.style)
 	var state: Dictionary = _lanes.get(event.target_id, {"next": 0, "active": 0})
 	var slot := int(state.next) % maxi(number_stack_columns, 1)

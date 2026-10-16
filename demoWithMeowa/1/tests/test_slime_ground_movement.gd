@@ -123,7 +123,7 @@ func movement_checks() -> void:
 	actor._physics_process(1.0 / 60.0)
 	check(not actor._ground_moved and actor.velocity.x == 0.0 and actor.velocity.z == 0.0, "眩晕沿用旧物理和停步规则")
 	var special := CreatureEnemy.new()
-	check(not special._supports_ground_movement(), "其他怪物及幼体保留原移动")
+	check(special._supports_ground_movement(), "其他怪物的普通追击可复用平地移动，特殊招式另走原流程")
 	special.free()
 	clear_actors()
 	var barrier := wall(Vector3.ZERO, Vector3(0.1,2,4))

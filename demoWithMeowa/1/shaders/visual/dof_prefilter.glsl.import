@@ -11,3 +11,4 @@ source_file="res://shaders/visual/dof_prefilter.glsl"
 dest_files=["res://.godot/imported/dof_prefilter.glsl-36ccc426cb35cdc19708b96aa6208f58.res"]
 
 [params]
+

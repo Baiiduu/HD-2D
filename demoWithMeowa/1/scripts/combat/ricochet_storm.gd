@@ -18,7 +18,8 @@ signal hit_landed(enemy: WaveEnemy, damage: float)
 			_refresh_processing()
 @export_group("雷电伤害与覆盖")
 @export_range(1.0, 1000.0, 1.0) var damage := 7.0
-@export_range(0.1, 3.0, 0.01, "suffix:s") var attack_interval := 0.42
+## 每轮冷却跨弹射保留；普通战斗中继续计时，空场不积攒施放次数。
+@export_range(0.1, 3.0, 0.01, "suffix:s") var attack_interval := 0.9
 @export_range(0.5, 10.0, 0.1, "suffix:m") var trigger_radius := 1.25
 @export_range(0.5, 10.0, 0.1, "suffix:m") var spread_radius := 1.5
 ## 距本次放电触发点的最大水平距离；共享范围增益不扩大这一边界。
@@ -39,9 +40,9 @@ var skill_level := 0
 var _body: PlayerRicochet
 var _effect: RicochetStormEffect
 var _flight_stats := {}
-## 同次弹射共用：0 为尚未落雷的预留，1 为已经命中。新弹射更换字典，旧雷潮独立收尾。
-var _flight_contacts := {}
 var _until_pulse := 0.0
+## 本帧真实飞行已占用的时间；剩余部分按普通战斗时间推进冷却与在途雷潮。
+var _frame_flight_seconds := 0.0
 var _segments: Array[Dictionary] = []
 var _bursts: Array[Dictionary] = []
 var _collision := ProjectileCollision.new()
@@ -97,7 +98,7 @@ func get_combat_stats(modifiers: RunCombatModifiers = null) -> Dictionary:
 func describe_skill_upgrade(from_level: int, to_level: int) -> String:
 	var after := get_attack_stats(to_level)
 	if from_level == 0:
-		return "弹射时向外成片引雷\n每片最多 %d 只 · 扩散 %d 层\n每只伤害 %.1f · 间隔 %.2f 秒\n切入 %.2f 米 · 传导 %.1f 米\n最远 %.1f 米 · 同次弹射每怪一次" % [after.targets, after.layers, after.damage, after.interval, after.range, after.spread, after.max_radius]
+		return "弹射中周期引发雷潮\n每片最多 %d 只 · 扩散 %d 层\n每只伤害 %.1f · 间隔 %.2f 秒\n切入 %.2f 米 · 传导 %.1f 米\n最远 %.1f 米 · 每轮每怪一次\n下一轮可再次命中" % [after.targets, after.layers, after.damage, after.interval, after.range, after.spread, after.max_radius]
 	var before := get_attack_stats(from_level)
 	return "雷伤 %.1f → %.1f\n每片 %d → %d 只\n扩散 %d → %d 层\n间隔 %.2f → %.2f 秒\n%s" % [before.damage, after.damage, before.targets, after.targets, before.layers, after.layers, before.interval, after.interval, skill_definition.level_data(to_level).description]
 
@@ -105,7 +106,7 @@ func _active() -> bool:
 	return enabled and skill_level > 0 and session._path_ready and session.combat_active()
 
 func _refresh_processing() -> void:
-	set_physics_process(enabled and skill_level > 0 and (not _segments.is_empty() or not _bursts.is_empty()))
+	set_physics_process(enabled and skill_level > 0 and (_until_pulse > 0.0 or not _segments.is_empty() or not _bursts.is_empty()))
 
 func _phase_changed(_phase: int) -> void:
 	cancel_current()
@@ -116,9 +117,8 @@ func _body_state_changed(state: PlayerRicochet.State) -> void:
 
 func _launched(_direction: Vector3, _speed: float, _charge: float) -> void:
 	if not _active() or _flight_stats.is_empty(): return
-	_until_pulse = 0.0
 	_segments.clear()
-	_flight_contacts = {}
+	_frame_flight_seconds = 0.0
 	_trail_point = session.player.global_position
 	_trail_heading = Vector3.ZERO
 
@@ -126,29 +126,51 @@ func _travelled(start: Vector3, end: Vector3, heading: Vector3, seconds: float) 
 	if not _active() or _flight_stats.is_empty(): return
 	var timing := _body.motion_timing(seconds)
 	_segments.append({"start": start, "end": end, "heading": heading, "seconds": seconds, "speed": timing.x, "deceleration": timing.y})
+	_frame_flight_seconds += seconds
 	_refresh_processing()
 
 func _flight_finished(reason: StringName) -> void:
 	if reason == &"cancelled":
 		_segments.clear()
+		_frame_flight_seconds = 0.0
 		_flight_stats.clear()
 		_refresh_processing()
 
 func _physics_process(delta: float) -> void:
 	if session.combat_frozen: return
 	if not _active(): cancel_current(); return
-	# 已经发出的雷潮在本体落地后继续收尾；同一层先确认全部目标再结算伤害。
-	for burst in _bursts.duplicate():
-		burst.wait -= delta
-		while burst.wait <= 0.0 and burst in _bursts:
-			_deliver_layer(burst)
-			if not _active(): return
-			burst.wait += float(burst.stats.layer_interval)
+	# 飞行与落地时间排在同一条时间线上，避免同一帧重复扣冷却或延后新雷潮的传播。
+	var idle := maxf(0.0, delta - _frame_flight_seconds)
+	_frame_flight_seconds = 0.0
+	if idle > 0.0 and (_until_pulse > 0.0 or not _segments.is_empty() or not _bursts.is_empty()):
+		_segments.append({"idle": true, "seconds": idle})
+	_advance_time(0.0)
 	while not _segments.is_empty():
 		if not _active(): return
-		if not _trace_piece(_segments[0]): return
+		var piece := _segments[0]
+		if piece.get("idle", false):
+			piece.elapsed = float(piece.get("elapsed", 0.0)) + _advance_time(float(piece.seconds) - float(piece.get("elapsed", 0.0)))
+			if not _active(): return
+		elif not _trace_piece(piece): return
 		_segments.pop_front()
 	_refresh_processing()
+
+## 推进实际经过的战斗时间；传播中触发升级时返回已消费部分，余量留在原路段。
+func _advance_time(seconds: float) -> float:
+	var used := 0.0
+	while _active():
+		var step := maxf(0.0, seconds - used)
+		for burst in _bursts: step = minf(step, maxf(0.0, float(burst.wait)))
+		_until_pulse = maxf(0.0, _until_pulse - step)
+		for burst in _bursts: burst.wait -= step
+		used += step
+		for burst in _bursts.duplicate():
+			if float(burst.wait) > 0.000001: continue
+			_deliver_layer(burst)
+			if not _active(): return used
+			if burst in _bursts: burst.wait += float(burst.stats.layer_interval)
+		if used >= seconds - 0.000001: break
+	return used
 
 func _trace_piece(piece: Dictionary) -> bool:
 	var start: Vector3 = piece.start
@@ -157,18 +179,24 @@ func _trace_piece(piece: Dictionary) -> bool:
 	var elapsed: float = piece.get("elapsed", 0.0)
 	while elapsed <= seconds:
 		var wait := minf(_until_pulse, seconds - elapsed)
-		_until_pulse -= wait
-		elapsed += wait
+		elapsed += _advance_time(wait)
+		piece.elapsed = elapsed
+		if not _active(): return false
 		if _until_pulse > 0.000001: break
 		var fraction := PlayerRicochetRules.segment_fraction(elapsed, seconds, piece.get("speed", 0.0), piece.get("deceleration", 0.0))
 		var point := start.lerp(end, fraction)
 		var entry := _first_contact(point, end, float(_flight_stats.range))
-		if entry < 0.0: break
-		elapsed = PlayerRicochetRules.segment_time(lerpf(fraction, 1.0, entry), seconds, piece.get("speed", 0.0), piece.get("deceleration", 0.0))
+		if entry < 0.0:
+			piece.elapsed = elapsed + _advance_time(seconds - elapsed)
+			if not _active(): return false
+			break
+		var contact_time := PlayerRicochetRules.segment_time(lerpf(fraction, 1.0, entry), seconds, piece.get("speed", 0.0), piece.get("deceleration", 0.0))
+		elapsed += _advance_time(maxf(0.0, contact_time - elapsed))
+		piece.elapsed = elapsed
+		if not _active(): return false
 		point = point.lerp(end, entry)
 		_until_pulse = float(_flight_stats.interval)
-		piece.elapsed = elapsed
-		discharge(point, _flight_stats, _flight_contacts)
+		if not discharge(point, _flight_stats): _until_pulse = 0.0
 		if not _active(): return false
 		if elapsed >= seconds: break
 	# 电痕来自真实折线路段，不跨过转角画一条直线，也不产生额外伤害。
@@ -185,7 +213,7 @@ func _first_contact(start: Vector3, end: Vector3, radius: float) -> float:
 	var length := TerrainPath.horizontal_distance(start, end)
 	var contacts: Array[Dictionary] = []
 	for enemy in session.get_nearby_enemies((start + end) * 0.5, radius + length * 0.5):
-		if not _eligible(enemy) or _flight_contacts.has(enemy.get_instance_id()) or absf(enemy.global_position.y - start.y) > height_tolerance: continue
+		if not _eligible(enemy) or absf(enemy.global_position.y - start.y) > height_tolerance: continue
 		var entry := PlayerRicochet.circle_entry(start, end, enemy.global_position, radius)
 		if entry >= 0.0: contacts.append({"enemy": enemy, "entry": entry})
 	contacts.sort_custom(func(a: Dictionary, b: Dictionary): return a.entry < b.entry)
@@ -238,10 +266,11 @@ func _plan_layer(frontier: Array[Dictionary], radius: float, seen: Dictionary, c
 		if result.size() >= count: break
 	return result
 
-## 飞行路段传入本次弹射的命中表；独立预览调用默认只在该次放电内去重。
-func discharge(origin: Vector3, stats: Dictionary = {}, seen: Dictionary = {}) -> bool:
+## 每轮独立预留与去重；跨轮可再次命中，不与旧雷潮共享记录。飞行调度负责冷却。
+func discharge(origin: Vector3, stats: Dictionary = {}) -> bool:
 	if not _active(): return false
 	if stats.is_empty(): stats = get_attack_stats()
+	var seen := {}
 	var frontier: Array[Dictionary] = [{"id": 0, "point": origin}]
 	var layers: Array = []
 	for index in int(stats.layers):
@@ -250,18 +279,15 @@ func discharge(origin: Vector3, stats: Dictionary = {}, seen: Dictionary = {}) -
 		layers.append(layer)
 		frontier = layer
 	if layers.is_empty(): return false
-	var burst := {"layers": layers, "next": 0, "wait": float(stats.layer_interval), "stats": stats.duplicate(), "generation": session._generation, "landed": {0: origin}, "blocked": {}, "seen": seen}
+	var burst := {"layers": layers, "next": 0, "wait": 0.0, "stats": stats.duplicate(), "generation": session._generation, "landed": {0: origin}, "blocked": {}, "seen": seen}
 	_bursts.append(burst)
 	discharge_started.emit(origin)
 	_deliver_layer(burst)
+	if _active() and burst in _bursts: burst.wait = float(burst.stats.layer_interval)
 	_refresh_processing()
 	return true
 
 func _finish_burst(burst: Dictionary) -> void:
-	# 挡墙或怪物移动造成的未命中不占用整次弹射预算，之后切入仍可再次尝试。
-	for layer in burst.layers:
-		for contact in layer:
-			if burst.seen.get(contact.id, 1) == 0: burst.seen.erase(contact.id)
 	_bursts.erase(burst)
 
 func _contact_reachable(burst: Dictionary, contact: Dictionary, from: Vector3, to: Vector3) -> bool:
@@ -344,8 +370,8 @@ func cancel_current() -> void:
 	_segments.clear()
 	_bursts.clear()
 	_flight_stats.clear()
-	_flight_contacts = {}
 	_until_pulse = 0.0
+	_frame_flight_seconds = 0.0
 	if is_instance_valid(_effect): _effect.stop()
 	if is_inside_tree():
 		var manager := get_tree().get_first_node_in_group(&"game_audio") as GameAudio

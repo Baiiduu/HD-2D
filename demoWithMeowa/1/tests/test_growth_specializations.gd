@@ -52,7 +52,10 @@ func model_checks() -> void:
 	check(mods.interval_multiplier() > 0.0 and is_finite(mods.interval_multiplier()), "高攻速不会将间隔减到零或负数")
 	var base: PackedScene = load("res://scenes/combat/wave_prototype.tscn")
 	var wave := base.instantiate() as WavePrototype
-	var definitions: Array[GrowthBuffDefinition] = wave.get_node("RunBuffs").definitions
+	var definitions: Array[GrowthBuffDefinition] = []
+	for legacy in ["heavy_blade", "short_journey", "corner_chain", "meteor_stride", "gathering_ring", "heavy_push", "quick_draw", "roaming_light"]:
+		definitions.append(definition("specializations/" + legacy))
+	check(wave.get_node("RunBuffs").definitions.size() == 6, "正式池仅保留六种基础成长")
 	for item in definitions:
 		if item.required_levels.is_empty(): continue
 		mods.reset()
@@ -83,6 +86,8 @@ func integration_checks() -> void:
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("MapEffects/BGM").music_enabled = false
 	var wave: WavePrototype = world.get_node("WavePrototype")
+	wave.population_rules = wave.population_rules.duplicate(true)
+	wave.population_rules.simulation_mode = false
 	var growth: RunGrowth = wave.get_node("RunGrowth")
 	growth.enabled = true
 	growth.cards_per_draw = 100
@@ -106,7 +111,8 @@ func integration_checks() -> void:
 	skills.initial_choice.confirm_selection()
 	var cards := buffs.candidates()
 	check(cards.all(func(option): return not String(option.id).begins_with("S")), "未投资前池子没有专精卡")
-	var move := definition("move_speed")
+	var move := definition("move_speed").duplicate()
+	move.extra_effects = []
 	var pickup := definition("pickup_radius")
 	mods.apply_buff(move)
 	mods.apply_buff(pickup)
@@ -133,6 +139,10 @@ func integration_checks() -> void:
 	var drop := growth._drops[-1]
 	growth._physics_process(0.01)
 	check(drop.attracting, "实际宝石能在原吸取范围之外开始吸取")
+	# 以下显式接入旧资源，只验证兼容原型；正式场景不登记旧专精。
+	player.ricochet_rules = player.ricochet_rules.duplicate()
+	player.ricochet_rules.enemy_push_enabled = true
+	buffs.definitions.append(definition("specializations/meteor_stride"))
 	var base_speed := player.ricochet_rules.maximum_launch_speed
 	var base_force := player.ricochet_rules.push_initial_speed
 	for rank in 4: mods.apply_buff(definition("ricochet/launch_speed"))
@@ -150,7 +160,7 @@ func integration_checks() -> void:
 	buffs.definitions[index].extra_effects[1].bonus_per_level = -0.5
 	check(growth.choice_ui.select_option(&"S04"), "选择实际专精卡")
 	growth.choice_ui.confirm_selection()
-	near(player.body_ricochet.get_stats().maximum_launch_speed, base_speed * 1.85, "专精的速度收益只授予一次")
+	near(player.body_ricochet.get_stats().maximum_launch_speed, base_speed * 1.65, "专精的速度收益只授予一次")
 	near(player.body_ricochet.get_stats().push_initial_speed, base_force * 0.9, "专精的真实推力代价")
 	near(player.body_ricochet.get_stats().full_charge_seconds, player.ricochet_rules.full_charge_seconds / 1.15, "嵌套蓄力收益保持展示快照")
 	buffs.definitions[index] = original

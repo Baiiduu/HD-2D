@@ -9,7 +9,7 @@
 [sub_resource type="Resource" id="Resource_j3pel"]
 script = ExtResource("2_28snf")
 skill_definition = ExtResource("3_5pvai")
-skill_level = 0
+skill_level = 4
 metadata/_custom_type_script = "uid://dig3yvspfwrug"
 
 [sub_resource type="Resource" id="Resource_5pvai"]
@@ -27,7 +27,7 @@ metadata/_custom_type_script = "uid://dig3yvspfwrug"
 [resource]
 resource_name = "正式怪潮 128 · 渐进容量"
 script = ExtResource("rules")
-simulation_enemy_count = 50
+simulation_enemy_count = 30
 simulation_skills = Array[ExtResource("2_28snf")]([SubResource("Resource_j3pel"), SubResource("Resource_5pvai"), SubResource("Resource_iupxe")])
 role_limits = PackedInt32Array(128, 12, 4, 1)
 max_wave_enemies = 512

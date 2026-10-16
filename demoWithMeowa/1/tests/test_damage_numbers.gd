@@ -93,6 +93,32 @@ func run() -> void:
 	check(events.size() == 1, "死亡对象不重复受伤或飘字")
 	await settle()
 	check(not is_instance_id_valid(dead_id) and numbers._active.size() == 1, "怪物释放后致死数字继续播放")
+	numbers.clear()
+	events.clear()
+	var simulated := enemy(5.0)
+	simulated.health_loss_disabled = true
+	var deaths := [0]
+	simulated.defeated.connect(func(_enemy): deaths[0] += 1)
+	for value in [0.0, -1.0, NAN, INF]: simulated.take_damage(value)
+	simulated.spawn_delay = 0.5
+	simulated.take_damage(100)
+	simulated.spawn_delay = 0.0
+	session.set_combat_frozen(true)
+	simulated.take_damage(100)
+	session.set_combat_frozen(false)
+	check(events.is_empty() and numbers._active.is_empty() and simulated.health == 5.0, "模拟也拒绝无效、出场保护与冻结命中")
+	for value in [7.25, 999.0]: simulated.take_damage(value, {"source": &"ricochet_storm", "style": &"lightning"})
+	check(simulated.health == 5.0 and not simulated.dead and deaths[0] == 0, "模拟重复过量命中不扣血、不触发死亡")
+	check(events.size() == 2 and numbers._active.size() == 2, "模拟每次真实命中都经过共享事件生成数字")
+	check(events.all(func(hit_event): return hit_event.simulated and hit_event.amount == 0.0 and not hit_event.lethal), "模拟保留真实零扣血与非致死事件语义")
+	check(events[0].display_amount() == 7.25 and events[1].display_amount() == 999.0, "模拟显示完整攻击数值，不按剩余血量截断")
+	check(numbers._active[1]._text == "999" and numbers._active[1].style.style_id == &"lightning", "模拟雷伤使用真实数字文本与雷电样式")
+	simulated.health_loss_disabled = false
+	simulated.take_damage(999)
+	check(events.size() == 3 and not events[2].simulated and events[2].display_amount() == 5.0 and events[2].lethal and deaths[0] == 1, "解除锁血后恢复实际扣血数字与正常死亡")
+	await settle()
+	numbers.clear()
+	numbers.present(hit())
 	session.phase = WavePrototype.Phase.REST
 	check(numbers._active.size() == 1, "正常清波不会截断最后一次反馈")
 	numbers.clear()
@@ -159,6 +185,11 @@ func run() -> void:
 	invalid = hit()
 	invalid.world_position = Vector3.INF
 	numbers.present(invalid)
+	for value in [0.0, -1.0, NAN, INF]:
+		invalid = hit()
+		invalid.simulated = true
+		invalid.requested_amount = value
+		numbers.present(invalid)
 	check(numbers._active.is_empty(), "直接接入也拒绝坏数值")
 	var large := hit(88, &"critical")
 	large.amount = 123456

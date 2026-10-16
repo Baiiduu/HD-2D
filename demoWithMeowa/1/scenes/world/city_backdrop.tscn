@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Shader" path="res://shaders/environment/city_backdrop.gdshader" id="shader"]
+[ext_resource type="Texture2D" path="res://assets/meowa/environment/city_panorama/city_night_panorama.png" id="panorama"]
+
+[sub_resource type="ShaderMaterial" id="city_material"]
+shader = ExtResource("shader")
+shader_parameter/panorama = ExtResource("panorama")
+shader_parameter/panorama_offset = 0.0
+shader_parameter/brightness = 0.85
+
+[sub_resource type="CylinderMesh" id="city_ring"]
+material = SubResource("city_material")
+top_radius = 72.0
+bottom_radius = 72.0
+height = 124.0
+radial_segments = 128
+rings = 1
+cap_top = false
+cap_bottom = false
+
+[node name="CityBackdrop" type="MeshInstance3D"]
+position = Vector3(0, -76, 0)
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("city_ring")

@@ -7,7 +7,7 @@
 script = ExtResource("style")
 style_id = &"critical"
 number_font = ExtResource("font")
-number_font_size = 64
+number_font_size = 32
 number_color = Color(1, 0.56, 0.33, 1)
 number_suffix = "!"
 number_lifetime = 0.95

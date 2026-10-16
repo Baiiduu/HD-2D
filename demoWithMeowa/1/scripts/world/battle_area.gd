@@ -12,7 +12,7 @@ const DATA_PATH := "res://data/world/world_terrain.tres"
 @export var wave_controller: Node3D
 
 @export_group("开场刷新（即时生效）")
-## 相对开战入口的左右距离／向场内前进距离，米；只移动两处开场刷新区，不重建地形与地编。
+## 相对开战入口的左右距离／向战场中心前进距离，米；只移动两处开场刷新区，不重建地形与地编。
 @export var opening_spawn_offset := Vector2(6.4, 6.4):
 	set(value):
 		opening_spawn_offset = value.abs()
@@ -21,12 +21,14 @@ const DATA_PATH := "res://data/world/world_terrain.tres"
 @export_group("场地布局（修改后重建）")
 ## 主战斗面的 X/Z 尺寸，米；中心为此节点的位置，内部保持同高。
 @export var core_size := Vector2(32.0, 32.0)
-## 核心外的宽阔绕行带，米。
-@export_range(4.8, 16.0, 1.6, "suffix:m") var loop_width := 8.0
+## 核心外的宽阔绕行带，米；0 只保留战斗核心。
+@export_range(0.0, 16.0, 1.6, "suffix:m") var loop_width := 8.0
 ## 活动范围外的可见地形，米；给连续 QE 旋转留出地面背景。
 @export_range(16.0, 40.0, 1.6, "suffix:m") var scenery_margin := 28.0
 ## 南侧道路向场地展开的宽度，米。
 @export_range(3.2, 12.8, 1.6, "suffix:m") var entry_width := 6.4
+## 开战交互相对核心北边界向场内的距离，米；负数放在核心外。
+@export var entry_inset := -3.2
 ## 两侧台地的高度层数；每层沿用 TerrainData.layer_height，默认 0.8 米。
 @export_range(0, 2, 1) var terrace_levels := 1
 ## 台地坡道的通行宽度，米；至少三格，较大体型也可经过。
@@ -75,7 +77,7 @@ func get_activity_rect() -> Rect2:
 
 func get_entry_position() -> Vector3:
 	var rect := get_core_rect()
-	return Vector3(rect.get_center().x, 0.0, rect.position.y - 3.2)
+	return Vector3(rect.get_center().x, 0.0, rect.position.y + entry_inset)
 
 ## 只在按钮或制作工具中执行；小院范围保留已有数据，战场范围重新生成。
 func make_terrain(source: TerrainData) -> TerrainData:
@@ -205,7 +207,8 @@ func _apply_spawn_positions() -> void:
 	var candidates := get_node_or_null("SpawnCandidates")
 	if not candidates: return
 	var half := get_core_rect().size * 0.5
-	var opening_z := -half.y - 3.2 + opening_spawn_offset.y
+	var inward := -1.0 if entry_inset > half.y else 1.0
+	var opening_z := -half.y + entry_inset + opening_spawn_offset.y * inward
 	var positions := [Vector2(-opening_spawn_offset.x, opening_z), Vector2(opening_spawn_offset.x, opening_z),
 		Vector2(-half.x-loop_width+1.6, half.y-4.8), Vector2(half.x+loop_width-1.6, 1.6),
 		Vector2(-9.6, half.y+loop_width-3.2), Vector2(9.6, half.y+loop_width-3.2)]

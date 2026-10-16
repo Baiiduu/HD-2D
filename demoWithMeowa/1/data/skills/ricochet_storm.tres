@@ -6,7 +6,7 @@
 
 [sub_resource type="Resource" id="lv1"]
 script = ExtResource("level")
-description = "贴近怪群引发两片雷潮；同次弹射每怪一次，只向外扩散。"
+description = "弹射中周期引发两片雷潮；每轮每怪一次，下一轮可再次命中，只向外扩散。"
 
 [sub_resource type="Resource" id="lv2"]
 script = ExtResource("level")
@@ -28,7 +28,7 @@ parameters = Dictionary[String, float]({
 
 [sub_resource type="Resource" id="lv4"]
 script = ExtResource("level")
-description = "三层雷潮，每片五只；同次弹射不重复电击。"
+description = "三层雷潮，每片五只；持续弹射可多轮电击同一群怪物。"
 parameters = Dictionary[String, float]({
 "damage_multiplier": 1.6,
 "extra_layers": 1.0,
@@ -40,6 +40,6 @@ parameters = Dictionary[String, float]({
 script = ExtResource("skill")
 id = &"ricochet_storm"
 display_name = "奔雷涌潮"
-description = "本体弹射切入怪群后成片引雷，向触发点外围有限扩散；不回传，同次弹射每怪最多一次，墙体阻挡传播。"
+description = "本体弹射贴近怪群后周期引雷，每轮每怪最多一次，下一轮可再次命中；向外有限扩散且受墙体阻挡，冷却跨弹射保留。"
 icon = ExtResource("icon")
 levels = Array[ExtResource("level")]([SubResource("lv1"), SubResource("lv2"), SubResource("lv3"), SubResource("lv4")])

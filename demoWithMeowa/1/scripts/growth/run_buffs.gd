@@ -8,11 +8,12 @@ const LABELS := {
 	A.RICOCHET_RETENTION: "最低保速", A.CHARGE_EFFICIENCY: "蓄满", A.RECOVERY_EFFICIENCY: "收势",
 	A.RICOCHET_COOLDOWN_EFFICIENCY: "发射间隔", A.PUSH_RADIUS: "拨怪范围", A.PUSH_FORCE: "推力",
 	A.PUSH_DURATION: "推力持续", A.PUSH_STUN: "眩晕", A.MOVE_SPEED: "移动", A.PICKUP_RADIUS: "吸取范围",
+	A.MOMENTUM_EFFICIENCY: "耗速倍率",
 }
 
 @export_group("本局增益")
 @export var session: Node3D
-## 基础成长与专精共用候选池；0 级上限表示持续成长。
+## 正式池登记三种通用成长与三种弹射成长；0 级上限表示持续成长。
 @export var definitions: Array[GrowthBuffDefinition] = []
 
 var _offered: Dictionary[StringName, GrowthBuffDefinition] = {}
@@ -43,19 +44,21 @@ func _attribute_changed(attribute: A, preview: RunCombatModifiers) -> bool:
 	var body: PlayerRicochet = session.player.body_ricochet
 	var before := body.get_stats()
 	var after := body.get_stats(preview)
+	if attribute == A.MOMENTUM_EFFICIENCY:
+		for key_name in [&"flight_deceleration", &"bounce_speed_cost", &"bounce_speed_retention", &"crowd_speed_retention"]:
+			if not is_equal_approx(float(before[key_name]), float(after[key_name])): return true
+		return false
 	var property: StringName = GrowthBuffDefinition.RICOCHET_PROPERTIES.get(attribute, &"")
 	if not before.has(property): return false
 	if attribute in [A.PUSH_RADIUS, A.PUSH_DURATION, A.PUSH_STUN] and before.push_initial_speed <= 0.0: return false
 	if attribute == A.RICOCHET_RETENTION:
 		return not is_equal_approx(float(before[property]), float(after[property])) or (session.player.ricochet_rules.crowd_deflection_enabled and not is_equal_approx(float(before.crowd_speed_retention), float(after.crowd_speed_retention)))
-	if attribute == A.RICOCHET_COOLDOWN_EFFICIENCY:
-		return not is_equal_approx(_launch_interval(before), _launch_interval(after))
 	return not is_equal_approx(float(before[property]), float(after[property]))
 
 func _has_effect(definition: GrowthBuffDefinition) -> bool:
 	var current: RunCombatModifiers = session.combat_modifiers
 	if not current.can_apply(definition): return false
-	if not definition.ricochet_property().is_empty() and (not is_instance_valid(session.player) or not session.player.ricochet_rules or not session.player.ricochet_rules.enabled): return false
+	if definition.is_ricochet() and (not is_instance_valid(session.player) or not session.player.ricochet_rules or not session.player.ricochet_rules.enabled): return false
 	var preview := current.preview_after(definition)
 	var has_benefit := false
 	var gains := current.gains_for(definition)
@@ -83,6 +86,7 @@ func candidates() -> Array[GrowthChoiceOption]:
 		option.title = "%s\n%s" % [definition.title, rank]
 		option.icon = definition.icon
 		option.category = GrowthChoiceOption.Category.GLOBAL_BUFF
+		option.ricochet_growth = definition.is_ricochet()
 		option.description = _description(definition)
 		# 只复制可调配置，嵌套收益／代价隔离，图标继续共用原资源。
 		var snapshot := definition.duplicate() as GrowthBuffDefinition
@@ -102,8 +106,8 @@ func _value(attribute: A, modifiers: RunCombatModifiers) -> float:
 		A.COOLDOWN: return 1.0 - modifiers.interval_multiplier()
 		A.MOVE_SPEED: return session.player.get_movement_speed(modifiers)
 		A.PICKUP_RADIUS: return (session.get_node("RunGrowth") as RunGrowth).get_attraction_radius(modifiers)
+		A.MOMENTUM_EFFICIENCY: return 1.0 / modifiers.multiplier(attribute)
 	var stats: Dictionary = session.player.body_ricochet.get_stats(modifiers)
-	if attribute == A.RICOCHET_COOLDOWN_EFFICIENCY: return _launch_interval(stats)
 	if attribute == A.RICOCHET_RETENTION:
 		return minf(stats.bounce_speed_retention, stats.crowd_speed_retention) if session.player.ricochet_rules.crowd_deflection_enabled else stats.bounce_speed_retention
 	return stats[GrowthBuffDefinition.RICOCHET_PROPERTIES[attribute]]
@@ -111,7 +115,7 @@ func _value(attribute: A, modifiers: RunCombatModifiers) -> float:
 func _format_value(attribute: A, value: float, include_unit := true) -> String:
 	match attribute:
 		A.DAMAGE, A.RANGE, A.ATTACK_SPEED: return "×%.2f" % value
-		A.COOLDOWN, A.RICOCHET_RETENTION: return "%d%%" % roundi(value * 100.0)
+		A.COOLDOWN, A.RICOCHET_RETENTION, A.MOMENTUM_EFFICIENCY: return "%d%%" % roundi(value * 100.0)
 		A.RICOCHET_DURATION: return "%.2f%s" % [value, "米/秒²" if include_unit else ""]
 		A.MOVE_SPEED, A.RICOCHET_SPEED, A.PUSH_FORCE, A.RICOCHET_BOUNCES: return "%.2f%s" % [value, "米/秒" if include_unit else ""]
 		A.PICKUP_RADIUS, A.PUSH_RADIUS: return "%.2f%s" % [value, "米" if include_unit else ""]
@@ -127,15 +131,12 @@ func _description(definition: GrowthBuffDefinition) -> String:
 		var label: String = LABELS[attribute]
 		if gains[attribute] < 0.0: label = "代价·" + label
 		lines.append("%s\n%s → %s" % [label, _format_value(attribute, _value(attribute, current), false), _format_value(attribute, _value(attribute, preview))])
+	if definition.attribute == A.MOMENTUM_EFFICIENCY: lines.append("飞行与碰撞损失同步降低")
 	var level := current.level_for(definition.id) + 1
 	if definition.is_breakthrough(level): lines.append("突破加成 ×%.1f" % definition.breakthrough_multiplier)
-	elif not definition.ricochet_property().is_empty(): lines.append("下次蓄力生效")
+	if definition.is_ricochet(): lines.append("下次蓄力生效")
 	elif definition.attribute == A.ATTACK_SPEED: lines.append("完整动作不加速")
 	return "\n".join(lines)
-
-func _launch_interval(stats: Dictionary) -> float:
-	var coast := maxf(0.0, float(stats.maximum_launch_speed) - float(stats.minimum_bounce_speed)) / float(stats.flight_deceleration)
-	return maxf(stats.cooldown_seconds, coast + stats.recovery_seconds)
 
 func _choose(_level: int, id: StringName) -> void:
 	if not _offered.has(id): return

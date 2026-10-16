@@ -12,6 +12,7 @@ signal normal_attack_requested(direction: Vector3)
 signal vitals_changed
 
 const ANIMATION_REFERENCE_SPEED := 4.0
+const MOVEMENT_KEYS := [KEY_W, KEY_A, KEY_S, KEY_D, KEY_UP, KEY_LEFT, KEY_DOWN, KEY_RIGHT]
 @export_group("移动与动画")
 @export var speed: float = 4.0
 @export var animations: SpriteFrames
@@ -238,9 +239,13 @@ func _process(delta: float) -> void:
 func _physics_process(delta: float) -> void:
 	# 面板只占用控制输入，人物物理、动画与整个世界继续更新。
 	var input_blocked := get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null
+	var movement_keys := 0
+	for index in MOVEMENT_KEYS.size():
+		if Input.is_physical_key_pressed(MOVEMENT_KEYS[index]): movement_keys |= 1 << index
+	# 每四位依次为 W/A/S/D 与 ↑/←/↓/→，兼用键不叠加移动速度。
 	var direction := Vector2(
-		float(Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT)) - float(Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT)),
-		float(Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN)) - float(Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP))
+		float(bool(movement_keys & 0x88)) - float(bool(movement_keys & 0x22)),
+		float(bool(movement_keys & 0x44)) - float(bool(movement_keys & 0x11))
 	).normalized()
 	if input_blocked:
 		direction = Vector2.ZERO
@@ -252,7 +257,7 @@ func _physics_process(delta: float) -> void:
 		backward.y = 0.0
 		movement = (right.normalized() * direction.x + backward.normalized() * direction.y).normalized()
 	_blink.advance(delta)
-	if body_ricochet.advance(delta, movement, input_blocked):
+	if body_ricochet.advance(delta, movement, input_blocked, movement_keys):
 		# 飞行期间只由胶囊连续扫掠移动；占位画面保持现有人物，不伪装成快放跑步。
 		_movement_speed = 0.0
 		var pose: StringName = &"idle_back" if _facing == &"back" else &"idle"

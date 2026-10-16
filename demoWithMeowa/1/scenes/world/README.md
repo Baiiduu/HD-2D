@@ -2,9 +2,9 @@
 
 在 Godot 的「地图切换」中选择「正式连续地图」并运行。入口为 `world.tscn`，独立于视觉测试场景。
 
-主场景只保留现有 32×32 米战斗核心和 8 米宽外围绕行带，活动范围约 48×48 米，实际地形按格子裁成 49.6×49.6 米。出生与撤退位置均在战区入口。小院、住宅、训练小屋、东侧广场及独立花园城镇大地图已退出正式场景；保留它们可复用的原型资源。
+主场景只保留现有 32×32 米战斗核心，外围非战斗绕行带与旧入口地块已移除。地形按原 1.6 米格子覆盖核心，实际为 21×21 格、33.6×33.6 米，人物与战斗范围均限制在核心内。出生、开战交互和撤退返回位置位于核心内的空地（X/Z 为 0／48），保留原 F 键开局流程。核心内的手绘地表、建筑摆放与光影参数保持。旧小院、住宅、训练小屋、东侧广场等原型资源继续保留。
 
-`WorldDetails/BattleCourts` 集中布置城镇细节、树池、中心雕塑与弹射障碍，复用花车、长椅、告示牌、花盆、水钵、垃圾桶、托盘、麻袋、石墙、柱、围栏、箱桶与路灯。道具按各实例的缩放布置，树池底座与树冠可独立调节，保留原生像素素材。中心横穿和外围绕行通路保留，物件具有实际碰撞。
+`WorldDetails/BattleCourts` 集中布置城镇细节、树池、中心雕塑与弹射障碍，复用花车、长椅、告示牌、花盆、水钵、垃圾桶、托盘、麻袋、石墙、柱、围栏、箱桶与路灯。道具按各实例的缩放布置，树池底座与树冠可独立调节，保留原生像素素材。场内横穿与绕障通路保留，物件具有实际碰撞。
 
 树池建筑样板可从「地图切换 → 树池建筑预览」查看。将 `scenes/buildings/tree_planter.tscn` 拖入世界，选择根节点整体移动、旋转、复制；Inspector「贴合地面」对齐高度，尺寸与花草／长椅／路灯独立可调。具体素材与放置方式见[树池说明](../../assets/meowa/buildings/tree_planter/README.md)。
 
@@ -18,21 +18,25 @@
 
 战区挑战使用[无尽波次](../../../../docs/gameplay/endless-waves.md)：开场 18／28／40 只，后续持续递增；清波休整后按 F 继续，失败或 ESC 撤退结束，T 重试回到第一波。参数位于 `WavePrototype → 无尽波次`。
 
-战区地形使用 `data/world/world_terrain.tres`，当前战斗面与绕行带统一为零层平地，取消原东西两侧的高台地与坡道；原道路覆盖层、区域类型与画笔编号保持。`data/world/world_surface.tres` 保留手绘地表与分隔带数据，仅上传落在战区内的绘制块。原 `data/world/spawn_terrain.tres` 保留为小院原型基准。`VisualSample` 使用场景当前保存的光影，三种 Lumina 与原始增强仍可按 R 比较；原始增强参数见[提亮、明暗交界与光向统一](../../../../docs/visuals/original-light-refinement.md)。
+战区地形使用 `data/world/world_terrain.tres`，当前战斗面为零层平地，取消原东西两侧的高台地与坡道；裁切后保留格子的原道路覆盖层、区域类型、高度与画笔编号。`data/world/world_surface.tres` 保留手绘地表与分隔带数据，仅上传落在战区内的绘制块。原 `data/world/spawn_terrain.tres` 保留为小院原型基准。`VisualSample` 使用场景当前保存的光影，三种 Lumina 与原始增强仍可按 R 比较；原始增强参数见[提亮、明暗交界与光向统一](../../../../docs/visuals/original-light-refinement.md)。
 
-`SpawnPoint` 是实际出生位置，运行时将人物放到此标记。WASD / 方向键移动，空格跳跃，Q/E 旋转，R 切四种光影／天气 Style，结算后 T 重试。Godot「参数总览」统一定位参数，见 [参数与 Style](../../../../docs/technical/parameters-and-styles.md)。
+`SpawnPoint` 是实际出生位置，运行时将人物放到此标记。WASD / 方向键移动，空格跳跃，Q/E 连续旋转，R 切四种光影／天气 Style，结算后 T 重试。Godot「参数总览」统一定位参数，见 [参数与 Style](../../../../docs/technical/parameters-and-styles.md)。
 
 `Player → 台阶通行` 可开关自动迈步，并调整单级最大高度（默认 0.25 米）；当前地图地面不需要登坡或跳台，建筑自身的体积与碰撞保留。
 
 地表分布可在编辑器中手绘：选中 `Homestead`，打开右侧「地表画笔」并启用，选择草地或卵石道路后左键拖动。Shift+左键擦除道路，Ctrl+Z / Ctrl+Shift+Z 撤销或重做；使用「保存地表」或 Ctrl+S 保存。详见 [地表画笔](../../addons/terrain_painter/README.md)。
 
-镜头使用 `MapEffects/Camera3D` 当前保存的配置，布置和裁切不调整镜头。Q/E 可以沿同一方向连续旋转任意圈数，保留加速、平滑收尾与每圈 15° 吸附。`VisualSample` 不覆盖镜头，共享效果和四境视觉测试场景保留各自对照配置。
+镜头恢复人物在画面中央附近的原有构图：FOV 28°、距离 25 米、俯角 30.627°、默认朝向 135°、焦点高度 0.75 米、垂直偏移 0 米，景深关闭；保留 Q/E 连续旋转、跟随与弹射反馈。`VisualSample` 不覆盖镜头，共享效果和四境视觉测试场景保留各自对照配置与旋转能力。
+
+远景为 `assets/meowa/environment/distant_city/city_matte.png` 的原生 2048×1152 单幅雾城图，经天空材质按屏幕坐标等比裁切，只出现在地形、建筑后方。人物移动时图片位置不变，窗口比例变化时顶部对齐，不拉伸；画面背景与照明立方体分开，保持现有场景照明。旧环绕贴图与隐藏的 `CityBackdrop` 原型保留。
+
+`WorldDetails/BattlePerimeter` 沿战区四周草地边沿放置 36 段现有铁艺栅栏，栏高 1 米，保留独立石座、金属栏杆及真实弹射碰撞。各实例可在编辑器单独调整，不改手绘铺装及场内原有建筑。
 
 | 调节节点 | 参数与用途 |
 | --- | --- |
 | `WorldDetails/BattleCourts` | 小型道具的整体位置、朝向、缩放与真实碰撞 |
 | `GroundDressing → excluded_areas` | 建筑与入口的花草留空区域，采用地形本地 X/Z 坐标 |
-| `BattleArea` | 主战斗面、绕行带及花草密度；正式场景 `terrace_levels = 0`，重建沿用已铺平的数据，不重画手绘地表或恢复旧区域 |
+| `BattleArea` | 主战斗面、开战交互与花草密度；正式场景 `loop_width = 0`、`entry_inset = 19.2`、`terrace_levels = 0`，重建保留手绘地表，不恢复外围区域 |
 | `Homestead → data` | `cell_size` 为格子尺寸（当前 1.6 米），`layer_height` 为每档高差（当前 0.8 米）；地块轮廓与层级在独立数据中保存 |
 | `Homestead → top_material` | 草地、道路与手绘石板铺装；各 `surface` 的 X/Y/Z 分别控制干燥粗糙度、金属度、受湿程度 |
 | `Homestead → wall_material` | 独立的 `materials/world/spawn_cliff.tres`；`wall_texture` 为侧壁纹理，`tint/saturation` 为色调，`texel` 为单像素对应的米数，`lip_pixels/lip_shadow_pixels` 为边沿宽度与阴影宽度 |

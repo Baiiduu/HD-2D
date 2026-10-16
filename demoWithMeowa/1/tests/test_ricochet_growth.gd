@@ -28,6 +28,39 @@ func buff(attribute: A, gain := 0.2) -> GrowthBuffDefinition:
 	result.bonus_per_level = gain
 	return result
 
+func model_checks() -> void:
+	var mods := RunCombatModifiers.new()
+	var speed: GrowthBuffDefinition = load("res://data/growth/ricochet/launch_speed.tres")
+	var momentum: GrowthBuffDefinition = load("res://data/growth/ricochet/flight_duration.tres")
+	var rhythm: GrowthBuffDefinition = load("res://data/growth/ricochet/charge_efficiency.tres")
+	var utility: GrowthBuffDefinition = load("res://data/growth/move_speed.tres")
+	check(momentum.is_ricochet() and momentum.attribute == A.MOMENTUM_EFFICIENCY, "合并动能拥有独立属性并归入弹射方向")
+	mods.apply_buff(speed)
+	near(mods.ricochet_value(A.RICOCHET_SPEED, 12.0), 13.2, "速度普通一级提高短蓄与满蓄共用倍率")
+	mods.apply_buff(momentum)
+	near(mods.ricochet_value(A.RICOCHET_DURATION, 4.0), 3.2, "动能一级降低飞行衰减")
+	near(mods.ricochet_value(A.RICOCHET_BOUNCES, 0.25), 0.2, "动能一级降低固定碰撞耗速")
+	var retained := mods.ricochet_value(A.RICOCHET_RETENTION, 0.92)
+	near(retained, 0.936, "动能一级按比例减少保速损失")
+	near(12.0 * (1.0 - retained) + mods.ricochet_value(A.RICOCHET_BOUNCES, 0.25), (12.0 * 0.08 + 0.25) / 1.25, "同一动能效率统一降低全部接触损失")
+	mods.apply_buff(rhythm)
+	near(mods.ricochet_value(A.CHARGE_EFFICIENCY, 0.5), 0.4, "蓄力节奏提高满蓄效率")
+	near(mods.ricochet_value(A.RICOCHET_COOLDOWN_EFFICIENCY, 0.2), 0.16, "蓄力节奏同步提高发射冷却效率")
+	mods.apply_buff(utility)
+	near(mods.multiplier(A.MOVE_SPEED), 1.12, "游走收集兼容资源仍保留移动收益")
+	near(mods.multiplier(A.PICKUP_RADIUS), 1.2, "游走收集兼容资源仍保留吸取收益")
+	mods.reset()
+	for rank in range(1, 101):
+		var before := mods.ricochet_value(A.RICOCHET_DURATION, 4.0)
+		check(mods.apply_buff(momentum), "动能第 %d 级持续可授予" % rank)
+		var after := mods.ricochet_value(A.RICOCHET_DURATION, 4.0)
+		check(is_finite(after) and after > 0.0 and after < before, "高等级仍有正值衰减与实际收益")
+		check(mods.ricochet_value(A.RICOCHET_BOUNCES, 0.25) > 0.0 and mods.ricochet_value(A.RICOCHET_RETENTION, 0.92) < 1.0, "有限动能等级不制造零碰撞损失")
+		if rank == 3: near((12.0 - 2.0) / after, 4.375, "三级动能将 2.5 秒参考续航提高至约 4.38 秒")
+	mods.reset()
+	near(mods.ricochet_value(A.RICOCHET_DURATION, 4.0), 4.0, "重置恢复自然衰减")
+	near(mods.ricochet_value(A.RICOCHET_RETENTION, 0.92), 0.92, "重置恢复碰撞保速")
+
 func motion_checks() -> void:
 	var world := Node3D.new()
 	root.add_child(world)
@@ -162,10 +195,8 @@ func integration_checks() -> void:
 	session.population_rules = session.population_rules.duplicate(true)
 	session.population_rules.simulation_mode = false
 	var growth: RunGrowth = session.get_node("RunGrowth")
-	# 当前正式地图可独立关闭成长；测试显式开启，不改写用户场景配置。
 	growth.enabled = true
 	growth.cards_per_draw = 100
-	growth.draw_seed = 715
 	growth.get_node("GrowthChoiceUI").open_duration = 0.0
 	session.get_node("RunSkills").initial_cards_per_draw = 100
 	session.get_node("RunSkills/InitialSkillChoice").open_duration = 0.0
@@ -180,29 +211,17 @@ func integration_checks() -> void:
 	var body := player.body_ricochet
 	var buffs: RunBuffs = session.get_node("RunBuffs")
 	var skills: RunSkills = session.get_node("RunSkills")
-	check(not buffs.candidates().any(func(option): return option.id in [&"R08", &"R09", &"R10", &"R11"]), "正式关闭拨怪后不再提供无效拨怪成长")
-	# 以下继续验证旧原型主动开启拨怪时的独立成长兼容。
-	player.ricochet_rules = player.ricochet_rules.duplicate()
-	player.ricochet_rules.enemy_push_enabled = true
-	player.global_position = session._path.ground_position(session.global_position) + Vector3.UP * 0.03
-	var base_speed := player.ricochet_rules.maximum_launch_speed
-	var base_push := player.ricochet_rules.push_radius
+	var mods := session.combat_modifiers
+	var base := body.get_stats()
 	var save_before := session.loadout.state.export_state().duplicate(true)
-	check(buffs.definitions.size() == 24, "十六种基础属性与八种专精均注册")
-	check(session.start_run(), "实际开局选择")
-	check(skills.initial_choice._options.all(func(option): return not String(option.id).begins_with("R")), "初始仍只选择技能")
-	check(skills.initial_choice.select_option(&"initial:light_pierce"), "沿用实际 A02 开局链路")
+	check(buffs.definitions.size() == 6 and buffs.definitions.all(func(item): return item.required_levels.is_empty() and item.max_level == 0), "正式仅登记六种可持续成长，无专精前置")
+	check(buffs.candidates().filter(func(option): return option.ricochet_growth).size() == 3, "三种弹射成长得到明确抽牌分组")
+	check(session.start_run(), "实际开局仍先选择技能")
+	check(skills.initial_choice._options.all(func(option): return not option.ricochet_growth), "开局不混入弹射或共有成长")
+	check(skills.initial_choice.select_option(&"initial:light_pierce"), "初始技能学习沿用现有链路")
 	skills.initial_choice.confirm_selection()
-	check(growth.active, "成长在开始战斗后激活")
 	growth._grant_experience(10)
-	check(growth.choice_ui.is_open and session.combat_frozen and not paused, "真实升级打开且只冻结战斗")
-	check(growth.choice_options.any(func(option): return option.id == &"R01"), "速度卡进入同一个升级池")
-	check(growth.choice_options.any(func(option): return option.id == &"P01"), "原有共用伤害继续提供")
-	check(growth.choice_options.any(func(option): return option.id == &"R07"), "周转卡在冷却无收益时仍提供明确蓄力收益")
-	var shown: GrowthChoiceOption
-	for option in growth.choice_options:
-		if option.id == &"R01": shown = option
-	check(shown != null and shown.description.contains("%.2f → %.2f米/秒" % [base_speed, base_speed * 1.15]), "卡面读取实际资源速度而非脚本默认值")
+	check(growth.choice_ui.is_open and session.combat_frozen and not paused, "升级只冻结战斗")
 	var speed_index := -1
 	for index in buffs.definitions.size():
 		if buffs.definitions[index].id == &"R01": speed_index = index
@@ -210,46 +229,44 @@ func integration_checks() -> void:
 	buffs.definitions[speed_index] = original.duplicate()
 	buffs.definitions[speed_index].bonus_per_level = 0.5
 	choose(growth, &"R01")
-	near(body.get_stats().maximum_launch_speed, base_speed * 1.15, "已经展示的奖励不受随后编辑配置影响")
+	near(body.get_stats().maximum_launch_speed, base.maximum_launch_speed * 1.1, "已展示的速度奖励保留配置快照")
+	near(body.get_stats().minimum_launch_speed, base.minimum_launch_speed * 1.1, "短蓄初速同步成长")
 	buffs.definitions[speed_index] = original
-	check(not session.combat_frozen, "领取后恢复战斗")
 	growth._grant_experience(15)
-	choose(growth, &"R08")
-	near(body.get_stats().push_radius, base_push * 1.15, "真实拨怪范围增长")
-	near(player.sword.get_stats().range, player.sword.rules.normal_range, "拨怪范围不扩大剑术范围")
+	choose(growth, &"R02")
+	near(body.get_stats().flight_deceleration, base.flight_deceleration / 1.25, "动能降低自然衰减")
+	near(body.get_stats().bounce_speed_cost, base.bounce_speed_cost / 1.25, "同一张卡降低固定碰撞扣速")
+	near(1.0 - body.get_stats().bounce_speed_retention, (1.0 - base.bounce_speed_retention) / 1.25, "同一张卡降低比例碰撞损失")
 	growth._grant_experience(20)
-	choose(growth, &"P03")
-	near(player.sword.get_stats().range, player.sword.rules.normal_range * 1.15, "原有范围卡仍同步影响剑术")
-	near(body.get_stats().push_radius, base_push * 1.15, "剑术范围不重复扩大拨怪")
-	var retained := session.combat_modifiers.levels.duplicate()
-	session._set_phase(WavePrototype.Phase.REST)
-	check(session.combat_modifiers.levels == retained, "波间休整保留成长")
-	check(session.loadout.state.export_state() == save_before, "局内弹射属性不写入永久存档")
+	choose(growth, &"R05")
+	near(body.get_stats().full_charge_seconds, base.full_charge_seconds / 1.25, "蓄力节奏缩短满蓄时间")
+	near(body.get_stats().cooldown_seconds, base.cooldown_seconds / 1.25, "蓄力节奏同时改善再次发射等待")
+	near(player.get_movement_speed(), player.speed, "正式成长不额外提高行走速度")
+	near(growth.get_attraction_radius(), growth.attraction_radius, "正式成长沿用原有经验吸取范围")
+	check(buffs.candidates().all(func(option): return option.id in [&"P01", &"P02", &"P03", &"R01", &"R02", &"R05"]), "游走收集、旧重复增益和专精不在正式池")
+	check(body.begin_charge(Vector3.RIGHT), "合并成长固定在开始蓄力时")
+	var locked := body._settings.flight_deceleration
+	mods.apply_buff(load("res://data/growth/ricochet/flight_duration.tres"))
+	near(body._settings.flight_deceleration, locked, "后续成长不改写进行中的弹射快照")
+	body.cancel(true)
 	player.ricochet_rules = player.ricochet_rules.duplicate()
-	player.ricochet_rules.bounce_speed_retention = 1.0
-	check(buffs.candidates().any(func(option): return option.id == &"R04"), "满保速后的续势卡继续提供真实伤害成长")
-	player.ricochet_rules.wall_bounce_limit = 12
-	check(buffs.candidates().any(func(option): return option.id == &"R03"), "旧十二次预算不再阻断反弹成长")
-	player.ricochet_rules.cooldown_seconds = 2.0
-	check(buffs.candidates().any(func(option): return option.id == &"R07"), "冷却成为瓶颈时提供周转卡")
-	player.ricochet_rules.push_initial_speed = 0.0
-	check(not buffs.candidates().any(func(option): return option.id in [&"R08", &"R09", &"R10", &"R11"]), "推挤关闭时不提供无效推挤成长")
 	player.ricochet_rules.enabled = false
-	check(not buffs.candidates().any(func(option): return String(option.id).begins_with("R")), "弹射关闭时不提供弹射卡")
+	check(not buffs.candidates().any(func(option): return option.ricochet_growth), "关闭弹射时三条成长都正确退出候选")
 	player.ricochet_rules.enabled = true
-	var entries: Array[Dictionary] = preload("res://addons/parameter_hub/catalog.gd").new().collect(world)
-	check(entries.any(func(item): return item.object == original and item.property == "bonus_per_level" and item.common), "Godot 参数总览索引新增配置资源")
+	var retained := mods.levels.duplicate()
+	session._set_phase(WavePrototype.Phase.REST)
+	check(mods.levels == retained and session.loadout.state.export_state() == save_before, "波间保留六类成长且不写永久存档")
 	session.retreat()
-	check(session.combat_modifiers.levels.is_empty(), "结束清空全部局内属性")
+	check(mods.levels.is_empty() and growth._draw_pool._preferred_ricochet.is_empty(), "结束清空属性与方向跟进")
 	session.retry()
-	check(skills.initial_choice.is_open and growth.rerolls_left == 3, "重试恢复初始选择与三次重抽")
-	near(body.get_stats().maximum_launch_speed, base_speed, "重试恢复基础速度")
-	check(original.bonus_per_level == 0.15, "共享增益资源不被运行时改写")
+	check(skills.initial_choice.is_open and growth.rerolls_left == 3, "重试恢复初始技能与共享重抽预算")
+	near(body.get_stats().maximum_launch_speed, base.maximum_launch_speed, "重试恢复基础速度")
 	world.queue_free()
 	await settle()
 
 func run() -> void:
 	AudioServer.set_bus_mute(0, true)
+	model_checks()
 	await motion_checks()
 	await integration_checks()
 	await create_timer(0.25).timeout

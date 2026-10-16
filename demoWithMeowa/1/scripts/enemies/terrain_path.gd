@@ -9,6 +9,16 @@ var data: TerrainData
 var _size := Vector2i.ZERO
 var _query := PhysicsShapeQueryParameters3D.new()
 var _clearance := 0.0
+var _segment_certified := false
+var _building_graph := false
+# Query shape/configuration is owned by build(); only transform/motion change
+# between lookahead calls. Copy native exclusions once per physics step.
+var _query_config_frame := -1
+var _query_shape: Shape3D
+var _query_local_bounds := AABB(Vector3.INF, Vector3.ZERO)
+var _query_excluded: Array[RID] = []
+var _query_mask := 0
+var _query_config_valid := false
 var _pursuit_next: Dictionary = {}
 var _dense_pursuit := false
 var _pursuit_dense := PackedInt32Array()
@@ -264,6 +274,8 @@ func _surface_changed() -> void:
 	_invalidate_prefetch()
 
 func build(source: Terrain, radius: float, exclude: Array[RID], world_bounds := Rect2()) -> void:
+	_building_graph = true
+	invalidate_query_certificate()
 	terrain = source
 	data = source.data
 	_surface_changed()
@@ -330,6 +342,7 @@ func build(source: Terrain, radius: float, exclude: Array[RID], world_bounds := 
 			if not _segment_clear(graph.get_point_position(id), graph.get_point_position(end)): continue
 			graph.connect_points(id, end)
 	_cache_graph()
+	_building_graph = false
 
 func _cache_graph() -> void:
 	_invalidate_prefetch()
@@ -544,9 +557,45 @@ func ground_position(world: Vector3) -> Vector3:
 	return terrain.to_global(local)
 
 func _segment_clear(from: Vector3,to: Vector3) -> bool:
+	_segment_certified = false
+	if _query_certified_clear(from, to):
+		_segment_certified = true
+		return true
 	_query.transform = Transform3D(Basis.IDENTITY,from+Vector3.UP*_clearance)
 	_query.motion = to-from
 	return terrain.get_world_3d().direct_space_state.cast_motion(_query)[0] >= 0.999
+
+## Needed before direct edits to the private native query's configuration within
+## an already queried physics step. build() and Shape resource edits do this too.
+func invalidate_query_certificate() -> void:
+	_query_config_frame = -1
+
+func _prepare_query_config() -> bool:
+	var frame := Engine.get_physics_frames()
+	if _query_config_frame == frame: return _query_config_valid
+	_query_config_frame = frame
+	_query_config_valid = false
+	if _query.collide_with_areas or not _query.collide_with_bodies: return false
+	var shape := _query.shape
+	if shape != _query_shape:
+		if _query_shape and _query_shape.changed.is_connected(invalidate_query_certificate):
+			_query_shape.changed.disconnect(invalidate_query_certificate)
+		_query_shape = shape
+		if shape: shape.changed.connect(invalidate_query_certificate)
+	_query_local_bounds = StaticObstacleField.transformed_bounds(shape, Transform3D.IDENTITY).grow(_query.margin)
+	if not _query_local_bounds.position.is_finite(): return false
+	_query_excluded = _query.exclude
+	_query_mask = _query.collision_mask
+	_query_config_valid = true
+	return true
+
+func _query_certified_clear(from: Vector3, to: Vector3) -> bool:
+	# Custom paths can override collision semantics; retain their original calls.
+	if _building_graph or get_script() != TerrainPath or not is_instance_valid(terrain) or not terrain.obstacle_certificates_enabled: return false
+	if not from.is_finite() or not to.is_finite() or not _prepare_query_config(): return false
+	var start := AABB(_query_local_bounds.position + from + Vector3.UP * _clearance, _query_local_bounds.size)
+	var swept := start.merge(AABB(start.position + to - from, start.size))
+	return terrain.obstacle_field().clear_query_bounds(swept, _query_mask, _query_excluded)
 
 func route(from: Vector3,to: Vector3) -> PackedVector3Array:
 	if graph.get_point_count() == 0: return PackedVector3Array()
@@ -578,6 +627,7 @@ func pursuit_route(from: Vector3, target: Vector3, allow_partial_path := false) 
 	return path
 
 func _point_blocked(point: Vector3) -> bool:
+	if _query_certified_clear(point, point): return false
 	_query.transform = Transform3D(Basis.IDENTITY, point + Vector3.UP * _clearance)
 	_query.motion = Vector3.ZERO
 	return not terrain.get_world_3d().direct_space_state.intersect_shape(_query, 1).is_empty()
@@ -589,9 +639,12 @@ func _start_contact_points(from: Vector3) -> PackedVector3Array:
 	return terrain.get_world_3d().direct_space_state.collide_shape(_query)
 
 func _pursuit_start_clear_local(from: Vector3, to: Vector3, start: Array) -> bool:
-	# Each direction keeps its live sweep; only its unchanged origin is reused.
+	# Each direction keeps live obstacle checks. A full-volume empty proof also
+	# proves the origin empty, so it needs neither a sweep nor an overlap query.
 	# Local state: empty = unchecked, [0] = blocked, [1] = blocked-origin contacts.
+	_segment_certified = false
 	if not _segment_clear(from, to): return false
+	if _segment_certified: return true
 	if start.is_empty():
 		start.append(_point_blocked(from))
 		if start[0]: start.append(_start_contact_points(from))
@@ -601,7 +654,9 @@ func _pursuit_start_clear_local(from: Vector3, to: Vector3, start: Array) -> boo
 ## 身体贴墙时可能只碰到较大的导航留白，允许首段退开或沿边离开。
 ## cast_motion 忽略初始重叠，另查接触方向，不能借此向墙内或穿墙移动。
 func _pursuit_start_clear(from: Vector3, to: Vector3) -> bool:
+	_segment_certified = false
 	if not _segment_clear(from, to): return false
+	if _segment_certified: return true
 	if not _point_blocked(from): return true
 	return _pursuit_contacts_clear(from, to, _start_contact_points(from))
 

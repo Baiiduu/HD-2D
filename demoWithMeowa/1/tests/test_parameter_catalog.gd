@@ -37,7 +37,7 @@ func run() -> void:
 	required.append("WavePrototype/RunBuffs → definitions[2]:max_level")
 	for property in ["diminishing_after", "breakthrough_every", "breakthrough_multiplier", "required_levels", "extra_effects"]:
 		required.append("WavePrototype/RunBuffs → definitions[0]:" + property)
-	required.append("WavePrototype/RunBuffs → definitions[6] → extra_effects[0]:bonus_per_level")
+	required.append("WavePrototype/RunBuffs → definitions[5] → extra_effects[0]:bonus_per_level")
 	for property in ["damage", "attack_interval", "mark_duration", "reflection_limit", "match_player_pixel_density"]:
 		required.append("WavePrototype/MirrorMarkAutoAttack:" + property)
 	var failures: Array[String] = []
