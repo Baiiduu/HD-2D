@@ -1,0 +1,419 @@
+[gd_scene format=3]
+
+[ext_resource type="Shader" uid="uid://yl6y2vskn20o" path="res://shaders/terrain/terrain.gdshader" id="4_tpqd7"]
+[ext_resource type="Texture2D" uid="uid://chbej7h30u00g" path="res://assets/meowa/city_plaza/fixed/battle/ground.png" id="5_o0evn"]
+[ext_resource type="Script" uid="uid://dcauimekxq8k1" path="res://scripts/terrain/terrain_paint_brush.gd" id="6_cmg7y"]
+[ext_resource type="Texture2D" uid="uid://cce8go8o1xyjw" path="res://assets/meowa/city_plaza/fixed/battle/normal.png" id="6_qytxv"]
+[ext_resource type="Texture2D" uid="uid://c1bhhy50h44xg" path="res://assets/meowa/city_plaza/fixed/battle/orm_dry.png" id="7_cv01b"]
+[ext_resource type="Texture2D" uid="uid://cgt04len3rviu" path="res://assets/ground/grass_smooth_v1/grass_normal_gl.png" id="7_sar2w"]
+[ext_resource type="Texture2D" uid="uid://b8ba0714ios5y" path="res://assets/meowa/pixel_sample/path.png" id="8_4v0p3"]
+[ext_resource type="Texture2D" uid="uid://d0uuxlwm5cud7" path="res://assets/meowa/city_plaza/fixed/battle/orm_wet.png" id="8_61cyd"]
+[ext_resource type="Texture2D" uid="uid://bsx545p34n7es" path="res://assets/ground/grass_smooth_v1/grass_albedo.png" id="8_goy61"]
+[ext_resource type="Texture2D" uid="uid://bblb2p0f7uhds" path="res://assets/ground/references/grass/01_grass_mossy.png" id="9_7mx70"]
+[ext_resource type="Texture2D" uid="uid://5citv5glk70f" path="res://assets/meowa/pixel_sample/cobble.png" id="9_fqf7g"]
+[ext_resource type="Texture2D" uid="uid://7cog3ji6v3ta" path="res://assets/meowa/homestead/soil.png" id="10_1cxds"]
+[ext_resource type="Texture2D" uid="uid://biclhju3re5h" path="res://assets/ground/references/01_dirt_1024.png" id="11_2m0ga"]
+[ext_resource type="Texture2D" uid="uid://bhp0fawqqvcne" path="res://assets/ground/tilesets/path/tileset/tileset.png" id="12_7frv1"]
+[ext_resource type="Texture2D" uid="uid://cumfrvpaoxiij" path="res://assets/ground/cultivation/精致像素风灰青色青石板地面材质_长方形石板规则错缝铺设_细而清晰的深色砖缝_40699501/texture.png" id="12_ovomx"]
+[ext_resource type="Texture2D" uid="uid://dh2lj010nxssj" path="res://assets/ground/grass_smooth_v1/grass_orm_dry.png" id="13_ikqac"]
+[ext_resource type="Texture2D" uid="uid://duk6ml5kk58ix" path="res://assets/ground/references/02_minimal_mossy_stone.png" id="13_kx0xk"]
+[ext_resource type="Texture2D" uid="uid://caeyg3ancboj0" path="res://assets/ground/references/04_road_cobblestone.png" id="14_5fxch"]
+[ext_resource type="Texture2D" uid="uid://cmtobhbofv6wj" path="res://assets/ground/grass_smooth_v1/grass_orm_wet.png" id="14_bad7w"]
+[ext_resource type="Texture2D" uid="uid://xgbm1di6oawd" path="res://assets/ground/references/03_floor_lab_metal_panel.png" id="15_4v0p3"]
+[ext_resource type="Texture2D" uid="uid://vnci446lmed3" path="res://assets/meowa/homestead/grass.png" id="15_mmesd"]
+[ext_resource type="Shader" uid="uid://duhny4lanykqa" path="res://shaders/terrain/cliff.gdshader" id="16_2t505"]
+[ext_resource type="Texture2D" uid="uid://cd1l4h0iojdtu" path="res://assets/ground/references/elevation/01_wood_plank.png" id="16_fqf7g"]
+[ext_resource type="Texture2D" uid="uid://dgthxbtp632a2" path="res://assets/ground/tilesets/dirt/tileset/tileset.png" id="17_jum6b"]
+[ext_resource type="Texture2D" uid="uid://c0ewo04xccw4k" path="res://assets/surface_normals/cliff.png" id="17_k375o"]
+[ext_resource type="Texture2D" uid="uid://ds157g1oxjl3m" path="res://assets/ground/generated/cliff/Pixel_art_earthen_cliff_face_seen_from_the_side_horizontal_layered_rock_strata_in_warm_brown_and_gray_small_cracks/texture.png" id="18_e58rx"]
+[ext_resource type="Script" uid="uid://bdd2dbd21i2nn" path="res://scripts/terrain/terrain_paint_palette.gd" id="18_l4ul6"]
+[ext_resource type="Texture2D" uid="uid://deplmtrsm611v" path="res://assets/meowa/city_plaza/fixed/battle/preview.png" id="battle_preview"]
+[ext_resource type="Texture2D" uid="uid://dlu03m0vip3ow" path="res://assets/meowa/city_plaza/fixed/battle/preview_normal.png" id="battle_preview_normal"]
+[ext_resource type="Resource" path="res://data/city/surface.tres" id="free_surface"]
+[ext_resource type="Script" uid="uid://bl1cnu18o3dyt" path="res://scripts/terrain/terrain.gd" id="homestead"]
+[ext_resource type="Resource" uid="uid://cv33r56galwxu" path="res://data/world/brushes/plaza_arrow.tres" id="plaza_arrow"]
+[ext_resource type="Resource" uid="uid://bqv2am32pkesw" path="res://data/world/brushes/plaza_corner.tres" id="plaza_corner"]
+[ext_resource type="Resource" uid="uid://ys7n872js2jl" path="res://data/world/brushes/plaza_cross.tres" id="plaza_cross"]
+[ext_resource type="Resource" uid="uid://bi5j8cyxyu3k4" path="res://data/world/brushes/plaza_diamond.tres" id="plaza_diamond"]
+[ext_resource type="Resource" uid="uid://doyk182bf84l6" path="res://data/world/brushes/plaza_horizontal.tres" id="plaza_horizontal"]
+[ext_resource type="Resource" uid="uid://bbupnk4i8wchi" path="res://data/world/brushes/plaza_horizontal_body.tres" id="plaza_horizontal_body"]
+[ext_resource type="Resource" uid="uid://ctxs5fyqrv1x1" path="res://data/world/brushes/plaza_octagon.tres" id="plaza_octagon"]
+[ext_resource type="Resource" uid="uid://cqitlyv4v3ajy" path="res://data/world/brushes/plaza_pattern.tres" id="plaza_pattern"]
+[ext_resource type="Resource" uid="uid://vjxgy7g823c2" path="res://data/world/brushes/plaza_plaque.tres" id="plaza_plaque"]
+[ext_resource type="Resource" uid="uid://bcmpcdfry4xoi" path="res://data/world/brushes/plaza_stone.tres" id="plaza_stone"]
+[ext_resource type="Resource" uid="uid://b86rpnyleva2o" path="res://data/world/brushes/plaza_vertical.tres" id="plaza_vertical"]
+[ext_resource type="Resource" uid="uid://beujn8yksgieg" path="res://data/world/brushes/plaza_vertical_body.tres" id="plaza_vertical_body"]
+[ext_resource type="Resource" uid="uid://c8syrojp80053" path="res://data/world/brushes/plaza_worn.tres" id="plaza_worn"]
+[ext_resource type="Resource" path="res://data/city/terrain.tres" id="terrain_data"]
+
+[sub_resource type="Image" id="Image_mrxq0"]
+data = {
+"data": PackedByteArray("JT04/0hwTv9ciVD/eaBf/7XOeP9ES1f/ZG51/4WJgP+qqJf/xr+q/46Rnv+4ta7/28+2/+vfw//06M3/ND9S/0hZaf9bcID/e4yZ/56srP8="),
+"format": "RGBA8",
+"height": 4,
+"mipmaps": false,
+"width": 5
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_k6jmd"]
+image = SubResource("Image_mrxq0")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_v6xt8"]
+resource_local_to_scene = true
+resource_name = "出生区地表"
+render_priority = 0
+shader = ExtResource("4_tpqd7")
+shader_parameter/wet_surface_enabled = true
+shader_parameter/wet_surface_minimum = 0.65
+shader_parameter/wet_surface_coverage = 0.68
+shader_parameter/wet_surface_patch_size = 2.4
+shader_parameter/wet_surface_roughness = 0.05
+shader_parameter/wet_surface_reflectivity = 0.85
+shader_parameter/wet_surface_ripple_strength = 0.045
+shader_parameter/wet_surface_ripple_speed = 0.65
+shader_parameter/wet_surface_grass_response = 0.04
+shader_parameter/pixel_palette_enabled = true
+shader_parameter/pixel_palette_texture = SubResource("ImageTexture_k6jmd")
+shader_parameter/pixel_stone_detail_strength = 0.65
+shader_parameter/pixel_grass_contrast = 1.0
+shader_parameter/pixel_grass_center = Color(0.3398362, 0.56298, 0.24572021, 1)
+shader_parameter/smooth_grass_enabled = true
+shader_parameter/smooth_grass_orm_dry = ExtResource("13_ikqac")
+shader_parameter/smooth_grass_orm_wet = ExtResource("14_bad7w")
+shader_parameter/surface_normals_enabled = true
+shader_parameter/surface_normal_strength = 0.8
+shader_parameter/wild_normal_enabled = true
+shader_parameter/path_normal_enabled = true
+shader_parameter/wild_normal_strength = 1.0
+shader_parameter/path_normal_strength = 1.0
+shader_parameter/path_edge_blending_enabled = true
+shader_parameter/path_edge_width = 0.125
+shader_parameter/path_edge_strength = 0.4
+shader_parameter/grass_variation_enabled = false
+shader_parameter/grass_variation_strength = 0.19
+shader_parameter/grass_variation_size = 3.0
+shader_parameter/city_texture = ExtResource("14_5fxch")
+shader_parameter/cyber_texture = ExtResource("12_ovomx")
+shader_parameter/cultivation_texture = ExtResource("12_ovomx")
+shader_parameter/wild_texture = ExtResource("15_mmesd")
+shader_parameter/path_atlas = ExtResource("12_7frv1")
+shader_parameter/dirt_atlas = ExtResource("17_jum6b")
+shader_parameter/map_origin = Vector2i(0, 0)
+shader_parameter/cell_size = 1.6
+shader_parameter/battle_paving_enabled = false
+shader_parameter/battle_paving_paint_id = 11
+shader_parameter/battle_paving_rect = Vector4(-15.2, 29.6, 30.4, 30.4)
+shader_parameter/battle_paving_albedo = ExtResource("5_o0evn")
+shader_parameter/battle_paving_normal = ExtResource("6_qytxv")
+shader_parameter/battle_paving_orm_dry = ExtResource("7_cv01b")
+shader_parameter/battle_paving_orm_wet = ExtResource("8_61cyd")
+shader_parameter/surface_canvas_enabled = false
+shader_parameter/surface_canvas_origin = Vector2(0, 0)
+shader_parameter/surface_canvas_grid = Vector2i(0, 0)
+shader_parameter/surface_canvas_chunk_meters = 6.4
+shader_parameter/surface_canvas_texture_origin = Vector2(-15.2, 29.6)
+shader_parameter/surface_material_maps_enabled = true
+shader_parameter/surface_material_ao_strength = 0.85
+shader_parameter/surface_material_roughness_strength = 1.0
+shader_parameter/city_tint = Color(0.92, 0.95, 1, 1)
+shader_parameter/cyber_tint = Color(0.92, 1, 0.98, 1)
+shader_parameter/cultivation_tint = Color(0.96, 0.97, 1, 1)
+shader_parameter/wild_tint = Color(1, 1, 1, 1)
+shader_parameter/path_tint = Color(1.08, 1.1, 1.12, 1)
+shader_parameter/dirt_tint = Color(0.98, 1.3, 1.5, 1)
+shader_parameter/city_surface = Vector3(0.76, 0, 0.9)
+shader_parameter/cyber_surface = Vector3(0.7, 0, 0.8)
+shader_parameter/cultivation_surface = Vector3(0.72, 0, 0.85)
+shader_parameter/wild_surface = Vector3(0.97, 0, 0)
+shader_parameter/path_surface = Vector3(0.8, 0, 0.85)
+shader_parameter/dirt_surface = Vector3(0.96, 0, 0.45)
+shader_parameter/path_grid = Vector2(4, 4)
+shader_parameter/path_configured = true
+shader_parameter/path_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
+shader_parameter/paint_enabled = true
+shader_parameter/lumina_relief_enabled = false
+shader_parameter/lumina_relief_strength = 0.8
+shader_parameter/lumina_tone_strength = 0.08
+shader_parameter/lumina_matte_floor = 0.48
+shader_parameter/ground_directional_reflection_strength = 0.0
+shader_parameter/wetness = 0.6
+shader_parameter/wet_darkening = 0.65
+shader_parameter/wet_roughness = 0.16
+shader_parameter/puddles = false
+shader_parameter/puddle_threshold = 0.6
+shader_parameter/puddle_darkening = 0.45
+shader_parameter/puddle_roughness = 0.02
+shader_parameter/texture_pixels = 64.0
+shader_parameter/stone_relief = 0.006
+shader_parameter/stone_gloss_variation = 0.55
+shader_parameter/grass_lighting_enabled = true
+shader_parameter/grass_relief = 0.008
+shader_parameter/grass_wet_response = 0.2
+shader_parameter/grass_sheen = 0.0
+shader_parameter/grass_root_occlusion = 0.3
+shader_parameter/grass_root_bounds = Vector4(-16.8, 28, 33.600002, 33.600002)
+shader_parameter/farming_enabled = false
+shader_parameter/farming_wet_darkening = 0.68
+shader_parameter/farming_wet_roughness = 0.72
+shader_parameter/rain_amount = 0.7
+shader_parameter/rain_clock = 3183.26557568003
+shader_parameter/rain_density = 1.6
+shader_parameter/rain_radius = 0.24
+shader_parameter/rain_strength = 0.95
+shader_parameter/weather_wetness = 0.08399999999999999
+shader_parameter/edge_fade_distance = 0.0
+shader_parameter/edge_fog_color = Color(0.38, 0.35, 0.4, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_tb5gq"]
+resource_local_to_scene = true
+resource_name = "出生区台地侧壁"
+render_priority = 0
+shader = ExtResource("16_2t505")
+shader_parameter/pixel_palette_enabled = true
+shader_parameter/pixel_palette_texture = SubResource("ImageTexture_k6jmd")
+shader_parameter/pixel_stone_detail_strength = 0.65
+shader_parameter/pixel_grass_contrast = 1.0
+shader_parameter/pixel_grass_center = Color(0.3398362, 0.56298, 0.24572021, 1)
+shader_parameter/smooth_grass_enabled = true
+shader_parameter/smooth_grass_orm_dry = ExtResource("13_ikqac")
+shader_parameter/smooth_grass_orm_wet = ExtResource("14_bad7w")
+shader_parameter/surface_normals_enabled = true
+shader_parameter/surface_normal_strength = 0.8
+shader_parameter/wild_normal_enabled = false
+shader_parameter/path_normal_enabled = false
+shader_parameter/wild_normal_strength = 1.0
+shader_parameter/path_normal_strength = 1.0
+shader_parameter/path_edge_blending_enabled = true
+shader_parameter/path_edge_width = 0.125
+shader_parameter/path_edge_strength = 0.4
+shader_parameter/grass_variation_enabled = false
+shader_parameter/grass_variation_strength = 0.19
+shader_parameter/grass_variation_size = 3.0
+shader_parameter/city_texture = ExtResource("14_5fxch")
+shader_parameter/cyber_texture = ExtResource("12_ovomx")
+shader_parameter/cultivation_texture = ExtResource("12_ovomx")
+shader_parameter/wild_texture = ExtResource("15_mmesd")
+shader_parameter/path_atlas = ExtResource("12_7frv1")
+shader_parameter/dirt_atlas = ExtResource("17_jum6b")
+shader_parameter/map_origin = Vector2i(-10, 18)
+shader_parameter/cell_size = 1.6
+shader_parameter/wall_texture = ExtResource("18_e58rx")
+shader_parameter/tint = Color(0.91, 0.89, 0.86, 1)
+shader_parameter/saturation = 0.4
+shader_parameter/texel = 0.025
+shader_parameter/lip_pixels = 3
+shader_parameter/lip_shadow_pixels = 2
+shader_parameter/base_shadow_height = 0.4
+shader_parameter/base_shadow_strength = 0.36
+shader_parameter/roughness = 0.95
+shader_parameter/wall_normal_texture = ExtResource("17_k375o")
+shader_parameter/wall_normal_enabled = true
+shader_parameter/edge_color_matching_enabled = true
+shader_parameter/battle_paving_enabled = false
+shader_parameter/battle_paving_paint_id = 11
+shader_parameter/battle_paving_rect = Vector4(-15.2, 29.6, 30.4, 30.4)
+shader_parameter/battle_paving_albedo = ExtResource("5_o0evn")
+shader_parameter/battle_paving_normal = ExtResource("6_qytxv")
+shader_parameter/battle_paving_orm_dry = ExtResource("7_cv01b")
+shader_parameter/battle_paving_orm_wet = ExtResource("8_61cyd")
+shader_parameter/surface_canvas_enabled = false
+shader_parameter/surface_canvas_origin = Vector2(0, 0)
+shader_parameter/surface_canvas_grid = Vector2i(0, 0)
+shader_parameter/surface_canvas_chunk_meters = 6.4
+shader_parameter/surface_canvas_texture_origin = Vector2(-15.2, 29.6)
+shader_parameter/surface_material_maps_enabled = true
+shader_parameter/surface_material_ao_strength = 0.85
+shader_parameter/surface_material_roughness_strength = 1.0
+shader_parameter/city_tint = Color(0.92, 0.95, 1, 1)
+shader_parameter/cyber_tint = Color(0.92, 1, 0.98, 1)
+shader_parameter/cultivation_tint = Color(0.96, 0.97, 1, 1)
+shader_parameter/wild_tint = Color(1, 1, 1, 1)
+shader_parameter/path_tint = Color(1.08, 1.1, 1.12, 1)
+shader_parameter/dirt_tint = Color(0.98, 1.3, 1.5, 1)
+shader_parameter/city_surface = Vector3(0.76, 0, 0.9)
+shader_parameter/cyber_surface = Vector3(0.7, 0, 0.8)
+shader_parameter/cultivation_surface = Vector3(0.72, 0, 0.85)
+shader_parameter/wild_surface = Vector3(0.97, 0, 0)
+shader_parameter/path_surface = Vector3(0.8, 0, 0.85)
+shader_parameter/dirt_surface = Vector3(0.96, 0, 0.45)
+shader_parameter/path_grid = Vector2(4, 4)
+shader_parameter/path_configured = true
+shader_parameter/path_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
+shader_parameter/paint_enabled = true
+shader_parameter/lumina_relief_enabled = false
+shader_parameter/lumina_relief_strength = 0.8
+shader_parameter/lumina_tone_strength = 0.08
+shader_parameter/lumina_matte_floor = 0.48
+shader_parameter/transition_enabled = true
+shader_parameter/grass_texture = ExtResource("15_mmesd")
+shader_parameter/grass_tint = Color(1, 1, 1, 1)
+shader_parameter/grass_lip_pixels = 4.0
+shader_parameter/edge_variation_pixels = 3.0
+shader_parameter/transition_height = 0.22
+shader_parameter/moss_strength = 0.5
+shader_parameter/lip_shadow_strength = 0.1
+shader_parameter/base_blend_height = 0.22
+shader_parameter/surface_edge_enabled = true
+shader_parameter/surface_edge_lip_pixels = 2.0
+shader_parameter/surface_edge_height = 0.14
+shader_parameter/surface_edge_normal_softening = 0.5
+shader_parameter/edge_wetness = 0.684
+shader_parameter/edge_wet_darkening = 0.65
+shader_parameter/edge_wet_roughness = 0.16
+shader_parameter/edge_grass_wet_response = 0.2
+
+[sub_resource type="Resource" id="Resource_i1y2t"]
+script = ExtResource("6_cmg7y")
+label = "草地"
+target = 1
+texture = ExtResource("8_goy61")
+atlas_grid = Vector2i(1, 1)
+corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
+normal_texture = ExtResource("7_sar2w")
+roughness = 0.97
+wet_response = 0.08
+is_grass = true
+
+[sub_resource type="Resource" id="Resource_ghkdt"]
+script = ExtResource("6_cmg7y")
+label = "卵石道路"
+target = 2
+texture = ExtResource("8_4v0p3")
+mode = 2
+corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
+roughness = 0.84
+wet_response = 0.65
+
+[sub_resource type="Resource" id="Resource_s64j0"]
+script = ExtResource("6_cmg7y")
+label = "卵石铺装（图集单块）"
+texture = ExtResource("9_fqf7g")
+atlas_grid = Vector2i(1, 1)
+corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
+roughness = 0.8
+wet_response = 0.85
+
+[sub_resource type="Resource" id="Resource_jtcuk"]
+script = ExtResource("6_cmg7y")
+label = "苔藓草地"
+show_in_painter = false
+paint_id = 2
+texture = ExtResource("9_7mx70")
+corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
+roughness = 0.97
+wet_response = 0.0
+is_grass = true
+
+[sub_resource type="Resource" id="Resource_k6jmd"]
+script = ExtResource("6_cmg7y")
+label = "泥土（细颗粒）"
+show_in_painter = false
+paint_id = 3
+texture = ExtResource("10_1cxds")
+corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
+roughness = 0.96
+wet_response = 0.45
+
+[sub_resource type="Resource" id="Resource_pyabd"]
+script = ExtResource("6_cmg7y")
+label = "泥土（碎石）"
+show_in_painter = false
+paint_id = 4
+texture = ExtResource("11_2m0ga")
+corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
+roughness = 0.96
+wet_response = 0.45
+
+[sub_resource type="Resource" id="Resource_qjyj0"]
+script = ExtResource("6_cmg7y")
+label = "灰青石板"
+show_in_painter = false
+paint_id = 5
+texture = ExtResource("12_ovomx")
+corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
+roughness = 0.72
+wet_response = 0.85
+
+[sub_resource type="Resource" id="Resource_do88p"]
+script = ExtResource("6_cmg7y")
+label = "苔藓石板"
+show_in_painter = false
+paint_id = 6
+texture = ExtResource("13_kx0xk")
+corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
+roughness = 0.88
+wet_response = 0.5
+
+[sub_resource type="Resource" id="Resource_j8f2q"]
+script = ExtResource("6_cmg7y")
+label = "卵石铺装（纹理）"
+show_in_painter = false
+paint_id = 7
+texture = ExtResource("14_5fxch")
+corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
+roughness = 0.8
+wet_response = 0.85
+
+[sub_resource type="Resource" id="Resource_pnq3x"]
+script = ExtResource("6_cmg7y")
+label = "金属地板"
+show_in_painter = false
+paint_id = 8
+texture = ExtResource("15_4v0p3")
+corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
+roughness = 0.35
+metallic = 0.35
+wet_response = 1.0
+
+[sub_resource type="Resource" id="Resource_8b617"]
+script = ExtResource("6_cmg7y")
+label = "木板地面"
+show_in_painter = false
+paint_id = 9
+texture = ExtResource("16_fqf7g")
+corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
+roughness = 0.86
+wet_response = 0.45
+
+[sub_resource type="Resource" id="Resource_ckeh6"]
+script = ExtResource("6_cmg7y")
+label = "泥土（自动过渡）"
+show_in_painter = false
+paint_id = 10
+texture = ExtResource("17_jum6b")
+mode = 2
+corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
+roughness = 0.96
+wet_response = 0.45
+
+[sub_resource type="Resource" id="Resource_pww7v"]
+script = ExtResource("6_cmg7y")
+label = "南侧修正版石板"
+paint_id = 11
+texture = ExtResource("battle_preview")
+atlas_grid = Vector2i(1, 1)
+corner_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
+normal_texture = ExtResource("battle_preview_normal")
+normal_strength = 0.8
+roughness = 0.58
+wet_response = 0.85
+
+[sub_resource type="Resource" id="Resource_nlt47"]
+script = ExtResource("18_l4ul6")
+brushes = Array[ExtResource("6_cmg7y")]([SubResource("Resource_i1y2t"), SubResource("Resource_ghkdt"), SubResource("Resource_s64j0"), SubResource("Resource_jtcuk"), SubResource("Resource_k6jmd"), SubResource("Resource_pyabd"), SubResource("Resource_qjyj0"), SubResource("Resource_do88p"), SubResource("Resource_j8f2q"), SubResource("Resource_pnq3x"), SubResource("Resource_8b617"), SubResource("Resource_ckeh6"), SubResource("Resource_pww7v"), ExtResource("plaza_stone"), ExtResource("plaza_worn"), ExtResource("plaza_pattern"), ExtResource("plaza_horizontal"), ExtResource("plaza_vertical"), ExtResource("plaza_cross"), ExtResource("plaza_corner"), ExtResource("plaza_diamond"), ExtResource("plaza_arrow"), ExtResource("plaza_octagon"), ExtResource("plaza_horizontal_body"), ExtResource("plaza_vertical_body"), ExtResource("plaza_plaque")])
+
+[node name="Ground" type="Node3D"]
+position = Vector3(0, 0, -44.8)
+script = ExtResource("homestead")
+data = ExtResource("terrain_data")
+top_material = SubResource("ShaderMaterial_v6xt8")
+wall_material = SubResource("ShaderMaterial_tb5gq")
+paint_palette = SubResource("Resource_nlt47")
+surface_data = ExtResource("free_surface")
+grass_lip_pixels = 4.0
+grass_edge_variation = 3.0
+grass_transition_height = 0.22
+grass_moss_strength = 0.5
+grass_lip_shadow = 0.1
+grass_base_blend_height = 0.22
+surface_edge_normal_softening = 0.5

@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="CombatSkillDefinition" format=3 uid="uid://u33pg0qnv4n1"]
+
+[ext_resource type="Texture2D" uid="uid://xiek1u4j6pcv" path="res://assets/meowa/combat/light_pierce/pixel/impact.png" id="1_dnd7y"]
+[ext_resource type="Script" uid="uid://dgnmk10av1ee6" path="res://scripts/combat/combat_skill_level.gd" id="2_g007x"]
+[ext_resource type="Script" uid="uid://bys5inomsbf0o" path="res://scripts/combat/combat_skill_definition.gd" id="3_sw304"]
+
+[sub_resource type="Resource" id="Resource_qfju1"]
+script = ExtResource("2_g007x")
+description = "弹射中周期引发两片雷潮；每轮每怪一次，下一轮可再次命中，只向外扩散。"
+
+[sub_resource type="Resource" id="Resource_tf6ct"]
+script = ExtResource("2_g007x")
+description = "每片增加一个目标，保持两层近身清群。"
+parameters = Dictionary[String, float]({
+"damage_multiplier": 1.2,
+"extra_targets": 1.0
+})
+
+[sub_resource type="Resource" id="Resource_k50h6"]
+script = ExtResource("2_g007x")
+description = "增加一层向外传导，传播仍限于触发点周围。"
+parameters = Dictionary[String, float]({
+"damage_multiplier": 1.4,
+"extra_layers": 1.0,
+"extra_targets": 1.0,
+"interval_multiplier": 0.9
+})
+
+[sub_resource type="Resource" id="Resource_nc2ok"]
+script = ExtResource("2_g007x")
+description = "三层雷潮，每片五只；持续弹射可多轮电击同一群怪物。"
+parameters = Dictionary[String, float]({
+"damage_multiplier": 1.6,
+"extra_layers": 1.0,
+"extra_targets": 2.0,
+"interval_multiplier": 0.8
+})
+
+[resource]
+script = ExtResource("3_sw304")
+id = &"ricochet_storm"
+display_name = "奔雷涌潮"
+description = "本体弹射贴近怪群后周期引雷，每轮每怪最多一次，下一轮可再次命中；向外有限扩散且受墙体阻挡，冷却跨弹射保留。"
+icon = ExtResource("1_dnd7y")
+levels = Array[ExtResource("2_g007x")]([SubResource("Resource_qfju1"), SubResource("Resource_tf6ct"), SubResource("Resource_k50h6"), SubResource("Resource_nc2ok")])

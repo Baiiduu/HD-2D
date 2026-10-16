@@ -162,5 +162,7 @@ func _run() -> void:
 	check(get_first_node_in_group(&"gameplay_input_blockers") == null and not paused, "Removing an open UI leaves no input lock or pause behind")
 	loadout.free()
 	world.free()
+	await process_frame
+	await create_timer(0.2).timeout
 	print("Live UI world: %d checks, %d failures" % [checks, failures.size()])
 	quit(0 if failures.is_empty() else 1)

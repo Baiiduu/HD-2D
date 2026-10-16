@@ -7,7 +7,7 @@ var terrain: Terrain
 var player: Player
 var wave: WavePrototype
 var storm: RicochetStorm
-var skills: RunSkills
+var skills: RunSkillManager
 var patches: Array[Vector2i] = []
 
 func _initialize() -> void:
@@ -457,17 +457,17 @@ func run() -> void:
 	storm = wave.get_node("RicochetStorm")
 	storm.audio_enabled = false
 	storm.patch_landed.connect(func(layer: int, count: int): patches.append(Vector2i(layer, count)))
-	skills = wave.get_node("RunSkills")
+	skills = wave.get_node("RunSkillManager")
 	var growth := wave.get_node("RunGrowth") as RunGrowth
 	growth.set_physics_process(false)
 	growth.cards_per_draw = 100
 	growth.choice_ui.open_duration = 0.0
-	skills.initial_choice.open_duration = 0.0
-	skills.initial_cards_per_draw = 100
+	wave.skill_draft.initial_choice.open_duration = 0.0
+	wave.skill_draft.initial_cards_per_draw = 100
 	check(storm.skill_level == 0 and not storm.is_physics_processing() and not storm._effect, "正式技能组件未学时不创建特效或执行攻击")
-	check(wave.start_run() and skills._initial_offered.has(&"initial:ricochet_storm"), "独立雷潮进入正式初始技能池")
-	skills.initial_choice.select_option(&"initial:ricochet_storm")
-	skills.initial_choice.confirm_selection()
+	check(wave.start_run() and wave.skill_draft._initial_offered.has(&"initial:ricochet_storm"), "独立雷潮进入正式初始技能池")
+	wave.skill_draft.initial_choice.select_option(&"initial:ricochet_storm")
+	wave.skill_draft.initial_choice.confirm_selection()
 	check(storm.skill_level == 1 and skills.get_slots().size() == 1 and skills.get_slots()[0].id == "ricochet_storm", "实际选择只学习雷潮并显示技能栏")
 	wave._spawn_queue.clear()
 	check(skills.candidates().any(func(card): return card.id == &"skill:ricochet_storm:2"), "升级池提供雷潮强化")

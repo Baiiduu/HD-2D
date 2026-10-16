@@ -92,33 +92,36 @@ func integration_checks() -> void:
 	growth.enabled = true
 	growth.cards_per_draw = 100
 	growth.get_node("GrowthChoiceUI").open_duration = 0.0
-	wave.get_node("RunSkills").initial_cards_per_draw = 100
-	wave.get_node("RunSkills/InitialSkillChoice").open_duration = 0.0
+	wave.skill_draft.initial_cards_per_draw = 100
+	wave.get_node("SkillDraft/InitialSkillChoice").open_duration = 0.0
+	world.get_node("WavePrototype/LightPierceAutoAttack").enabled = true
 	root.add_child(world)
 	current_scene = world
 	for frame in 12: await physics_frame
 	var player := wave.player
+	# 展示完整专精池，避免场景独立配置覆盖夹具的抽取张数。
+	growth.cards_per_draw = 100
 	player.set_physics_process(false)
 	player.sword.set_physics_process(false)
 	wave.set_physics_process(false)
 	growth.set_physics_process(false)
 	player.global_position = wave._path.ground_position(wave.global_position) + Vector3.UP * 0.03
 	var buffs: RunBuffs = wave.get_node("RunBuffs")
-	var skills: RunSkills = wave.get_node("RunSkills")
+	var skills: RunSkillManager = wave.get_node("RunSkillManager")
 	var mods := wave.combat_modifiers
 	check(wave.start_run(), "开始正式挑战")
-	check(skills.initial_choice.select_option(&"initial:light_pierce"), "沿用初始技能选择")
-	skills.initial_choice.confirm_selection()
+	check(wave.skill_draft.initial_choice.select_option(&"initial:light_pierce"), "沿用初始技能选择")
+	wave.skill_draft.initial_choice.confirm_selection()
 	var cards := buffs.candidates()
 	check(cards.all(func(option): return not String(option.id).begins_with("S")), "未投资前池子没有专精卡")
 	var move := definition("move_speed").duplicate()
-	move.extra_effects = []
+	move.extra_effects.clear()
 	var pickup := definition("pickup_radius")
 	mods.apply_buff(move)
 	mods.apply_buff(pickup)
 	near(player.get_movement_speed(), player.speed * 1.12, "实际行走读取局内移动属性")
 	near(growth.get_attraction_radius(), growth.attraction_radius * 1.2, "实际经验吸取读取局内范围")
-	player.global_position = Vector3(-20.0, 0.03, 44.8)
+	player.global_position = wave.global_position + Vector3.UP * 0.03
 	var camera := player.movement_camera
 	player.movement_camera = null
 	var key := InputEventKey.new()

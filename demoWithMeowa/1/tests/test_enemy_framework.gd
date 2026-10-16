@@ -44,13 +44,13 @@ func entry(id: StringName, count: int) -> WaveSpawnEntry:
 func begin() -> bool:
 	player.global_position = wave.global_position + Vector3.UP * 0.03
 	if not wave.start_run(): return false
-	var choice: GrowthChoiceUI = wave.get_node("RunSkills/InitialSkillChoice")
+	var choice: GrowthChoiceUI = wave.get_node("SkillDraft/InitialSkillChoice")
 	if choice.is_open:
 		choice.reveal_now()
 		if not choice.select_option(&"initial:fan_slash"):
 			choice.select_option(choice._options[0].id)
 		choice.confirm_selection()
-	for component: Node in (wave.get_node("RunSkills") as RunSkills)._components.values():
+	for component: Node in (wave.get_node("RunSkillManager") as RunSkillManager)._components.values():
 		component.process_mode = Node.PROCESS_MODE_DISABLED
 	return wave.phase == WavePrototype.Phase.BATTLE
 

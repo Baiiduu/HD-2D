@@ -23,9 +23,15 @@ func run() -> void:
 	world.get_node("WavePrototype/RunGrowth").enabled = false
 	world.get_node("MapEffects/BGM").music_enabled = false
 	# Exercise the normal start interaction even when the editor selects a stress simulation.
-	var population: WavePopulationRules = world.get_node("WavePrototype").population_rules.duplicate(true)
+	var profile := world.get_node("BattleConfiguration").configuration as SceneCombatConfiguration
+	profile = profile.duplicate() as SceneCombatConfiguration
+	world.get_node("BattleConfiguration").configuration = profile
+	var population := profile.population_rules.duplicate(true) as WavePopulationRules
 	population.simulation_mode = false
-	world.get_node("WavePrototype").population_rules = population
+	profile.population_rules = population
+	var authored_kinds := {}
+	for prop in world.get_node("WorldDetails/BattleCourts").get_children():
+		if prop is TownDetailProp: authored_kinds[prop.detail_kind] = true
 	var surface_hash := FileAccess.get_sha256("res://data/world/world_surface.tres")
 	var terrain_hash := FileAccess.get_sha256("res://data/world/world_terrain.tres")
 	root.add_child(world)
@@ -69,7 +75,7 @@ func run() -> void:
 		if prop is TownDetailProp: kinds[prop.detail_kind] = true
 		if prop is RicochetProp:
 			check(prop._collision_body != null and prop._collision_body.is_in_group(&"ricochet_surfaces"), "Obstacle has real ricochet collision: " + prop.name)
-	check(kinds.size() >= 4, "Existing battle detail families retained")
+	check(not authored_kinds.is_empty() and kinds == authored_kinds, "Startup retains the authored detail families without requiring an old layout")
 	var camera: FollowCamera = world.get_node("MapEffects/Camera3D")
 	camera.set_process(false)
 	camera.snap_to_target()
@@ -89,7 +95,7 @@ func run() -> void:
 	start_input.physical_keycode = wave.interact_key
 	start_input.pressed = true
 	wave._unhandled_key_input(start_input)
-	var initial: GrowthChoiceUI = wave.get_node("RunSkills/InitialSkillChoice")
+	var initial: GrowthChoiceUI = wave.get_node("SkillDraft/InitialSkillChoice")
 	initial.reveal_now()
 	check(not initial._options.is_empty(), "Existing interaction key opens the actual initial skill draw")
 	if initial._options.is_empty():

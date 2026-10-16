@@ -33,7 +33,7 @@ func run() -> void:
 	wave.set_physics_process(false)
 	fan.set_physics_process(false)
 	player.global_position = wave.global_position + Vector3.UP * 0.03
-	var skills: RunSkills = wave.get_node("RunSkills")
+	var skills: RunSkillManager = wave.get_node("RunSkillManager")
 	skills._levels[&"fan_slash"] = 1
 	fan.apply_skill_level(1)
 	check(wave.start_run(), "Real battle starts")

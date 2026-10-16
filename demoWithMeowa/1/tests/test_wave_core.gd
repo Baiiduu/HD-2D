@@ -28,11 +28,11 @@ func freeze_enemies() -> void:
 	for enemy in wave.enemies: enemy.set_physics_process(false)
 
 func confirm_initial() -> void:
-	var skills := wave.get_node("RunSkills") as RunSkills
-	if skills.initial_choice.is_open:
-		skills.initial_choice.reveal_now()
-		assert(skills.initial_choice.select_option(&"initial:fan_slash"))
-		skills.initial_choice.confirm_selection()
+	var skills := wave.get_node("RunSkillManager") as RunSkillManager
+	if wave.skill_draft.initial_choice.is_open:
+		wave.skill_draft.initial_choice.reveal_now()
+		assert(wave.skill_draft.initial_choice.select_option(wave.skill_draft.initial_choice._options[0].id))
+		wave.skill_draft.initial_choice.confirm_selection()
 	# 生命周期用例只手动结算伤害，已学习技能不能在等待物理帧时介入。
 	for component: Node in skills._components.values(): component.process_mode = Node.PROCESS_MODE_DISABLED
 
@@ -45,6 +45,10 @@ func run() -> void:
 	scene = load("res://scenes/world/world.tscn").instantiate()
 	scene.get_node("WavePrototype/RunGrowth").enabled = false
 	scene.get_node("LoadoutUI").save_enabled = false
+	scene.get_node("MapEffects/BGM").music_enabled = false
+	scene.get_node("MapEffects/Weather").rain_audio_enabled = false
+	scene.get_node("MapEffects/Weather").wind_audio_enabled = false
+	scene.get_node("MapEffects/CoreFeedbackAudio").enabled = false
 	root.add_child(scene)
 	current_scene = scene
 	await settle(12)
@@ -61,21 +65,23 @@ func run() -> void:
 	wave.waves.clear()
 	wave.max_spawns_per_tick = 1 # 旧接口测试逐只检查生命周期。
 	wave.get_node("FanAutoAttack").enabled = false
-	(wave.get_node("RunSkills") as RunSkills).initial_cards_per_draw = 100
+	wave.skill_draft.initial_cards_per_draw = 100
 	player = scene.get_node("Player")
 	player.set_physics_process(false)
 	wave.set_physics_process(false)
 	player.global_position = wave.global_position + Vector3.UP * 0.03
 	assert(start())
-	# 定时生成有真实预告；出生安全距离与可达路线均满足。
+	# 定时排期保留，生成后立即参战；安全距离与可达路线均满足。
 	wave._physics_process(0.31)
 	assert(wave.enemies.size() == 1 and wave._pending == 4)
 	var slime := wave.enemies[0] as SlimeEnemy
 	slime.set_physics_process(false)
-	assert(slime and slime.health == 20.0 and slime.spawn_delay > 0.0)
+	assert(slime and slime.health == 20.0 and slime.spawn_delay == 0.0)
 	assert(TerrainPath.horizontal_distance(slime.global_position, player.global_position) >= wave.spawn_safe_distance)
 	assert(not wave._path.route(slime.global_position, wave._ground_target()).is_empty())
 	var before := player.current_health
+	# 延时受击保护仅验证兼容接口，由夹具显式设置，不恢复正式出生等待。
+	slime.spawn_delay = 0.2
 	slime.take_damage(10.0)
 	slime._physics_process(0.1)
 	assert(slime.health == 20.0 and player.current_health == before)
@@ -237,6 +243,10 @@ func run() -> void:
 	assert(wave.phase == WavePrototype.Phase.RESULT and wave._pending == 0 and wave.enemies.is_empty())
 	assert(wave.result_reason.contains("WaveEnemy"))
 	print("PASS: real slime, two-hit kills, safe telegraph, pending spawns, active cap, mixed wave data, independent attack strategy, shared hurt protection, split lifecycle, safe rest cleanup, stale callbacks, unreachable recovery and invalid scene handling")
+	for audio in scene.find_children("*", "AudioStreamPlayer", true, false): audio.stop()
+	scene.get_node("MapEffects/GameAudio").stop_all()
+	await create_timer(0.15).timeout
 	scene.queue_free()
 	await settle()
+	await create_timer(0.1).timeout
 	quit()

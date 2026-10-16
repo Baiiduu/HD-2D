@@ -8,6 +8,7 @@ var player: Player
 var feedback: CoreFeedbackAudio
 var audio: GameAudio
 var ui_cues: Array[StringName] = []
+const FIXTURE := preload("res://tests/fixtures/combat_scene_fixture.gd")
 
 func _initialize() -> void:
 	create_timer(70.0).timeout.connect(func(): quit(2))
@@ -31,6 +32,8 @@ func reset_audio() -> void:
 	feedback._ui._last_played.clear()
 
 func physical_bounces() -> void:
+	var center := wave.battle_area.get_center()
+	var origin := wave._path.ground_position(Vector3(center.x, 0, center.y)) + Vector3.UP * 0.03
 	for surface in [0, 4, 5]:
 		player.body_ricochet.cancel(true)
 		var wall := StaticBody3D.new()
@@ -41,8 +44,8 @@ func physical_bounces() -> void:
 		shape.shape = box
 		wall.add_child(shape)
 		world.add_child(wall)
-		wall.global_position = Vector3(-20.8, 1, 23)
-		player.global_position = Vector3(-22, 0.03, 23)
+		wall.global_position = origin + Vector3(1.2, 1, 0)
+		player.global_position = origin
 		player.set_physics_process(true)
 		await settle(10)
 		player.set_physics_process(false)
@@ -69,19 +72,23 @@ func run() -> void:
 			check(clip is AudioStreamWAV and clip.mix_rate == 48000 and not clip.stereo and clip.get_length() > 0.05, "单声道四十八千赫 WAV 可播放：" + cue)
 	check(count == 40, "成品和变体合计四十条，不包含制作源文件")
 	world = load("res://scenes/world/world.tscn").instantiate()
+	FIXTURE.clear_placed_obstacles(world)
+	var profile := FIXTURE.isolate_profile(world)
+	profile.population_rules = profile.population_rules.duplicate()
+	profile.population_rules.simulation_mode = false
+	profile.sword_rules = profile.sword_rules.duplicate()
+	profile.sword_rules.enabled = false
+	# 正式地图保持关闭拨怪；此兼容音效用例显式验证启用时的真实触发。
+	profile.ricochet_rules = profile.ricochet_rules.duplicate()
+	profile.ricochet_rules.enemy_push_enabled = true
 	world.get_node("MapEffects/GameAudio").load_local_mix = false
 	DirAccess.make_dir_recursive_absolute("D:/.codexfile/work/game-audio-mix-20261015")
 	world.get_node("MapEffects/GameAudio").mix_save_path = "D:/.codexfile/work/game-audio-mix-20261015/core-test.cfg"
-	var test_wave := world.get_node("WavePrototype") as WavePrototype
-	test_wave.population_rules = test_wave.population_rules.duplicate()
-	test_wave.population_rules.simulation_mode = false
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("MapEffects/BGM").music_enabled = false
 	world.get_node("MapEffects/Weather").rain_audio_enabled = false
 	world.get_node("MapEffects/Weather").wind_audio_enabled = false
 	player = world.get_node("Player")
-	player.sword_rules = player.sword_rules.duplicate()
-	player.sword_rules.enabled = false
 	world.get_node("Player/MovementAudio").enabled = false
 	root.add_child(world)
 	current_scene = world
@@ -93,16 +100,16 @@ func run() -> void:
 	check(feedback.player == player and feedback.session == wave and feedback._audio == audio, "正式场景绑定实际人物与公共战斗音效池")
 	check(not feedback.is_physics_processing(), "未蓄力时没有额外逐帧工作")
 	check(feedback._loop_clips[0].loop_end == roundi(feedback._loop_clips[0].get_length() * feedback._loop_clips[0].mix_rate), "压缩导入后的循环终点仍按解码采样数计算")
-	var skills := wave.get_node("RunSkills") as RunSkills
+	var skills := wave.get_node("RunSkillManager") as RunSkillManager
 	var growth := wave.get_node("RunGrowth") as RunGrowth
-	skills.initial_cards_per_draw = 100
-	skills.initial_choice.open_duration = 0.0
+	wave.skill_draft.initial_cards_per_draw = 100
+	wave.skill_draft.initial_choice.open_duration = 0.0
 	growth.choice_ui.open_duration = 0.0
 	check(wave.start_run(), "真实挑战进入初始选择")
 	check(ui_cues.count(&"card_reveal") == 1, "整次三选一开牌只触发一份揭晓音")
-	check(skills.initial_choice._audio.sounds.confirm == bank.clips_for(&"growth_apply")[0], "实际成长界面使用新成功音而非叠加两个确认声")
-	skills.initial_choice.select_option(&"initial:ricochet_storm")
-	skills.initial_choice.confirm_selection()
+	check(wave.skill_draft.initial_choice._audio.sounds.confirm == bank.clips_for(&"growth_apply")[0], "实际成长界面使用新成功音而非叠加两个确认声")
+	wave.skill_draft.initial_choice.select_option(&"initial:ricochet_storm")
+	wave.skill_draft.initial_choice.confirm_selection()
 	check(ui_cues.has(&"wave_start"), "确认初始技能后真实开战才播放波次提示")
 	wave.set_physics_process(false)
 	wave._spawn_queue.clear()
@@ -206,7 +213,7 @@ func run() -> void:
 	feedback._play_ui(&"level_up")
 	feedback._play_world(&"launch", player.global_position)
 	check(ui_cues.size() == 1 and audio.get_debug_state().active == 0, "总开关停止并禁用新增声音")
-	check(skills.initial_choice._audio.sounds.confirm != bank.clips_for(&"growth_apply")[0], "关闭核心包恢复界面原确认音")
+	check(wave.skill_draft.initial_choice._audio.sounds.confirm != bank.clips_for(&"growth_apply")[0], "关闭核心包恢复界面原确认音")
 	feedback.enabled = true
 	var storm := wave.get_node("RicochetStorm") as RicochetStorm
 	check(storm.hit_sounds.size() == 2 and storm.propagation_sounds.size() == 1, "雷潮分别使用首片落雷变体与后续传导音")

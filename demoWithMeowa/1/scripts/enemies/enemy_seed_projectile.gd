@@ -93,4 +93,4 @@ func _process(_delta: float) -> void:
 	if not active or not is_instance_valid(_camera): return
 	var angle := atan2(direction.dot(_camera.global_basis.y), direction.dot(_camera.global_basis.x))
 	var size := _texture.get_size() * 0.016
-	_visual.global_basis = _camera.global_basis * Basis(Vector3.BACK, angle).scaled(Vector3(size.x, size.y, 1))
+	_visual.global_basis = _camera.global_basis * Basis(Vector3.BACK, angle) * Basis.from_scale(Vector3(size.x, size.y, 1))

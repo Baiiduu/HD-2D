@@ -58,11 +58,11 @@ func start() -> bool:
 	return wave.phase == WavePrototype.Phase.BATTLE
 
 func choose_initial() -> void:
-	var skills := wave.get_node("RunSkills") as RunSkills
-	if skills.initial_choice.is_open:
-		skills.initial_choice.reveal_now()
-		skills.initial_choice.select_option(skills.initial_choice._options[0].id)
-		skills.initial_choice.confirm_selection()
+	var skills := wave.get_node("RunSkillManager") as RunSkillManager
+	if wave.skill_draft.initial_choice.is_open:
+		wave.skill_draft.initial_choice.reveal_now()
+		wave.skill_draft.initial_choice.select_option(wave.skill_draft.initial_choice._options[0].id)
+		wave.skill_draft.initial_choice.confirm_selection()
 	for component: Node in skills._components.values(): component.process_mode = Node.PROCESS_MODE_DISABLED
 
 func reset() -> void:

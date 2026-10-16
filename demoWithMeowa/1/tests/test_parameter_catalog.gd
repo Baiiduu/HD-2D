@@ -15,12 +15,14 @@ func run() -> void:
 		found[entry.path + ":" + entry.property] = entry
 		categories[entry.category] = true
 	var required := ["VisualSample:style", "MapEffects/Camera3D:fov", "Player:blink_distance", "WavePrototype/FanAutoAttack:damage",
-		"WavePrototype/RunGrowth → 规则资源:first_level_experience", "Homestead → 地表画笔列表 → brushes[0]:texture",
+		"BattleConfiguration → 场景战斗配置 → experience_rules:first_level_experience", "Homestead → 地表画笔列表 → brushes[0]:texture",
 		"LoadoutUI/AttributeHUD:glow_strength", "WavePrototype/RunGrowth/ExperienceHUD:track_width", "MapEffects/Weather:rain_volume_db"]
 	required.append("WavePrototype/WaveHUD:font_size")
-	required.append("Player:crowd_clearance_distance")
+	required.append("WavePrototype/SkillDraft:initial_cards_per_draw")
+	for system in ["RunGrowth", "SkillDraft", "RunSkillManager"]: required.append("WavePrototype/" + system + ":enabled")
+	required.append("BattleConfiguration → 场景战斗配置:crowd_clearance_distance")
 	for property in ["crowd_deflection_enabled", "crowd_contact_radius", "crowd_turn_distance", "crowd_exit_outward", "crowd_speed_retention", "crowd_release_clearance"]:
-		required.append("Player → 人物本体弹射规则:" + property)
+		required.append("BattleConfiguration → 场景战斗配置 → 人物本体弹射规则:" + property)
 	required.append("MapEffects/GameAudio:max_voices")
 	required.append("MapEffects/GameAudio:merge_window")
 	required.append("MapEffects/GameAudio:limiter_ceiling_db")
@@ -29,15 +31,15 @@ func run() -> void:
 	required.append("MapEffects/BGM → playlists[0]:play_order")
 	required.append("MapEffects/BGM → playlists[0] → tracks[0]:loop_crossfade")
 	required.append("MapEffects/BGM → playlists[1] → tracks[0]:stream")
-	required.append("WavePrototype:endless_mode")
+	required.append("BattleConfiguration → 场景战斗配置:endless_mode")
 	required.append("WavePrototype:endless_enemies_per_wave")
 	required.append("WavePrototype:endless_max_enemies")
-	required.append("WavePrototype/RunBuffs → definitions[0]:bonus_per_level")
-	required.append("WavePrototype/RunBuffs → definitions[1]:bonus_cap")
-	required.append("WavePrototype/RunBuffs → definitions[2]:max_level")
+	required.append("BattleConfiguration → 场景战斗配置 → growth_definitions[0]:bonus_per_level")
+	required.append("BattleConfiguration → 场景战斗配置 → growth_definitions[1]:bonus_cap")
+	required.append("BattleConfiguration → 场景战斗配置 → growth_definitions[2]:max_level")
 	for property in ["diminishing_after", "breakthrough_every", "breakthrough_multiplier", "required_levels", "extra_effects"]:
-		required.append("WavePrototype/RunBuffs → definitions[0]:" + property)
-	required.append("WavePrototype/RunBuffs → definitions[5] → extra_effects[0]:bonus_per_level")
+		required.append("BattleConfiguration → 场景战斗配置 → growth_definitions[0]:" + property)
+	required.append("BattleConfiguration → 场景战斗配置 → growth_definitions[5] → extra_effects[0]:bonus_per_level")
 	for property in ["damage", "attack_interval", "mark_duration", "reflection_limit", "match_player_pixel_density"]:
 		required.append("WavePrototype/MirrorMarkAutoAttack:" + property)
 	var failures: Array[String] = []
@@ -46,8 +48,8 @@ func run() -> void:
 		if not found.has(name): failures.append(name)
 	for category in catalog.CATEGORIES:
 		if not categories.has(category): failures.append(category)
-	if found.has("Player:crowd_clearance_distance"):
-		var clearance: Dictionary = found["Player:crowd_clearance_distance"]
+	if found.has("BattleConfiguration → 场景战斗配置:crowd_clearance_distance"):
+		var clearance: Dictionary = found["BattleConfiguration → 场景战斗配置:crowd_clearance_distance"]
 		if not clearance.common or clearance.category != "人物" or clearance.label != "人物周身留白距离（额外）": failures.append("personal clearance must be a common player parameter")
 	if found.has("WavePrototype/FanAutoAttack:damage") and not found["WavePrototype/FanAutoAttack:damage"].common: failures.append("damage must be common")
 	if found.has("WavePrototype/MirrorMarkAutoAttack:mark_duration"):
@@ -60,8 +62,8 @@ func run() -> void:
 		var bgm_entry: Dictionary = found["MapEffects/BGM → playlists[0] → tracks[0]:loop_crossfade"]
 		if not bgm_entry.common or bgm_entry.category != "声音": failures.append("track transition must be a common sound parameter")
 	if found.has("WavePrototype/RunGrowth/ExperienceHUD:track_width") and not found["WavePrototype/RunGrowth/ExperienceHUD:track_width"].common: failures.append("experience width must be common")
-	if found.has("WavePrototype/RunBuffs → definitions[0]:bonus_per_level"):
-		var buff_entry: Dictionary = found["WavePrototype/RunBuffs → definitions[0]:bonus_per_level"]
+	if found.has("BattleConfiguration → 场景战斗配置 → growth_definitions[0]:bonus_per_level"):
+		var buff_entry: Dictionary = found["BattleConfiguration → 场景战斗配置 → growth_definitions[0]:bonus_per_level"]
 		if not buff_entry.common or buff_entry.category != "战斗与成长": failures.append("buff values must be common combat parameters")
 	print(JSON.stringify({"parameters": entries.size(), "categories": categories.keys(), "failures": failures}))
 	# 在未运行的场景结构上索引，再初始化以让组件正常释放其运行时对象。

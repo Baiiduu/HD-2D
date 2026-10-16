@@ -31,7 +31,7 @@ var failures := 0
 var world: Node3D
 var wave: WavePrototype
 var growth: RunGrowth
-var skills: RunSkills
+var skills: RunSkillManager
 var fan: FanAutoAttack
 var player: Player
 
@@ -73,9 +73,11 @@ func run() -> void:
 	world = load("res://scenes/world/world.tscn").instantiate()
 	world.get_node("LoadoutUI").save_enabled = false
 	# 隔离技能成长；正式场景的增益配置保持原样，叠加另行验证。
-	world.get_node("WavePrototype/RunBuffs").definitions.clear()
-	world.get_node("WavePrototype/RunSkills").skill_paths.clear()
-	world.get_node("WavePrototype/RunSkills").skill_paths.append(NodePath("../FanAutoAttack"))
+	world.get_node("BattleConfiguration").configuration.growth_definitions.clear()
+	# A01 已在正式玩法停用；此兼容原型测试显式开启，不修改正式默认值。
+	world.get_node("WavePrototype/FanAutoAttack").enabled = true
+	world.get_node("WavePrototype/RunSkillManager").skill_paths.clear()
+	world.get_node("WavePrototype/RunSkillManager").skill_paths.append(NodePath("../FanAutoAttack"))
 	# 独立验证攻击成长，挡墙在下方显式加入，不依赖可移动地编的摆放。
 	var props := world.get_node("WorldDetails")
 	world.remove_child(props)
@@ -89,7 +91,7 @@ func run() -> void:
 	await settle(12)
 	wave = world.get_node("WavePrototype")
 	growth = wave.get_node("RunGrowth")
-	skills = wave.get_node("RunSkills")
+	skills = wave.get_node("RunSkillManager")
 	fan = wave.get_node("FanAutoAttack")
 	player = world.get_node("Player")
 	player.set_physics_process(false)
@@ -98,15 +100,15 @@ func run() -> void:
 	growth.set_physics_process(false)
 	growth.choice_ui.open_duration = 0.0
 	growth.cards_per_draw = 100
-	skills.initial_choice.open_duration = 0.0
+	wave.skill_draft.initial_choice.open_duration = 0.0
 	growth.choice_ui.hover_duration = 0.0
 	fan.knockback_distance = 0.0
 	fan.audio_enabled = false
 	player.global_position = wave._path.ground_position(wave.global_position) + Vector3.UP * 0.03
 	check(wave.start_run(), "The existing challenge starts with skill progression")
-	check(skills.get_slots().is_empty() and skills.initial_choice.is_open, "A01 is not granted before initial choice")
-	skills.initial_choice.select_option(&"initial:fan_slash")
-	skills.initial_choice.confirm_selection()
+	check(skills.get_slots().is_empty() and wave.skill_draft.initial_choice.is_open, "A01 is not granted before initial choice")
+	wave.skill_draft.initial_choice.select_option(&"initial:fan_slash")
+	wave.skill_draft.initial_choice.confirm_selection()
 	fan.set_physics_process(false)
 	wave._spawn_queue.clear()
 	player.global_position = world.get_node("BattleArea").global_position + Vector3.UP * 0.03
@@ -124,7 +126,7 @@ func run() -> void:
 	growth.choice_ui.confirm_selection()
 	check(skills.get_level(&"fan_slash") == 2 and fan.get_attack_stats().damage == 12.0 and fan.get_attack_stats().range > 2.4, "Confirmation applies the upgrade to actual attack parameters")
 	check(not wave.combat_frozen and player.current_health == health, "Upgrade restores combat without invented healing")
-	skills._choose(2, option.id)
+	wave.skill_draft._choose(2, option.id)
 	check(skills.get_level(&"fan_slash") == 2, "A stale or duplicate selection cannot grant another level")
 	# 总计 210 经验，完成从人物 1 到 8 级的七次选择。
 	growth.drop_experience(player.global_position, 200)
@@ -235,9 +237,9 @@ func run() -> void:
 	wave._finish("test retry", WavePrototype.Outcome.RETREAT)
 	check(not fan._spinning and not fan._mesh.visible, "Result clears ongoing continuous attacks")
 	wave.retry()
-	check(skills.get_level(&"fan_slash") == 0 and skills.initial_choice.is_open, "Retry clears A01 and asks for the initial skill again")
-	skills.initial_choice.select_option(&"initial:fan_slash")
-	skills.initial_choice.confirm_selection()
+	check(skills.get_level(&"fan_slash") == 0 and wave.skill_draft.initial_choice.is_open, "Retry clears A01 and asks for the initial skill again")
+	wave.skill_draft.initial_choice.select_option(&"initial:fan_slash")
+	wave.skill_draft.initial_choice.confirm_selection()
 	fan.set_physics_process(false)
 	check(skills.get_level(&"fan_slash") == 1 and fan.skill_level == 1 and fan.get_attack_stats().damage == 10.0, "Retry restores the baseline rather than multiplying it again")
 	check(fan._mesh.transform == Transform3D.IDENTITY, "Returning from rotation leaves no rotated child transform")
@@ -258,8 +260,11 @@ func multiple_skills() -> void:
 	local_growth.name = "RunGrowth"
 	local_growth.session = session
 	session.add_child(local_growth)
-	var controller := RunSkills.new()
-	controller.session = session
+	var controller := RunSkillManager.new()
+	var draft := RunSkillDraft.new()
+	draft.session = session
+	draft.manager = controller
+	draft.growth = local_growth
 	for id in [&"first", &"second"]:
 		var component := SkillProbe.new()
 		component.name = String(id)
@@ -270,11 +275,12 @@ func multiple_skills() -> void:
 		session.add_child(component)
 		controller.skill_paths.append(NodePath("../" + String(id)))
 	session.add_child(controller)
+	session.add_child(draft)
 	root.add_child(session)
 	local_growth.set_physics_process(false)
 	local_growth.choice_ui.open_duration = 0.0
 	check(controller.candidates().size() == 2, "A second component participates through the same framework")
-	controller._choose(2, &"skill:first:1")
+	draft._choose(2, &"skill:first:1")
 	check(controller.get_level(&"first") == 0, "Inactive runs cannot learn a previewed skill")
 	session.run_started.emit()
 	local_growth.state.add_experience(10)
@@ -299,7 +305,23 @@ func multiple_skills() -> void:
 	session.run_started.emit()
 	local_growth.state.add_experience(10)
 	session.run_ended.emit("cancel pending choice")
-	controller._choose(2, &"skill:first:1")
+	draft._choose(2, &"skill:first:1")
 	check(controller.get_level(&"first") == 0 and not session.combat_frozen, "Run end invalidates pending skill callbacks and releases the modal")
+	var dynamic := SkillProbe.new()
+	dynamic.name = "DynamicSkill"
+	dynamic.definition = CombatSkillDefinition.new()
+	dynamic.definition.id = &"dynamic"
+	dynamic.definition.display_name = "Dynamic"
+	dynamic.definition.levels = [CombatSkillLevel.new(), CombatSkillLevel.new()]
+	session.add_child(dynamic)
+	check(controller.register_skill(dynamic) and controller.register_skill(dynamic) and controller.get_registered_ids().size() == 3, "Runtime registration is idempotent and shares the registry")
+	check(controller.get_level(&"dynamic") == 0 and dynamic.applied == 0, "Runtime skills start unlearned")
+	check(controller.set_skill_level(&"dynamic", 2) and controller.get_level(&"dynamic") == 2 and dynamic.applied == 2, "Unified level API applies the component level")
+	check(not controller.set_skill_level(&"dynamic", 3) and controller.get_level(&"dynamic") == 2, "Invalid level does not overwrite learned state")
+	controller.unregister_skill(&"dynamic")
+	check(controller.get_skill(&"dynamic") == null and dynamic.applied == 0 and controller.get_level(&"dynamic") == 0, "Unregister clears learning and disables the old component")
+	check(controller.register_skill(dynamic), "A removed component can be registered again")
+	dynamic.free()
+	check(controller.get_skill(&"dynamic") == null and controller.get_registered_ids().size() == 2, "Freed skills remove their registration automatically")
 	session.free()
 	await settle()

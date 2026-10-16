@@ -1,0 +1,106 @@
+[gd_resource type="Resource" script_class="CombatSkillDefinition" format=3 uid="uid://d1y387ixrtkni"]
+
+[ext_resource type="Texture2D" uid="uid://b8u4ctltnix8t" path="res://assets/meowa/combat/prism_ricochet/shard.png" id="1_a4h43"]
+[ext_resource type="Script" uid="uid://dgnmk10av1ee6" path="res://scripts/combat/combat_skill_level.gd" id="2_vrxif"]
+[ext_resource type="Script" uid="uid://bys5inomsbf0o" path="res://scripts/combat/combat_skill_definition.gd" id="3_dsfwv"]
+
+[sub_resource type="AtlasTexture" id="icon"]
+atlas = ExtResource("1_a4h43")
+region = Rect2(14, 5, 31, 22)
+
+[sub_resource type="Resource" id="Resource_ten5s"]
+script = ExtResource("2_vrxif")
+description = "单枚棱晶，最多两次撞墙反射。"
+
+[sub_resource type="Resource" id="Resource_vpy7v"]
+script = ExtResource("2_vrxif")
+description = "晶光延伸，第三次反射。"
+parameters = Dictionary[String, float]({
+"bounces": 3.0,
+"damage_multiplier": 1.2,
+"distance_multiplier": 1.2,
+"visual_multiplier": 1.1
+})
+
+[sub_resource type="Resource" id="Resource_laqop"]
+script = ExtResource("2_vrxif")
+description = "飞行加速，四次反射。"
+parameters = Dictionary[String, float]({
+"bounces": 4.0,
+"damage_multiplier": 1.4,
+"distance_multiplier": 1.4,
+"speed_multiplier": 1.15,
+"visual_multiplier": 1.15
+})
+
+[sub_resource type="Resource" id="Resource_4voxo"]
+script = ExtResource("2_vrxif")
+description = "双晶齐射，交错弹道。"
+parameters = Dictionary[String, float]({
+"bounces": 4.0,
+"damage_multiplier": 1.6,
+"distance_multiplier": 1.5,
+"projectiles": 2.0,
+"speed_multiplier": 1.15,
+"visual_multiplier": 1.2
+})
+
+[sub_resource type="Resource" id="Resource_5ggrm"]
+script = ExtResource("2_vrxif")
+description = "双晶强化，更远、更明亮。"
+parameters = Dictionary[String, float]({
+"bounces": 5.0,
+"damage_multiplier": 1.9,
+"distance_multiplier": 1.7,
+"interval_multiplier": 0.85,
+"projectiles": 2.0,
+"speed_multiplier": 1.25,
+"visual_multiplier": 1.3
+})
+
+[sub_resource type="Resource" id="Resource_kxx2f"]
+script = ExtResource("2_vrxif")
+description = "三晶齐射，覆盖更多墙角。"
+parameters = Dictionary[String, float]({
+"bounces": 6.0,
+"damage_multiplier": 2.3,
+"distance_multiplier": 1.8,
+"interval_multiplier": 0.8,
+"projectiles": 3.0,
+"speed_multiplier": 1.3,
+"visual_multiplier": 1.4
+})
+
+[sub_resource type="Resource" id="Resource_flneh"]
+script = ExtResource("2_vrxif")
+description = "三晶高速连续出手，七次反射。"
+parameters = Dictionary[String, float]({
+"bounces": 7.0,
+"damage_multiplier": 2.7,
+"distance_multiplier": 2.0,
+"interval_multiplier": 0.65,
+"projectiles": 3.0,
+"speed_multiplier": 1.4,
+"visual_multiplier": 1.5
+})
+
+[sub_resource type="Resource" id="Resource_lgtod"]
+script = ExtResource("2_vrxif")
+description = "四晶密集齐射，八次反射构成交错光路。"
+parameters = Dictionary[String, float]({
+"bounces": 8.0,
+"damage_multiplier": 3.2,
+"distance_multiplier": 2.2,
+"interval_multiplier": 0.5,
+"projectiles": 4.0,
+"speed_multiplier": 1.5,
+"visual_multiplier": 1.6
+})
+
+[resource]
+script = ExtResource("3_dsfwv")
+id = &"prism_ricochet"
+display_name = "棱光弹射"
+description = "棱晶穿过敌群，在真实墙面之间连续反射。"
+icon = SubResource("icon")
+levels = Array[ExtResource("2_vrxif")]([SubResource("Resource_ten5s"), SubResource("Resource_vpy7v"), SubResource("Resource_laqop"), SubResource("Resource_4voxo"), SubResource("Resource_5ggrm"), SubResource("Resource_kxx2f"), SubResource("Resource_flneh"), SubResource("Resource_lgtod")])

@@ -23,7 +23,7 @@ func settle(count := 4) -> void:
 	for frame in count: await physics_frame
 
 func confirm_initial() -> void:
-	var choices: GrowthChoiceUI = wave.get_node("RunSkills/InitialSkillChoice")
+	var choices: GrowthChoiceUI = wave.get_node("SkillDraft/InitialSkillChoice")
 	if choices.is_open:
 		choices.reveal_now()
 		choices.select_option(&"initial:ricochet_storm")
@@ -123,7 +123,7 @@ func run() -> void:
 	player = world.get_node("Player")
 	wave.set_physics_process(false)
 	player.set_physics_process(false)
-	(wave.get_node("RunSkills") as RunSkills).initial_cards_per_draw = 100
+	wave.skill_draft.initial_cards_per_draw = 100
 	check(wave.population_rules != null, "载入用户当前选取的数量规则，不改写其模拟设置")
 	var ordinary := wave.population_rules.duplicate(true) as WavePopulationRules
 	ordinary.simulation_mode = false
@@ -140,8 +140,8 @@ func run() -> void:
 	wave.enemy_spawned.connect(func(enemy):
 		if freeze_spawned: enemy.set_physics_process(false))
 	check(start(), "选取 Population Rules 后直接进入模拟，不强制抽取初始技能")
-	var skills := wave.get_node("RunSkills") as RunSkills
-	check(not skills.initial_choice.is_open and skills.get_level(&"ricochet_storm") == 3 and skills.get_level(&"mirror_mark") == 2 and skills.get_level(&"prism_ricochet") == 0, "开局准确应用持有技能、不同等级和零级不携带")
+	var skills := wave.get_node("RunSkillManager") as RunSkillManager
+	check(not wave.skill_draft.initial_choice.is_open and skills.get_level(&"ricochet_storm") == 3 and skills.get_level(&"mirror_mark") == 2 and skills.get_level(&"prism_ricochet") == 0, "开局准确应用持有技能、不同等级和零级不携带")
 	check(skills.get_slots().size() == 4 and wave.get_node("FanAutoAttack").enabled, "技能栏展示真实持有，显式选取原关闭技能也能运行")
 	check(skills.get_level(rules.simulation_skills[0].skill_definition.id) == rules.simulation_skills[0].skill_level, "指定等级已应用到雷光贯穿的真实组件")
 	check(not wave.is_endless() and wave.wave_count() == 1 and wave._run_waves.size() == 1, "模拟直接建立一波，不沿用开场模板与无尽递增")
@@ -175,7 +175,7 @@ func run() -> void:
 	wave.retreat()
 	rules.simulation_skills.clear()
 	wave.return_home()
-	check(start() and not skills.initial_choice.is_open and not skills.has_learned_skill(), "空技能列表可直接开始，只保留基础剑术")
+	check(start() and not wave.skill_draft.initial_choice.is_open and not skills.has_learned_skill(), "空技能列表可直接开始，只保留基础剑术")
 	wave.retreat()
 	var invalid := source.duplicate(true) as WavePopulationRules
 	invalid.simulation_skills[0].skill_level = 100

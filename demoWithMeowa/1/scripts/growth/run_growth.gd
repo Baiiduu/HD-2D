@@ -6,14 +6,17 @@ signal experience_collected(amount: int)
 signal growth_chosen(level: int, option_id: StringName)
 signal growth_choice_skipped(level: int)
 
-@export_group("成长连接与内容")
-@export var session: Node3D
+const SYSTEMS := preload("res://scripts/core/game_system_settings.gd")
+@export_group("系统开关")
+## 本地开关；编辑器 Game Manager 的升级开关也须开启。
 @export var enabled := true:
 	set(value):
+		if enabled == value: return
 		enabled = value
-		if is_node_ready():
-			experience_hud.visible = value
-			if not value: _end_run("")
+		if is_node_ready(): _sync_enabled()
+
+@export_group("成长连接与内容")
+@export var session: Node3D
 @export var rules: ExperienceRules
 @export var pickup_scene: PackedScene
 ## 静态候选备用；正式地图通过动态来源生成武器与增益选项。
@@ -49,6 +52,9 @@ var state: RunGrowthState
 ## 可选的动态候选来源；空池明确跳过本次选择，不制造空白奖励或额外恢复。
 var candidate_provider: Callable
 var active := false
+var _project_enabled := true
+var _project_draft_enabled := true
+var _draft_enabled := true
 var _drops: Array[ExperiencePickup] = []
 var _choice_level := 0
 var _choice_error := false
@@ -63,6 +69,30 @@ var _fallback_options: Array[GrowthChoiceOption] = []
 @onready var _absorb: Sprite3D = $AbsorbFlash
 var _absorb_left := 0.0
 
+func _enter_tree() -> void:
+	_project_enabled = SYSTEMS.is_enabled(SYSTEMS.UPGRADES)
+	_project_draft_enabled = SYSTEMS.is_enabled(SYSTEMS.DRAFT)
+	_draft_enabled = _project_draft_enabled
+
+func is_enabled() -> bool:
+	return enabled and _project_enabled
+
+func set_draft_enabled(value: bool) -> void:
+	_draft_enabled = value and _project_draft_enabled
+	if not is_node_ready(): return
+	if not _draft_enabled:
+		if choice_ui.is_open: _close_choices()
+	else: _try_open_choice()
+
+func _sync_enabled() -> void:
+	experience_hud.visible = is_enabled()
+	active = is_enabled() and session.phase in [session.Phase.BATTLE, session.Phase.REST]
+	if not active:
+		if choice_ui.is_open: _close_choices()
+		_clear_drops()
+		_reset_feedback()
+	else: _try_open_choice()
+
 func _ready() -> void:
 	_fallback_options = choice_options.duplicate()
 	state = RunGrowthState.new()
@@ -70,7 +100,7 @@ func _ready() -> void:
 	state.levels_gained.connect(_levels_gained)
 	var loadout: LoadoutUI = (session as WavePrototype).loadout if session is WavePrototype else null
 	experience_hud.bind_state(state, loadout._attribute_hud if loadout else null, loadout)
-	experience_hud.visible = enabled
+	experience_hud.visible = is_enabled()
 	experience_collected.connect(experience_hud.pulse)
 	choice_ui.allow_cancel = false
 	choice_ui.choice_confirmed.connect(_confirm_choice)
@@ -86,7 +116,7 @@ func _start_run() -> void:
 	_close_choices()
 	_clear_drops()
 	state.reset()
-	active = enabled
+	active = is_enabled()
 	_choice_error = false
 	_reset_feedback()
 
@@ -117,11 +147,12 @@ func prepare_draw() -> void:
 	_previous_draw.clear()
 
 func draw_options(pool: Array[GrowthChoiceOption], count: int, previous: Array[GrowthChoiceOption] = []) -> Array[GrowthChoiceOption]:
+	if not _draft_enabled: return []
 	prepare_draw()
 	return _draw_pool.draw(pool, count, previous) if _draw_pool.valid_pool(pool) else []
 
 func can_reroll(pool: Array[GrowthChoiceOption], shown: Array[GrowthChoiceOption]) -> bool:
-	return rerolls_left > 0 and _draw_pool.can_redraw(pool, shown)
+	return _draft_enabled and rerolls_left > 0 and _draw_pool.can_redraw(pool, shown)
 
 func redraw_options(pool: Array[GrowthChoiceOption], shown: Array[GrowthChoiceOption], count: int) -> Array[GrowthChoiceOption]:
 	if not can_reroll(pool, shown): return []
@@ -163,6 +194,7 @@ func _physics_process(delta: float) -> void:
 			if session.combat_frozen: break
 
 func _grant_experience(amount: int) -> void:
+	if not active: return
 	state.add_experience(amount)
 	experience_collected.emit(amount)
 	if not active: return
@@ -199,7 +231,7 @@ func _levels_gained(_count: int) -> void:
 	_try_open_choice()
 
 func _try_open_choice() -> void:
-	if not active or state.pending_choices <= 0 or choice_ui.is_open or _choice_error: return
+	if not active or not _draft_enabled or state.pending_choices <= 0 or choice_ui.is_open or _choice_error: return
 	if get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null: return
 	while state.pending_choices > 0:
 		_candidate_pool = candidate_provider.call() if candidate_provider.is_valid() else _fallback_options.duplicate()
@@ -233,7 +265,7 @@ func _update_draw_status() -> void:
 	choice_ui.set_draw_status(rerolls_left, can_reroll(_candidate_pool, choice_options))
 
 func _reroll_choice() -> void:
-	if not active or not choice_ui.is_open or not choice_ui.cards_revealed: return
+	if not active or not _draft_enabled or not choice_ui.is_open or not choice_ui.cards_revealed: return
 	var options := redraw_options(_candidate_pool, choice_options, cards_per_draw)
 	if options.is_empty(): return
 	choice_options = options
@@ -241,7 +273,7 @@ func _reroll_choice() -> void:
 	_update_draw_status()
 
 func _confirm_choice(option_id: StringName) -> void:
-	if not active or state.pending_choices <= 0: return
+	if not active or not _draft_enabled or state.pending_choices <= 0: return
 	var accepted := false
 	for option in choice_options:
 		if option and option.enabled and option.id == option_id: accepted = true; break

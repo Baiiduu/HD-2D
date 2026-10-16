@@ -20,6 +20,7 @@ func run() -> void:
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
 	var loadout: LoadoutUI = world.get_node("LoadoutUI")
 	loadout.save_enabled = false
+	world.get_node("WavePrototype/FanAutoAttack").enabled = true
 	root.add_child(world)
 	current_scene = world
 	await settle()
@@ -32,17 +33,17 @@ func run() -> void:
 	wave.get_node("FanAutoAttack").set_physics_process(false)
 	growth.set_physics_process(false)
 	growth.choice_ui.open_duration = 0.0
-	var skills: RunSkills = wave.get_node("RunSkills")
-	skills.initial_choice.open_duration = 0.0
-	skills.initial_cards_per_draw = 100
+	var skills: RunSkillManager = wave.get_node("RunSkillManager")
+	wave.skill_draft.initial_choice.open_duration = 0.0
+	wave.skill_draft.initial_cards_per_draw = 100
 	check(hud.state == growth.state and hud.attribute_hud == attributes, "XP HUD binds the live run and existing attribute HUD")
 	check(hud._level.text == "Lv. 1" and hud._value.text == "0 / 10" and not hud._clip.visible, "Fresh run has real level and an empty XP bar")
 	check(hud._root.position.y >= attributes.get_global_rect().end.y + hud.attribute_gap - 0.01, "XP HUD sits below HP and mana without overlap")
 	check(hud._root.mouse_filter == Control.MOUSE_FILTER_IGNORE and hud._clip.mouse_filter == Control.MOUSE_FILTER_IGNORE, "XP HUD does not intercept gameplay pointer input")
 	wave.player.global_position = wave._path.ground_position(wave.global_position) + Vector3.UP * 0.03
 	check(wave.start_run(), "Actual wave run starts for visual integration")
-	skills.initial_choice.select_option(&"initial:fan_slash")
-	skills.initial_choice.confirm_selection()
+	wave.skill_draft.initial_choice.select_option(&"initial:fan_slash")
+	wave.skill_draft.initial_choice.confirm_selection()
 	growth.drop_experience(wave.player.global_position + Vector3(8, 0, 0), 3)
 	var pickup := growth._drops[0]
 	check(pickup.visual_tier == 0 and pickup._gem.texture == pickup.cyan_texture, "Default monster experience uses cyan artwork")
@@ -107,8 +108,8 @@ func run() -> void:
 		growth.choice_ui.confirm_selection()
 	wave.retreat()
 	wave.retry()
-	skills.initial_choice.select_option(&"initial:fan_slash")
-	skills.initial_choice.confirm_selection()
+	wave.skill_draft.initial_choice.select_option(&"initial:fan_slash")
+	wave.skill_draft.initial_choice.confirm_selection()
 	check(growth.state.level == 1 and hud._value.text == "0 / 10" and hud.progress_ratio == 0.0 and not growth._absorb.visible, "Retry resets real XP, HUD and lingering world feedback")
 	var replacement := RunGrowthState.new()
 	replacement.rules = ExperienceRules.new()

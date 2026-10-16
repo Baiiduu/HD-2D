@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="LanternSpitterDefinition" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/enemies/lantern_spitter.tscn" id="1_innn2"]
+[ext_resource type="Script" path="res://scripts/combat/lantern_spitter_definition.gd" id="2_u3nsr"]
+
+[resource]
+script = ExtResource("2_u3nsr")
+body_height = 0.8
+separation_radius = 1.05
+enemy_id = &"lantern_spitter"
+scene = ExtResource("1_innn2")
+display_name = "灯囊花兽"
+role = 1
+health = 50.0
+move_speed = 2.0
+attack_damage = 6.0
+experience_reward = 5
+max_alive = 100

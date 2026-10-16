@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="RicochetCameraSettings" format=3]
+
+[ext_resource type="Script" uid="uid://bbk7ebwd1135n" path="res://scripts/camera/ricochet_camera_settings.gd" id="settings"]
+
+[resource]
+script = ExtResource("settings")
+lead_settle_seconds = 0.3

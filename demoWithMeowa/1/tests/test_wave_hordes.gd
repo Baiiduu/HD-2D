@@ -161,12 +161,12 @@ func tick(delta := 0.02) -> void:
 
 func start() -> bool:
 	if not wave.start_run(): return false
-	var choice: GrowthChoiceUI = wave.get_node("RunSkills/InitialSkillChoice")
+	var choice: GrowthChoiceUI = wave.get_node("SkillDraft/InitialSkillChoice")
 	if choice.is_open:
 		choice.reveal_now()
 		choice.select_option(choice._options[0].id)
 		choice.confirm_selection()
-	for component: Node in (wave.get_node("RunSkills") as RunSkills)._components.values():
+	for component: Node in (wave.get_node("RunSkillManager") as RunSkillManager)._components.values():
 		component.process_mode = Node.PROCESS_MODE_DISABLED
 	return wave.phase == WavePrototype.Phase.BATTLE
 
@@ -306,7 +306,8 @@ func run() -> void:
 		var batch: WaveSpawnEntry = definition.entries.filter(func(item): return item.batch_size > 1)[0]
 		check(batch.batch_size >= 18 and batch.batch_size <= wave._run_population.active_limit(number), "无尽怪潮受当前波容量约束")
 	var late := wave._definition_for_wave(25)
-	check(wave._wave_total(late) == 384 and late.entries[1].batch_size > 18 and late.entries[1].batch_size <= 64, "后期怪潮扩大并为其它敌人保留空间")
+	var expected_late := mini(40 + (25 - source_waves.size()) * source_rules.enemies_per_wave_increment, source_rules.max_wave_enemies)
+	check(wave._wave_total(late) == expected_late and late.entries[1].batch_size > 18 and late.entries[1].batch_size <= floori(wave._run_population.active_limit(25) * 0.5), "后期怪潮按当前独立配置扩大，并为其它敌人保留至少一半同场容量")
 	check(source_waves[2].entries[1].batch_size == 18, "无尽规划不修改原始怪潮资源")
 	var births: Array[Dictionary] = []
 	var record := func(mob: WaveEnemy): births.append({"wave":wave.wave, "time":wave._wave_clock, "kind":mob.definition.enemy_id})

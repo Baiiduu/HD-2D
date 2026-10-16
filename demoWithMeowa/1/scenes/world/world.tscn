@@ -1,5 +1,6 @@
 [gd_scene format=4 uid="uid://257i05ytk0fi"]
 
+[ext_resource type="PackedScene" path="res://scenes/player/character_skills.tscn" id="character_skills"]
 [ext_resource type="Shader" uid="uid://yl6y2vskn20o" path="res://shaders/terrain/terrain.gdshader" id="4_tpqd7"]
 [ext_resource type="Texture2D" uid="uid://chbej7h30u00g" path="res://assets/meowa/city_plaza/fixed/battle/ground.png" id="5_o0evn"]
 [ext_resource type="Script" uid="uid://dcauimekxq8k1" path="res://scripts/terrain/terrain_paint_brush.gd" id="6_cmg7y"]
@@ -50,7 +51,7 @@
 [ext_resource type="PackedScene" path="res://scenes/world/battle_area.tscn" id="battle_area"]
 [ext_resource type="Texture2D" uid="uid://deplmtrsm611v" path="res://assets/meowa/city_plaza/fixed/battle/preview.png" id="battle_preview"]
 [ext_resource type="Texture2D" uid="uid://dlu03m0vip3ow" path="res://assets/meowa/city_plaza/fixed/battle/preview_normal.png" id="battle_preview_normal"]
-[ext_resource type="Resource" uid="uid://ciyr7ps75e2at" path="res://data/player/body_ricochet.tres" id="body_ricochet_rules"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/player/body_ricochet.tres" id="body_ricochet_rules"]
 [ext_resource type="Script" uid="uid://cnj43gbbfi4sc" path="res://scripts/rendering/character_lighting.gd" id="character_lighting"]
 [ext_resource type="PackedScene" path="res://scenes/world/city_backdrop.tscn" id="city_backdrop"]
 [ext_resource type="Texture2D" uid="uid://bmfmdbv12iwcr" path="res://assets/meowa/environment/distant_city/city_matte.png" id="city_matte"]
@@ -60,7 +61,7 @@
 [ext_resource type="Resource" path="res://data/audio/music/exploration_playlist.tres" id="exploration_bgm"]
 [ext_resource type="Resource" uid="uid://bkckbayjwnsuy" path="res://data/world/world_surface.tres" id="free_surface"]
 [ext_resource type="PackedScene" path="res://scenes/shared/ground_dressing_defaults.tscn" id="ground_dressing"]
-[ext_resource type="Resource" uid="uid://tiqegj7nq1if" path="res://data/waves/endless_health_growth.tres" id="health_growth"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/waves/endless_health_growth.tres" id="health_growth"]
 [ext_resource type="Script" uid="uid://bl1cnu18o3dyt" path="res://scripts/terrain/terrain.gd" id="homestead"]
 [ext_resource type="PackedScene" path="res://scenes/ui/loadout_ui.tscn" id="loadout_ui"]
 [ext_resource type="PackedScene" path="res://scenes/shared/map_effects.tscn" id="map_effects"]
@@ -71,7 +72,7 @@
 [ext_resource type="Resource" uid="uid://dsyfbdx2buknv" path="res://data/player/action_visuals.tres" id="player_action_visuals"]
 [ext_resource type="Resource" path="res://data/player/flight_trail.tres" id="player_flight_trail"]
 [ext_resource type="SpriteFrames" uid="uid://65qht0ymca02" path="res://assets/meowa/player/animations.tres" id="player_frames"]
-[ext_resource type="Resource" uid="uid://dk21ospxtw1xm" path="res://data/player/basic_sword.tres" id="player_sword_rules"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/player/basic_sword.tres" id="player_sword_rules"]
 [ext_resource type="Texture2D" uid="uid://7bwsfpeaisy6" path="res://assets/meowa/player/idle_00.png" id="player_texture"]
 [ext_resource type="Resource" uid="uid://cv33r56galwxu" path="res://data/world/brushes/plaza_arrow.tres" id="plaza_arrow"]
 [ext_resource type="Resource" uid="uid://bqv2am32pkesw" path="res://data/world/brushes/plaza_corner.tres" id="plaza_corner"]
@@ -86,17 +87,20 @@
 [ext_resource type="Resource" uid="uid://b86rpnyleva2o" path="res://data/world/brushes/plaza_vertical.tres" id="plaza_vertical"]
 [ext_resource type="Resource" uid="uid://beujn8yksgieg" path="res://data/world/brushes/plaza_vertical_body.tres" id="plaza_vertical_body"]
 [ext_resource type="Resource" uid="uid://c8syrojp80053" path="res://data/world/brushes/plaza_worn.tres" id="plaza_worn"]
-[ext_resource type="Resource" uid="uid://c6h80t573radv" path="res://data/waves/population/horde_128.tres" id="population_128"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/waves/population/horde_128.tres" id="population_128"]
 [ext_resource type="Resource" uid="uid://dd82euvn5fvgp" path="res://data/player/ricochet_camera.tres" id="ricochet_camera"]
 [ext_resource type="Script" uid="uid://ct6dsst8r0t64" path="res://scripts/world/spawn_world.gd" id="spawn_world"]
 [ext_resource type="Resource" uid="uid://cn4m5amkrc58p" path="res://data/world/world_terrain.tres" id="terrain_data"]
 [ext_resource type="PackedScene" path="res://scenes/buildings/ricochet/urban_equipment_textured.tscn" id="urban_equipment_blockout"]
 [ext_resource type="Script" uid="uid://bp4uf71k3m2pg" path="res://scripts/world/spawn_visual_sample.gd" id="visual_sample"]
-[ext_resource type="Resource" uid="uid://d0nqgxx6ehq22" path="res://data/waves/wave_01.tres" id="wave_01"]
-[ext_resource type="Resource" uid="uid://orhpbkem853w" path="res://data/waves/wave_02.tres" id="wave_02"]
-[ext_resource type="Resource" uid="uid://btpdprjqjy3bm" path="res://data/waves/wave_03.tres" id="wave_03"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/waves/wave_01.tres" id="wave_01"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/waves/wave_02.tres" id="wave_02"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/waves/wave_03.tres" id="wave_03"]
 [ext_resource type="Script" uid="uid://caklrlj8ospwr" path="res://scripts/combat/wave_definition.gd" id="wave_definition"]
 [ext_resource type="PackedScene" path="res://scenes/combat/wave_prototype.tscn" id="wave_prototype"]
+
+[ext_resource type="Script" path="res://scripts/combat/scene_combat_binding.gd" id="combat_binding"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/configuration.tres" id="combat_configuration"]
 
 [sub_resource type="Image" id="Image_mrxq0"]
 data = {
@@ -580,6 +584,10 @@ spawn_point = NodePath("SpawnPoint")
 player = NodePath("Player")
 metadata/battle_only = true
 
+[node name="BattleConfiguration" type="Node" parent="."]
+script = ExtResource("combat_binding")
+configuration = ExtResource("combat_configuration")
+
 [node name="Homestead" type="Node3D" parent="." unique_id=632530697]
 script = ExtResource("homestead")
 data = ExtResource("terrain_data")
@@ -623,10 +631,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 48)
 script = ExtResource("player")
 animations = ExtResource("player_frames")
 movement_camera = NodePath("../MapEffects/Camera3D")
-ricochet_rules = ExtResource("body_ricochet_rules")
 action_visuals = ExtResource("player_action_visuals")
-sword_rules = ExtResource("player_sword_rules")
 flight_trail_settings = ExtResource("player_flight_trail")
+ricochet_rules = ExtResource("body_ricochet_rules")
+sword_rules = ExtResource("player_sword_rules")
 crowd_clearance_distance = 0.12
 
 [node name="MovementAudio" parent="Player" unique_id=2116248796 instance=ExtResource("movement_audio")]
@@ -648,6 +656,8 @@ texture_filter = 0
 texture = ExtResource("player_texture")
 script = ExtResource("character_lighting")
 normal_mapping_enabled = true
+
+[node name="CharacterSkillManager" parent="Player" instance=ExtResource("character_skills")]
 
 [node name="MapEffects" parent="." unique_id=252326751 node_paths=PackedStringArray("terrain", "surface_source", "player", "dressing") instance=ExtResource("map_effects")]
 terrain = NodePath("../Homestead")
@@ -764,6 +774,9 @@ loadout = NodePath("../LoadoutUI")
 return_point = NodePath("../SpawnPoint")
 battle_area = Rect2(-16, 28.8, 32, 32)
 show_ui = false
+spawn_zone_root = NodePath("../BattleArea/SpawnCandidates")
+spawn_excluded_areas = Array[Rect2]([Rect2(-6.4, 44.8, 12.8, 6.4)])
+spawn_block_timeout = 30.0
 population_rules = ExtResource("population_128")
 batch_crowd_enabled = true
 native_chase_enabled = true
@@ -772,9 +785,6 @@ health_growth_rules = ExtResource("health_growth")
 waves = Array[ExtResource("wave_definition")]([ExtResource("wave_01"), ExtResource("wave_02"), ExtResource("wave_03")])
 max_active_enemies = 128
 endless_mode = true
-spawn_zone_root = NodePath("../BattleArea/SpawnCandidates")
-spawn_excluded_areas = Array[Rect2]([Rect2(-6.4, 44.8, 12.8, 6.4)])
-spawn_block_timeout = 30.0
 
 [node name="FanAutoAttack" parent="WavePrototype" index="0"]
 enabled = false
@@ -783,12 +793,11 @@ enabled = false
 enabled = false
 
 [node name="RicochetStorm" parent="WavePrototype" index="4"]
-damage = 50.0
 
 [node name="RunGrowth" parent="WavePrototype" index="5"]
 choice_options = Array[ExtResource("107_2238k")]([SubResource("empty_a"), SubResource("empty_b")])
 
-[node name="InitialSkillChoice" parent="WavePrototype/RunSkills" index="0"]
+[node name="InitialSkillChoice" parent="WavePrototype/SkillDraft" index="0"]
 background_opacity = 0.72
 
 [node name="DamageNumbers" parent="WavePrototype" index="8"]
@@ -1127,3 +1136,5 @@ loadout = NodePath("../LoadoutUI")
 [editable path="GroundDressing"]
 [editable path="MapEffects"]
 [editable path="WavePrototype"]
+
+[editable path="Player/CharacterSkillManager"]

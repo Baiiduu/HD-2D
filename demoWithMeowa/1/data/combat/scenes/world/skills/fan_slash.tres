@@ -1,0 +1,111 @@
+[gd_resource type="Resource" script_class="CombatSkillDefinition" format=3 uid="uid://cqt144cx74o3y"]
+
+[ext_resource type="Texture2D" uid="uid://by41d4nn3etus" path="res://assets/meowa/combat/fan_slash/slash.png" id="1_iuhjq"]
+[ext_resource type="Script" uid="uid://dgnmk10av1ee6" path="res://scripts/combat/combat_skill_level.gd" id="2_wpl46"]
+[ext_resource type="Script" uid="uid://bys5inomsbf0o" path="res://scripts/combat/combat_skill_definition.gd" id="3_08pve"]
+
+[sub_resource type="AtlasTexture" id="icon"]
+atlas = ExtResource("1_iuhjq")
+region = Rect2(75, 75, 240, 200)
+
+[sub_resource type="Resource" id="Resource_j4ofm"]
+script = ExtResource("2_wpl46")
+description = "单段扇击，自动锁定近敌。"
+
+[sub_resource type="Resource" id="Resource_kdhwn"]
+script = ExtResource("2_wpl46")
+description = "斩光延伸，攻击更远。"
+parameters = Dictionary[String, float]({
+"damage_multiplier": 1.2,
+"energy_multiplier": 1.1,
+"range_multiplier": 1.15
+})
+
+[sub_resource type="Resource" id="Resource_dnf2v"]
+script = ExtResource("2_wpl46")
+description = "扇面展开，清理敌群。"
+parameters = Dictionary[String, float]({
+"angle_multiplier": 1.4,
+"damage_multiplier": 1.4,
+"energy_multiplier": 1.2,
+"interval_multiplier": 0.92,
+"range_multiplier": 1.25
+})
+
+[sub_resource type="Resource" id="Resource_ocir3"]
+script = ExtResource("2_wpl46")
+description = "两段交错，各段命中。"
+parameters = Dictionary[String, float]({
+"angle_multiplier": 1.4,
+"combo_turn": 25.0,
+"damage_multiplier": 1.7,
+"energy_multiplier": 1.3,
+"interval_multiplier": 0.95,
+"range_multiplier": 1.35,
+"repeat_gap": 0.06,
+"sweep_count": 2.0
+})
+
+[sub_resource type="Resource" id="Resource_jjbih"]
+script = ExtResource("2_wpl46")
+description = "三段连斩，近身压制。"
+parameters = Dictionary[String, float]({
+"angle_multiplier": 1.6,
+"combo_turn": 30.0,
+"damage_multiplier": 2.0,
+"energy_multiplier": 1.4,
+"interval_multiplier": 0.9,
+"range_multiplier": 1.5,
+"repeat_gap": 0.04,
+"sweep_count": 3.0
+})
+
+[sub_resource type="Resource" id="Resource_tqa5q"]
+script = ExtResource("2_wpl46")
+description = "转为持续旋转斩击，覆盖周身。"
+parameters = Dictionary[String, float]({
+"angle_multiplier": 0.9,
+"continuous_rotation": 1.0,
+"damage_multiplier": 6.0,
+"energy_multiplier": 1.5,
+"hit_interval": 0.4,
+"range_multiplier": 1.65,
+"rotation_speed": 210.0,
+"spin_blades": 1.0
+})
+
+[sub_resource type="Resource" id="Resource_x0h6p"]
+script = ExtResource("2_wpl46")
+description = "双刃同时旋转，更密集地清群。"
+parameters = Dictionary[String, float]({
+"angle_multiplier": 1.0,
+"continuous_rotation": 1.0,
+"damage_multiplier": 7.5,
+"energy_multiplier": 1.6,
+"hit_interval": 0.3,
+"range_multiplier": 1.85,
+"rotation_speed": 300.0,
+"spin_blades": 2.0
+})
+
+[sub_resource type="Resource" id="Resource_2k28n"]
+script = ExtResource("2_wpl46")
+description = "高速双刃无缝旋转。"
+parameters = Dictionary[String, float]({
+"angle_multiplier": 1.1,
+"continuous_rotation": 1.0,
+"damage_multiplier": 10.0,
+"energy_multiplier": 1.8,
+"hit_interval": 0.2,
+"range_multiplier": 2.1,
+"rotation_speed": 420.0,
+"spin_blades": 2.0
+})
+
+[resource]
+script = ExtResource("3_08pve")
+id = &"fan_slash"
+display_name = "扇击"
+description = "由定向扫击成长为持续旋转斩击。"
+icon = SubResource("icon")
+levels = Array[ExtResource("2_wpl46")]([SubResource("Resource_j4ofm"), SubResource("Resource_kdhwn"), SubResource("Resource_dnf2v"), SubResource("Resource_ocir3"), SubResource("Resource_jjbih"), SubResource("Resource_tqa5q"), SubResource("Resource_x0h6p"), SubResource("Resource_2k28n")])

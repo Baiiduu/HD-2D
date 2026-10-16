@@ -55,6 +55,7 @@ func cleanup() -> void:
 func prepare_push() -> PlayerRicochet:
 	var body := player.body_ricochet
 	body._settings = player.ricochet_rules.duplicate()
+	body._settings.enemy_push_enabled = true
 	body._settings.push_stun_seconds = 1.0
 	body._settings.push_radius = 0.5
 	body._pushed.clear()
@@ -222,11 +223,11 @@ func run() -> void:
 	player.sword.set_physics_process(false)
 	player.global_position = wave.global_position+Vector3.UP*0.03
 	check(wave.start_run(),"正式挑战可开始")
-	var skills: RunSkills = wave.get_node("RunSkills")
-	if skills.initial_choice.is_open:
-		skills.initial_choice.reveal_now()
-		skills.initial_choice.select_option(skills.initial_choice._options[0].id)
-		skills.initial_choice.confirm_selection()
+	var skills: RunSkillManager = wave.get_node("RunSkillManager")
+	if wave.skill_draft.initial_choice.is_open:
+		wave.skill_draft.initial_choice.reveal_now()
+		wave.skill_draft.initial_choice.select_option(wave.skill_draft.initial_choice._options[0].id)
+		wave.skill_draft.initial_choice.confirm_selection()
 	for component: Node in skills._components.values(): component.process_mode = Node.PROCESS_MODE_DISABLED
 	wave._spawn_queue.clear()
 	origin = choose_origin()

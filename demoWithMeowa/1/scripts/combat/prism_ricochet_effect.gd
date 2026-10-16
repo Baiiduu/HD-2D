@@ -129,7 +129,7 @@ func _update_head(camera: Camera3D) -> void:
 	var scale := Vector3(head_width * _strength, head_width * _strength * size.y / size.x, 1)
 	if camera:
 		var angle := atan2(_direction.dot(camera.global_basis.y), _direction.dot(camera.global_basis.x))
-		_head.global_basis = camera.global_basis * Basis(Vector3.BACK, angle).scaled(scale)
+		_head.global_basis = camera.global_basis * Basis(Vector3.BACK, angle) * Basis.from_scale(scale)
 	else: _head.scale = scale
 
 func _trim_tail() -> void:

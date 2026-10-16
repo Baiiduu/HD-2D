@@ -12,20 +12,14 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 	var player := $Player as Player
+	player.global_position = $SpawnPoint.global_position
+	player.reset_physics_interpolation()
 	player.bounds = WORLD_RECT.grow(-0.5)
 	var effects := $MapEffects as MapEffects
 	effects.apply_camera_defaults = false
 	var camera := effects.get_map_camera()
 	camera.target = player
-	camera.fov = 28.0
-	camera.distance = 28.0
-	camera.pitch_degrees = 32.0
-	camera.focus_height = 0.9
-	camera.dof_mode = 0
-	camera.dof_amount = 0.065
-	camera.dof_near_margin = 3.0
-	camera.dof_far_margin = 4.0
-	camera.dof_near_transition = 2.5
-	camera.dof_far_transition = 6.0
 	camera.set_world_rect(WORLD_RECT)
 	camera.snap_to_target()
+	# Keep the authored activity bounds on the translated combat terrain.
+	effects._update_boundary_collision(player.bounds, 0.0)

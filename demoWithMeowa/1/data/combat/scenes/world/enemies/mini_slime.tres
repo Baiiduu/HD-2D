@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="WaveMeleeEnemyDefinition" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/enemies/mini_slime.tscn" id="1_p6hlr"]
+[ext_resource type="Script" path="res://scripts/combat/wave_melee_enemy_definition.gd" id="2_43g4l"]
+
+[resource]
+script = ExtResource("2_43g4l")
+body_radius = 0.16
+body_height = 0.34
+separation_radius = 0.4
+separation_strength = 0.8
+pursuit_flank_strength = 0.15
+combat_stop_distance = 0.36
+contact_distance = 0.55
+enemy_id = &"mini_slime"
+scene = ExtResource("1_p6hlr")
+display_name = "蓝胶幼体"
+horde_weight = 0.0
+health = 8.0
+move_speed = 1.6
+attack_damage = 4.0
+experience_reward = 1
+spawn_clearance = 0.25

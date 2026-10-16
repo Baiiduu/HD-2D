@@ -1,8 +1,14 @@
 @tool
 extends RefCounted
 
+const SYSTEM_SWITCH_LABELS := {
+	"run_growth.gd": "升级系统本地开关",
+	"run_skill_draft.gd": "抽卡系统本地开关",
+	"run_skill_manager.gd": "局内技能管理器本地开关",
+}
 const CATEGORIES := ["视觉", "人物", "战斗与成长", "地图与地编", "UI", "声音", "物品与规则"]
 const LABELS := {
+	"configuration": "场景战斗配置", "storm_damage": "奔雷基础伤害", "storm_attack_interval": "奔雷施放间隔", "bottom_bars_collapsed": "隐藏底部装备栏",
 	"crowd_deflection_enabled": "人物接群偏转开关", "crowd_contact_radius": "人物接群距离",
 	"crowd_turn_distance": "绕群接入与脱离过渡长度", "crowd_exit_outward": "接群出射外向分量",
 	"crowd_arc_degrees": "人物沿怪群绕行角度", "enemy_push_enabled": "旧版拨怪开关",
@@ -168,6 +174,8 @@ const LABELS := {
 	"limiter_ceiling_db": "总输出峰值上限",
 }
 const COMMON := {
+	"scene_combat_binding.gd": ["configuration"],
+	"scene_combat_configuration.gd": ["ricochet_rules", "sword_rules", "population_rules", "waves", "max_active_enemies", "endless_mode", "storm_damage", "storm_attack_interval", "crowd_clearance_distance"],
 	"ricochet_camera_settings.gd": ["enabled", "launch_lag_seconds", "lookahead_ratio", "lead_settle_seconds", "bounce_inertia_seconds", "return_seconds", "max_offset_ratio", "impact_shake_pixels"],
 	"damage_numbers.gd": ["enabled", "number_styles", "number_stack_columns", "number_stack_spacing", "number_idle_limit"],
 	"damage_number_style.gd": ["number_font", "number_font_size", "number_color", "number_lifetime", "rise_pixels", "drift_pixels", "pop_scale"],
@@ -239,6 +247,8 @@ func _visit(node: Node, scene: Node) -> void:
 		if child.owner != null: _visit(child, scene)
 
 func category(filename: String, group: String) -> String:
+	if filename == "scene_combat_configuration.gd": return "人物" if group == "人物基础战斗" else "战斗与成长"
+	if filename == "scene_combat_binding.gd": return "战斗与成长"
 	if filename in ["core_feedback_audio.gd", "core_sound_bank.gd"]: return "声音"
 	if filename == "ricochet_camera_settings.gd": return "视觉"
 	if filename in ["damage_numbers.gd", "damage_number_style.gd"]: return "战斗与成长"
@@ -246,9 +256,9 @@ func category(filename: String, group: String) -> String:
 	if filename in ["leaf_charger_definition.gd", "lantern_spitter_definition.gd", "pot_brood_definition.gd", "bell_frog_definition.gd", "creature_enemy.gd", "leaf_charger.gd", "lantern_spitter.gd", "pot_brood.gd", "bell_frog.gd", "mini_slime.gd"]: return "战斗与成长"
 	if filename == "environment_dynamics.gd": return "视觉"
 	if filename in ["game_audio.gd", "bgm.gd", "bgm_track.gd", "bgm_playlist.gd", "player_movement_audio.gd", "movement_sound_bank.gd", "ui_audio.gd", "ui_sound_bank.gd"] or "声音" in group or "音效" in group or "风声" in group: return "声音"
-	if filename in ["player.gd", "player_blink.gd", "player_ricochet_rules.gd", "player_action_visuals.gd", "player_sword_rules.gd", "player_flight_trail_settings.gd", "character_lighting.gd"]: return "人物"
+	if filename in ["character_skill_manager.gd", "player.gd", "player_blink.gd", "player_ricochet_rules.gd", "player_action_visuals.gd", "player_sword_rules.gd", "player_flight_trail_settings.gd", "character_lighting.gd"]: return "人物"
 	if filename == "wave_hud.gd": return "UI"
-	if filename.begins_with("wave_") or filename.begins_with("combat_skill_") or filename.begins_with("mirror_") or filename in ["fan_auto_attack.gd", "prism_ricochet_auto_attack.gd", "prism_ricochet_effect.gd", "slime.gd", "run_growth.gd", "run_skills.gd", "run_buffs.gd", "growth_buff_definition.gd", "growth_buff_effect.gd", "experience_rules.gd", "experience_pickup.gd"]: return "战斗与成长"
+	if filename.begins_with("wave_") or filename.begins_with("combat_skill_") or filename.begins_with("mirror_") or filename in ["fan_auto_attack.gd", "prism_ricochet_auto_attack.gd", "prism_ricochet_effect.gd", "slime.gd", "run_growth.gd", "run_skill_manager.gd", "run_skill_draft.gd", "run_buffs.gd", "growth_buff_definition.gd", "growth_buff_effect.gd", "experience_rules.gd", "experience_pickup.gd"]: return "战斗与成长"
 	if filename in ["spawn_visual_sample.gd", "spawn_visual_preset.gd", "pixel_color_palette.gd", "value_lighting_profile.gd", "art_direction.gd", "weather.gd", "follow_camera.gd", "atmospheric_light.gd", "daylight_preview.gd", "map_effects.gd", "planar_water_reflection.gd"]: return "视觉"
 	if filename in ["training_rules.gd", "loadout_catalog.gd", "equipment_definition.gd", "skill_definition.gd", "item_definition.gd"]: return "物品与规则"
 	if filename.ends_with("_ui.gd") or filename.ends_with("_hud.gd") or filename in ["item_quickbar.gd", "inventory_book_page.gd", "growth_choice_card.gd", "growth_choice_option.gd"]: return "UI"
@@ -276,6 +286,7 @@ func _object(object: Object, path: String, node: Node) -> void:
 			continue
 		if not usage & PROPERTY_USAGE_EDITOR: continue
 		var property: String = info.name
+		if object is Node and _bound_by_configuration(object, property): continue
 		_add(object, path, node, filename, group + (" / " + subgroup if not subgroup.is_empty() else ""), property)
 		var value: Variant = object.get(property)
 		if value is Resource: _resource(value, path + " → " + LABELS.get(property, property), node)
@@ -285,9 +296,28 @@ func _object(object: Object, path: String, node: Node) -> void:
 	if filename == "spawn_visual_sample.gd":
 		for suffix in ["original", "lumina_day", "lumina_rain", "lumina_night"]:
 			_resource(load("res://data/visual/spawn_" + suffix + ".tres"), "风格预设 → " + suffix, node)
-	if filename == "wave_prototype.gd":
+	if filename == "wave_prototype.gd" and not _has_combat_configuration(node):
 		for preset in ["horde_128", "horde_512", "stress_768"]:
 			_resource(load("res://data/waves/population/" + preset + ".tres"), "怪潮数量预设 → " + preset, node)
+
+func _has_combat_configuration(node: Node) -> bool:
+	var current := node
+	while current:
+		if current.has_node("BattleConfiguration"): return true
+		current = current.get_parent()
+	return false
+
+func _bound_by_configuration(node: Node, property: String) -> bool:
+	if not _has_combat_configuration(node): return false
+	var filename: String = node.get_script().resource_path.get_file()
+	if filename == "player.gd": return property in ["ricochet_rules", "sword_rules", "action_visuals", "flight_trail_settings", "crowd_clearance_distance"]
+	if filename == "wave_prototype.gd": return property in ["enemy_catalog", "default_enemy", "population_rules", "health_growth_rules", "waves", "endless_mode", "max_active_enemies", "batch_crowd_enabled", "native_chase_enabled", "slime_ground_movement_enabled"]
+	if filename == "follow_camera.gd": return property == "ricochet_camera_settings"
+	if filename == "run_growth.gd": return property in ["rules", "cards_per_draw", "rerolls_per_run"]
+	if filename == "run_buffs.gd": return property == "definitions"
+	if filename == "damage_numbers.gd": return property == "number_styles"
+	if filename == "ricochet_storm.gd" and property in ["damage", "attack_interval", "trigger_radius", "spread_radius", "max_propagation_radius", "spread_layers", "targets_per_layer", "layer_interval"]: return true
+	return property == "skill_definition" and node.get_parent() is WavePrototype
 
 func _resource(resource: Resource, path: String, node: Node) -> void:
 	if _resources.has(resource.get_instance_id()): return
@@ -304,11 +334,11 @@ func _resource(resource: Resource, path: String, node: Node) -> void:
 				"search": ("视觉 材质 着色器 " + path + " " + name).to_lower()})
 
 func _add(object: Object, path: String, node: Node, filename: String, group: String, property: String) -> void:
-	var label: String = LABELS.get(property, property)
+	var label: String = SYSTEM_SWITCH_LABELS[filename] if property == "enabled" and SYSTEM_SWITCH_LABELS.has(filename) else LABELS.get(property, property)
 	var section := category(filename, group)
 	var description: String = _documentation(object.get_script()).get(property, "")
 	entries.append({"object": object, "node": node, "property": property, "label": label, "category": section,
-		"group": group, "path": path, "common": property in COMMON.get(filename, []) or (object is WaveEnemyDefinition and property in ["stun_duration_multiplier", "horde_weight"]) or (object is WaveMeleeEnemyDefinition and property in ["separation_radius", "separation_strength", "pursuit_lookahead", "pursuit_flank_strength"]),
+		"group": group, "path": path, "common": (property == "enabled" and SYSTEM_SWITCH_LABELS.has(filename)) or property in COMMON.get(filename, []) or (object is WaveEnemyDefinition and property in ["stun_duration_multiplier", "horde_weight"]) or (object is WaveMeleeEnemyDefinition and property in ["separation_radius", "separation_strength", "pursuit_lookahead", "pursuit_flank_strength"]),
 		"description": description, "search": (section + " " + group + " " + path + " " + label + " " + property + " " + description).to_lower()})
 
 func _documentation(script: Script) -> Dictionary:

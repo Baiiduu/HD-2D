@@ -248,7 +248,7 @@ func _read_snapshot() -> Dictionary:
 		"minimum_speed": settings.minimum_bounce_speed, "contact": settings.crowd_contact_radius,
 		"capture": settings.crowd_contact_radius + (settings.eccentric_capture_margin if settings.eccentric_enabled else 0.0),
 		"clearance": settings.eccentric_edge_clearance, "wall_count": _body.bounce_count, "crowd_count": _body.crowd_deflection_count}, true)
-	data.sword = float(player.sword.get_stats(true).get("range", 0.0)) if player.sword and player.sword.rules.enabled else 0.0
+	data.sword = float(player.sword.get_stats(true).get("range", 0.0)) if player.sword and player.sword.enabled else 0.0
 	var storm_stats: Dictionary = _storm._flight_stats if is_instance_valid(_storm) and not _storm._flight_stats.is_empty() else (_storm.get_attack_stats() if is_instance_valid(_storm) else {})
 	data.storm = float(storm_stats.get("range", 0.0)) if is_instance_valid(_storm) and _storm.enabled and _storm.skill_level > 0 else 0.0
 	return data

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GrowthBuffDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/growth/growth_buff_effect.gd" id="1_s1idk"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/journal/symbols/star.png" id="2_2cxav"]
+[ext_resource type="Script" path="res://scripts/growth/growth_buff_definition.gd" id="3_udck4"]
+
+[resource]
+script = ExtResource("3_udck4")
+attribute = 17
+bonus_per_level = 0.25
+id = &"R02"
+title = "动能维持"
+icon = ExtResource("2_2cxav")
+category = 3

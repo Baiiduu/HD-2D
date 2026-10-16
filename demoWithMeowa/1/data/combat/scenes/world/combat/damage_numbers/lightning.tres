@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="DamageNumberStyle" format=3]
+
+[ext_resource type="FontFile" path="res://assets/fonts/press_start_2p/PressStart2P-Regular.ttf" id="1_g1g7q"]
+[ext_resource type="Script" path="res://scripts/combat/damage_number_style.gd" id="2_xq43w"]
+
+[resource]
+script = ExtResource("2_xq43w")
+style_id = &"lightning"
+number_font = ExtResource("1_g1g7q")
+number_font_size = 28
+number_color = Color(0.72, 0.97, 1, 1)
+number_outline_color = Color(0.035, 0.12, 0.24, 1)
+number_lifetime = 0.72
+rise_seconds = 0.12
+rise_pixels = 33.0
+pop_scale = 1.3
+tilt_degrees = 4.0
+number_spark_color = Color(0.3, 0.85, 1, 1)

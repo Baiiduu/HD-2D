@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="DamageNumberStyle" format=3]
+
+[ext_resource type="FontFile" path="res://assets/fonts/press_start_2p/PressStart2P-Regular.ttf" id="1_we733"]
+[ext_resource type="Script" path="res://scripts/combat/damage_number_style.gd" id="2_s2g1h"]
+
+[resource]
+script = ExtResource("2_s2g1h")
+style_id = &"heavy"
+number_font = ExtResource("1_we733")
+number_font_size = 32
+number_color = Color(1, 0.76, 0.3, 1)
+number_lifetime = 0.9
+apex_seconds = 0.1
+rise_pixels = 44.0
+pop_scale = 1.45
+tilt_degrees = 9.0
+number_spark_count = 4

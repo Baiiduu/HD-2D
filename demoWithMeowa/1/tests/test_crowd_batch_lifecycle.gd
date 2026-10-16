@@ -30,11 +30,11 @@ func observe_spawn(enemy: WaveEnemy) -> void:
 	)
 
 func confirm_initial() -> void:
-	var skills := wave.get_node("RunSkills") as RunSkills
-	if skills.initial_choice.is_open:
-		skills.initial_choice.reveal_now()
-		check(skills.initial_choice.select_option(&"initial:light_pierce"), "Actual initial UI accepts a valid skill")
-		skills.initial_choice.confirm_selection()
+	var skills := wave.get_node("RunSkillManager") as RunSkillManager
+	if wave.skill_draft.initial_choice.is_open:
+		wave.skill_draft.initial_choice.reveal_now()
+		check(wave.skill_draft.initial_choice.select_option(wave.skill_draft.initial_choice._options[0].id), "Actual initial UI accepts a valid skill")
+		wave.skill_draft.initial_choice.confirm_selection()
 	for component: Node in skills._components.values(): component.process_mode = Node.PROCESS_MODE_DISABLED
 
 func finish_growth_choices() -> void:
@@ -117,7 +117,7 @@ func run() -> void:
 	index = batch_index
 	growth = wave.get_node("RunGrowth")
 	growth.enabled = false
-	(wave.get_node("RunSkills") as RunSkills).initial_cards_per_draw = 100
+	wave.skill_draft.initial_cards_per_draw = 100
 	wave.enemy_spawned.connect(observe_spawn)
 	root.add_child(world)
 	current_scene = world

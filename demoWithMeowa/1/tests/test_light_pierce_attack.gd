@@ -7,7 +7,7 @@ var terrain: Terrain
 var player: Player
 var camera: Camera3D
 var wave: WavePrototype
-var skills: RunSkills
+var skills: RunSkillManager
 var growth: RunGrowth
 var attack: LightPierceAutoAttack
 var fan: FanAutoAttack
@@ -80,9 +80,9 @@ func run() -> void:
 	player.movement_camera = camera
 	wave = load("res://scenes/combat/wave_prototype.tscn").instantiate()
 	# 只隔离本次接入的两种攻击，其它会话新增的技能保留在正式注册表。
-	wave.get_node("RunSkills").skill_paths.clear()
-	wave.get_node("RunSkills").skill_paths.append(NodePath("../FanAutoAttack"))
-	wave.get_node("RunSkills").skill_paths.append(NodePath("../LightPierceAutoAttack"))
+	wave.get_node("RunSkillManager").skill_paths.clear()
+	wave.get_node("RunSkillManager").skill_paths.append(NodePath("../FanAutoAttack"))
+	wave.get_node("RunSkillManager").skill_paths.append(NodePath("../LightPierceAutoAttack"))
 	wave.player = player
 	wave.terrain = terrain
 	wave.battle_area = Rect2(-12, -12, 24, 24)
@@ -95,28 +95,28 @@ func run() -> void:
 	await settle(10)
 	attack = wave.get_node("LightPierceAutoAttack")
 	fan = wave.get_node("FanAutoAttack")
-	skills = wave.get_node("RunSkills")
+	skills = wave.get_node("RunSkillManager")
 	growth = wave.get_node("RunGrowth")
 	growth.set_physics_process(false)
 	# 战斗与学习检查展示完整候选池，独立于正式界面的随机抽卡规则。
 	growth.cards_per_draw = 100
 	growth.choice_ui.open_duration = 0.0
-	skills.initial_choice.open_duration = 0.0
+	wave.skill_draft.initial_choice.open_duration = 0.0
 	attack.audio_enabled = false
 	check(skills.get_slots().is_empty() and skills.get_level(&"fan_slash") == 0 and skills.get_level(&"light_pierce") == 0, "All registered skills start unlearned")
 	check(not fan.is_physics_processing() and not attack.is_physics_processing() and wave.get_attack_stats().is_empty(), "Unlearned weapons perform no attacks or buff work")
-	check(wave.start_run() and skills.initial_choice.is_open, "Start requests the shared initial choice UI")
+	check(wave.start_run() and wave.skill_draft.initial_choice.is_open, "Start requests the shared initial choice UI")
 	check(wave.phase == WavePrototype.Phase.READY and wave._pending == 0 and not growth.active and not skills.has_learned_skill(), "No waves, experience or free skill before confirmation")
-	check(skills.initial_choice._options.size() == 2 and skills.initial_choice.select_option(&"initial:light_pierce"), "Both actual skills are selectable at the same starting level")
-	skills.initial_choice.cancel()
-	check(not skills.initial_choice.is_open and get_first_node_in_group(&"gameplay_input_blockers") == null and skills.get_slots().is_empty(), "Cancel returns to empty preparation and releases input")
+	check(wave.skill_draft.initial_choice._options.size() == 2 and wave.skill_draft.initial_choice.select_option(&"initial:light_pierce"), "Both actual skills are selectable at the same starting level")
+	wave.skill_draft.initial_choice.cancel()
+	check(not wave.skill_draft.initial_choice.is_open and get_first_node_in_group(&"gameplay_input_blockers") == null and skills.get_slots().is_empty(), "Cancel returns to empty preparation and releases input")
 	check(wave.start_run(), "Initial choice can reopen after cancel")
-	skills.initial_choice.select_option(&"initial:light_pierce")
-	skills.initial_choice.confirm_selection()
+	wave.skill_draft.initial_choice.select_option(&"initial:light_pierce")
+	wave.skill_draft.initial_choice.confirm_selection()
 	attack.set_physics_process(false)
 	check(wave.phase == WavePrototype.Phase.BATTLE and growth.active and skills.get_level(&"light_pierce") == 1 and skills.get_level(&"fan_slash") == 0, "Only the selected weapon is learned before spawning")
 	check(growth.state.level == 1 and growth.state.pending_choices == 0 and skills.get_slots().size() == 1, "Initial selection consumes no XP and adds only the owned HUD slot")
-	check(not wave.start_run() and not skills.initial_choice.is_open, "Active battles cannot start a second selection")
+	check(not wave.start_run() and not wave.skill_draft.initial_choice.is_open, "Active battles cannot start a second selection")
 	wave._spawn_queue.clear()
 	var cards := skills.candidates()
 	check(cards.any(func(card: GrowthChoiceOption): return card.id == &"skill:fan_slash:1") and cards.any(func(card: GrowthChoiceOption): return card.id == &"skill:light_pierce:2"), "Level-up pool offers new learning and existing upgrades together")
@@ -132,7 +132,7 @@ func run() -> void:
 	growth.choice_ui.confirm_selection()
 	attack.set_physics_process(false)
 	check(skills.get_level(&"light_pierce") == 2 and attack.get_attack_stats().targets == 5, "A02 upgrades change actual penetration count")
-	skills._choose(3, &"skill:light_pierce:2")
+	wave.skill_draft._choose(3, &"skill:light_pierce:2")
 	check(skills.get_level(&"light_pierce") == 2, "Stale growth callbacks cannot duplicate upgrades")
 	growth._grant_experience(20)
 	growth.choice_ui.select_option(&"skill:light_pierce:3")
@@ -260,7 +260,7 @@ func run() -> void:
 	set_level(2)
 	advance(0.4)
 	check(buffed.health == 988.0 and shot.stats.targets == 3, "A launched shot keeps its damage and penetration snapshot across upgrades")
-	check(is_equal_approx(attack.get_attack_stats().damage, 17.28) and is_equal_approx(attack.get_attack_stats().interval, 1.035) and attack.get_attack_stats().distance == 8.0, "New shots apply shared damage/cooldown once and never turn area bonus into range")
+	check(is_equal_approx(attack.get_attack_stats().damage, 17.28) and is_equal_approx(attack.get_attack_stats().interval, 1.15 / 1.12) and attack.get_attack_stats().distance == 8.0, "New shots apply shared damage and additive attack speed once without turning area bonus into range")
 	attack.cancel_current()
 	attack._cooldown = 0.0
 	check(attack.fire(), "Next shot uses upgraded stats")
@@ -291,16 +291,16 @@ func run() -> void:
 	attack.hit_landed.disconnect(end_on_hit)
 	wave._finish("test", WavePrototype.Outcome.RETREAT)
 	wave.retry()
-	check(wave.phase == WavePrototype.Phase.READY and skills.initial_choice.is_open and skills.get_slots().is_empty() and not attack.is_physics_processing(), "Retry resets all skills and requests a new initial choice")
-	skills._choose(10, &"skill:light_pierce:3")
+	check(wave.phase == WavePrototype.Phase.READY and wave.skill_draft.initial_choice.is_open and skills.get_slots().is_empty() and not attack.is_physics_processing(), "Retry resets all skills and requests a new initial choice")
+	wave.skill_draft._choose(10, &"skill:light_pierce:3")
 	check(skills.get_slots().is_empty(), "Old pending callbacks cannot grant skills in the next preparation")
-	skills.initial_choice.select_option(&"initial:fan_slash")
-	skills.initial_choice.confirm_selection()
+	wave.skill_draft.initial_choice.select_option(&"initial:fan_slash")
+	wave.skill_draft.initial_choice.confirm_selection()
 	fan.set_physics_process(false)
 	check(fan.skill_level == 1 and attack.skill_level == 0 and wave.phase == WavePrototype.Phase.BATTLE and growth.state.level == 1, "A01 follows the same initial flow after retry")
 	wave.retreat()
 	wave.return_home()
-	check(skills.get_slots().is_empty() and not skills.initial_choice.is_open and get_first_node_in_group(&"gameplay_input_blockers") == null, "Return releases choices and clears temporary skills")
+	check(skills.get_slots().is_empty() and not wave.skill_draft.initial_choice.is_open and get_first_node_in_group(&"gameplay_input_blockers") == null, "Return releases choices and clears temporary skills")
 	scene.free()
 	await settle()
 	await create_timer(0.3).timeout

@@ -57,10 +57,27 @@ func run() -> void:
 
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
 	world.get_node("LoadoutUI").save_enabled = false
-	world.get_node("Player").sword_rules = null
+	# 此用例验收数值和冻结，声音由专项用例验收，避免退出时留下播放线程。
+	world.get_node("MapEffects/BGM").music_enabled = false
+	world.get_node("MapEffects/Weather").rain_audio_enabled = false
+	world.get_node("MapEffects/Weather").wind_audio_enabled = false
+	for node in world.find_children("*", "Node", true, false):
+		if node is UIAudio or node is CoreFeedbackAudio: node.enabled = false
+	var profile := world.get_node("BattleConfiguration").configuration as SceneCombatConfiguration
+	profile = profile.duplicate() as SceneCombatConfiguration
+	profile.sword_rules = null
+	profile.growth_definitions.assign([damage, cooldown, coverage])
+	world.get_node("BattleConfiguration").configuration = profile
 	world.get_node("WavePrototype/RunGrowth").enabled = true
 	world.get_node("WavePrototype/FanAutoAttack").enabled = true
-	world.get_node("WavePrototype/RunBuffs").definitions.assign([damage, cooldown, coverage])
+	# 数值用例独立于正式地图美术摆放，保留真实地形与战斗组件。
+	var details := world.get_node("WorldDetails")
+	world.remove_child(details)
+	details.free()
+	for prop in world.get_children():
+		if prop is PlazaProp:
+			world.remove_child(prop)
+			prop.free()
 	root.add_child(world)
 	current_scene = world
 	for frame in 12: await physics_frame
@@ -69,7 +86,7 @@ func run() -> void:
 	var buffs: RunBuffs = wave.get_node("RunBuffs")
 	buffs.definitions[0] = buffs.definitions[0].duplicate() as GrowthBuffDefinition
 	var fan: FanAutoAttack = wave.get_node("FanAutoAttack")
-	var skills: RunSkills = wave.get_node("RunSkills")
+	var skills: RunSkillManager = wave.get_node("RunSkillManager")
 	var player: Player = world.get_node("Player")
 	var definition := fan.skill_definition
 	player.set_physics_process(false)
@@ -80,18 +97,23 @@ func run() -> void:
 	fan.audio_enabled = false
 	growth.choice_ui.open_duration = 0.0
 	growth.cards_per_draw = 100
-	skills.initial_choice.open_duration = 0.0
-	skills.initial_cards_per_draw = 100
+	wave.skill_draft.initial_choice.open_duration = 0.0
+	wave.skill_draft.initial_cards_per_draw = 100
 	player.global_position = wave._path.ground_position(wave.global_position) + Vector3.UP * 0.03
 	check(wave.start_run(), "Real challenge starts")
-	check(skills.initial_choice.select_option(&"initial:fan_slash"), "Choose actual initial A01 before buff checks")
-	skills.initial_choice.confirm_selection()
+	check(wave.skill_draft.initial_choice.select_option(&"initial:fan_slash"), "Choose actual initial A01 before buff checks")
+	wave.skill_draft.initial_choice.confirm_selection()
 	fan.set_physics_process(false)
-	player.global_position = world.get_node("BattleArea").global_position + Vector3(-20.0, 0.03, 0.0)
+	player.global_position = wave._path.ground_position(wave.global_position) + Vector3.UP * 0.03
 	(world.get_node("MapEffects/Camera3D") as FollowCamera).snap_to_target()
 	for frame in 8: await process_frame
 	wave._spawn_queue.clear()
-	check(wave._spawn_enemy(), "Real monster spawns")
+	var spawned := wave._spawn_enemy()
+	check(spawned, "Real monster spawns")
+	if not spawned:
+		world.free()
+		quit(1)
+		return
 	var enemy := wave.enemies[-1]
 	enemy.spawn_delay = 0.0
 	enemy.set_physics_process(false)
@@ -119,8 +141,7 @@ func run() -> void:
 	near(wave.combat_modifiers.damage_multiplier(), 1.2, "Editing configuration cannot change an already presented award")
 	buffs.definitions[0].bonus_per_level = 0.2
 	# Remaining lifecycle checks isolate buffs after validating the real combined pool.
-	skills._components.clear()
-	skills.reset()
+	growth.candidate_provider = buffs.candidates
 	near(fan.get_combat_stats().damage, 12.0, "Choosing a card changes real attack damage")
 	growth._grant_experience(15)
 	choose(growth, &"P02")

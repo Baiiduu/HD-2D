@@ -54,12 +54,9 @@ func add_enemy(wave: BudgetWave, warning := 0.0) -> WaveEnemy:
 	enemy.spawn_delay = warning
 	enemy.set_physics_process(false)
 	wave.add_child(enemy)
-	wave.enemies.append(enemy)
+	wave._enemy_roster.register(enemy)
 	# Match the real spawn registration; warning eligibility is sampled per visit.
 	wave._reachability_last[enemy.get_instance_id()] = wave._reachability_clock
-	wave._alive_by_definition[enemy.definition] = 1
-	wave._alive_by_role[enemy.definition.role] += 1
-	wave._population_cost += enemy.definition.population_cost
 	return enemy
 
 func count_calls(wave: BudgetWave, enemy: WaveEnemy) -> int:

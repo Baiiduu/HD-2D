@@ -71,8 +71,7 @@ func _bind() -> void:
 		growth.experience_collected.connect(_experience)
 		growth.state.levels_gained.connect(func(_count: int): _play_ui(&"level_up"))
 		_bind_choices(growth.choice_ui)
-	var skills := session.get_node_or_null("RunSkills") as RunSkills
-	if skills: _bind_choices(skills.initial_choice)
+	if session.skill_draft: _bind_choices(session.skill_draft.initial_choice)
 	for enemy in session.enemies: _enemy_spawned(enemy)
 	_ui.enabled = enabled
 

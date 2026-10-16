@@ -121,6 +121,7 @@ var _animation_frame := 0
 var _animation_elapsed := 0.0
 var _movement_speed := 0.0
 var _run_session: WavePrototype
+var skill_manager: CharacterSkillManager
 var _facing: StringName = &"side"
 var _side_flip_h := false
 var _landing_remaining := 0.0
@@ -193,15 +194,15 @@ func _ready() -> void:
 	_sync_vitals()
 	if animations:
 		sprite.texture = animations.get_frame_texture(_animation, 0)
-	_blink = PlayerBlink.new()
-	_blink.name = "Blink"
-	add_child(_blink)
 	action_animator = PlayerActionAnimator.new()
 	action_animator.player = self
 	action_animator.visuals = action_visuals
-	body_ricochet = PlayerRicochet.new()
-	body_ricochet.name = "BodyRicochet"
-	add_child(body_ricochet)
+	skill_manager = get_node_or_null("CharacterSkillManager") as CharacterSkillManager
+	if not skill_manager:
+		skill_manager = load("res://scenes/player/character_skills.tscn").instantiate() as CharacterSkillManager
+		add_child(skill_manager)
+	_blink = skill_manager.dash
+	body_ricochet = skill_manager.body_ricochet
 	if flight_trail_settings:
 		flight_trail = PlayerFlightTrail.new()
 		flight_trail.name = "FlightTrail"
@@ -210,6 +211,15 @@ func _ready() -> void:
 		sword = PlayerSword.new()
 		sword.name = "BasicSword"
 		add_child(sword)
+	skill_manager.configure(ricochet_rules != null and ricochet_rules.enabled, blink_enabled)
+	if _run_session:
+		_run_session.combat_frozen_changed.connect(skill_manager.set_combat_frozen)
+		_run_session.phase_changed.connect(_on_skill_phase_changed)
+		skill_manager.set_combat_frozen(_run_session.combat_frozen)
+
+func _on_skill_phase_changed(phase: WavePrototype.Phase) -> void:
+	if phase == WavePrototype.Phase.READY: skill_manager.reset()
+	elif phase == WavePrototype.Phase.RESULT: skill_manager.cancel_actions()
 
 func _process(delta: float) -> void:
 	if _blink.active and _blink.movement_locked:
@@ -266,9 +276,9 @@ func _physics_process(delta: float) -> void:
 			_animation_frame = 0
 			_animation_elapsed = 0.0
 		return
-	if not input_blocked and Input.is_action_just_pressed(&"blink"):
+	if not input_blocked and not skill_manager.combat_frozen and skill_manager.is_skill_enabled(CharacterSkillManager.DASH) and Input.is_action_just_pressed(&"blink"):
 		body_ricochet.cancel()
-		_blink.request(movement)
+		skill_manager.request_dash(movement)
 	if body_ricochet.charging and (not is_on_floor() or Input.is_action_just_pressed(&"jump")): body_ricochet.cancel()
 	if _blink.active:
 		# 朝向与跳跃锁定；瞬移定格结束后，收尾阶段可立即恢复走路。

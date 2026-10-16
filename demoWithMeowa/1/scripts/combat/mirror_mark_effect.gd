@@ -133,7 +133,7 @@ func _update_pose(point: Vector3, facing: Basis) -> void:
 	# 镜面法线固定在世界中；Q/E 只改变投影，不改变实际反射方向。
 	var tangent := Vector3.UP.cross(normal)
 	var angle := atan2(tangent.dot(facing.y), tangent.dot(facing.x))
-	_sprite.global_basis = facing * Basis(Vector3.BACK, angle).scaled(Vector3(size.x, size.y, 1))
+	_sprite.global_basis = facing * Basis(Vector3.BACK, angle) * Basis.from_scale(Vector3(size.x, size.y, 1))
 
 func _new_material(rect: Rect2) -> ShaderMaterial:
 	var material := EFFECT_LAYER.material(PIXEL_SHADER)

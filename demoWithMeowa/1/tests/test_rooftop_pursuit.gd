@@ -20,8 +20,12 @@ func finish(scene: Node) -> void:
 	var wave: WavePrototype = scene.get_node("WavePrototype")
 	if wave.phase == WavePrototype.Phase.BATTLE: wave.retreat()
 	await settle()
+	for audio in scene.find_children("*", "AudioStreamPlayer", true, false): audio.stop()
+	scene.get_node("MapEffects/GameAudio").stop_all()
+	await create_timer(0.15).timeout
 	scene.queue_free()
 	await settle()
+	await create_timer(0.1).timeout
 	print("Rooftop pursuit: %d checks, %d failures" % [checks, failures.size()])
 	quit(0 if failures.is_empty() else 1)
 
@@ -81,7 +85,23 @@ func navigation_checks() -> void:
 
 func run() -> void:
 	var scene: Node3D = load("res://scenes/world/world.tscn").instantiate()
+	preload("res://tests/fixtures/combat_scene_fixture.gd").clear_placed_obstacles(scene)
+	# 保留真实地形和寻路，以固定实体几何验证屋顶回退，不依赖地编节点名称。
+	for index in 3:
+		var building := StaticBody3D.new()
+		building.name = "PursuitBuilding%d" % index
+		var shape := CollisionShape3D.new()
+		var box := BoxShape3D.new()
+		box.size = Vector3(2.5, 1.2 + index * 0.6, 2.5)
+		shape.shape = box
+		building.add_child(shape)
+		building.position = Vector3(-6 + index * 6, box.size.y * 0.5, 44)
+		scene.add_child(building)
 	scene.get_node("LoadoutUI").save_enabled = false
+	scene.get_node("MapEffects/BGM").music_enabled = false
+	scene.get_node("MapEffects/Weather").rain_audio_enabled = false
+	scene.get_node("MapEffects/Weather").wind_audio_enabled = false
+	scene.get_node("MapEffects/CoreFeedbackAudio").enabled = false
 	scene.get_node("WavePrototype/RunGrowth").enabled = false
 	scene.get_node("WavePrototype/FanAutoAttack").enabled = false
 	root.add_child(scene)
@@ -93,19 +113,20 @@ func run() -> void:
 	wave.set_physics_process(false)
 	player.global_position = wave.global_position + Vector3.UP * 0.03
 	# Pursuit assertions require a running challenge, not a random fan card draw.
-	var skills: RunSkills = wave.get_node("RunSkills")
-	skills.initial_cards_per_draw = skills.skill_paths.size()
+	var skills: RunSkillManager = wave.get_node("RunSkillManager")
+	wave.skill_draft.initial_cards_per_draw = skills.skill_paths.size()
 	var requested := wave.start_run()
-	var initial_choice := scene.get_node_or_null("WavePrototype/RunSkills/InitialSkillChoice") as GrowthChoiceUI
+	var initial_choice := scene.get_node_or_null("WavePrototype/SkillDraft/InitialSkillChoice") as GrowthChoiceUI
 	if initial_choice and initial_choice.is_open:
 		initial_choice.reveal_now()
-		initial_choice.select_option(&"initial:fan_slash")
+		initial_choice.select_option(initial_choice._options[0].id)
 		initial_choice.confirm_selection()
 	check(requested and wave.phase == WavePrototype.Phase.BATTLE, "Challenge starts on current battle map")
 	# 学习初始技能会重新开启对应组件；本测试只观察追击和怪物攻击。
 	scene.get_node("WavePrototype/FanAutoAttack").enabled = false
 	var pierce := scene.get_node_or_null("WavePrototype/LightPierceAutoAttack")
 	if pierce: pierce.set("enabled", false)
+	for component: Node in skills._components.values(): component.process_mode = Node.PROCESS_MODE_DISABLED
 	wave._spawn_queue.clear()
 	check(wave._spawn_enemy(), "Ground target permits initial slime spawn")
 	if wave.enemies.is_empty():
@@ -113,7 +134,7 @@ func run() -> void:
 		return
 	var slime := wave.enemies[0] as SlimeEnemy
 	slime.spawn_delay = 0.0
-	for prop_path in ["WorldDetails/BattleCourts/TreePlanter", "WorldDetails/BattleCourts/OctagonalPillar20", "WorldDetails/BattleCourts/CrateRow22"]:
+	for prop_path in ["PursuitBuilding0", "PursuitBuilding1", "PursuitBuilding2"]:
 		var prop: Node3D = scene.get_node(prop_path)
 		var collider := prop.find_children("*", "CollisionShape3D", true, false)[0] as CollisionShape3D
 		var center := collider.global_position
@@ -146,7 +167,8 @@ func run() -> void:
 		if wave.phase != WavePrototype.Phase.BATTLE:
 			await finish(scene)
 			return
-		var landing_id := wave._path.graph.get_closest_point(wave._path.ground_position(roof + Vector3(-signf(roof.x) * 5.0, 0, 0)))
+		var landing_offset := Vector3(0, 0, 5) if is_zero_approx(roof.x) else Vector3(-signf(roof.x) * 5.0, 0, 0)
+		var landing_id := wave._path.graph.get_closest_point(wave._path.ground_position(roof + landing_offset))
 		player.global_position = wave._path.graph.get_point_position(landing_id) + Vector3.UP * 0.03
 		slime._route_clock = 0.0
 		before = slime.global_position

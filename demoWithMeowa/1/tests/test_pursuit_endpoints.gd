@@ -24,11 +24,11 @@ func start(from: Vector3, target: Vector3) -> SlimeEnemy:
 	wave.player.body_ricochet.cancel(true)
 	wave.player.global_position = wave._path.ground_position(wave.global_position) + Vector3.UP*0.03
 	check(wave.start_run(), "正式挑战可以开始")
-	var skills: RunSkills = wave.get_node("RunSkills")
-	if skills.initial_choice.is_open:
-		skills.initial_choice.reveal_now()
-		skills.initial_choice.select_option(skills.initial_choice._options[0].id)
-		skills.initial_choice.confirm_selection()
+	var skills: RunSkillManager = wave.get_node("RunSkillManager")
+	if wave.skill_draft.initial_choice.is_open:
+		wave.skill_draft.initial_choice.reveal_now()
+		wave.skill_draft.initial_choice.select_option(wave.skill_draft.initial_choice._options[0].id)
+		wave.skill_draft.initial_choice.confirm_selection()
 	for component: Node in skills._components.values(): component.process_mode = Node.PROCESS_MODE_DISABLED
 	wave._spawn_queue.clear()
 	check(wave._spawn_enemy(), "真实战斗史莱姆可生成")

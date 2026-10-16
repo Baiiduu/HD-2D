@@ -38,7 +38,7 @@ func _attribute_changed(attribute: A, preview: RunCombatModifiers) -> bool:
 		return is_instance_valid(session.player) and not is_equal_approx(session.player.get_movement_speed(), session.player.get_movement_speed(preview))
 	if attribute == A.PICKUP_RADIUS:
 		var growth := session.get_node("RunGrowth") as RunGrowth
-		return growth.enabled and not is_equal_approx(growth.get_attraction_radius(), growth.get_attraction_radius(preview))
+		return growth.is_enabled() and not is_equal_approx(growth.get_attraction_radius(), growth.get_attraction_radius(preview))
 	if not is_instance_valid(session.player) or not session.player.body_ricochet or not session.player.ricochet_rules or not session.player.ricochet_rules.validation_error().is_empty(): return false
 	if attribute in [A.PUSH_RADIUS, A.PUSH_FORCE, A.PUSH_DURATION, A.PUSH_STUN] and not session.player.ricochet_rules.enemy_push_enabled: return false
 	var body: PlayerRicochet = session.player.body_ricochet
@@ -58,7 +58,7 @@ func _attribute_changed(attribute: A, preview: RunCombatModifiers) -> bool:
 func _has_effect(definition: GrowthBuffDefinition) -> bool:
 	var current: RunCombatModifiers = session.combat_modifiers
 	if not current.can_apply(definition): return false
-	if definition.is_ricochet() and (not is_instance_valid(session.player) or not session.player.ricochet_rules or not session.player.ricochet_rules.enabled): return false
+	if definition.is_ricochet() and (not is_instance_valid(session.player) or not session.player.body_ricochet or not session.player.body_ricochet.enabled): return false
 	var preview := current.preview_after(definition)
 	var has_benefit := false
 	var gains := current.gains_for(definition)

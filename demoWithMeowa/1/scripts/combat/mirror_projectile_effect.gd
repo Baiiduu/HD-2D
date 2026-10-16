@@ -107,7 +107,7 @@ func _orient(mesh: MeshInstance3D, point: Vector3, direction: Vector3, camera: C
 	var facing := camera.global_basis if camera else Basis.IDENTITY
 	var angle := atan2(direction.dot(facing.y), direction.dot(facing.x))
 	var size := head_texture.get_size() * pixel_size
-	mesh.global_basis = facing * Basis(Vector3.BACK, angle).scaled(Vector3(size.x, size.y, 1))
+	mesh.global_basis = facing * Basis(Vector3.BACK, angle) * Basis.from_scale(Vector3(size.x, size.y, 1))
 
 func _material(texture: Texture2D) -> ShaderMaterial:
 	var material := EFFECT_LAYER.material(MirrorMarkEffect.PIXEL_SHADER)

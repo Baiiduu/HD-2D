@@ -23,9 +23,10 @@ var movement_locked: bool:
 
 func _ready() -> void:
 	_player = get_parent() as Player
+	if not _player: _player = get_parent().get_parent() as Player
 
 func request(movement: Vector3) -> void:
-	if not _player.blink_enabled or not _player.is_on_floor():
+	if _frozen() or not _enabled() or not _player.is_on_floor():
 		return
 	if not try_start(movement):
 		# 只缓存短时间内的新按键，避免收尾/冷却边界吞掉输入。
@@ -36,7 +37,7 @@ func discard_buffered_input() -> void:
 	_buffer_remaining = 0.0
 
 func try_start(movement: Vector3) -> bool:
-	if active or _cooldown > 0.0 or not _player.blink_enabled or not _player.is_on_floor():
+	if _frozen() or active or _cooldown > 0.0 or not _enabled() or not _player.is_on_floor():
 		return false
 	if get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null:
 		return false
@@ -65,6 +66,10 @@ func try_start(movement: Vector3) -> bool:
 	return true
 
 func advance(delta: float) -> void:
+	if _frozen(): return
+	if not _enabled():
+		cancel()
+		return
 	_cooldown = maxf(0.0, _cooldown - delta)
 	_buffer_remaining = maxf(0.0, _buffer_remaining - delta)
 	if get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null:
@@ -151,6 +156,7 @@ func _spawn_echo(point: Vector3, index: int) -> void:
 		"lifetime": maxf(_player.blink_echo_lifetime, 0.05), "opacity": opacity})
 
 func _process(delta: float) -> void:
+	if _frozen(): return
 	for index in range(_echoes.size() - 1, -1, -1):
 		var echo := _echoes[index]
 		echo.elapsed += delta
@@ -167,6 +173,16 @@ func _finish() -> void:
 	_player._animation_elapsed = 0.0
 	if _player.animations and _player.animations.has_animation(_player._animation):
 		_player.sprite.texture = _player.animations.get_frame_texture(_player._animation, 0)
+
+func _frozen() -> bool:
+	return is_instance_valid(_player.skill_manager) and _player.skill_manager.combat_frozen
+
+func _enabled() -> bool:
+	return _player.skill_manager.is_skill_enabled(CharacterSkillManager.DASH) if is_instance_valid(_player.skill_manager) else _player.blink_enabled
+
+func cancel() -> void:
+	discard_buffered_input()
+	if active: _finish()
 
 func _exit_tree() -> void:
 	for echo in _echoes:

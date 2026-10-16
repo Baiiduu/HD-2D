@@ -21,6 +21,11 @@ const GREEN := Color("92d5b0")
 @export_group("装备与技能界面")
 ## 打开/关闭界面的按键；ESC 也可关闭。
 @export var toggle_key: Key = KEY_TAB
+## 只折叠底部快捷栏；背包、属性、战斗和输入状态不受影响。
+@export var bottom_bars_collapsed := false:
+	set(value):
+		bottom_bars_collapsed = value
+		_sync_bottom_bars()
 ## 可装配技能的界面槽位数量，可按后续玩法调整。
 @export_range(1, 8, 1) var skill_slot_count := 4:
 	set(value):
@@ -117,6 +122,7 @@ var _legacy_search: LineEdit
 var _foundation: TextureRect
 var _inventory_book: InventoryBookPage
 var _item_bar: ItemQuickbar
+var _bottom_toggle: Button
 var _audio: UIAudio
 var _filter: OptionButton
 var _status: Label
@@ -254,6 +260,7 @@ func _finish_close() -> void:
 	_attribute_hud.show()
 	_item_bar.show()
 	_item_bar.update_layout.call_deferred()
+	_sync_bottom_bars()
 	_input_guard.hide()
 	_save()
 
@@ -500,6 +507,13 @@ func _build_ui() -> void:
 	_item_bar.audio = _audio
 	_item_bar.reparent(_root)
 	_item_bar.bind_state(state,_hud)
+	_bottom_toggle = Button.new()
+	_bottom_toggle.name = "BottomBarsToggle"
+	_bottom_toggle.focus_mode = Control.FOCUS_NONE
+	_bottom_toggle.theme = _theme
+	_bottom_toggle.add_theme_font_size_override("font_size", 16)
+	_bottom_toggle.pressed.connect(func(): bottom_bars_collapsed = not bottom_bars_collapsed)
+	_root.add_child(_bottom_toggle)
 	_attribute_hud = $AttributeHUD as AttributeHUD
 	_attribute_hud.reparent(_root)
 	_attribute_hud.player = player
@@ -524,6 +538,17 @@ func _fit_window() -> void:
 		_hud.update_layout()
 	if _item_bar:
 		_item_bar.update_layout()
+	if _bottom_toggle:
+		_bottom_toggle.position = Vector2(maxf(8.0, viewport.x - 132.0), maxf(8.0, viewport.y - 42.0))
+		_bottom_toggle.size = Vector2(120, 32)
+	_sync_bottom_bars()
+
+func _sync_bottom_bars() -> void:
+	if not is_instance_valid(_bottom_toggle): return
+	_bottom_toggle.text = "展开装备栏" if bottom_bars_collapsed else "隐藏装备栏"
+	_bottom_toggle.visible = not menu_open
+	if _hud: _hud.visible = not bottom_bars_collapsed and not menu_open
+	if _item_bar: _item_bar.visible = not bottom_bars_collapsed and (not menu_open or (current_page == 0 and _equipment_tab == 1))
 
 func _tab_pressed(tab: int) -> void:
 	var previous_tab := 2 if current_page == 1 else _equipment_tab
@@ -606,7 +631,7 @@ func _refresh() -> void:
 	_search = _inventory_book.search if inventory_mode else _legacy_search
 	for control in [_left,_entries,_detail_scroll,_actions,_title,_count,_detail_name,_detail_icon,_legacy_search,_chips]:
 		control.visible = not inventory_mode
-	_item_bar.visible = not menu_open or inventory_mode
+	_sync_bottom_bars()
 	_title.text = "背包" if current_page == 0 else "技能"
 	for tab in 3:
 		var active := (tab == _equipment_tab and current_page == 0) or (tab == 2 and current_page == 1)

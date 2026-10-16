@@ -62,15 +62,21 @@ func wall(offset: Vector3) -> StaticBody3D:
 func run() -> void:
 	world = load("res://scenes/world/world.tscn").instantiate()
 	world.get_node("LoadoutUI").save_enabled = false
+	world.get_node("MapEffects/BGM").music_enabled = false
+	world.get_node("MapEffects/Weather").rain_audio_enabled = false
+	world.get_node("MapEffects/Weather").wind_audio_enabled = false
+	world.get_node("MapEffects/CoreFeedbackAudio").enabled = false
 	# 隔离扫掠与反射的夹具；正式地图的地编、相机与存档不改动。
-	load("res://scripts/previews/prop_preview_stage.gd").prepare(world)
+	var fixture := preload("res://tests/fixtures/combat_scene_fixture.gd")
+	fixture.clear_placed_obstacles(world)
+	fixture.enable_legacy_skills(world)
 	root.add_child(world)
 	current_scene = world
 	await settle(12)
 	wave = world.get_node("WavePrototype")
 	attack = wave.get_node("MirrorMarkAutoAttack")
 	var player: Player = world.get_node("Player")
-	var skills: RunSkills = wave.get_node("RunSkills")
+	var skills: RunSkillManager = wave.get_node("RunSkillManager")
 	var growth: RunGrowth = wave.get_node("RunGrowth")
 	player.set_physics_process(false)
 	wave.set_physics_process(false)
@@ -78,12 +84,12 @@ func run() -> void:
 	attack.audio_enabled = false
 	player.global_position = wave._path.ground_position(wave.global_position) + Vector3.UP * 0.03
 	check(attack.skill_level == 0 and not attack.is_physics_processing(), "未学习时不消耗战斗更新")
-	check(skills.initial_cards_per_draw == 3, "正式开局仍是抽三张，而非新增技能后展示全部")
-	skills.initial_cards_per_draw = 100
+	check(wave.skill_draft.initial_cards_per_draw == 3, "正式开局仍是抽三张，而非新增技能后展示全部")
+	wave.skill_draft.initial_cards_per_draw = 100
 	check(wave.start_run() and wave.phase == WavePrototype.Phase.READY, "开局等待实际技能选择")
-	check(skills._initial_pool.size() == skills._components.size() and skills._initial_offered.has(&"initial:mirror_mark"), "镜印进入完整初始池并兼容新增技能")
-	skills.initial_choice.close()
-	skills._choose_initial(&"initial:mirror_mark")
+	check(wave.skill_draft._initial_pool.size() == skills._components.size() and wave.skill_draft._initial_offered.has(&"initial:mirror_mark"), "镜印进入完整初始池并兼容新增技能")
+	wave.skill_draft.initial_choice.close()
+	wave.skill_draft._choose_initial(&"initial:mirror_mark")
 	check(wave.phase == WavePrototype.Phase.BATTLE and skills.get_level(&"mirror_mark") == 1, "初始选择实际学习镜印并开始波次")
 	attack.set_physics_process(false)
 	wave._spawn_queue.clear()
@@ -191,17 +197,17 @@ func run() -> void:
 	wave.combat_modifiers.apply_buff(load("res://data/growth/cooldown.tres"))
 	wave.combat_modifiers.apply_buff(load("res://data/growth/range.tres"))
 	var boosted := attack.get_attack_stats()
-	check(is_equal_approx(boosted.damage, raw.damage * 1.2) and is_equal_approx(boosted.interval, raw.interval * 0.9), "共享伤害与冷却增益只叠加一次")
+	check(is_equal_approx(boosted.damage, raw.damage * 1.2) and is_equal_approx(boosted.interval, raw.interval / 1.12), "共享伤害与加法攻速增益只叠加一次")
 	check(boosted.distance == raw.distance and not attack.get_combat_stats().has("range"), "通用覆盖范围不虚报纯弹丸收益")
 	for level in range(2, 5):
 		skills.candidates()
-		skills._choose(growth.state.level, StringName("skill:mirror_mark:%d" % level))
+		wave.skill_draft._choose(growth.state.level, StringName("skill:mirror_mark:%d" % level))
 	check(skills.get_level(&"mirror_mark") == 4 and attack.get_attack_stats().count == 2, "真实升级到四级，齐射两枚各自结算")
 	check(not skills.candidates().any(func(option): return String(option.id).begins_with("skill:mirror_mark:")), "满级镜印退出成长候选池")
 	check(skills.candidates().any(func(option): return option.id == &"skill:fan_slash:1"), "镜印开局后仍可学习其它武器")
 	# 同一局通过真实升级选择学习 A01，验证其命中不受镜印干预。
 	skills.candidates()
-	skills._choose(growth.state.level, &"skill:fan_slash:1")
+	wave.skill_draft._choose(growth.state.level, &"skill:fan_slash:1")
 	var fan: FanAutoAttack = wave.get_node("FanAutoAttack")
 	fan.set_physics_process(false)
 	fan.audio_enabled = false
@@ -245,6 +251,9 @@ func run() -> void:
 	skills.reset()
 	check(attack.skill_level == 0 and not attack.is_physics_processing(), "重开通过现有技能流程清空镜印成长")
 	clear_mobs()
+	for audio in world.find_children("*", "AudioStreamPlayer", true, false): audio.stop()
+	world.get_node("MapEffects/GameAudio").stop_all()
+	await create_timer(0.15).timeout
 	world.free()
 	await settle()
 	print("Mirror mark: ", checks, " checks, ", failures, " failures")

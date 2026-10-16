@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="WaveEnemyCatalog" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/wave_enemy_definition.gd" id="1_pmie8"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/wave_slime.tres" id="2_mjtfn"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/leaf_charger.tres" id="3_oacwo"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/lantern_spitter.tres" id="4_wm6ui"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/pot_brood.tres" id="5_7mffn"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/bell_frog.tres" id="6_wfnit"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/mini_slime.tres" id="7_jdhfg"]
+[ext_resource type="Script" path="res://scripts/combat/wave_enemy_catalog.gd" id="8_dv4uu"]
+
+[resource]
+script = ExtResource("8_dv4uu")
+enemies = Array[ExtResource("1_pmie8")]([ExtResource("2_mjtfn"), ExtResource("3_oacwo"), ExtResource("4_wm6ui"), ExtResource("5_7mffn"), ExtResource("6_wfnit"), ExtResource("7_jdhfg")])

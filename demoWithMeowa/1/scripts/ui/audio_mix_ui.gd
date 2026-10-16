@@ -258,9 +258,9 @@ func _event_volume(cue: StringName) -> float:
 	if cue in [&"enemy_hit_soft", &"enemy_hit_hard", &"slime_death", &"creature_death", &"split_spawn"]:
 		return feedback.enemy_volume_db
 	if cue == &"growth_apply" and feedback.session:
-		var skills := feedback.session.get_node_or_null("RunSkills") as RunSkills
-		if skills and skills.initial_choice:
-			var ui := skills.initial_choice._audio
+		var draft := feedback.session.skill_draft
+		if draft and draft.initial_choice:
+			var ui := draft.initial_choice._audio
 			return ui.volume_db + float(ui.sounds.gains_db.get(&"confirm", 0.0))
 	var offsets := {&"charge_start": -2.0, &"charge_loop": -3.0, &"charge_ready": -2.0,
 		&"flight_end": -5.0, &"push_stun": -3.0, &"player_hurt": 1.0,

@@ -1,0 +1,63 @@
+[gd_resource type="Resource" script_class="WaveDefinition" format=3 uid="uid://c3x7wqqdg3n6h"]
+
+[ext_resource type="Script" uid="uid://i1xql6e8gpsr" path="res://scripts/combat/wave_spawn_entry.gd" id="1_1gaod"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/wave_slime.tres" id="2_lyqds"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/leaf_charger.tres" id="3_4w6ym"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/lantern_spitter.tres" id="4_558jf"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/pot_brood.tres" id="5_w7ith"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/bell_frog.tres" id="6_qt3y2"]
+[ext_resource type="Script" uid="uid://caklrlj8ospwr" path="res://scripts/combat/wave_definition.gd" id="7_nt3q1"]
+
+[sub_resource type="Resource" id="Resource_w8yq3"]
+script = ExtResource("1_1gaod")
+enemy = ExtResource("2_lyqds")
+count = 8
+start_delay = 0.6
+interval = 0.5
+spawn_zone_ids = PackedStringArray("WestNorth", "EastNorth")
+
+[sub_resource type="Resource" id="Resource_pd6yg"]
+script = ExtResource("1_1gaod")
+mixed_horde = true
+count = 18
+start_delay = 10.0
+batch_size = 18
+interval = 10.0
+spawn_zone_ids = PackedStringArray("WestSouth", "EastSouth")
+
+[sub_resource type="Resource" id="Resource_vpv7i"]
+script = ExtResource("1_1gaod")
+enemy = ExtResource("3_4w6ym")
+count = 4
+start_delay = 4.0
+interval = 4.0
+spawn_zone_ids = PackedStringArray("WestNorth", "EastNorth")
+
+[sub_resource type="Resource" id="Resource_dnagb"]
+script = ExtResource("1_1gaod")
+enemy = ExtResource("4_558jf")
+count = 4
+start_delay = 14.0
+interval = 4.5
+spawn_zone_ids = PackedStringArray("WestSouth", "EastSouth")
+
+[sub_resource type="Resource" id="Resource_8sgjt"]
+script = ExtResource("1_1gaod")
+enemy = ExtResource("5_w7ith")
+count = 4
+start_delay = 18.0
+interval = 3.0
+spawn_zone_ids = PackedStringArray("SouthWest", "SouthEast")
+
+[sub_resource type="Resource" id="Resource_8f4d8"]
+script = ExtResource("1_1gaod")
+enemy = ExtResource("6_qt3y2")
+count = 2
+start_delay = 24.0
+interval = 7.0
+spawn_zone_ids = PackedStringArray("WestSouth", "EastSouth")
+
+[resource]
+script = ExtResource("7_nt3q1")
+description = "40 只：8 只史莱姆试探、18 只目录混合怪潮、4 冲锋虫、4 花兽、4 壶兽、2 苔蛙；幼体仅由壶兽分裂"
+entries = Array[ExtResource("1_1gaod")]([SubResource("Resource_w8yq3"), SubResource("Resource_pd6yg"), SubResource("Resource_vpv7i"), SubResource("Resource_dnagb"), SubResource("Resource_8sgjt"), SubResource("Resource_8f4d8")])

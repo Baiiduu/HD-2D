@@ -7,6 +7,8 @@ signal hit_landed(enemy: WaveEnemy, damage: float, flying: bool)
 var player: Player
 var session: WavePrototype
 var rules: PlayerSwordRules
+var enabled: bool:
+	get: return _enabled()
 var swinging: bool:
 	get: return _age >= 0.0
 var _age := -1.0
@@ -54,7 +56,7 @@ func _ready() -> void:
 	player.blink_travelled.connect(_on_blink)
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not rules or not rules.enabled or _blocked(): return
+	if not _enabled() or _blocked(): return
 	if event.is_action_pressed(&"normal_attack"):
 		_manual_held = true
 		_tap = not player.body_ricochet.flying
@@ -65,7 +67,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## 供既有人物输入接口或后续触控按钮调用；真实出手仍受同一时钟控制。
 func request_manual(heading: Vector3) -> bool:
-	if not rules or not rules.enabled or _blocked() or player.body_ricochet.charging or player._blink.active or player.current_health <= 0.0: return false
+	if not _enabled() or _blocked() or player.body_ricochet.charging or player._blink.active or player.current_health <= 0.0: return false
 	if player.body_ricochet.flying: return false
 	if session and session.combat_frozen: return false
 	if swinging or _since_strike + 0.00001 < get_stats(player.body_ricochet.flying).interval: return false
@@ -86,7 +88,7 @@ func get_stats(flying := false, modifiers: RunCombatModifiers = null) -> Diction
 	return result
 
 func get_combat_stats(modifiers: RunCombatModifiers = null) -> Dictionary:
-	if not rules or not rules.enabled: return {}
+	if not _enabled(): return {}
 	var result := get_stats(false, modifiers)
 	result.name = "基础剑术"
 	return result
@@ -102,8 +104,12 @@ func get_combat_stat_variants(modifiers: RunCombatModifiers = null) -> Array[Dic
 func _blocked() -> bool:
 	return get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null
 
+func _enabled() -> bool:
+	if not rules: return false
+	return rules.enabled
+
 func _physics_process(delta: float) -> void:
-	if not rules or not rules.enabled or not rules.validation_error().is_empty() or player.current_health <= 0.0:
+	if not _enabled() or not rules.validation_error().is_empty() or player.current_health <= 0.0:
 		cancel()
 		_last_position = player.global_position
 		_motion.clear()
@@ -250,7 +256,7 @@ func _target_entry(enemy: WaveEnemy, start: Vector3, end: Vector3, heading: Vect
 
 ## 当前怪物位置下首个可触及目标；复用真实挥剑资格，不结算伤害或修改出手时钟。
 func preview_target(route: AimPathData) -> WaveEnemy:
-	if not rules or not rules.enabled or not rules.validation_error().is_empty() or not _combat_active(): return null
+	if not _enabled() or not rules.validation_error().is_empty() or not _combat_active(): return null
 	var stats := get_stats(true)
 	for piece in route.segments:
 		var best := INF

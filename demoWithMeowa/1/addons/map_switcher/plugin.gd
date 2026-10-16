@@ -3,6 +3,11 @@ extends EditorPlugin
 
 const MAPS: Array[Dictionary] = [
 	{
+		"name": "City 城市战斗场景",
+		"path": "res://scenes/city/city.tscn",
+		"description": "城市布局与夜景，独立战斗配置。\n共用正式战斗代码；在参数总览选择 City 调参。",
+	},
+	{
 		"name": "正式连续地图",
 		"path": "res://scenes/world/world.tscn",
 		"description": "正式主场景，当前只保留战斗区与外围绕行带。\n复用手绘地表、分隔带、小型弹射障碍、人物和无尽波次。",

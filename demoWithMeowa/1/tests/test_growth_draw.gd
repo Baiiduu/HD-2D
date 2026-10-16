@@ -139,13 +139,15 @@ func run() -> void:
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("MapEffects/BGM").music_enabled = false
 	var wave: WavePrototype = world.get_node("WavePrototype")
-	wave.population_rules = wave.population_rules.duplicate(true)
-	wave.population_rules.simulation_mode = false
-	var skills: RunSkills = wave.get_node("RunSkills")
+	var profile := world.get_node("BattleConfiguration").configuration.duplicate() as SceneCombatConfiguration
+	profile.population_rules = profile.population_rules.duplicate(true) as WavePopulationRules
+	profile.population_rules.simulation_mode = false
+	world.get_node("BattleConfiguration").configuration = profile
+	var skills: RunSkillManager = wave.get_node("RunSkillManager")
 	var growth: RunGrowth = wave.get_node("RunGrowth")
 	growth.draw_seed = 617
 	growth.get_node("GrowthChoiceUI").open_duration = 0
-	skills.get_node("InitialSkillChoice").open_duration = 0
+	wave.skill_draft.initial_choice.open_duration = 0
 	var fourth := SkillProbe.new()
 	fourth.name = "FourthSkillProbe"
 	fourth.definition = CombatSkillDefinition.new()
@@ -161,19 +163,20 @@ func run() -> void:
 	wave.set_physics_process(false)
 	growth.set_physics_process(false)
 	var save_before := wave.loadout.state.export_state().duplicate(true)
-	check(wave.start_run() and skills.initial_choice.is_open and not growth.active, "Initial draw opens before enemies and run experience")
-	check(skills.initial_choice._options.size() == 3 and skills._initial_pool.size() == skills._components.size() and skills._initial_pool.size() > 3, "Expanded starting pool draws three instead of showing every skill")
-	var first_draw := ids(skills._initial_cards)
-	skills.initial_choice.request_reroll()
-	check(growth.rerolls_left == 2 and ids(skills._initial_cards) != first_draw, "Initial draw consumes one shared reroll")
-	var kept := ids(skills._initial_cards)
-	skills.initial_choice.cancel()
-	check(wave.start_run() and ids(skills._initial_cards) == kept and growth.rerolls_left == 2, "Cancel and reopen neither redraw nor refund the budget")
+	check(wave.start_run() and wave.skill_draft.initial_choice.is_open and not growth.active, "Initial draw opens before enemies and run experience")
+	var eligible := skills.get_registered_ids().filter(skills.is_skill_available)
+	check(wave.skill_draft.initial_choice._options.size() == 3 and wave.skill_draft._initial_pool.size() == eligible.size() and eligible.size() > 3, "Expanded eligible pool draws three and excludes disabled components")
+	var first_draw := ids(wave.skill_draft._initial_cards)
+	wave.skill_draft.initial_choice.request_reroll()
+	check(growth.rerolls_left == 2 and ids(wave.skill_draft._initial_cards) != first_draw, "Initial draw consumes one shared reroll")
+	var kept := ids(wave.skill_draft._initial_cards)
+	wave.skill_draft.initial_choice.cancel()
+	check(wave.start_run() and ids(wave.skill_draft._initial_cards) == kept and growth.rerolls_left == 2, "Cancel and reopen neither redraw nor refund the budget")
 	var initial_id: StringName
-	for option in skills._initial_cards:
+	for option in wave.skill_draft._initial_cards:
 		if option.id != &"initial:probe": initial_id = option.id; break
-	check(skills.initial_choice.select_option(initial_id), "An actual skill can be learned from the draw")
-	skills.initial_choice.confirm_selection()
+	check(wave.skill_draft.initial_choice.select_option(initial_id), "An actual skill can be learned from the draw")
+	wave.skill_draft.initial_choice.confirm_selection()
 	check(wave.phase == WavePrototype.Phase.BATTLE and growth.active and growth.rerolls_left == 2, "Starting battle preserves initial reroll spending")
 	for definition in wave.get_node("RunBuffs").definitions:
 		var text: String = wave.get_node("RunBuffs")._description(definition)
@@ -216,7 +219,7 @@ func run() -> void:
 	check(wave.loadout.state.export_state() == save_before, "Run draft and rewards leave permanent loadout untouched")
 	wave.retreat()
 	wave.retry()
-	check(skills.initial_choice.is_open and growth.rerolls_left == 3 and skills.get_slots().is_empty(), "Retry begins a fresh skill draw and shared budget")
+	check(wave.skill_draft.initial_choice.is_open and growth.rerolls_left == 3 and skills.get_slots().is_empty(), "Retry begins a fresh skill draw and shared budget")
 	world.queue_free()
 	await settle()
 	# Let the audio mixer retire UI playbacks before the headless process exits.

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GrowthBuffDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/growth/growth_buff_effect.gd" id="1_5144i"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/journal/symbols/boot.png" id="2_vpsqt"]
+[ext_resource type="Script" path="res://scripts/growth/growth_buff_definition.gd" id="3_nl83w"]
+
+[resource]
+script = ExtResource("3_nl83w")
+attribute = 3
+bonus_per_level = 0.1
+id = &"R01"
+title = "弹射速度"
+icon = ExtResource("2_vpsqt")
+category = 3

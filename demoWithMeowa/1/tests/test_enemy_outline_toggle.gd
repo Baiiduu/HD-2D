@@ -31,12 +31,12 @@ func wave_checks() -> void:
 	var player_flag: bool = wave.player.sprite.get("occlusion_outline_enabled")
 	wave.player.global_position = wave.global_position + Vector3.UP * 0.03
 	check(wave.start_run(), "正式地图可正常开局")
-	var choice: GrowthChoiceUI = wave.get_node("RunSkills/InitialSkillChoice")
+	var choice: GrowthChoiceUI = wave.get_node("SkillDraft/InitialSkillChoice")
 	if choice.is_open:
 		choice.reveal_now()
 		choice.select_option(choice._options[0].id)
 		choice.confirm_selection()
-	for component: Node in (wave.get_node("RunSkills") as RunSkills)._components.values(): component.process_mode = Node.PROCESS_MODE_DISABLED
+	for component: Node in (wave.get_node("RunSkillManager") as RunSkillManager)._components.values(): component.process_mode = Node.PROCESS_MODE_DISABLED
 	wave._spawn_queue.clear()
 	check(wave.phase == WavePrototype.Phase.BATTLE, "实际进入战斗验证出怪")
 	for definition in wave.enemy_catalog.enemies:

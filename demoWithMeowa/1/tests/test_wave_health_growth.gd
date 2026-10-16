@@ -21,12 +21,12 @@ func settle(count := 4) -> void:
 func start() -> bool:
 	wave.player.global_position = wave.global_position + Vector3.UP * 0.03
 	if not wave.start_run(): return false
-	var choice: GrowthChoiceUI = wave.get_node("RunSkills/InitialSkillChoice")
+	var choice: GrowthChoiceUI = wave.get_node("SkillDraft/InitialSkillChoice")
 	if choice.is_open:
 		choice.reveal_now()
 		choice.select_option(choice._options[0].id)
 		choice.confirm_selection()
-	for component: Node in (wave.get_node("RunSkills") as RunSkills)._components.values():
+	for component: Node in (wave.get_node("RunSkillManager") as RunSkillManager)._components.values():
 		component.process_mode = Node.PROCESS_MODE_DISABLED
 	return wave.phase == WavePrototype.Phase.BATTLE
 
@@ -57,14 +57,26 @@ func run() -> void:
 	world = load("res://scenes/world/world.tscn").instantiate()
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("WavePrototype/RunGrowth").enabled = false
+	var profile := preload("res://tests/fixtures/combat_scene_fixture.gd").isolate_profile(world)
+	# 固定历史曲线以验证计算规则，不让正式平衡调整改写测试的已知答案。
+	profile.population_rules = profile.population_rules.duplicate()
+	profile.population_rules.simulation_mode = false
+	profile.population_rules.first_active_limit = 24
+	profile.population_rules.growth_start_wave = 4
+	profile.population_rules.active_growth_per_wave = 8
+	profile.population_rules.max_active = 128
+	profile.population_rules.enemies_per_wave_increment = 16
+	profile.population_rules.max_wave_enemies = 384
+	profile.default_enemy = profile.default_enemy.duplicate()
+	profile.default_enemy.health = 20.0
 	root.add_child(world)
 	current_scene = world
 	await settle(16)
 	wave = world.get_node("WavePrototype")
 	wave.set_physics_process(false)
 	wave.player.set_physics_process(false)
-	check(wave.population_rules != null and wave.population_rules.resource_path == "res://data/waves/population/horde_128.tres", "正式地图已经连接 128 数量档位")
-	check(wave.health_growth_rules != null and wave.health_growth_rules.resource_path == "res://data/waves/endless_health_growth.tres", "正式地图已经连接生命成长")
+	check(wave.population_rules == profile.population_rules, "地图读取自己的独立数量配置")
+	check(wave.health_growth_rules == profile.health_growth_rules, "地图读取自己的独立生命成长配置")
 	check(start(), "正式地图使用接入后的规则实际开局")
 	check(wave.get_active_enemy_limit() == 24 and wave._pending == 18, "正式开场仍为 18 只、同场容量 24")
 	for pair in [[4, 56, 32], [10, 152, 80], [16, 248, 128], [25, 384, 128], [1000000000, 384, 128]]:
@@ -116,7 +128,7 @@ func run() -> void:
 	var base_health := wave.default_enemy.health
 	check(wave.queue_spawn_by_id(&"slime", 1, 0.5), "延迟召唤通过同一成长接口")
 	wave._physics_process(0.6)
-	check(wave.enemies[-1].health == base_health * 10.0, "召唤怪物应用当前波生命成长")
+	check(wave.enemies[-1].health == wave.enemies[-1].definition.health * 10.0, "召唤怪物按自己的基础生命应用当前波成长")
 	for mob in wave.enemies: mob.set_physics_process(false)
 	check(wave.get_run_state().enemy_health_multiplier == 10.0, "运行状态暴露真实倍率")
 	wave._finish("test reset")

@@ -1,0 +1,53 @@
+[gd_resource type="Resource" script_class="CombatSkillDefinition" format=3 uid="uid://crhyugbi44h85"]
+
+[ext_resource type="Texture2D" uid="uid://kx4jn5m1u7e7" path="res://assets/meowa/combat/mirror_mark/mirror.png" id="1_l0vgh"]
+[ext_resource type="Script" uid="uid://dgnmk10av1ee6" path="res://scripts/combat/combat_skill_level.gd" id="2_h4jxl"]
+[ext_resource type="Script" uid="uid://bys5inomsbf0o" path="res://scripts/combat/combat_skill_definition.gd" id="3_528of"]
+
+[sub_resource type="Resource" id="Resource_spwrn"]
+script = ExtResource("2_h4jxl")
+description = "命中贴印，怪物成为随身移动的反射镜面，可借镜弹射人物与弹射弹丸。"
+
+[sub_resource type="Resource" id="Resource_tuxgu"]
+script = ExtResource("2_h4jxl")
+description = "镜印持续更久，弹丸多一次反射。"
+parameters = Dictionary[String, float]({
+"damage_multiplier": 1.25,
+"interval_multiplier": 0.9,
+"mark_duration_multiplier": 1.25,
+"reflections": 3.0
+})
+
+[sub_resource type="Resource" id="Resource_tp6fw"]
+script = ExtResource("2_h4jxl")
+description = "双梭齐射，不同入射角在已有镜印上折出不同弹道。"
+parameters = Dictionary[String, float]({
+"damage_multiplier": 1.5,
+"distance_multiplier": 1.2,
+"interval_multiplier": 0.85,
+"mark_duration_multiplier": 1.5,
+"projectiles": 2.0,
+"reflections": 4.0,
+"spread_degrees": 16.0
+})
+
+[sub_resource type="Resource" id="Resource_ts0vn"]
+script = ExtResource("2_h4jxl")
+description = "双梭加速出手，镜印与墙面共同串起五次反射。"
+parameters = Dictionary[String, float]({
+"damage_multiplier": 2.0,
+"distance_multiplier": 1.4,
+"interval_multiplier": 0.75,
+"mark_duration_multiplier": 1.75,
+"projectiles": 2.0,
+"reflections": 5.0,
+"spread_degrees": 16.0
+})
+
+[resource]
+script = ExtResource("3_528of")
+id = &"mirror_mark"
+display_name = "反射镜印"
+description = "镜梭先造成伤害，再将怪物变成固定朝向的移动镜面；人物与弹射弹丸可借镜反射，消耗各自次数。致死镜梭命中仍完成反射。"
+icon = ExtResource("1_l0vgh")
+levels = Array[ExtResource("2_h4jxl")]([SubResource("Resource_spwrn"), SubResource("Resource_tuxgu"), SubResource("Resource_tp6fw"), SubResource("Resource_ts0vn")])

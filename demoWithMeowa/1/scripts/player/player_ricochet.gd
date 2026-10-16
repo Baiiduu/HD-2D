@@ -16,6 +16,8 @@ signal flight_segment_travelled(start: Vector3, end: Vector3, heading: Vector3, 
 enum State { IDLE, CHARGING, FLYING, RECOVERY }
 
 var state := State.IDLE
+var enabled: bool:
+	get: return _enabled()
 var direction := Vector3.RIGHT
 var flight_speed := 0.0
 var bounce_count := 0
@@ -62,6 +64,7 @@ var orbit_debug_last: Dictionary = {}
 
 func _ready() -> void:
 	_player = get_parent() as Player
+	if not _player: _player = get_parent().get_parent() as Player
 	_session = _player.get_parent().get_node_or_null("WavePrototype") as WavePrototype
 	if _session:
 		_session.phase_changed.connect(_on_phase_changed)
@@ -83,7 +86,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_aim_pending = true
 
 func _enabled() -> bool:
-	return _player.ricochet_rules != null and _player.ricochet_rules.enabled
+	return _player.ricochet_rules != null and (_player.skill_manager.is_skill_enabled(CharacterSkillManager.BODY_RICOCHET) if is_instance_valid(_player.skill_manager) else _player.ricochet_rules.enabled)
 
 func is_frozen() -> bool:
 	return is_instance_valid(_session) and _session.combat_frozen
@@ -91,7 +94,7 @@ func is_frozen() -> bool:
 ## 预览与实际发射共用最终数值。速度同时放大起步／满蓄，保留蓄力差异。
 func get_stats(modifiers: RunCombatModifiers = null) -> Dictionary:
 	var rules := _player.ricochet_rules
-	if not rules or not rules.enabled: return {}
+	if not _enabled(): return {}
 	if not modifiers and is_instance_valid(_session): modifiers = _session.combat_modifiers
 	var result := {}
 	for attribute in GrowthBuffDefinition.RICOCHET_PROPERTIES:
@@ -287,7 +290,7 @@ func _advance_flight(delta: float) -> void:
 		var initial_speed := flight_speed
 		flight_speed = _settings.speed_after_coast(flight_speed, seconds)
 		if travelled > 0.00001:
-			if _player.sword and _player.sword.rules.enabled:
+			if _player.sword and _player.sword.enabled:
 				_travel_segments.append({"start":start, "end":end, "heading":direction, "time":elapsed, "seconds":seconds, "speed":initial_speed, "deceleration":_settings.flight_deceleration})
 			flight_segment_travelled.emit(start, end, direction, seconds)
 			_push_segment(start, end)
@@ -364,7 +367,7 @@ func _push_segment(start: Vector3, end: Vector3) -> void:
 	for enemy in candidates:
 		if not flying or not _session.combat_active(): return
 		if enemy.dead or enemy.spawn_delay > 0.0 or _already_pushed(enemy) or absf(enemy.global_position.y - start.y) > _settings.push_height_tolerance: continue
-		if _player.sword and _player.sword.rules.enabled and not _sword_contacts.has(enemy.get_instance_id()): continue
+		if _player.sword and _player.sword.enabled and not _sword_contacts.has(enemy.get_instance_id()): continue
 		var entry := circle_entry(start, end, enemy.global_position, _settings.push_radius)
 		if entry < 0.0: continue
 		var center := start.lerp(end, entry)

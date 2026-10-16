@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CombatSkillDefinition" format=3 uid="uid://b4cm1kmoa2b7b"]
+[gd_resource type="Resource" script_class="CombatSkillDefinition" format=3 uid="uid://7oe3fjawjylt"]
 
 [ext_resource type="Texture2D" uid="uid://by41d4nn3etus" path="res://assets/meowa/combat/fan_slash/slash.png" id="art"]
 [ext_resource type="Script" uid="uid://dgnmk10av1ee6" path="res://scripts/combat/combat_skill_level.gd" id="level"]

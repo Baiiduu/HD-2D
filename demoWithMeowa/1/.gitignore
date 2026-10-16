@@ -9,3 +9,7 @@
 
 # Local API credentials
 .env
+
+# Python generated caches
+__pycache__/
+*.py[cod]

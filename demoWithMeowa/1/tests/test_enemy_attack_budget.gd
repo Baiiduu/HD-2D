@@ -27,18 +27,18 @@ func run() -> void:
 	current_scene = scene
 	for frame in 12: await physics_frame
 	var wave: WavePrototype = scene.get_node("WavePrototype")
-	var skills: RunSkills = wave.get_node("RunSkills")
+	var skills: RunSkillManager = wave.get_node("RunSkillManager")
 	# 接触预算测试固定获得所选技能，避免新增技能后随机首选卡漏掉 A01。
-	skills.initial_cards_per_draw = 100
+	wave.skill_draft.initial_cards_per_draw = 100
 	var player: Player = scene.get_node("Player")
 	player.set_physics_process(false)
 	wave.set_physics_process(false)
 	player.global_position = wave.global_position + Vector3.UP * 0.03
 	assert(wave.start_run())
-	var initial_choice := scene.get_node_or_null("WavePrototype/RunSkills/InitialSkillChoice") as GrowthChoiceUI
+	var initial_choice := scene.get_node_or_null("WavePrototype/SkillDraft/InitialSkillChoice") as GrowthChoiceUI
 	if initial_choice and initial_choice.is_open:
 		initial_choice.reveal_now()
-		initial_choice.select_option(&"initial:fan_slash")
+		initial_choice.select_option(initial_choice._options[0].id)
 		initial_choice.confirm_selection()
 	for component: Node in skills._components.values():
 		component.process_mode = Node.PROCESS_MODE_DISABLED

@@ -11,6 +11,8 @@ var _tree: Tree
 var _status: Label
 var _hint: Label
 var _navigation_request := 0
+var _combat_scene_selector: OptionButton
+const COMBAT_SCENES := ["res://scenes/world/world.tscn", "res://scenes/city/city.tscn"]
 
 func _enter_tree() -> void:
 	_dock = EditorDock.new()
@@ -70,10 +72,44 @@ func _scene_changed(_scene: Node) -> void:
 func _scene_closed(_path: String) -> void:
 	_refresh.call_deferred()
 
+
+func _ensure_combat_controls() -> void:
+	if is_instance_valid(_combat_scene_selector): return
+	var column := _search.get_parent()
+	_combat_scene_selector = OptionButton.new()
+	_combat_scene_selector.name = "CombatSceneSelector"
+	_combat_scene_selector.add_item("战斗配置 · World 正式战场")
+	_combat_scene_selector.add_item("战斗配置 · City 城市战场")
+	_combat_scene_selector.item_selected.connect(func(index: int): EditorInterface.open_scene_from_path(COMBAT_SCENES[index]))
+	column.add_child(_combat_scene_selector)
+	var combat_configuration := Button.new()
+	combat_configuration.text = "打开此场景的战斗配置"
+	combat_configuration.pressed.connect(_open_combat_configuration)
+	column.add_child(combat_configuration)
+	column.move_child(_combat_scene_selector, 0)
+	column.move_child(combat_configuration, 1)
+
 func _refresh() -> void:
 	if not is_instance_valid(_tree): return
+	_ensure_combat_controls()
+	var scene := EditorInterface.get_edited_scene_root()
+	if scene and scene.scene_file_path in COMBAT_SCENES:
+		_combat_scene_selector.select(COMBAT_SCENES.find(scene.scene_file_path))
 	_catalog.collect(EditorInterface.get_edited_scene_root())
 	_filter()
+
+func _open_combat_configuration() -> void:
+	var scene := EditorInterface.get_edited_scene_root()
+	if not scene or scene.scene_file_path != COMBAT_SCENES[_combat_scene_selector.selected]:
+		EditorInterface.open_scene_from_path(COMBAT_SCENES[_combat_scene_selector.selected])
+		await get_tree().process_frame
+		scene = EditorInterface.get_edited_scene_root()
+	if not scene: return
+	var binding := scene.get_node_or_null("BattleConfiguration")
+	if binding:
+		EditorInterface.get_selection().clear()
+		EditorInterface.edit_node(binding)
+		EditorInterface.inspect_object(binding.configuration)
 
 func _filter() -> void:
 	_ensure_navigation()

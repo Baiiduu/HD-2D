@@ -1,592 +1,309 @@
-[gd_scene format=3 uid="uid://dy1gg5k22ws10"]
+[gd_scene format=4 uid="uid://dy1gg5k22ws10"]
 
 [ext_resource type="Script" uid="uid://c5gualstfsdfu" path="res://scripts/world/city.gd" id="1_n28u1"]
-[ext_resource type="Texture2D" uid="uid://bioyv13u5yew0" path="res://assets/ground/world_paving/stone_surface.png" id="2_gsub1"]
 [ext_resource type="PackedScene" path="res://scenes/buildings/convenience_24.tscn" id="3_7ekaa"]
-[ext_resource type="PackedScene" path="res://scenes/buildings/convenience_24_v2.tscn" id="store2"]
-[ext_resource type="PackedScene" path="res://scenes/buildings/city_hospital.tscn" id="hospital_scene"]
 [ext_resource type="Script" uid="uid://c3bn768plavjr" path="res://scripts/player/player.gd" id="5_1eid2"]
+[ext_resource type="Shader" uid="uid://yl6y2vskn20o" path="res://shaders/terrain/terrain.gdshader" id="5_yu5j7"]
 [ext_resource type="SpriteFrames" uid="uid://65qht0ymca02" path="res://assets/meowa/player/animations.tres" id="6_73msu"]
+[ext_resource type="Texture2D" uid="uid://chbej7h30u00g" path="res://assets/meowa/city_plaza/fixed/battle/ground.png" id="6_kx422"]
 [ext_resource type="Texture2D" uid="uid://7bwsfpeaisy6" path="res://assets/meowa/player/idle_00.png" id="7_e1jlr"]
+[ext_resource type="Texture2D" uid="uid://cce8go8o1xyjw" path="res://assets/meowa/city_plaza/fixed/battle/normal.png" id="7_p4sah"]
+[ext_resource type="Texture2D" uid="uid://c1bhhy50h44xg" path="res://assets/meowa/city_plaza/fixed/battle/orm_dry.png" id="8_6or5f"]
 [ext_resource type="Script" uid="uid://cnj43gbbfi4sc" path="res://scripts/rendering/character_lighting.gd" id="8_dr8uj"]
+[ext_resource type="Texture2D" uid="uid://d0uuxlwm5cud7" path="res://assets/meowa/city_plaza/fixed/battle/orm_wet.png" id="9_mv2qa"]
 [ext_resource type="PackedScene" path="res://scenes/audio/player_movement_audio.tscn" id="9_vp7t7"]
+[ext_resource type="Texture2D" uid="uid://caeyg3ancboj0" path="res://assets/ground/references/04_road_cobblestone.png" id="10_bvp5n"]
+[ext_resource type="Texture2D" uid="uid://cumfrvpaoxiij" path="res://assets/ground/cultivation/精致像素风灰青色青石板地面材质_长方形石板规则错缝铺设_细而清晰的深色砖缝_40699501/texture.png" id="11_0pta2"]
+[ext_resource type="Texture2D" uid="uid://dgthxbtp632a2" path="res://assets/ground/tilesets/dirt/tileset/tileset.png" id="12_yibix"]
+[ext_resource type="Texture2D" uid="uid://bhp0fawqqvcne" path="res://assets/ground/tilesets/path/tileset/tileset.png" id="13_5y8ov"]
 [ext_resource type="PackedScene" path="res://scenes/shared/map_effects.tscn" id="13_rbe51"]
-[ext_resource type="PackedScene" path="res://scenes/city/night_atmosphere.tscn" id="night_atmosphere"]
-[ext_resource type="Script" uid="uid://srckk3f4b30t" path="res://scripts/world/art_direction.gd" id="15_r26f4"]
-[ext_resource type="PackedScene" path="res://scenes/audio/game_audio.tscn" id="16_erlrf"]
-[ext_resource type="Script" uid="uid://cehtfiwluxpej" path="res://scripts/world/daylight_preview.gd" id="18_cbthx"]
-[ext_resource type="Script" uid="uid://cs07mmq0ht648" path="res://scripts/world/atmospheric_light.gd" id="19_64fw8"]
-[ext_resource type="Script" uid="uid://yq5plellwbbv" path="res://scripts/audio/bgm.gd" id="20_fk06m"]
-[ext_resource type="Script" uid="uid://coc5io4jx6oy3" path="res://scripts/world/weather.gd" id="21_xfa1b"]
+[ext_resource type="Texture2D" uid="uid://dh2lj010nxssj" path="res://assets/ground/grass_smooth_v1/grass_orm_dry.png" id="14_mvjo7"]
+[ext_resource type="Texture2D" uid="uid://cmtobhbofv6wj" path="res://assets/ground/grass_smooth_v1/grass_orm_wet.png" id="15_ghamd"]
+[ext_resource type="Texture2D" uid="uid://vnci446lmed3" path="res://assets/meowa/homestead/grass.png" id="16_q3t5b"]
+[ext_resource type="Shader" uid="uid://duhny4lanykqa" path="res://shaders/terrain/cliff.gdshader" id="17_pilb3"]
+[ext_resource type="Texture2D" uid="uid://c0ewo04xccw4k" path="res://assets/surface_normals/cliff.png" id="18_72856"]
+[ext_resource type="Texture2D" uid="uid://ds157g1oxjl3m" path="res://assets/ground/generated/cliff/Pixel_art_earthen_cliff_face_seen_from_the_side_horizontal_layered_rock_strata_in_warm_brown_and_gray_small_cracks/texture.png" id="19_bkdus"]
 [ext_resource type="Shader" uid="uid://vs810xu7skxb" path="res://shaders/environment/night_sky.gdshader" id="22_pgqvn"]
-[ext_resource type="Script" uid="uid://c4p56r7qm7y5b" path="res://scripts/camera/follow_camera.gd" id="23_mwukj"]
-[ext_resource type="Script" uid="uid://ce7x51clpltsu" path="res://scripts/rendering/planar_water_reflection.gd" id="25_n1bbl"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/street_west_corner.tscn" id="kit_street_west_corner"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/street_east_corner.tscn" id="kit_street_east_corner"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/street_south_terrace.tscn" id="kit_street_south_terrace"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/street_south_court.tscn" id="kit_street_south_court"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/lamp_warm.tscn" id="kit_lamp_warm"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/lamp_cyan.tscn" id="kit_lamp_cyan"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/planter_long.tscn" id="kit_planter_long"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/planter_wide.tscn" id="kit_planter_wide"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/planter_information.tscn" id="kit_planter_information"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/bench_wood.tscn" id="kit_bench_wood"]
-
+[ext_resource type="Shader" uid="uid://fuoorj3rrv6c" path="res://shaders/post/post_process.gdshader" id="56_idau5"]
+[ext_resource type="Script" uid="uid://letk4dety3o4" path="res://scripts/visual/hdr_bokeh.gd" id="58_ew0l8"]
+[ext_resource type="Resource" uid="uid://dsyfbdx2buknv" path="res://data/player/action_visuals.tres" id="action_visuals"]
+[ext_resource type="PackedScene" path="res://scenes/ui/audio_mix_ui.tscn" id="audio_mix_ui"]
+[ext_resource type="Script" uid="uid://qopdxle3yinu" path="res://scripts/audio/bgm_playlist.gd" id="bgm_playlist"]
+[ext_resource type="PackedScene" path="res://scenes/player/character_skills.tscn" id="character_skills"]
+[ext_resource type="Resource" path="res://data/audio/music/combat_playlist.tres" id="combat_bgm"]
+[ext_resource type="Script" uid="uid://c3hp446u6v2rr" path="res://scripts/combat/scene_combat_binding.gd" id="combat_binding"]
+[ext_resource type="Resource" path="res://data/combat/scenes/city/configuration.tres" id="combat_configuration"]
+[ext_resource type="PackedScene" path="res://scenes/city/city_terrain.tscn" id="combat_ground"]
+[ext_resource type="PackedScene" path="res://scenes/combat/wave_prototype.tscn" id="combat_wave"]
+[ext_resource type="PackedScene" path="res://scenes/audio/core_feedback_audio.tscn" id="core_audio"]
+[ext_resource type="Resource" path="res://data/audio/music/exploration_playlist.tres" id="exploration_bgm"]
+[ext_resource type="Resource" path="res://data/player/flight_trail.tres" id="flight_trail"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/city_hospital.tscn" id="hospital_scene"]
 [ext_resource type="PackedScene" path="res://scenes/city/assets/bench_metal.tscn" id="kit_bench_metal"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/information_screen.tscn" id="kit_information_screen"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/wall_advert.tscn" id="kit_wall_advert"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/vending_machine.tscn" id="kit_vending_machine"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/service_terminal.tscn" id="kit_service_terminal"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/city_tree_1.tscn" id="kit_city_tree_1"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/city_flowers.tscn" id="kit_city_flowers"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/city_tree_2.tscn" id="kit_city_tree_2"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/city_fern.tscn" id="kit_city_fern"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/city_tree_3.tscn" id="kit_city_tree_3"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/city_flowering_shrub.tscn" id="kit_city_flowering_shrub"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/city_hedge.tscn" id="kit_city_hedge"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/city_grass.tscn" id="kit_city_grass"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/city_shrub.tscn" id="kit_city_shrub"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/bridge_span_6.tscn" id="kit_bridge_span_6"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/bridge_span_4.tscn" id="kit_bridge_span_4"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/bridge_pier.tscn" id="kit_bridge_pier"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/trash_bin.tscn" id="kit_trash_bin"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/street_banner.tscn" id="kit_street_banner"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/direction_sign.tscn" id="kit_direction_sign"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/electric_box.tscn" id="kit_electric_box"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/guardrail.tscn" id="kit_guardrail"]
-
+[ext_resource type="PackedScene" path="res://scenes/city/assets/bench_wood.tscn" id="kit_bench_wood"]
 [ext_resource type="PackedScene" path="res://scenes/city/assets/bollard.tscn" id="kit_bollard"]
-
+[ext_resource type="PackedScene" path="res://scenes/city/assets/bridge_pier.tscn" id="kit_bridge_pier"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/bridge_span_4.tscn" id="kit_bridge_span_4"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/bridge_span_6.tscn" id="kit_bridge_span_6"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/city_fern.tscn" id="kit_city_fern"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/city_flowering_shrub.tscn" id="kit_city_flowering_shrub"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/city_flowers.tscn" id="kit_city_flowers"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/city_grass.tscn" id="kit_city_grass"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/city_hedge.tscn" id="kit_city_hedge"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/city_shrub.tscn" id="kit_city_shrub"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/city_tree_1.tscn" id="kit_city_tree_1"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/city_tree_2.tscn" id="kit_city_tree_2"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/city_tree_3.tscn" id="kit_city_tree_3"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/direction_sign.tscn" id="kit_direction_sign"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/electric_box.tscn" id="kit_electric_box"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/guardrail.tscn" id="kit_guardrail"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/information_screen.tscn" id="kit_information_screen"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/lamp_cyan.tscn" id="kit_lamp_cyan"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/lamp_warm.tscn" id="kit_lamp_warm"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/planter_information.tscn" id="kit_planter_information"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/planter_long.tscn" id="kit_planter_long"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/planter_wide.tscn" id="kit_planter_wide"]
 [ext_resource type="PackedScene" path="res://scenes/city/assets/rooftop_ac.tscn" id="kit_rooftop_ac"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/vent_unit.tscn" id="kit_vent_unit"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/service_pipe.tscn" id="kit_service_pipe"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/window_canopy.tscn" id="kit_window_canopy"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/tower_industrial.tscn" id="kit_tower_industrial"]
-
-[ext_resource type="PackedScene" path="res://scenes/city/assets/tower_glass.tscn" id="kit_tower_glass"]
-
 [ext_resource type="PackedScene" path="res://scenes/city/assets/sentinel_station.tscn" id="kit_sentinel_station"]
-
+[ext_resource type="PackedScene" path="res://scenes/city/assets/service_pipe.tscn" id="kit_service_pipe"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/service_terminal.tscn" id="kit_service_terminal"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/street_banner.tscn" id="kit_street_banner"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/street_east_corner.tscn" id="kit_street_east_corner"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/street_south_court.tscn" id="kit_street_south_court"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/street_south_terrace.tscn" id="kit_street_south_terrace"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/street_west_corner.tscn" id="kit_street_west_corner"]
 [ext_resource type="PackedScene" path="res://scenes/city/assets/tower_distant.tscn" id="kit_tower_distant"]
-
+[ext_resource type="PackedScene" path="res://scenes/city/assets/tower_glass.tscn" id="kit_tower_glass"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/tower_industrial.tscn" id="kit_tower_industrial"]
 [ext_resource type="PackedScene" path="res://scenes/city/assets/train_cab.tscn" id="kit_train_cab"]
-
 [ext_resource type="PackedScene" path="res://scenes/city/assets/train_car.tscn" id="kit_train_car"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xjcwl"]
-resource_name = "CityPaving"
-albedo_color = Color(0.42, 0.45, 0.5, 1)
-albedo_texture = ExtResource("2_gsub1")
-roughness = 0.82
-uv1_scale = Vector3(2.8125, 2.8125, 1)
-texture_filter = 0
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_xsodb"]
-material = SubResource("StandardMaterial3D_xjcwl")
-size = Vector2(36, 36)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_2bnqm"]
-size = Vector3(36, 0.16, 36)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_humfy"]
-resource_name = "BuildingGray"
-albedo_color = Color(0.29, 0.31, 0.36, 1)
-roughness = 0.9
-
-[sub_resource type="BoxMesh" id="BoxMesh_8xfcl"]
-material = SubResource("StandardMaterial3D_humfy")
-size = Vector3(6, 6.5, 11)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_ffgfy"]
-size = Vector3(6, 6.5, 11)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jjdtu"]
-resource_name = "RoofGray"
-albedo_color = Color(0.2, 0.24, 0.29, 1)
-roughness = 0.9
-
-[sub_resource type="BoxMesh" id="BoxMesh_k6y6e"]
-material = SubResource("StandardMaterial3D_jjdtu")
-size = Vector3(6.15, 0.16, 11.15)
-
-[sub_resource type="BoxMesh" id="BoxMesh_idau5"]
-material = SubResource("StandardMaterial3D_jjdtu")
-size = Vector3(0.85, 0.4, 0.8)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ew0l8"]
-resource_name = "WindowDark"
-albedo_color = Color(0.11, 0.16, 0.22, 1)
-roughness = 0.9
-
-[sub_resource type="BoxMesh" id="BoxMesh_3aqld"]
-material = SubResource("StandardMaterial3D_ew0l8")
-size = Vector3(0.85, 1.05, 0.035)
-
-[sub_resource type="MultiMesh" id="MultiMesh_kxxni"]
-transform_format = 1
-instance_count = 40
-mesh = SubResource("BoxMesh_3aqld")
-buffer = PackedFloat32Array(-2.6, 5.5844154, -1.75, -2.6, 6, -1.397482, -2.6, 5.5844154, -1.397482, -2.6, 6, -1.75, -2.6, 4.3636365, -1.75, -2.6, 5.5844154, -1.397482, -2.6, 4.3636365, -1.397482, -2.6, 5.5844154, -1.75, -2.6, 4.2597404, -1.75, -2.6, 4.3636365, -1.397482, -2.6, 4.2597404, -1.397482, -2.6, 4.3636365, -1.75, -2.6, 4, -1.75, -2.6, 4.2597404, -1.397482, -2.6, 4, -1.397482, -2.6, 4.2597404, -1.75, -2.6, 5.5844154, -1.397482, -2.6, 6, -1.2967626, -2.6, 5.5844154, -1.2967626, -2.6, 6, -1.397482, -2.6, 4.3636365, -1.397482, -2.6, 5.5844154, -1.2967626, -2.6, 4.3636365, -1.2967626, -2.6, 5.5844154, -1.397482, -2.6, 4.2597404, -1.397482, -2.6, 4.3636365, -1.2967626, -2.6, 4.2597404, -1.2967626, -2.6, 4.3636365, -1.397482, -2.6, 4, -1.397482, -2.6, 4.2597404, -1.2967626, -2.6, 4, -1.2967626, -2.6, 4.2597404, -1.397482, -2.6, 5.5844154, -1.2967626, -2.6, 6, -0.79316545, -2.6, 5.5844154, -0.79316545, -2.6, 6, -1.2967626, -2.575, 4.3636365, -1.2967626, -2.575, 5.5844154, -0.79316545, -2.575, 4.3636365, -0.79316545, -2.575, 5.5844154, -1.2967626, -2.575, 4.2597404, -1.2967626, -2.575, 4.3636365, -0.79316545, -2.575, 4.2597404, -0.79316545, -2.575, 4.3636365, -1.2967626, -2.6, 4, -1.2967626, -2.6, 4.2597404, -0.79316545, -2.6, 4, -0.79316545, -2.6, 4.2597404, -1.2967626, -2.6, 5.5844154, -0.79316545, -2.6, 6, -0.7176259, -2.6, 5.5844154, -0.7176259, -2.6, 6, -0.79316545, -2.575, 4.3636365, -0.79316545, -2.575, 5.5844154, -0.7176259, -2.575, 4.3636365, -0.7176259, -2.575, 5.5844154, -0.79316545, -2.575, 4.2597404, -0.79316545, -2.575, 4.3636365, -0.7176259, -2.575, 4.2597404, -0.7176259, -2.575, 4.3636365, -0.79316545, -2.6, 4, -0.79316545, -2.6, 4.2597404, -0.7176259, -2.6, 4, -0.7176259, -2.6, 4.2597404, -0.79316545, -2.6, 5.5844154, -0.7176259, -2.6, 6, -0.6420863, -2.6, 5.5844154, -0.6420863, -2.6, 6, -0.7176259, -2.575, 4.3636365, -0.7176259, -2.575, 5.5844154, -0.6420863, -2.575, 4.3636365, -0.6420863, -2.575, 5.5844154, -0.7176259, -2.575, 4.2597404, -0.7176259, -2.575, 4.3636365, -0.6420863, -2.575, 4.2597404, -0.6420863, -2.575, 4.3636365, -0.7176259, -2.6, 4, -0.7176259, -2.6, 4.2597404, -0.6420863, -2.6, 4, -0.6420863, -2.6, 4.2597404, -0.7176259, -2.6, 5.5844154, -0.6420863, -2.6, 6, -0.18884893, -2.6, 5.5844154, -0.18884893, -2.6, 6, -0.6420863, -2.6, 4.3636365, -0.6420863, -2.6, 5.5844154, -0.18884893, -2.6, 4.3636365, -0.18884893, -2.6, 5.5844154, -0.6420863, -2.6, 4.2597404, -0.6420863, -2.6, 4.3636365, -0.18884893, -2.6, 4.2597404, -0.18884893, -2.6, 4.3636365, -0.6420863, -2.6, 4, -0.6420863, -2.6, 4.2597404, -0.18884893, -2.6, 4, -0.18884893, -2.6, 4.2597404, -0.6420863, -2.6, 5.5844154, -0.18884893, -2.6, 6, 0.5161871, -2.6, 5.5844154, 0.5161871, -2.6, 6, -0.18884893, -2.6, 4.3636365, -0.18884893, -2.6, 5.5844154, 0.5161871, -2.6, 4.3636365, 0.5161871, -2.6, 5.5844154, -0.18884893, -2.6, 4.2597404, -0.18884893, -2.6, 4.3636365, 0.5161871, -2.6, 4.2597404, 0.5161871, -2.6, 4.3636365, -0.18884893, -2.6, 4, -0.18884893, -2.6, 4.2597404, 0.5161871, -2.6, 4, 0.5161871, -2.6, 4.2597404, -0.18884893, -2.6, 5.5844154, 0.5161871, -2.6, 6, 0.7176259, -2.6, 5.5844154, 0.7176259, -2.6, 6, 0.5161871, -2.6, 4.3636365, 0.5161871, -2.6, 5.5844154, 0.7176259, -2.6, 4.3636365, 0.7176259, -2.6, 5.5844154, 0.5161871, -2.6, 4.2597404, 0.5161871, -2.6, 4.3636365, 0.7176259, -2.6, 4.2597404, 0.7176259, -2.6, 4.3636365, 0.5161871, -2.6, 4, 0.5161871, -2.6, 4.2597404, 0.7176259, -2.6, 4, 0.7176259, -2.6, 4.2597404, 0.5161871, -2.6, 5.5844154, 0.7176259, -2.6, 6, 1.4730216, -2.6, 5.5844154, 1.4730216, -2.6, 6, 0.7176259, -2.575, 4.3636365, 0.7176259, -2.575, 5.5844154, 1.4730216, -2.575, 4.3636365, 1.4730216, -2.575, 5.5844154, 0.7176259, -2.6, 4.2597404, 0.7176259, -2.6, 4.3636365, 1.4730216, -2.6, 4.2597404, 1.4730216, -2.6, 4.3636365, 0.7176259, -2.6, 4, 0.7176259, -2.6, 4.2597404, 1.4730216, -2.6, 4, 1.4730216, -2.6, 4.2597404, 0.7176259, -2.6, 5.5844154, 1.4730216, -2.6, 6, 1.4982015, -2.6, 5.5844154, 1.4982015, -2.6, 6, 1.4730216, -2.6, 4.3636365, 1.4730216, -2.6, 5.5844154, 1.4982015, -2.6, 4.3636365, 1.4982015, -2.6, 5.5844154, 1.4730216, -2.6, 4.2597404, 1.4730216, -2.6, 4.3636365, 1.4982015, -2.6, 4.2597404, 1.4982015, -2.6, 4.3636365, 1.4730216, -2.6, 4, 1.4730216, -2.6, 4.2597404, 1.4982015, -2.6, 4, 1.4982015, -2.6, 4.2597404, 1.4730216)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g5f65"]
-resource_name = "WindowWarm"
-albedo_color = Color(0.93, 0.72, 0.4, 1)
-roughness = 0.9
-emission_enabled = true
-emission = Color(0.93, 0.72, 0.4, 1)
-emission_energy_multiplier = 0.65
-
-[sub_resource type="BoxMesh" id="BoxMesh_a56ue"]
-material = SubResource("StandardMaterial3D_g5f65")
-size = Vector3(0.85, 1.05, 0.035)
-
-[sub_resource type="MultiMesh" id="MultiMesh_b5gr1"]
-transform_format = 1
-instance_count = 14
-mesh = SubResource("BoxMesh_a56ue")
-buffer = PackedFloat32Array(0, 2.5e-44, 1e-45, 0, 2.7e-44, 2.5e-44, 1e-45, 2.4e-44, 3e-45, 1e-45, 2.5e-44, 2.4e-44, 3e-45, 2.2e-44, 4e-45, 3e-45, 2.4e-44, 2.2e-44, 4e-45, 2.1e-44, 6e-45, 4e-45, 2.2e-44, 2.1e-44, 6e-45, 2e-44, 7e-45, 6e-45, 2.1e-44, 2e-44, 7e-45, 1.8e-44, 8e-45, 7e-45, 2e-44, 1.8e-44, 8e-45, 1.7e-44, 1e-44, 8e-45, 1.8e-44, 1.7e-44, 1e-44, 1.5e-44, 1.1e-44, 1e-44, 1.7e-44, 1.5e-44, 1.1e-44, 1.4e-44, 1.3e-44, 1.1e-44, 1.5e-44, 1.4e-44, 2.8e-44, 3.1e-44, 3e-44, 3e-44, 3.2e-44, 3.1e-44, 3.1e-44, 3.4e-44, 3.2e-44, 3.2e-44, 3.5e-44, 3.4e-44, 3.4e-44, 3.6e-44, 3.5e-44, 3.5e-44, 3.8e-44, 3.6e-44, 3.6e-44, 3.9e-44, 3.8e-44, 3.8e-44, 4e-44, 3.9e-44, 3.9e-44, 4.2e-44, 4e-44, 4e-44, 4.3e-44, 4.2e-44, 4.2e-44, 4.5e-44, 4.3e-44, 4.3e-44, 4.6e-44, 4.5e-44, 4.5e-44, 4.8e-44, 4.6e-44, 4.6e-44, 4.9e-44, 4.8e-44, 4.8e-44, 5e-44, 4.9e-44, 4.9e-44, 5.2e-44, 5e-44, 5e-44, 5.3e-44, 5.2e-44, 5.2e-44, 5.5e-44, 5.3e-44, 5.3e-44, 5.6e-44, 5.5e-44, 5.5e-44, 5.7e-44, 5.6e-44, 5.6e-44, 5.9e-44, 5.7e-44, 5.7e-44, 6e-44, 5.9e-44, 5.9e-44, 6.2e-44, 6e-44, 6e-44, 6.3e-44, 6.2e-44, 6.2e-44, 6.4e-44, 6.3e-44, 6.3e-44, 6.6e-44, 6.4e-44, 6.4e-44, 6.7e-44, 6.6e-44, 6.6e-44, 6.9e-44, 6.7e-44, 6.7e-44, 7e-44, 6.9e-44, 6.9e-44, 7.1e-44, 7e-44, 7e-44, 7.3e-44, 7.1e-44, 7.1e-44, 7.4e-44, 7.3e-44, 7.3e-44, 7.6e-44, 7.4e-44, 7.4e-44, 7.7e-44, 7.6e-44, 7.6e-44, 7.8e-44, 7.7e-44, 7.7e-44, 8e-44, 7.8e-44, 7.8e-44, 8.1e-44, 8e-44, 8e-44, 8.3e-44, 8.1e-44)
-
-[sub_resource type="BoxMesh" id="BoxMesh_lqiw5"]
-material = SubResource("StandardMaterial3D_humfy")
-size = Vector3(6, 6.5, 10)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_eqgny"]
-size = Vector3(6, 6.5, 10)
-
-[sub_resource type="BoxMesh" id="BoxMesh_s882p"]
-material = SubResource("StandardMaterial3D_jjdtu")
-size = Vector3(6.15, 0.16, 10.15)
-
-[sub_resource type="MultiMesh" id="MultiMesh_v4yju"]
-transform_format = 1
-instance_count = 40
-mesh = SubResource("BoxMesh_3aqld")
-buffer = PackedFloat32Array(1.3559809, 6.18, 1.3802817, 1.9779904, 6.18, 1.0598592, 1.9779904, 6.18, 1.3802817, 1.3559809, 6.18, 1.0598592, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-
-[sub_resource type="MultiMesh" id="MultiMesh_tynxp"]
-transform_format = 1
-instance_count = 14
-mesh = SubResource("BoxMesh_a56ue")
-buffer = PackedFloat32Array(2.6, 1.6024691, 1.75, 2.6, 2.2, 1.3830645, 2.6, 1.6024691, 1.3830645, 2.6, 2.2, 1.75, 2.6, 2.2, 1.3548387, 2.6, 0.054320987, 1.75, 2.6, 1.6024691, 1.3548387, 2.6, 0.054320987, 1.3830645, 2.6, 0, 1.75, 2.6, 2.2, 0.53629035, 2.6, 0, 1.3830645, 2.6, 0.054320987, 1.3548387, 2.6, 0, 1.3548387, 2.6, 1.6024691, 0.53629035, 2.6, 2.2, 0.31048387, 2.6, 0.054320987, 0.53629035, 2.6, 0, 0.53629035, 2.6, 1.6024691, 0.31048387, 2.6, 2.2, -0.028225806, 2.6, 0.054320987, 0.31048387, 2.6, 0, 0.31048387, 2.6, 1.6024691, -0.028225806, 2.6, 0.054320987, -0.028225806, 2.6, 2.2, -0.9032258, 2.6, 0, -0.028225806, 2.6, 1.6024691, -0.9032258, 2.6, 0.054320987, -0.9032258, 2.6, 2.2, -0.9596774, 2.6, 0, -0.9032258, 2.6, 1.6024691, -0.9596774, 2.6, 2.2, -1.75, 2.6, 1.6024691, -1.75, 2.6, 0.054320987, -0.9596774, 2.6, 0, -0.9596774, 2.6, 0.054320987, -1.75, 2.6, 0, -1.75, 2.58, 0.054320987, 0.31048387, 2.58, 1.6024691, -0.028225806, 2.58, 0.054320987, -0.028225806, 2.58, 1.6024691, 0.31048387, 2.58, 1.6024691, -0.9032258, 2.58, 0.054320987, -0.9032258, 2.58, 1.6024691, -0.9596774, 2.58, 0.054320987, -0.9596774, 71.16644, 35.573578, 0.16, 0.55, 0.96, 0.91380215, 71.755684, 36.67598, 0.16, 0.55, 0.96, 0, 70.48446, 35.896133, 0.16, 0.55, 0.96, 0.91380215, 70.962814, 37.05098, 0.16, 0.55, 0.96, 0, 69.77414, 36.150288, 0.16, 0.55, 0.96, 0.91380215, 70.137, 37.346462, 0.16, 0.55, 0.96, 0)
-
-[sub_resource type="BoxMesh" id="BoxMesh_xbdjq"]
-material = SubResource("StandardMaterial3D_humfy")
-size = Vector3(8, 4.5, 5)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_ulnad"]
-size = Vector3(8, 4.5, 5)
-
-[sub_resource type="BoxMesh" id="BoxMesh_id7ko"]
-material = SubResource("StandardMaterial3D_jjdtu")
-size = Vector3(8.15, 0.16, 5.15)
-
-[sub_resource type="MultiMesh" id="MultiMesh_frpdb"]
-transform_format = 1
-instance_count = 18
-mesh = SubResource("BoxMesh_3aqld")
-buffer = PackedFloat32Array(9.1835e-41, 3e-45, 9.184e-41, 9.1838e-41, 4.59183e-40, 1.83671e-40, 3.67345e-40, 4.59186e-40, 6.42851e-40, 1.83681e-40, 7.34692e-40, 6.42855e-40, 3.6735e-40, 7.34697e-40, 9.18365e-40, 6.42862e-40, 6.42864e-40, 1.010199e-39, 1.010204e-39, 5.5103e-40, 1.193874e-39, 5.51028e-40, 1.19388e-39, 1.28571e-39, 1.010207e-39, 1.010211e-39, 1.37755e-39, 1.377549e-39, 1.193884e-39, 1.561223e-39, 1.193882e-39, 1.561227e-39, 1.653059e-39, 1.377555e-39, 1.377559e-39, 1.744898e-39, 1.744897e-39, 1.561231e-39, 1.92857e-39, 1.744902e-39, 1.928576e-39, 2.112242e-39, 2.020409e-39, 1.928579e-39, 2.29592e-39, 2.020415e-39, 2.295924e-39, 2.47959e-39, 2.387757e-39, 2.295927e-39, 2.663267e-39, 2.479599e-39, 2.663271e-39, 2.846942e-39, 2.387762e-39, 2.938781e-39, 2.846941e-39, 2.938775e-39, 2.938782e-39, 3.12245e-39, 2.938782e-39, 3.030619e-39, 3.21429e-39, 3.397964e-39, 3.306131e-39, 3.397968e-39, 3.397967e-39, 3.489805e-39, 3.765311e-39, 3.673477e-39, 3.765314e-39, 3.948985e-39, 54.83331, 73.05778, 0.96, 0.2, 0.32, 1.199649, 54.122993, 73.31193, 0.96, 0.2, 0.32, 1.199649, 53.391186, 73.49524, 0.96, 0.2, 0.32, 1.199649, 52.644936, 73.605934, 0.96, 0.2, 0.32, 1.199649, 51.89143, 73.64295, 0.96, 0.2, 0.32, 1.199649, 51.137924, 73.605934, 0.96, 0.2, 0.32, 1.199649, 50.391674, 73.49524, 0.96, 0.2, 0.32, 1.199649, 49.659866, 73.31193, 0.96, 0.2, 0.32, 1.199649, 48.94955, 73.05778, 0.96, 0.2, 0.32, 1.199649, 48.267567, 72.73522, 0.96, 0.2, 0.32, 1.199649, 47.620483, 72.347374, 0.96, 0.2, 0.32, 1.199649, 47.01453, 71.89797, 0.96, 0.2, 0.32, 1.199649, 46.455547, 71.391335, 0.96, 0.2, 0.32, 1.199649, 45.948914, 70.83235, 0.96, 0.2, 0.32, 1.199649, 45.499508, 70.226395, 0.96, 0.2, 0.32, 1.199649, 45.11166, 69.579315, 0.96, 0.2, 0.32, 1.199649, 44.789104, 68.89733, 0.96, 0.2, 0.32, 1.199649, 44.53495, 68.18702, 0.96, 0.2, 0.32, 1.199649, 44.351643, 67.45521, 0.96, 0.2, 0.32, 1.199649, 44.240948, 66.70896, 0.96, 0.2, 0.32, 1.199649, 44.20393, 65.95545, 0.96, 0.2, 0.32, 1.199649, 44.240948, 65.20194, 0.96, 0.2, 0.32, 1.199649, 44.351643, 64.455696, 0.96, 0.2, 0.32, 1.199649, 44.53495, 63.72389, 0.96, 0.2, 0.32, 1.199649)
-
-[sub_resource type="MultiMesh" id="MultiMesh_p4ukl"]
-transform_format = 1
-instance_count = 6
-mesh = SubResource("BoxMesh_a56ue")
-buffer = PackedFloat32Array(2.6, 1.6024691, 1.75, 2.6, 2.2, 1.3830645, 2.6, 1.6024691, 1.3830645, 2.6, 2.2, 1.75, 2.6, 0.054320987, 1.75, 2.6, 1.6024691, 1.3830645, 2.6, 0.054320987, 1.3830645, 2.6, 1.6024691, 1.75, 2.6, 0, 1.75, 2.6, 0.054320987, 1.3830645, 2.6, 0, 1.3830645, 2.6, 0.054320987, 1.75, 2.6, 1.6024691, 1.3830645, 2.6, 2.2, 1.3548387, 2.6, 1.6024691, 1.3548387, 2.6, 2.2, 1.3830645, 2.6, 0.054320987, 1.3830645, 2.6, 1.6024691, 1.3548387, 2.6, 0.054320987, 1.3548387, 2.6, 1.6024691, 1.3830645, 2.6, 0, 1.3830645, 2.6, 0.054320987, 1.3548387, 2.6, 0, 1.3548387, 2.6, 0.054320987, 1.3830645)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_ablum"]
-size = Vector3(8, 4.5, 5)
-
-[sub_resource type="MultiMesh" id="MultiMesh_38ldk"]
-transform_format = 1
-instance_count = 18
-mesh = SubResource("BoxMesh_3aqld")
-buffer = PackedFloat32Array(0.28125, 0.7578125, 0.33203125, 0.671875, 0.33203125, 0.7578125, 0.28125, 0.671875, 0.28125, 0.98046875, 0.33203125, 0.7578125, 0.33203125, 0.98046875, 0.28125, 0.7578125, 0.28125, 0.98828125, 0.33203125, 0.98046875, 0.33203125, 0.98828125, 0.28125, 0.98046875, 0.33203125, 0.7578125, 0.3359375, 0.671875, 0.3359375, 0.7578125, 0.33203125, 0.671875, 0.33203125, 0.98046875, 0.3359375, 0.7578125, 0.3359375, 0.98046875, 0.33203125, 0.7578125, 0.33203125, 0.98828125, 0.3359375, 0.98046875, 0.3359375, 0.98828125, 0.33203125, 0.98046875, 0.3359375, 0.7578125, 0.44921875, 0.671875, 0.44921875, 0.7578125, 0.3359375, 0.671875, 0.3359375, 0.98046875, 0.44921875, 0.7578125, 0.44921875, 0.98046875, 0.3359375, 0.7578125, 0.3359375, 0.98828125, 0.44921875, 0.98046875, 0.44921875, 0.98828125, 0.3359375, 0.98046875, 0.44921875, 0.7578125, 0.48046875, 0.671875, 0.48046875, 0.7578125, 0.44921875, 0.671875, 0.44921875, 0.98046875, 0.48046875, 0.7578125, 0.48046875, 0.98046875, 0.44921875, 0.7578125, 0.44921875, 0.98828125, 0.48046875, 0.98046875, 0.48046875, 0.98828125, 0.44921875, 0.98046875, 0.48046875, 0.7578125, 0.52734375, 0.671875, 0.52734375, 0.7578125, 0.48046875, 0.671875, 0.48046875, 0.98046875, 0.52734375, 0.7578125, 0.52734375, 0.98046875, 0.48046875, 0.7578125, 0.48046875, 0.98828125, 0.52734375, 0.98046875, 0.52734375, 0.98828125, 0.48046875, 0.98046875, 0.52734375, 0.7578125, 0.6484375, 0.671875, 0.6484375, 0.7578125, 0.52734375, 0.671875, 0.52734375, 0.98046875, 0.6484375, 0.7578125, 0.6484375, 0.98046875, 0.52734375, 0.7578125, 0.52734375, 0.98828125, 0.6484375, 0.98046875, 0.6484375, 0.98828125, 0.52734375, 0.98046875, 0.6484375, 0.7578125, 0.65625, 0.671875, 0.65625, 0.7578125, 0.6484375, 0.671875, 0.6484375, 0.98046875, 0.65625, 0.7578125, 0.65625, 0.98046875, 0.6484375, 0.7578125, 0.6484375, 0.98828125, 0.65625, 0.98046875, 0.65625, 0.98828125, 0.6484375, 0.98046875, 0.65625, 0.7578125, 0.765625, 0.671875, 0.765625, 0.7578125, 0.65625, 0.671875, 0.65625, 0.98046875, 0.765625, 0.7578125, 0.765625, 0.98046875, 0.65625, 0.7578125, 0.65625, 0.98828125, 0.765625, 0.98046875, 0.765625, 0.98828125, 0.65625, 0.98046875, 61.589767, 34.42525, 0.96, 0.2, 0.32, 0.92568564, 61.626785, 33.67174, 0.96, 0.2, 0.32, 0.92568564, 61.73748, 32.92549, 0.96, 0.2, 0.32, 0.92568564, 61.920788, 32.193687, 0.96, 0.2, 0.32, 0.92568564)
-
-[sub_resource type="MultiMesh" id="MultiMesh_jk22n"]
-transform_format = 1
-instance_count = 6
-mesh = SubResource("BoxMesh_a56ue")
-buffer = PackedFloat32Array(9.1835e-41, 3e-45, 9.184e-41, 4.59183e-40, 3.6735e-40, 4.59187e-40, 8.2653e-40, 7.34698e-40, 8.26535e-40, 1.193878e-39, 1.102046e-39, 1.193882e-39, 1.561226e-39, 1.469393e-39, 1.56123e-39, 1.928573e-39, 1.836741e-39, 1.928578e-39, 2.295921e-39, 2.204088e-39, 2.295925e-39, 2.663269e-39, 2.571436e-39, 2.663273e-39, 3.030616e-39, 2.938784e-39, 3.03062e-39, 3.397964e-39, 3.306131e-39, 3.397968e-39, 3.765311e-39, 3.673479e-39, 3.765316e-39, 4.132659e-39, 4.040826e-39, 4.132663e-39, 4.500007e-39, 4.408174e-39, 4.500011e-39, 4.867354e-39, 4.775521e-39, 4.867358e-39, 5.234702e-39, 5.142869e-39, 5.234706e-39, 5.60205e-39, 5.510217e-39, 5.602054e-39, 5.969397e-39, 5.877564e-39, 5.969401e-39, 6.336745e-39, 6.244912e-39, 6.336749e-39, 6.704092e-39, 6.61226e-39, 6.704096e-39, 7.07144e-39, 6.979607e-39, 7.071444e-39, 7.438787e-39, 7.346955e-39, 7.438791e-39, 7.806135e-39, 7.714302e-39, 7.806139e-39, 8.173482e-39, 8.08165e-39, 8.173487e-39, 8.54083e-39, 8.448997e-39, 8.540834e-39)
-
-[sub_resource type="BoxMesh" id="BoxMesh_fp02k"]
-material = SubResource("StandardMaterial3D_humfy")
-size = Vector3(7, 10, 4)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_stogt"]
-size = Vector3(7, 10, 4)
-
-[sub_resource type="BoxMesh" id="BoxMesh_xqsb1"]
-material = SubResource("StandardMaterial3D_jjdtu")
-size = Vector3(7.15, 0.16, 4.15)
-
-[sub_resource type="MultiMesh" id="MultiMesh_gskq6"]
-transform_format = 1
-instance_count = 36
-mesh = SubResource("BoxMesh_3aqld")
-buffer = PackedFloat32Array(2.6, 3.919403, 1.75, 2.6, 4, 1.3830645, 2.6, 3.919403, 1.3830645, 2.6, 4, 1.75, 2.6, 4, 1.3548387, 2.6, 3.516418, 1.75, 2.6, 3.919403, 1.3548387, 2.6, 4, 0.53629035, 2.6, 3.516418, 1.3830645, 2.6, 3.0059702, 1.75, 2.6, 3.919403, 0.53629035, 2.6, 4, 0.31048387, 2.6, 3.516418, 1.3548387, 2.6, 3.919403, 0.31048387, 2.6, 3.0059702, 1.3830645, 2.6, 2.764179, 1.75, 2.6, 3.0059702, 1.3548387, 2.6, 4, -0.028225806, 2.6, 3.516418, 0.53629035, 2.6, 2.764179, 1.3830645, 2.6, 2.2, 1.75, 2.6, 2.2, 1.3830645, 2.6, 2.764179, 1.3548387, 2.6, 2.2, 1.3548387, 2.6, 3.0059702, 0.53629035, 2.6, 2.764179, 0.53629035, 2.6, 2.2, 0.53629035, 2.6, 2.764179, 0.31048387, 2.6, 2.2, 0.31048387, 2.6, 2.764179, -0.028225806, 2.6, 2.2, -0.028225806, 2.6, 3.0059702, -0.028225806, 2.6, 2.764179, -0.9032258, 2.6, 2.2, -0.9032258, 2.6, 3.0059702, 0.31048387, 2.6, 3.516418, -0.028225806, 2.6, 3.516418, 0.31048387, 2.6, 3.919403, -0.028225806, 2.6, 4, -0.9032258, 2.6, 3.919403, -0.9032258, 2.6, 3.516418, -0.9032258, 2.6, 4, -0.9596774, 2.6, 3.919403, -0.9596774, 2.6, 4, -1.75, 2.6, 3.919403, -1.75, 2.6, 3.516418, -0.9596774, 2.6, 3.0059702, -0.9032258, 2.6, 3.516418, -1.75, 2.6, 3.0059702, -0.9596774, 2.6, 3.0059702, -1.75, 2.6, 2.764179, -0.9596774, 2.6, 2.764179, -1.75, 2.6, 2.2, -0.9596774, 2.6, 2.2, -1.75, 2.575, 3.516418, 1.3548387, 2.575, 3.919403, 0.53629035, 2.575, 3.516418, 0.53629035, 2.575, 3.919403, 1.3548387, 2.575, 3.0059702, 1.3548387, 2.575, 3.0059702, 0.53629035, 2.76, 3.0059702, -0.028225806, 2.76, 3.516418, -0.9032258, 2.76, 3.0059702, -0.9032258, 2.76, 3.516418, -0.028225806, 2.76, 2.764179, -0.028225806, 2.76, 2.764179, -0.9032258, 0.040727925, 0.06824666, 134.81802, 0.81801987, 0.07888999, 0.07888999, 0.07888999, 0, 0.029322963, 0.049135674, 136.66061, 0.7664218, 0.07888999, 0.07888999, 0.07888999, 1, 0.059042163, 0.04774113, 136.27792, -0.15745783, 0.07888999, 0.07888999, 0.07888999, 0, 0.052869733, 0.02277141, 138, 0.5, 0.07888999, 0.07888999, 0.07888999, 1, 0.08064516, 0.04054054, 138, -0.5, 0.07888999, 0.07888999, 0.07888999, 0, 0.08064516, 0.013513514, 190, 0.5, 0.07888999, 0.07888999, 0.07888999, 1, 0.91935486, 0.04054054, 190, -0.5, 0.07888999, 0.07888999, 0.07888999, 0, 0.91935486, 0.013513514, 191.33939, 0.76642203, 0.07888999, 0.07888999, 0.07888999, 1, 0.94095784, 0.047741137, 191.72208, -0.15745735, 0.07888999, 0.07888999, 0.07888999, 0, 0.94713026, 0.022771424, 192.47487, 1.525126, 0.07888999, 0.07888999, 0.07888999, 1, 0.9592721, 0.06824665, 193.18198, 0.8180189, 0.07888999, 0.07888999, 0.07888999, 0, 0.970677, 0.049135648, 193.23358, 2.660608, 0.07888999, 0.07888999, 0.07888999, 1, 0.9715094, 0.09893535, 194.15746, 2.2779245, 0.07888999, 0.07888999, 0.07888999, 0, 0.98641056, 0.08859255, 193.5, 4.0000005, 0.07888999, 0.07888999, 0.07888999, 1, 0.9758065, 0.13513514, 194.5, 4.000001, 0.07888999, 0.07888999, 0.07888999, 0, 0.9919355, 0.13513516, 193.5, 34.5, 0.07888999, 0.07888999, 0.07888999, 1, 0.9758065, 0.9594595, 194.5, 35, 0.07888999, 0.07888999, 0.07888999, 0, 0.9919355, 0.972973, 193.5, 34.5, 0.07888999, 0.07888999, 0.07888999, 1, 0.9758065, 0.9594595, 194.46194, 35.19134, 0.07888999, 0.07888999, 0.07888999, 0, 0.9913217, 0.97814435, 193.5, 34.5, 0.07888999, 0.07888999, 0.07888999, 1, 0.9758065, 0.9594595, 194.35355, 35.353554, 0.07888999, 0.07888999, 0.07888999, 0, 0.9895733, 0.9825285, 193.5, 34.5, 0.07888999, 0.07888999, 0.07888999, 1, 0.9758065, 0.9594595, 194.19135, 35.46194, 0.07888999, 0.07888999, 0.07888999, 0, 0.9869572, 0.98545784, 193.5, 34.5, 0.07888999, 0.07888999, 0.07888999, 1, 0.9758065, 0.9594595, 194, 35.5, 0.07888999, 0.07888999, 0.07888999, 0, 0.983871, 0.9864865, 134.5, 34.5, 0.07888999, 0.07888999, 0.07888999, 1, 0.024193548, 0.9594595, 134, 35.5, 0.07888999, 0.07888999, 0.07888999, 0, 0.016129032, 0.9864865, 134.5, 34.5, 0.07888999, 0.07888999, 0.07888999, 1, 0.024193548, 0.9594595, 133.80865, 35.46194, 0.07888999, 0.07888999, 0.07888999, 0, 0.013042819, 0.98545784)
-
-[sub_resource type="MultiMesh" id="MultiMesh_bblum"]
-transform_format = 1
-instance_count = 12
-mesh = SubResource("BoxMesh_a56ue")
-buffer = PackedFloat32Array(9.1835e-41, 3e-45, 9.184e-41, 9.1838e-41, 4.59183e-40, 1.83671e-40, 3.67345e-40, 5.51021e-40, 6.42854e-40, 1.83678e-40, 7.34695e-40, 5.51016e-40, 4.5919e-40, 5.51024e-40, 9.18365e-40, 6.42862e-40, 7.347e-40, 1.102034e-39, 1.010204e-39, 8.26538e-40, 1.285708e-39, 7.34704e-40, 1.377549e-39, 1.28571e-39, 1.102046e-39, 1.193884e-39, 1.561219e-39, 9.1838e-40, 1.37755e-39, 1.744894e-39, 1.285724e-39, 1.836732e-39, 1.744895e-39, 1.744902e-39, 1.744904e-39, 2.020403e-39, 1.744904e-39, 1.928576e-39, 2.112247e-39, 1.469399e-39, 2.11225e-39, 2.295918e-39, 2.204083e-39, 2.112251e-39, 2.387758e-39, 2.295924e-39, 2.387761e-39, 2.571432e-39, 2.479598e-39, 2.571435e-39, 2.755106e-39, 2.846938e-39, 2.755106e-39, 2.938777e-39, 2.938778e-39, 2.295934e-39, 2.479606e-39, 3.122445e-39, 2.295931e-39, 3.12244e-39, 3.21429e-39, 2.204095e-39, 3.122457e-39, 3.306126e-39, 2.204101e-39, 3.306103e-39, 1.193887e-39, 3.306128e-39, 3.397932e-39, 3.397964e-39, 1.19391e-39, 3.397937e-39, 1.561255e-39, 3.214296e-39, 3.581636e-39, 3.489801e-39, 3.214297e-39, 3.673474e-39, 3.489804e-39, 3.581642e-39, 3.857148e-39, 3.58164e-39, 3.85715e-39, 3.948984e-39, 3.948985e-39, 3.673482e-39, 4.132656e-39, 3.857154e-39, 4.224494e-39, 4.132653e-39, 4.040825e-39, 4.224499e-39, 4.408167e-39, 4.132665e-39, 2.938802e-39, 4.408168e-39, 4.316336e-39, 2.938805e-39, 4.591842e-39, 4.408174e-39, 3.03064e-39, 4.59182e-39, 4.50001e-39, 3.030643e-39, 4.775516e-39, 4.591848e-39, 4.775517e-39, 4.867353e-39, 5.051028e-39, 4.959195e-39, 5.051032e-39, 4.959198e-39, 5.326537e-39, 5.418373e-39, 5.60205e-39, 5.510217e-39, 5.602054e-39, 5.51022e-39, 5.877559e-39, 5.969394e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39)
-
-[sub_resource type="BoxMesh" id="BoxMesh_vo1g0"]
-material = SubResource("StandardMaterial3D_humfy")
-size = Vector3(6, 12, 4)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_uk4c2"]
-size = Vector3(6, 12, 4)
-
-[sub_resource type="BoxMesh" id="BoxMesh_n4l22"]
-material = SubResource("StandardMaterial3D_jjdtu")
-size = Vector3(6.15, 0.16, 4.15)
-
-[sub_resource type="MultiMesh" id="MultiMesh_ow3ua"]
-transform_format = 1
-instance_count = 37
-mesh = SubResource("BoxMesh_3aqld")
-buffer = PackedFloat32Array(2.6015, 3.516418, 1.3830645, 2.6015, 3.919403, 1.3548387, 2.6015, 3.516418, 1.3548387, 2.6015, 3.919403, 1.3830645, 2.6015, 3.0059702, 1.3830645, 2.6015, 3.0059702, 1.3548387, 2.5765, 3.516418, 1.3548387, 2.5765, 3.919403, 0.53629035, 2.5765, 3.516418, 0.53629035, 2.5765, 3.919403, 1.3548387, 2.5765, 3.0059702, 1.3548387, 2.5765, 3.0059702, 0.53629035, 0.109375, 0.80078125, 0.09765625, 0.7890625, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 8.845003e-39, 8.845003e-39, 8.845003e-39, 8.845003e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 7.634557e-39, 7.634557e-39, 9.937269e-39, 9.937269e-39, 8.845003e-39, 8.845003e-39, 8.845003e-39, 8.845003e-39, 8.845003e-39, 8.845003e-39, 8.845003e-39, 8.845003e-39, 8.845003e-39, 8.845003e-39, 8.845003e-39, 8.845003e-39, 8.845003e-39, 8.845003e-39, 8.845003e-39, -2.9816385e+38, 7.634557e-39, 7.634557e-39, 9.937269e-39, 9.937269e-39, 7.634557e-39, 7.634557e-39, 9.937269e-39, 9.937269e-39, 7.634557e-39, 7.634557e-39, 9.937269e-39, 9.937269e-39, -2.8064385e+38, -2.8064385e+38, -3.1397332e+38, 9.937269e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.937269e-39, 9.937269e-39, 9.937269e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.937269e-39, 9.937269e-39, 9.937269e-39, 9.035172e-39, 9.937269e-39, 9.937269e-39, 9.937269e-39, 9.937269e-39, 9.937269e-39, 9.937269e-39, 9.937269e-39, 9.937269e-39, 9.937269e-39, 9.937269e-39, 9.937269e-39, 7.634557e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 7.634557e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 7.634557e-39, 7.634557e-39, 7.634557e-39, 9.035172e-39, 7.634557e-39, 7.634557e-39, 7.634557e-39, -2.8064385e+38, 8.845003e-39, 7.634557e-39, 7.634557e-39, -2.8064385e+38, 8.845003e-39, 8.845003e-39, 7.634557e-39, -2.8064385e+38, 8.845003e-39, 8.845003e-39, -2.9816385e+38, nan, nan, nan, -3.1397332e+38, 9.937269e-39, nan, nan, nan, -3.1397332e+38, nan, nan, nan, nan, nan, nan, nan, nan, 7.634557e-39, 7.634557e-39, -2.8064385e+38, nan, 7.634557e-39, 7.634557e-39, -2.8064385e+38, nan, 7.634557e-39, 7.634557e-39, -2.8064385e+38, nan, 7.634557e-39, -2.8064385e+38, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, 9.937269e-39, 9.937269e-39, 7.634557e-39, 7.634557e-39, 9.937269e-39, 7.634557e-39, 7.634557e-39, 7.634557e-39, -2.8064385e+38, 7.634557e-39, 7.634557e-39, 7.634557e-39, nan, -3.1397332e+38, -2.8064385e+38, 7.634557e-39, 7.634557e-39, 7.634557e-39, 7.634557e-39, 7.634557e-39, 7.634557e-39, 7.634557e-39, 7.634557e-39, 7.634557e-39, 7.634557e-39, 7.634557e-39, 7.634557e-39, 7.634557e-39, 7.634557e-39, 7.634557e-39, 7.634557e-39, 7.634557e-39, nan, nan, nan, -2.8064385e+38, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, 7.634557e-39, 7.634557e-39, 7.634557e-39, 7.634557e-39, -2.8064385e+38, 7.634557e-39, 7.634557e-39, 7.634557e-39, nan, -2.8064385e+38, 7.634557e-39, 7.634557e-39, nan, nan, -2.8064385e+38, 7.634557e-39, -2.8064385e+38, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan)
-
-[sub_resource type="MultiMesh" id="MultiMesh_t8tr3"]
-transform_format = 1
-instance_count = 13
-mesh = SubResource("BoxMesh_a56ue")
-buffer = PackedFloat32Array(9.1835e-41, 3e-45, 9.184e-41, 6e-45, 3.67345e-40, 4.5918e-40, 6.42857e-40, 5.51024e-40, 6.42861e-40, 5.51027e-40, 9.18366e-40, 1.010202e-39, 1.561226e-39, 1.469393e-39, 1.56123e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 7.634557e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 7.634557e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 7.634557e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 7.634557e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.937269e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.937269e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.937269e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.937269e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39, 9.035172e-39)
-
-[sub_resource type="BoxMesh" id="BoxMesh_yu5j7"]
-material = SubResource("StandardMaterial3D_humfy")
-size = Vector3(7, 9, 4)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_kx422"]
-size = Vector3(7, 9, 4)
-
-[sub_resource type="MultiMesh" id="MultiMesh_p4sah"]
-transform_format = 1
-instance_count = 36
-mesh = SubResource("BoxMesh_3aqld")
-buffer = PackedFloat32Array(47.6875, 13.6725235, 0.53, 0.84, 0.01, 1.3116266, 48.9375, 13.6725235, 0.53, 0.84, 0.01, 0, 47.650482, 14.42603, 0.53, 0.84, 0.01, 1.3116266, 48.894463, 14.548552, 0.53, 0.84, 0.01, 0, 47.539787, 15.17228, 0.53, 0.84, 0.01, 1.3116266, 48.76577, 15.416143, 0.53, 0.84, 0.01, 0, 47.35648, 15.904087, 0.53, 0.84, 0.01, 1.3116266, 48.552654, 16.266943, 0.53, 0.84, 0.01, 0, 47.102325, 16.614403, 0.53, 0.84, 0.01, 1.3116266, 48.25717, 17.092756, 0.53, 0.84, 0.01, 0, 46.77977, 17.296387, 0.53, 0.84, 0.01, 1.3116266, 47.88217, 17.885632, 0.53, 0.84, 0.01, 0, 46.391922, 17.94347, 0.53, 0.84, 0.01, 1.3116266, 47.43126, 18.637932, 0.53, 0.84, 0.01, 0, 45.942516, 18.549423, 0.53, 0.84, 0.01, 1.3116266, 46.90878, 19.342415, 0.53, 0.84, 0.01, 0, 45.435883, 19.108406, 0.53, 0.84, 0.01, 1.3116266, 46.319767, 19.99229, 0.53, 0.84, 0.01, 0, 44.8769, 19.615042, 0.53, 0.84, 0.01, 1.3116266, 45.66989, 20.581305, 0.53, 0.84, 0.01, 0, 44.270947, 20.064445, 0.53, 0.84, 0.01, 1.3116266, 44.96541, 21.103783, 0.53, 0.84, 0.01, 0, 43.623863, 20.452293, 0.53, 0.84, 0.01, 1.3116266, 44.213108, 21.554695, 0.53, 0.84, 0.01, 0, 42.94188, 20.774847, 0.53, 0.84, 0.01, 1.3116266, 43.420235, 21.929697, 0.53, 0.84, 0.01, 0, 42.231564, 21.029003, 0.53, 0.84, 0.01, 1.3116266, 42.594418, 22.225178, 0.53, 0.84, 0.01, 0, 41.499756, 21.21231, 0.53, 0.84, 0.01, 1.3116266, 41.743618, 22.438293, 0.53, 0.84, 0.01, 0, 40.753506, 21.323006, 0.53, 0.84, 0.01, 1.3116266, 40.87603, 22.566986, 0.53, 0.84, 0.01, 0, 40, 21.360023, 0.53, 0.84, 0.01, 1.3116266, 40, 22.610023, 0.53, 0.84, 0.01, 0, 39.246494, 21.323006, 0.53, 0.84, 0.01, 1.3116266, 39.12397, 22.566986, 0.53, 0.84, 0.01, 0, 38.500244, 21.21231, 0.53, 0.84, 0.01, 1.3116266, 38.256382, 22.438292, 0.53, 0.84, 0.01, 0, 37.768436, 21.029003, 0.53, 0.84, 0.01, 1.3116266, 37.40558, 22.225178, 0.53, 0.84, 0.01, 0, 37.05812, 20.774847, 0.53, 0.84, 0.01, 1.3116266, 36.579765, 21.929697, 0.53, 0.84, 0.01, 0, 36.376137, 20.452293, 0.53, 0.84, 0.01, 1.3116266, 35.786892, 21.554695, 0.53, 0.84, 0.01, 0, 35.729053, 20.064445, 0.53, 0.84, 0.01, 1.3116266, 35.03459, 21.103783, 0.53, 0.84, 0.01, 0, 35.1231, 19.615042, 0.53, 0.84, 0.01, 1.3116266, 34.33011, 20.581305, 0.53, 0.84, 0.01, 0, 34.564117, 19.108406, 0.53, 0.84, 0.01, 1.3116266, 33.680233, 19.99229, 0.53, 0.84, 0.01, 0, 34.05748, 18.549421, 0.53, 0.84, 0.01, 1.3116266, 33.091217, 19.342413, 0.53, 0.84, 0.01, 0, 33.608078, 17.94347, 0.53, 0.84, 0.01, 1.3116266, 32.56874, 18.637932, 0.53, 0.84, 0.01, 0, 33.22023, 17.296385, 0.53, 0.84, 0.01, 1.3116266, 32.11783, 17.885632, 0.53, 0.84, 0.01, 0, 32.897675, 16.6144, 0.53, 0.84, 0.01, 1.3116266, 31.742825, 17.092754, 0.53, 0.84, 0.01, 0, 32.64352, 15.904087, 0.53, 0.84, 0.01, 1.3116266, 31.447346, 16.266943, 0.53, 0.84, 0.01, 0, 32.460213, 15.17228, 0.53, 0.84, 0.01, 1.3116266, 31.23423, 15.416143, 0.53, 0.84, 0.01, 0, 32.349518, 14.42603, 0.53, 0.84, 0.01, 1.3116266, 31.105537, 14.548552, 0.53, 0.84, 0.01, 0, 32.3125, 13.672523, 0.53, 0.84, 0.01, 1.3116266, 31.0625, 13.672523, 0.53, 0.84, 0.01, 0, 32.349518, 12.919016, 0.53, 0.84, 0.01, 1.3116266, 31.105537, 12.7964945, 0.53, 0.84, 0.01, 0, 32.460213, 12.172766, 0.53, 0.84, 0.01, 1.3116266, 31.234232, 11.928903, 0.53, 0.84, 0.01, 0, 32.64352, 11.440958, 0.53, 0.84, 0.01, 1.3116266, 31.447346, 11.078102, 0.53, 0.84, 0.01, 0)
-
-[sub_resource type="MultiMesh" id="MultiMesh_6or5f"]
-transform_format = 1
-instance_count = 12
-mesh = SubResource("BoxMesh_a56ue")
-buffer = PackedFloat32Array(33.304733, 52.622066, 0.16, 0.55, 0.96, 1.5005982, 33.267715, 53.375572, 0.16, 0.55, 0.96, 1.5005982, 33.15702, 54.121822, 0.16, 0.55, 0.96, 1.5005982, 32.973713, 54.85363, 0.16, 0.55, 0.96, 1.5005982, 32.71956, 55.563946, 0.16, 0.55, 0.96, 1.5005982, 32.397003, 56.24593, 0.16, 0.55, 0.96, 1.5005982, 32.009155, 56.893013, 0.16, 0.55, 0.96, 1.5005982, 31.559752, 57.498966, 0.16, 0.55, 0.96, 1.5005982, 31.053116, 58.05795, 0.16, 0.55, 0.96, 1.5005982, 30.494131, 58.564583, 0.16, 0.55, 0.96, 1.5005982, 29.88818, 59.01399, 0.16, 0.55, 0.96, 1.5005982, 29.241095, 59.401836, 0.16, 0.55, 0.96, 1.5005982, 28.559113, 59.72439, 0.16, 0.55, 0.96, 1.5005982, 27.848797, 59.978546, 0.16, 0.55, 0.96, 1.5005982, 27.11699, 60.161854, 0.16, 0.55, 0.96, 1.5005982, 26.37074, 60.27255, 0.16, 0.55, 0.96, 1.5005982, 25.617233, 60.309566, 0.16, 0.55, 0.96, 1.5005982, 24.863726, 60.27255, 0.16, 0.55, 0.96, 1.5005982, 24.117477, 60.161854, 0.16, 0.55, 0.96, 1.5005982, 23.38567, 59.978546, 0.16, 0.55, 0.96, 1.5005982, 22.675354, 59.72439, 0.16, 0.55, 0.96, 1.5005982, 21.99337, 59.401836, 0.16, 0.55, 0.96, 1.5005982, 21.346287, 59.01399, 0.16, 0.55, 0.96, 1.5005982, 20.740335, 58.564583, 0.16, 0.55, 0.96, 1.5005982)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mv2qa"]
-resource_name = "Concrete"
-albedo_color = Color(0.26, 0.29, 0.34, 1)
-roughness = 0.9
-
-[sub_resource type="BoxMesh" id="BoxMesh_bvp5n"]
-material = SubResource("StandardMaterial3D_mv2qa")
-size = Vector3(34, 1, 2.4)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_0pta2"]
-size = Vector3(34, 1, 2.4)
-
-[sub_resource type="BoxMesh" id="BoxMesh_yibix"]
-material = SubResource("StandardMaterial3D_mv2qa")
-size = Vector3(0.65, 3.3, 0.8)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_5y8ov"]
-size = Vector3(0.65, 3.3, 0.8)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_mvjo7"]
-size = Vector3(0.65, 3.3, 0.8)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_ghamd"]
-size = Vector3(0.65, 3.3, 0.8)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_q3t5b"]
-size = Vector3(0.65, 3.3, 0.8)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pilb3"]
-resource_name = "Metal"
-albedo_color = Color(0.13, 0.17, 0.21, 1)
-roughness = 0.9
-
-[sub_resource type="BoxMesh" id="BoxMesh_72856"]
-material = SubResource("StandardMaterial3D_pilb3")
-size = Vector3(34, 0.1, 0.09)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bkdus"]
-resource_name = "SignCyan"
-albedo_color = Color(0.25, 0.7, 0.86, 1)
-roughness = 0.9
-emission_enabled = true
-emission = Color(0.25, 0.7, 0.86, 1)
-emission_energy_multiplier = 0.65
-
-[sub_resource type="BoxMesh" id="BoxMesh_ptc8i"]
-material = SubResource("StandardMaterial3D_bkdus")
-size = Vector3(34, 0.04, 0.04)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ynqrh"]
-resource_name = "PlanterStone"
-albedo_color = Color(0.34, 0.36, 0.39, 1)
-roughness = 0.9
-
-[sub_resource type="BoxMesh" id="BoxMesh_v2k6q"]
-material = SubResource("StandardMaterial3D_ynqrh")
-size = Vector3(3.4, 0.4, 1.6)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_bbe5e"]
-size = Vector3(3.4, 0.4, 1.6)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xietg"]
-resource_name = "Soil"
-albedo_color = Color(0.13, 0.18, 0.12, 1)
-roughness = 0.9
-
-[sub_resource type="BoxMesh" id="BoxMesh_jmifd"]
-material = SubResource("StandardMaterial3D_xietg")
-size = Vector3(3.2, 0.035, 1.4)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_360qo"]
-resource_name = "Bark"
-albedo_color = Color(0.24, 0.2, 0.16, 1)
-roughness = 0.9
-
-[sub_resource type="BoxMesh" id="BoxMesh_ivg2p"]
-material = SubResource("StandardMaterial3D_360qo")
-size = Vector3(0.18, 2, 0.18)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wqm0v"]
-resource_name = "TreeGreen"
-albedo_color = Color(0.19, 0.3, 0.2, 1)
-roughness = 0.9
-
-[sub_resource type="SphereMesh" id="SphereMesh_f2igk"]
-material = SubResource("StandardMaterial3D_wqm0v")
-radius = 1.0
-height = 2.0
-radial_segments = 8
-rings = 4
-
-[sub_resource type="BoxMesh" id="BoxMesh_ghw1s"]
-material = SubResource("StandardMaterial3D_ynqrh")
-size = Vector3(4.2, 0.4, 2.2)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_q76jh"]
-size = Vector3(4.2, 0.4, 2.2)
-
-[sub_resource type="BoxMesh" id="BoxMesh_t4685"]
-material = SubResource("StandardMaterial3D_xietg")
-size = Vector3(4, 0.035, 2)
-
-[sub_resource type="SphereMesh" id="SphereMesh_emiog"]
-material = SubResource("StandardMaterial3D_wqm0v")
-radius = 1.0
-height = 2.0
-radial_segments = 8
-rings = 4
-
-[sub_resource type="BoxMesh" id="BoxMesh_y575r"]
-material = SubResource("StandardMaterial3D_ynqrh")
-size = Vector3(3.4, 0.4, 2)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_lr7qc"]
-size = Vector3(3.4, 0.4, 2)
-
-[sub_resource type="BoxMesh" id="BoxMesh_1whx0"]
-material = SubResource("StandardMaterial3D_xietg")
-size = Vector3(3.2, 0.035, 1.8)
-
-[sub_resource type="SphereMesh" id="SphereMesh_y2ve8"]
-material = SubResource("StandardMaterial3D_wqm0v")
-radius = 1.0
-height = 2.0
-radial_segments = 8
-rings = 4
-
-[sub_resource type="BoxMesh" id="BoxMesh_iryeo"]
-material = SubResource("StandardMaterial3D_ynqrh")
-size = Vector3(2, 0.4, 3.4)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_hwctc"]
-size = Vector3(2, 0.4, 3.4)
-
-[sub_resource type="BoxMesh" id="BoxMesh_tsv51"]
-material = SubResource("StandardMaterial3D_xietg")
-size = Vector3(1.8, 0.035, 3.2)
-
-[sub_resource type="SphereMesh" id="SphereMesh_7oh5f"]
-material = SubResource("StandardMaterial3D_wqm0v")
-radius = 1.0
-height = 2.0
-radial_segments = 8
-rings = 4
-
-[sub_resource type="BoxMesh" id="BoxMesh_5g2ck"]
-material = SubResource("StandardMaterial3D_ynqrh")
-size = Vector3(4.6, 0.4, 1.6)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_vpky0"]
-size = Vector3(4.6, 0.4, 1.6)
-
-[sub_resource type="BoxMesh" id="BoxMesh_fmoqw"]
-material = SubResource("StandardMaterial3D_xietg")
-size = Vector3(4.4, 0.035, 1.4)
-
-[sub_resource type="BoxMesh" id="BoxMesh_5xqly"]
-material = SubResource("StandardMaterial3D_wqm0v")
-size = Vector3(0.7, 0.32, 0.75)
-
-[sub_resource type="BoxMesh" id="BoxMesh_sfef8"]
-material = SubResource("StandardMaterial3D_pilb3")
-size = Vector3(0.45, 0.24, 0.45)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_gshxx"]
-size = Vector3(0.45, 0.24, 0.45)
-
-[sub_resource type="BoxMesh" id="BoxMesh_x8ajt"]
-material = SubResource("StandardMaterial3D_pilb3")
-size = Vector3(0.1, 2.6, 0.1)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_akdwf"]
-resource_name = "LampWarm"
-albedo_color = Color(1, 0.8, 0.5, 1)
-roughness = 0.9
-emission_enabled = true
-emission = Color(1, 0.8, 0.5, 1)
-emission_energy_multiplier = 1.8
-
-[sub_resource type="BoxMesh" id="BoxMesh_vycmj"]
-material = SubResource("StandardMaterial3D_akdwf")
-size = Vector3(0.33, 0.36, 0.33)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_41ixh"]
-size = Vector3(0.45, 0.24, 0.45)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_en18o"]
-size = Vector3(0.45, 0.24, 0.45)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_17odm"]
-size = Vector3(0.45, 0.24, 0.45)
-
-[sub_resource type="BoxMesh" id="BoxMesh_k77g5"]
-material = SubResource("StandardMaterial3D_pilb3")
-size = Vector3(3.3, 2.1, 0.16)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_hvxfd"]
-size = Vector3(3.3, 2.1, 0.16)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wopg6"]
-resource_name = "ScreenDark"
-albedo_color = Color(0.06, 0.19, 0.24, 1)
-roughness = 0.9
-
-[sub_resource type="BoxMesh" id="BoxMesh_hkrqg"]
-material = SubResource("StandardMaterial3D_wopg6")
-size = Vector3(3.18, 1.98, 0.02)
-
-[sub_resource type="BoxMesh" id="BoxMesh_ndw2r"]
-material = SubResource("StandardMaterial3D_bkdus")
-size = Vector3(1.485, 0.035, 0.015)
-
-[sub_resource type="BoxMesh" id="BoxMesh_anwrh"]
-material = SubResource("StandardMaterial3D_bkdus")
-size = Vector3(1.65, 0.035, 0.015)
-
-[sub_resource type="BoxMesh" id="BoxMesh_bbooa"]
-material = SubResource("StandardMaterial3D_bkdus")
-size = Vector3(1.815, 0.035, 0.015)
-
-[sub_resource type="BoxMesh" id="BoxMesh_pv1k1"]
-material = SubResource("StandardMaterial3D_pilb3")
-size = Vector3(2.6, 2.4, 0.16)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_n1yq1"]
-size = Vector3(2.6, 2.4, 0.16)
-
-[sub_resource type="BoxMesh" id="BoxMesh_obyw3"]
-material = SubResource("StandardMaterial3D_wopg6")
-size = Vector3(2.48, 2.28, 0.02)
-
-[sub_resource type="BoxMesh" id="BoxMesh_d8bcn"]
-material = SubResource("StandardMaterial3D_bkdus")
-size = Vector3(1.17, 0.035, 0.015)
-
-[sub_resource type="BoxMesh" id="BoxMesh_4yb1x"]
-material = SubResource("StandardMaterial3D_bkdus")
-size = Vector3(1.3, 0.035, 0.015)
-
-[sub_resource type="BoxMesh" id="BoxMesh_7y3fw"]
-material = SubResource("StandardMaterial3D_bkdus")
-size = Vector3(1.43, 0.035, 0.015)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_q2h3i"]
-resource_name = "BenchWood"
-albedo_color = Color(0.36, 0.3, 0.23, 1)
-roughness = 0.9
-
-[sub_resource type="BoxMesh" id="BoxMesh_v8ih8"]
-material = SubResource("StandardMaterial3D_q2h3i")
-size = Vector3(2.8, 0.16, 0.65)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_6sfsn"]
-size = Vector3(2.8, 0.16, 0.65)
-
-[sub_resource type="BoxMesh" id="BoxMesh_wps4y"]
-material = SubResource("StandardMaterial3D_q2h3i")
-size = Vector3(2.8, 0.55, 0.09)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_ka16c"]
-size = Vector3(2.8, 0.16, 0.65)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hpaa2"]
-resource_name = "KioskMetal"
-albedo_color = Color(0.26, 0.3, 0.33, 1)
-roughness = 0.9
-
-[sub_resource type="BoxMesh" id="BoxMesh_cbemi"]
-material = SubResource("StandardMaterial3D_hpaa2")
-size = Vector3(0.7, 1.7, 0.6)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_elwa2"]
-size = Vector3(0.7, 1.7, 0.6)
-
-[sub_resource type="BoxMesh" id="BoxMesh_be5to"]
-material = SubResource("StandardMaterial3D_bkdus")
-size = Vector3(0.48, 0.55, 0.02)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_vflbs"]
-size = Vector3(0.7, 1.7, 0.6)
+[ext_resource type="PackedScene" path="res://scenes/city/assets/trash_bin.tscn" id="kit_trash_bin"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/vending_machine.tscn" id="kit_vending_machine"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/vent_unit.tscn" id="kit_vent_unit"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/wall_advert.tscn" id="kit_wall_advert"]
+[ext_resource type="PackedScene" path="res://scenes/city/assets/window_canopy.tscn" id="kit_window_canopy"]
+[ext_resource type="PackedScene" path="res://scenes/ui/loadout_ui.tscn" id="loadout_ui"]
+[ext_resource type="PackedScene" path="res://scenes/city/night_atmosphere.tscn" id="night_atmosphere"]
+[ext_resource type="Script" uid="uid://buklf6pk30sok" path="res://scripts/ui/orbit_debug_ui.gd" id="orbit_debug"]
+[ext_resource type="Resource" uid="uid://dd82euvn5fvgp" path="res://data/player/ricochet_camera.tres" id="ricochet_camera"]
+[ext_resource type="Script" uid="uid://dgbspgh4x7cd6" path="res://scripts/combat/wave_spawn_zone.gd" id="spawn_zone"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/convenience_24_v2.tscn" id="store2"]
+
+[sub_resource type="Image" id="Image_ptc8i"]
+data = {
+"data": PackedByteArray("JT04/0hwTv9ciVD/eaBf/7XOeP9ES1f/ZG51/4WJgP+qqJf/xr+q/46Rnv+4ta7/28+2/+vfw//06M3/ND9S/0hZaf9bcID/e4yZ/56srP8="),
+"format": "RGBA8",
+"height": 4,
+"mipmaps": false,
+"width": 5
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_k6jmd"]
+image = SubResource("Image_ptc8i")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ynqrh"]
+resource_local_to_scene = true
+resource_name = "出生区地表"
+render_priority = 0
+shader = ExtResource("5_yu5j7")
+shader_parameter/wet_surface_enabled = false
+shader_parameter/wet_surface_minimum = 0.65
+shader_parameter/wet_surface_coverage = 0.68
+shader_parameter/wet_surface_patch_size = 2.4
+shader_parameter/wet_surface_roughness = 0.1
+shader_parameter/wet_surface_reflectivity = 0.85
+shader_parameter/wet_surface_ripple_strength = 0.045
+shader_parameter/wet_surface_ripple_speed = 0.65
+shader_parameter/wet_surface_grass_response = 0.04
+shader_parameter/pixel_palette_enabled = true
+shader_parameter/pixel_palette_texture = SubResource("ImageTexture_k6jmd")
+shader_parameter/pixel_stone_detail_strength = 0.65
+shader_parameter/pixel_grass_contrast = 1.0
+shader_parameter/pixel_grass_center = Color(0.3398362, 0.56298, 0.24572021, 1)
+shader_parameter/smooth_grass_enabled = true
+shader_parameter/smooth_grass_orm_dry = ExtResource("14_mvjo7")
+shader_parameter/smooth_grass_orm_wet = ExtResource("15_ghamd")
+shader_parameter/surface_normals_enabled = true
+shader_parameter/surface_normal_strength = 0.8
+shader_parameter/wild_normal_enabled = true
+shader_parameter/path_normal_enabled = true
+shader_parameter/wild_normal_strength = 1.0
+shader_parameter/path_normal_strength = 1.0
+shader_parameter/path_edge_blending_enabled = true
+shader_parameter/path_edge_width = 0.125
+shader_parameter/path_edge_strength = 0.4
+shader_parameter/grass_variation_enabled = false
+shader_parameter/grass_variation_strength = 0.19
+shader_parameter/grass_variation_size = 3.0
+shader_parameter/city_texture = ExtResource("10_bvp5n")
+shader_parameter/cyber_texture = ExtResource("11_0pta2")
+shader_parameter/cultivation_texture = ExtResource("11_0pta2")
+shader_parameter/wild_texture = ExtResource("16_q3t5b")
+shader_parameter/path_atlas = ExtResource("13_5y8ov")
+shader_parameter/dirt_atlas = ExtResource("12_yibix")
+shader_parameter/map_origin = Vector2i(0, 0)
+shader_parameter/cell_size = 1.6
+shader_parameter/battle_paving_enabled = false
+shader_parameter/battle_paving_paint_id = 11
+shader_parameter/battle_paving_rect = Vector4(-15.2, 29.6, 30.4, 30.4)
+shader_parameter/battle_paving_albedo = ExtResource("6_kx422")
+shader_parameter/battle_paving_normal = ExtResource("7_p4sah")
+shader_parameter/battle_paving_orm_dry = ExtResource("8_6or5f")
+shader_parameter/battle_paving_orm_wet = ExtResource("9_mv2qa")
+shader_parameter/surface_canvas_enabled = false
+shader_parameter/surface_canvas_origin = Vector2(0, 0)
+shader_parameter/surface_canvas_grid = Vector2i(0, 0)
+shader_parameter/surface_canvas_chunk_meters = 6.4
+shader_parameter/surface_canvas_texture_origin = Vector2(-15.2, 29.6)
+shader_parameter/surface_material_maps_enabled = true
+shader_parameter/surface_material_ao_strength = 0.85
+shader_parameter/surface_material_roughness_strength = 1.0
+shader_parameter/city_tint = Color(0.92, 0.95, 1, 1)
+shader_parameter/cyber_tint = Color(0.92, 1, 0.98, 1)
+shader_parameter/cultivation_tint = Color(0.96, 0.97, 1, 1)
+shader_parameter/wild_tint = Color(1, 1, 1, 1)
+shader_parameter/path_tint = Color(1, 1, 1, 1)
+shader_parameter/dirt_tint = Color(0.98, 1.3, 1.5, 1)
+shader_parameter/city_surface = Vector3(0.76, 0, 0.9)
+shader_parameter/cyber_surface = Vector3(0.7, 0, 0.8)
+shader_parameter/cultivation_surface = Vector3(0.72, 0, 0.85)
+shader_parameter/wild_surface = Vector3(0.97, 0, 0.08)
+shader_parameter/path_surface = Vector3(0.84, 0, 0.65)
+shader_parameter/dirt_surface = Vector3(0.96, 0, 0.45)
+shader_parameter/path_grid = Vector2(4, 4)
+shader_parameter/path_configured = true
+shader_parameter/path_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
+shader_parameter/paint_enabled = true
+shader_parameter/lumina_relief_enabled = false
+shader_parameter/lumina_relief_strength = 0.8
+shader_parameter/lumina_tone_strength = 0.08
+shader_parameter/lumina_matte_floor = 0.48
+shader_parameter/ground_directional_reflection_strength = 0.0
+shader_parameter/wetness = 0.6
+shader_parameter/wet_darkening = 0.65
+shader_parameter/wet_roughness = 0.16
+shader_parameter/puddles = false
+shader_parameter/puddle_threshold = 0.6
+shader_parameter/puddle_darkening = 0.45
+shader_parameter/puddle_roughness = 0.02
+shader_parameter/texture_pixels = 64.0
+shader_parameter/stone_relief = 0.006
+shader_parameter/stone_gloss_variation = 0.55
+shader_parameter/grass_lighting_enabled = true
+shader_parameter/grass_relief = 0.008
+shader_parameter/grass_wet_response = 0.2
+shader_parameter/grass_sheen = 0.0
+shader_parameter/grass_root_occlusion = 0.3
+shader_parameter/grass_root_bounds = Vector4(-16.8, 28, 33.600002, 33.600002)
+shader_parameter/farming_enabled = false
+shader_parameter/farming_wet_darkening = 0.68
+shader_parameter/farming_wet_roughness = 0.72
+shader_parameter/rain_amount = 0.7
+shader_parameter/rain_clock = 1620.497617665532
+shader_parameter/rain_density = 0.9
+shader_parameter/rain_radius = 0.11
+shader_parameter/rain_strength = 0.32
+shader_parameter/weather_wetness = 0.08399999999999999
+shader_parameter/edge_fade_distance = 0.0
+shader_parameter/edge_fog_color = Color(0.18, 0.24, 0.39, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_v2k6q"]
+resource_local_to_scene = true
+resource_name = "出生区台地侧壁"
+render_priority = 0
+shader = ExtResource("17_pilb3")
+shader_parameter/pixel_palette_enabled = true
+shader_parameter/pixel_palette_texture = SubResource("ImageTexture_k6jmd")
+shader_parameter/pixel_stone_detail_strength = 0.65
+shader_parameter/pixel_grass_contrast = 1.0
+shader_parameter/pixel_grass_center = Color(0.3398362, 0.56298, 0.24572021, 1)
+shader_parameter/smooth_grass_enabled = true
+shader_parameter/smooth_grass_orm_dry = ExtResource("14_mvjo7")
+shader_parameter/smooth_grass_orm_wet = ExtResource("15_ghamd")
+shader_parameter/surface_normals_enabled = true
+shader_parameter/surface_normal_strength = 0.8
+shader_parameter/wild_normal_enabled = false
+shader_parameter/path_normal_enabled = false
+shader_parameter/wild_normal_strength = 1.0
+shader_parameter/path_normal_strength = 1.0
+shader_parameter/path_edge_blending_enabled = true
+shader_parameter/path_edge_width = 0.125
+shader_parameter/path_edge_strength = 0.4
+shader_parameter/grass_variation_enabled = false
+shader_parameter/grass_variation_strength = 0.19
+shader_parameter/grass_variation_size = 3.0
+shader_parameter/city_texture = ExtResource("10_bvp5n")
+shader_parameter/cyber_texture = ExtResource("11_0pta2")
+shader_parameter/cultivation_texture = ExtResource("11_0pta2")
+shader_parameter/wild_texture = ExtResource("16_q3t5b")
+shader_parameter/path_atlas = ExtResource("13_5y8ov")
+shader_parameter/dirt_atlas = ExtResource("12_yibix")
+shader_parameter/map_origin = Vector2i(-11, 17)
+shader_parameter/cell_size = 1.6
+shader_parameter/wall_texture = ExtResource("19_bkdus")
+shader_parameter/tint = Color(0.91, 0.89, 0.86, 1)
+shader_parameter/saturation = 0.4
+shader_parameter/texel = 0.025
+shader_parameter/lip_pixels = 3
+shader_parameter/lip_shadow_pixels = 2
+shader_parameter/base_shadow_height = 0.4
+shader_parameter/base_shadow_strength = 0.36
+shader_parameter/roughness = 0.95
+shader_parameter/wall_normal_texture = ExtResource("18_72856")
+shader_parameter/wall_normal_enabled = true
+shader_parameter/edge_color_matching_enabled = true
+shader_parameter/battle_paving_enabled = false
+shader_parameter/battle_paving_paint_id = 11
+shader_parameter/battle_paving_rect = Vector4(-15.2, 29.6, 30.4, 30.4)
+shader_parameter/battle_paving_albedo = ExtResource("6_kx422")
+shader_parameter/battle_paving_normal = ExtResource("7_p4sah")
+shader_parameter/battle_paving_orm_dry = ExtResource("8_6or5f")
+shader_parameter/battle_paving_orm_wet = ExtResource("9_mv2qa")
+shader_parameter/surface_canvas_enabled = false
+shader_parameter/surface_canvas_origin = Vector2(0, 0)
+shader_parameter/surface_canvas_grid = Vector2i(0, 0)
+shader_parameter/surface_canvas_chunk_meters = 6.4
+shader_parameter/surface_canvas_texture_origin = Vector2(-15.2, 29.6)
+shader_parameter/surface_material_maps_enabled = true
+shader_parameter/surface_material_ao_strength = 0.85
+shader_parameter/surface_material_roughness_strength = 1.0
+shader_parameter/city_tint = Color(0.92, 0.95, 1, 1)
+shader_parameter/cyber_tint = Color(0.92, 1, 0.98, 1)
+shader_parameter/cultivation_tint = Color(0.96, 0.97, 1, 1)
+shader_parameter/wild_tint = Color(1, 1, 1, 1)
+shader_parameter/path_tint = Color(1, 1, 1, 1)
+shader_parameter/dirt_tint = Color(0.98, 1.3, 1.5, 1)
+shader_parameter/city_surface = Vector3(0.76, 0, 0.9)
+shader_parameter/cyber_surface = Vector3(0.7, 0, 0.8)
+shader_parameter/cultivation_surface = Vector3(0.72, 0, 0.85)
+shader_parameter/wild_surface = Vector3(0.97, 0, 0.08)
+shader_parameter/path_surface = Vector3(0.84, 0, 0.65)
+shader_parameter/dirt_surface = Vector3(0.96, 0, 0.45)
+shader_parameter/path_grid = Vector2(4, 4)
+shader_parameter/path_configured = true
+shader_parameter/path_tiles = PackedVector2Array(0, 3, 3, 3, 0, 0, 3, 2, 0, 2, 1, 2, 2, 3, 3, 1, 1, 3, 0, 1, 3, 0, 2, 0, 1, 0, 2, 2, 1, 1, 2, 1)
+shader_parameter/paint_enabled = true
+shader_parameter/lumina_relief_enabled = false
+shader_parameter/lumina_relief_strength = 0.8
+shader_parameter/lumina_tone_strength = 0.08
+shader_parameter/lumina_matte_floor = 0.48
+shader_parameter/transition_enabled = true
+shader_parameter/grass_texture = ExtResource("16_q3t5b")
+shader_parameter/grass_tint = Color(1, 1, 1, 1)
+shader_parameter/grass_lip_pixels = 4.0
+shader_parameter/edge_variation_pixels = 3.0
+shader_parameter/transition_height = 0.22
+shader_parameter/moss_strength = 0.5
+shader_parameter/lip_shadow_strength = 0.1
+shader_parameter/base_blend_height = 0.22
+shader_parameter/surface_edge_enabled = true
+shader_parameter/surface_edge_lip_pixels = 2.0
+shader_parameter/surface_edge_height = 0.14
+shader_parameter/surface_edge_normal_softening = 0.5
+shader_parameter/edge_wetness = 0.684
+shader_parameter/edge_wet_darkening = 0.65
+shader_parameter/edge_wet_roughness = 0.16
+shader_parameter/edge_grass_wet_response = 0.2
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_h0yti"]
 resource_name = "RoadPaint"
@@ -601,39 +318,41 @@ size = Vector3(0.22, 0.018, 2.4)
 radius = 0.24
 height = 1.06592
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_e7lfk"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bbe5e"]
 resource_local_to_scene = true
 shader = ExtResource("22_pgqvn")
-shader_parameter/zenith_color = Color(0.05, 0.05, 0.11, 1)
-shader_parameter/horizon_color = Color(0.38, 0.35, 0.4, 1)
-shader_parameter/fog_color = Color(0.38, 0.35, 0.4, 1)
+shader_parameter/zenith_color = Color(0.025, 0.045, 0.11, 1)
+shader_parameter/horizon_color = Color(0.18, 0.24, 0.39, 1)
+shader_parameter/fog_color = Color(0.18, 0.24, 0.39, 1)
 shader_parameter/silhouette_color = Color(0.1, 0.09, 0.13, 1)
 shader_parameter/glow_color = Color(0.75, 0.42, 0.24, 1)
-shader_parameter/glow_strength = 0.5
+shader_parameter/glow_strength = 0.0
 shader_parameter/moon_glow_color = Color(0.55, 0.62, 0.85, 1)
 shader_parameter/star_density = 0.01
 shader_parameter/pixel_angle = 0.004
 shader_parameter/hemisphere_fill_enabled = false
 shader_parameter/hemisphere_sky_color = Color(0.416, 0.51, 0.78, 1)
 shader_parameter/hemisphere_ground_color = Color(0.318, 0.275, 0.329, 1)
+shader_parameter/city_matte_enabled = false
+shader_parameter/city_matte_brightness = 0.85
 
-[sub_resource type="Sky" id="Sky_3m6rx"]
+[sub_resource type="Sky" id="Sky_xietg"]
 resource_local_to_scene = true
-sky_material = SubResource("ShaderMaterial_e7lfk")
+sky_material = SubResource("ShaderMaterial_bbe5e")
 radiance_size = 2
 
-[sub_resource type="Environment" id="Environment_yvdjx"]
+[sub_resource type="Environment" id="Environment_jmifd"]
 resource_local_to_scene = true
 background_mode = 2
 background_color = Color(0.07059, 0.10588, 0.18039, 1)
-sky = SubResource("Sky_3m6rx")
+sky = SubResource("Sky_xietg")
 ambient_light_source = 2
-ambient_light_color = Color(0.5, 0.52, 0.6, 1)
-ambient_light_energy = 0.6
+ambient_light_color = Color(0.45, 0.51, 0.68, 1)
 ambient_light_sky_contribution = 0.0
+ambient_light_energy = 0.7
 reflected_light_source = 2
 tonemap_mode = 3
-tonemap_exposure = 0.86
+tonemap_exposure = 1.05
 tonemap_white = 6.0
 ssr_enabled = true
 ssr_max_steps = 96
@@ -651,50 +370,78 @@ glow_enabled = true
 glow_levels/2 = 0.6
 glow_levels/3 = 0.8
 glow_levels/5 = 0.6
-glow_intensity = 0.18
+glow_intensity = 0.28
 glow_strength = 1.05
 glow_bloom = 0.04
 fog_enabled = true
 fog_mode = 1
-fog_light_color = Color(0.38, 0.35, 0.4, 1)
-fog_density = 0.0
+fog_light_color = Color(0.18, 0.24, 0.39, 1)
+fog_density = 0.04
 fog_sky_affect = 0.0
 fog_height = -0.3
-fog_height_density = 0.06
-fog_depth_begin = 21.5
-fog_depth_end = 99.0
+fog_depth_begin = 34.0
+fog_depth_end = 95.0
 volumetric_fog_enabled = true
-volumetric_fog_density = 0.006
+volumetric_fog_density = 0.0008
 volumetric_fog_albedo = Color(0.75, 0.85, 0.92, 1)
-volumetric_fog_length = 40.0
+volumetric_fog_length = 80.0
 volumetric_fog_ambient_inject = 0.2
-volumetric_fog_sky_affect = 0.0
 adjustment_enabled = true
-adjustment_brightness = 1.06
-adjustment_contrast = 1.2
-adjustment_saturation = 1.45
+adjustment_brightness = 1.02
+adjustment_contrast = 1.08
+adjustment_saturation = 1.1
 
-[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_y7ym8"]
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_360qo"]
 resource_local_to_scene = true
 dof_blur_far_enabled = true
 dof_blur_near_enabled = true
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ivg2p"]
+resource_local_to_scene = true
+shader = ExtResource("56_idau5")
+shader_parameter/ellipse_enabled = false
+shader_parameter/ellipse_center = Vector2(0.5, 0.5)
+shader_parameter/ellipse_radius = Vector2(0.34, 0.27)
+shader_parameter/ellipse_transition = 0.7
+shader_parameter/ellipse_blur_amount = 0.03
+shader_parameter/lens_enabled = false
+shader_parameter/lens_drop_count = 0
+shader_parameter/lens_drops = PackedVector4Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/lens_drop_shapes = PackedVector4Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/lens_blur = 1.0
+shader_parameter/lens_refraction = 9.0
+shader_parameter/lens_irregularity = 0.7
+shader_parameter/lens_light_response = 0.55
+shader_parameter/lens_rim_strength = 0.18
+shader_parameter/lens_center_protection = 0.14
+shader_parameter/vignette_strength = 0.22
+shader_parameter/vignette_radius = 0.85
+shader_parameter/shadow_tint = Color(0.86, 0.94, 1.12, 1)
+shader_parameter/highlight_tint = Color(1.08, 1, 0.9, 1)
+shader_parameter/split_toning = 0.18
+shader_parameter/lumina_grade_enabled = false
+shader_parameter/shadow_lift = Vector3(0.012, 0.02, 0.035)
+
+[sub_resource type="CompositorEffect" id="CompositorEffect_wqm0v"]
+resource_local_to_scene = true
+resource_name = ""
+enabled = true
+effect_callback_type = 4
+needs_motion_vectors = false
+needs_normal_roughness = false
+script = ExtResource("58_ew0l8")
+
 [node name="City" type="Node3D" unique_id=92504116]
 script = ExtResource("1_n28u1")
 
-[node name="Ground" type="Node3D" parent="." unique_id=1787148181]
+[node name="BattleConfiguration" type="Node" parent="." unique_id=184195171]
+script = ExtResource("combat_binding")
+configuration = ExtResource("combat_configuration")
 
-[node name="Paving" type="Node3D" parent="Ground" unique_id=1981580214]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08, 0)
-
-[node name="Mesh" type="MeshInstance3D" parent="Ground/Paving" unique_id=1583682832]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08, 0)
-mesh = SubResource("PlaneMesh_xsodb")
-
-[node name="Collision" type="StaticBody3D" parent="Ground/Paving" unique_id=537582626]
-
-[node name="Shape" type="CollisionShape3D" parent="Ground/Paving/Collision" unique_id=398780505]
-shape = SubResource("BoxShape3D_2bnqm")
+[node name="Ground" parent="." unique_id=140776511 instance=ExtResource("combat_ground")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -44.8)
+top_material = SubResource("ShaderMaterial_ynqrh")
+wall_material = SubResource("ShaderMaterial_v2k6q")
 
 [node name="Buildings" type="Node3D" parent="." unique_id=490120225]
 
@@ -704,19 +451,256 @@ window_energy = 0.65
 window_color = Color(1, 0.78, 0.54, 1)
 sign_energy = 0.8
 
-[node name="Hospital" parent="Buildings" instance=ExtResource("hospital_scene")]
-position = Vector3(3.4, 0, -5.5)
+[node name="Hospital" parent="Buildings" unique_id=1364090639 instance=ExtResource("hospital_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.4, 0, -5.5)
 
-[node name="ConvenienceStore2" parent="Buildings" instance=ExtResource("store2")]
-position = Vector3(8.4, 0, 8.9)
+[node name="ConvenienceStore2" parent="Buildings" unique_id=916213020 instance=ExtResource("store2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.4, 0, 8.9)
 window_energy = 0.65
 window_color = Color(1, 0.78, 0.54, 1)
 sign_energy = 0.8
 
+[node name="NorthWestTower" parent="Buildings" unique_id=1317401992 instance=ExtResource("kit_tower_industrial")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, -15.5)
+
+[node name="NorthEastTower" parent="Buildings" unique_id=16232200 instance=ExtResource("kit_tower_glass")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, -15.5)
+
+[node name="LandmarkTower" parent="Buildings" unique_id=1969643045 instance=ExtResource("kit_sentinel_station")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, -15.5)
+
+[node name="DistantTower" parent="Buildings" unique_id=1781047006 instance=ExtResource("kit_tower_distant")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, -22.2)
+
+[node name="DistantTowerWest" parent="Buildings" unique_id=71155064 instance=ExtResource("kit_tower_glass")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18, 0, -21)
+
+[node name="DistantTowerEast" parent="Buildings" unique_id=1591438224 instance=ExtResource("kit_tower_industrial")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0, -22)
+
+[node name="WestBlock" parent="Buildings" unique_id=1102542322 instance=ExtResource("kit_street_west_corner")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 0, -2.5)
+
+[node name="AC" parent="Buildings/WestBlock" unique_id=1244741412 instance=ExtResource("kit_rooftop_ac")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.6, -1)
+
+[node name="RoofVent" parent="Buildings/WestBlock" unique_id=1641762083 instance=ExtResource("kit_vent_unit")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, 6.6, -1)
+
+[node name="FacadePipe" parent="Buildings/WestBlock" unique_id=999780826 instance=ExtResource("kit_service_pipe")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.3, 0.2, -5.56)
+
+[node name="WindowCanopy" parent="Buildings/WestBlock" unique_id=510205622 instance=ExtResource("kit_window_canopy")]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -0.8, 2.1, -5.8)
+
+[node name="EastBlock" parent="Buildings" unique_id=590207114 instance=ExtResource("kit_street_east_corner")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 0, -1.5)
+
+[node name="AC" parent="Buildings/EastBlock" unique_id=572083837 instance=ExtResource("kit_rooftop_ac")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.6, -1)
+
+[node name="RoofVent" parent="Buildings/EastBlock" unique_id=812151397 instance=ExtResource("kit_vent_unit")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, 6.6, -1)
+
+[node name="FacadePipe" parent="Buildings/EastBlock" unique_id=512424007 instance=ExtResource("kit_service_pipe")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.3, 0.2, -5.06)
+
+[node name="WindowCanopy" parent="Buildings/EastBlock" unique_id=796153617 instance=ExtResource("kit_window_canopy")]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -0.8, 2.1, -5.3)
+
+[node name="SouthWestBlock" parent="Buildings" unique_id=1508697210 instance=ExtResource("kit_street_south_terrace")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, 14.5)
+
+[node name="AC" parent="Buildings/SouthWestBlock" unique_id=1147338177 instance=ExtResource("kit_rooftop_ac")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.6, -1)
+
+[node name="RoofVent" parent="Buildings/SouthWestBlock" unique_id=1327722219 instance=ExtResource("kit_vent_unit")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, 4.6, -1)
+
+[node name="FacadePipe" parent="Buildings/SouthWestBlock" unique_id=911854070 instance=ExtResource("kit_service_pipe")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.3, 0.2, -2.56)
+
+[node name="WindowCanopy" parent="Buildings/SouthWestBlock" unique_id=146677181 instance=ExtResource("kit_window_canopy")]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -0.8, 2.1, -2.8)
+
+[node name="SouthEastBlock" parent="Buildings" unique_id=286052852 instance=ExtResource("kit_street_south_court")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 14.5)
+
+[node name="AC" parent="Buildings/SouthEastBlock" unique_id=445353391 instance=ExtResource("kit_rooftop_ac")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.6, -1)
+
+[node name="RoofVent" parent="Buildings/SouthEastBlock" unique_id=2143836177 instance=ExtResource("kit_vent_unit")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, 4.6, -1)
+
+[node name="FacadePipe" parent="Buildings/SouthEastBlock" unique_id=191242957 instance=ExtResource("kit_service_pipe")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.3, 0.2, -2.56)
+
+[node name="WindowCanopy" parent="Buildings/SouthEastBlock" unique_id=645961340 instance=ExtResource("kit_window_canopy")]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -0.8, 2.1, -2.8)
+
 [node name="ElevatedWalkway" type="Node3D" parent="." unique_id=381530017]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -10.5)
 
+[node name="Span0" parent="ElevatedWalkway" unique_id=996069033 instance=ExtResource("kit_bridge_span_6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 3.8, 0)
+
+[node name="Span1" parent="ElevatedWalkway" unique_id=98694454 instance=ExtResource("kit_bridge_span_6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 3.8, 0)
+
+[node name="Span2" parent="ElevatedWalkway" unique_id=719067269 instance=ExtResource("kit_bridge_span_6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 3.8, 0)
+
+[node name="Span3" parent="ElevatedWalkway" unique_id=772899230 instance=ExtResource("kit_bridge_span_6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 3.8, 0)
+
+[node name="Span4" parent="ElevatedWalkway" unique_id=1985881198 instance=ExtResource("kit_bridge_span_6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 3.8, 0)
+
+[node name="Span5" parent="ElevatedWalkway" unique_id=1270692772 instance=ExtResource("kit_bridge_span_4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 3.8, 0)
+
+[node name="Pier-14" parent="ElevatedWalkway" unique_id=808718461 instance=ExtResource("kit_bridge_pier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 0, 0)
+
+[node name="Pier-7" parent="ElevatedWalkway" unique_id=214171339 instance=ExtResource("kit_bridge_pier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0, 0)
+
+[node name="Pier7" parent="ElevatedWalkway" unique_id=1784425176 instance=ExtResource("kit_bridge_pier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 0)
+
+[node name="Pier14" parent="ElevatedWalkway" unique_id=448340114 instance=ExtResource("kit_bridge_pier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 0)
+
+[node name="TrainHead" parent="ElevatedWalkway" unique_id=2008874672 instance=ExtResource("kit_train_cab")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 4.3, 0)
+
+[node name="TrainMiddle" parent="ElevatedWalkway" unique_id=520818934 instance=ExtResource("kit_train_car")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 4.3, 0)
+
+[node name="TrainTail" parent="ElevatedWalkway" unique_id=551982436 instance=ExtResource("kit_train_cab")]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -4, 4.3, 0)
+
 [node name="StreetProps" type="Node3D" parent="." unique_id=122441224]
+
+[node name="Lamp0" parent="StreetProps" unique_id=162301577 instance=ExtResource("kit_lamp_warm")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0, -2.5)
+
+[node name="Lamp1" parent="StreetProps" unique_id=1337462710 instance=ExtResource("kit_lamp_cyan")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, -3.3)
+
+[node name="Lamp2" parent="StreetProps" unique_id=353778211 instance=ExtResource("kit_lamp_warm")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0, 5.1)
+
+[node name="Lamp3" parent="StreetProps" unique_id=1303536859 instance=ExtResource("kit_lamp_cyan")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 9.6)
+
+[node name="WestGarden" parent="StreetProps" unique_id=1996929026 instance=ExtResource("kit_planter_long")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 0, 0)
+
+[node name="Plant" parent="StreetProps/WestGarden" unique_id=2034739260 instance=ExtResource("kit_city_tree_1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+
+[node name="FlowerAccent" parent="StreetProps/WestGarden" unique_id=571521865 instance=ExtResource("kit_city_flowers")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 0.49, 0)
+
+[node name="Hedge" parent="StreetProps/WestGarden" unique_id=578606530 instance=ExtResource("kit_city_hedge")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.49, 0)
+
+[node name="CentralIsland" parent="StreetProps" unique_id=501360281 instance=ExtResource("kit_planter_wide")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -0.7)
+
+[node name="Plant" parent="StreetProps/CentralIsland" unique_id=939923935 instance=ExtResource("kit_city_tree_2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+
+[node name="FlowerAccent" parent="StreetProps/CentralIsland" unique_id=1683438245 instance=ExtResource("kit_city_fern")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 0.49, 0)
+
+[node name="SouthWestGarden" parent="StreetProps" unique_id=165695270 instance=ExtResource("kit_planter_long")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.2, 0, 7.8)
+
+[node name="Plant" parent="StreetProps/SouthWestGarden" unique_id=34569738 instance=ExtResource("kit_city_tree_3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+
+[node name="FlowerAccent" parent="StreetProps/SouthWestGarden" unique_id=1469277860 instance=ExtResource("kit_city_flowers")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 0.49, 0)
+
+[node name="Shrub" parent="StreetProps/SouthWestGarden" unique_id=1388889860 instance=ExtResource("kit_city_shrub")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.49, 0)
+
+[node name="EastGarden" parent="StreetProps" unique_id=2119571011 instance=ExtResource("kit_planter_long")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 8, 0, 5.3)
+
+[node name="Plant" parent="StreetProps/EastGarden" unique_id=182418827 instance=ExtResource("kit_city_tree_1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+
+[node name="FlowerAccent" parent="StreetProps/EastGarden" unique_id=101409564 instance=ExtResource("kit_city_fern")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 0.49, 0)
+
+[node name="Grass" parent="StreetProps/EastGarden" unique_id=413200121 instance=ExtResource("kit_city_grass")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.49, 0)
+
+[node name="InformationIsland" parent="StreetProps" unique_id=495989629 instance=ExtResource("kit_planter_information")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 7.6)
+
+[node name="Plant" parent="StreetProps/InformationIsland" unique_id=334479341 instance=ExtResource("kit_city_flowering_shrub")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+
+[node name="FlowerAccent" parent="StreetProps/InformationIsland" unique_id=1676850623 instance=ExtResource("kit_city_flowers")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 0.49, 0)
+
+[node name="Bench0" parent="StreetProps" unique_id=1796058482 instance=ExtResource("kit_bench_wood")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 1)
+
+[node name="Bench1" parent="StreetProps" unique_id=1204445784 instance=ExtResource("kit_bench_metal")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.2, 0, 9.1)
+
+[node name="InformationBoard" parent="StreetProps" unique_id=143752683 instance=ExtResource("kit_information_screen")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 7.6)
+
+[node name="EastBoard" parent="StreetProps" unique_id=1216405375 instance=ExtResource("kit_wall_advert")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.8, 0, -2.6)
+
+[node name="Kiosk0" parent="StreetProps" unique_id=2131087073 instance=ExtResource("kit_vending_machine")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.2, 0, 4.5)
+
+[node name="Kiosk1" parent="StreetProps" unique_id=1698909208 instance=ExtResource("kit_service_terminal")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.7, 0, -4.2)
+
+[node name="TrashWest" parent="StreetProps" unique_id=406012315 instance=ExtResource("kit_trash_bin")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.8, 0, 0.5)
+
+[node name="TrashEast" parent="StreetProps" unique_id=1259616647 instance=ExtResource("kit_trash_bin")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0, 6.8)
+
+[node name="BannerWest" parent="StreetProps" unique_id=327501441 instance=ExtResource("kit_street_banner")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.8, 0, -2.2)
+
+[node name="BannerEast" parent="StreetProps" unique_id=1815352464 instance=ExtResource("kit_street_banner")]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 8.7, 0, -3.4)
+
+[node name="Wayfinding" parent="StreetProps" unique_id=590288372 instance=ExtResource("kit_direction_sign")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.8, 0, 5.2)
+
+[node name="UtilityBox" parent="StreetProps" unique_id=448973690 instance=ExtResource("kit_electric_box")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -9.9, 0, 6.1)
+
+[node name="GuardWest" parent="StreetProps" unique_id=1208451852 instance=ExtResource("kit_guardrail")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -8.8, 0, 7.2)
+
+[node name="GuardEast" parent="StreetProps" unique_id=352128857 instance=ExtResource("kit_guardrail")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 9.2, 0, 1)
+
+[node name="Bollard0" parent="StreetProps" unique_id=1024667710 instance=ExtResource("kit_bollard")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.8, 0, 12)
+
+[node name="Bollard1" parent="StreetProps" unique_id=653053977 instance=ExtResource("kit_bollard")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.6, 0, 12)
+
+[node name="Bollard2" parent="StreetProps" unique_id=611527726 instance=ExtResource("kit_bollard")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 0, 12)
+
+[node name="Bollard3" parent="StreetProps" unique_id=1747018768 instance=ExtResource("kit_bollard")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.7, 0, 12)
 
 [node name="SouthEntrance" type="Node3D" parent="." unique_id=2069826793]
 
@@ -776,6 +760,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0.2, -3.2)
 script = ExtResource("5_1eid2")
 animations = ExtResource("6_73msu")
 movement_camera = NodePath("../MapEffects/Camera3D")
+action_visuals = ExtResource("action_visuals")
+flight_trail_settings = ExtResource("flight_trail")
 
 [node name="Collision" type="CollisionShape3D" parent="Player" unique_id=1932248598]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.53296, 0)
@@ -797,28 +783,29 @@ top_light_response = 0.55
 [node name="MovementAudio" parent="Player" unique_id=636446680 instance=ExtResource("9_vp7t7")]
 contact_frames = PackedInt32Array(0, 4)
 
-[node name="MapEffects" parent="." unique_id=2096532269 node_paths=PackedStringArray("surface_source", "player") instance=ExtResource("13_rbe51")]
-surface_source = NodePath("..")
+[node name="CharacterSkillManager" parent="Player" unique_id=512438460 instance=ExtResource("character_skills")]
+
+[node name="MapEffects" parent="." unique_id=2096532269 node_paths=PackedStringArray("terrain", "surface_source", "player") instance=ExtResource("13_rbe51")]
+terrain = NodePath("../Ground")
+surface_source = NodePath("../Ground")
 player = NodePath("../Player")
 apply_camera_defaults = false
 
-[node name="ArtDirection" parent="MapEffects" index="0" node_paths=PackedStringArray("world_environment", "moon", "post_process", "water_reflection")]
-world_environment = NodePath("../WorldEnvironment")
-moon = NodePath("../Moon")
-post_process = NodePath("../PostProcess/Screen")
-water_reflection = NodePath("../WaterReflection")
+[node name="ArtDirection" parent="MapEffects" index="0" node_paths=PackedStringArray("scene_root", "terrain", "surface_source")]
+scene_root = NodePath("../..")
+terrain = NodePath("../../Ground")
+surface_source = NodePath("../../Ground")
 water_reflection_enabled = false
 exposure = 1.05
 brightness = 1.02
 contrast = 1.08
-saturation = 1.10
+saturation = 1.1
 bloom = 0.28
 ambient_color = Color(0.45, 0.51, 0.68, 1)
 ambient_energy = 0.7
-moon_color = Color(0.72, 0.79, 1.0, 1)
+moon_color = Color(0.72, 0.79, 1, 1)
 moon_energy = 0.85
 moon_elevation = 42.0
-moon_azimuth = -32.0
 fog_color = Color(0.18, 0.24, 0.39, 1)
 fog_begin = 34.0
 fog_end = 95.0
@@ -830,284 +817,124 @@ horizon_glow = 0.0
 vignette = 0.22
 split_toning = 0.18
 
-[node name="DaylightPreview" parent="MapEffects" index="2"]
-enabled = false
-
 [node name="AtmosphericLight" parent="MapEffects" index="3"]
+process_priority = 40
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 0, 3)
 map_accents_enabled = false
 
-[node name="Weather" parent="MapEffects" index="5"]
-enabled = true
-rain_intensity = 0.7
+[node name="BGM" parent="MapEffects" index="4" node_paths=PackedStringArray("session")]
+playlists = Array[ExtResource("bgm_playlist")]([ExtResource("exploration_bgm"), ExtResource("combat_bgm")])
+session = NodePath("../../WavePrototype")
+
+[node name="Weather" parent="MapEffects" index="5" node_paths=PackedStringArray("player", "terrain", "surface_source")]
 lens_drops_enabled = false
+player = NodePath("../../Player")
+terrain = NodePath("../../Ground")
+surface_source = NodePath("../../Ground")
 
 [node name="WorldEnvironment" parent="MapEffects" index="6"]
-environment = SubResource("Environment_yvdjx")
+environment = SubResource("Environment_jmifd")
 
-[node name="Camera3D" parent="MapEffects" index="8" node_paths=PackedStringArray("target")]
-target = NodePath("../../Player")
+[node name="Moon" parent="MapEffects" index="7"]
+transform = Transform3D(0.8480479, 0.3545854, -0.39380673, 0, 0.7431452, 0.66913056, 0.52991915, -0.5674553, 0.6302225, 0, 0, 0)
+light_color = Color(0.72, 0.79, 1, 1)
+light_energy = 0.85
+light_cull_mask = 4294803455
+
+[node name="Camera3D" parent="MapEffects" index="8" node_paths=PackedStringArray("target", "post_process")]
+attributes = SubResource("CameraAttributesPractical_360qo")
 fov = 28.0
-far = 150.0
+target = NodePath("../../Player")
+post_process = NodePath("../PostProcess/Screen")
+focus_height = 0.9
 distance = 28.0
 pitch_degrees = 32.0
-focus_height = 0.9
-dof_mode = 0
-dof_amount = 0.065
-dof_near_margin = 3.0
 dof_far_margin = 4.0
-dof_near_transition = 2.5
 dof_far_transition = 6.0
+dof_near_margin = 3.0
+dof_near_transition = 2.5
+dof_amount = 0.065
+ricochet_camera_settings = ExtResource("ricochet_camera")
 
-[node name="NightAtmosphere" parent="." node_paths=PackedStringArray("camera", "moon", "weather", "vegetation_root") instance=ExtResource("night_atmosphere")]
+[node name="Screen" parent="MapEffects/PostProcess" index="0"]
+material = SubResource("ShaderMaterial_ivg2p")
+
+[node name="WaterReflection" parent="MapEffects" index="10" node_paths=PackedStringArray("terrain", "surface_source", "geometry_root")]
+terrain = NodePath("../../Ground")
+surface_source = NodePath("../../Ground")
+geometry_root = NodePath("../..")
+
+[node name="CoreFeedbackAudio" parent="MapEffects" unique_id=494989204 node_paths=PackedStringArray("player", "session") instance=ExtResource("core_audio")]
+player = NodePath("../../Player")
+session = NodePath("../../WavePrototype")
+
+[node name="NightAtmosphere" parent="." unique_id=143296372 node_paths=PackedStringArray("camera", "moon", "weather", "vegetation_root") instance=ExtResource("night_atmosphere")]
 camera = NodePath("../MapEffects/Camera3D")
 moon = NodePath("../MapEffects/Moon")
 weather = NodePath("../MapEffects/Weather")
 vegetation_root = NodePath("../StreetProps")
+bokeh = SubResource("CompositorEffect_wqm0v")
 
+[node name="LoadoutUI" parent="." unique_id=218135381 node_paths=PackedStringArray("player", "wave_session") instance=ExtResource("loadout_ui")]
+player = NodePath("../Player")
+wave_session = NodePath("../WavePrototype")
+save_path = "user://city_equipment_skills.json"
+
+[node name="WavePrototype" parent="." unique_id=831451298 node_paths=PackedStringArray("player", "terrain", "loadout", "return_point", "spawn_zone_root") instance=ExtResource("combat_wave")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, -3.2)
+player = NodePath("../Player")
+terrain = NodePath("../Ground")
+loadout = NodePath("../LoadoutUI")
+return_point = NodePath("../SpawnPoint")
+battle_area = Rect2(-17.5, -17.5, 35, 35)
+show_ui = false
+spawn_zone_root = NodePath("../SpawnCandidates")
+spawn_excluded_areas = Array[Rect2]([Rect2(-4, -6.2, 6, 6)])
+spawn_block_timeout = 30.0
+
+[node name="SpawnCandidates" type="Node3D" parent="." unique_id=531188629]
+
+[node name="SouthWest" type="Marker3D" parent="SpawnCandidates" unique_id=164144460]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, 14)
+script = ExtResource("spawn_zone")
+radius = 2.0
+
+[node name="SouthEast" type="Marker3D" parent="SpawnCandidates" unique_id=1004238864]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 14)
+script = ExtResource("spawn_zone")
+radius = 2.0
+
+[node name="WestSouth" type="Marker3D" parent="SpawnCandidates" unique_id=1582249223]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 0, 4)
+script = ExtResource("spawn_zone")
+radius = 2.0
+
+[node name="EastSouth" type="Marker3D" parent="SpawnCandidates" unique_id=1775942722]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0, 6)
+script = ExtResource("spawn_zone")
+radius = 2.0
+
+[node name="EastNorth" type="Marker3D" parent="SpawnCandidates" unique_id=428714759]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -13)
+script = ExtResource("spawn_zone")
+radius = 2.0
+
+[node name="WestNorth" type="Marker3D" parent="SpawnCandidates" unique_id=1468486421]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 0, -12)
+script = ExtResource("spawn_zone")
+radius = 2.0
+
+[node name="AudioMixUI" parent="." unique_id=831091650 node_paths=PackedStringArray("audio", "feedback", "loadout") instance=ExtResource("audio_mix_ui")]
+audio = NodePath("../MapEffects/GameAudio")
+feedback = NodePath("../MapEffects/CoreFeedbackAudio")
+loadout = NodePath("../LoadoutUI")
+
+[node name="OrbitDebugUI" type="CanvasLayer" parent="." unique_id=764882542 node_paths=PackedStringArray("player", "session", "loadout")]
+script = ExtResource("orbit_debug")
+player = NodePath("../Player")
+session = NodePath("../WavePrototype")
+loadout = NodePath("../LoadoutUI")
+
+[editable path="Player/CharacterSkillManager"]
 [editable path="MapEffects"]
-[node name="Lamp0" parent="StreetProps" instance=ExtResource("kit_lamp_warm")]
-position = Vector3(-7, 0, -2.5)
-
-[node name="Lamp1" parent="StreetProps" instance=ExtResource("kit_lamp_cyan")]
-position = Vector3(7, 0, -3.3)
-
-[node name="Lamp2" parent="StreetProps" instance=ExtResource("kit_lamp_warm")]
-position = Vector3(-7, 0, 5.1)
-
-[node name="Lamp3" parent="StreetProps" instance=ExtResource("kit_lamp_cyan")]
-position = Vector3(7, 0, 9.6)
-
-[node name="WestGarden" parent="StreetProps" instance=ExtResource("kit_planter_long")]
-position = Vector3(-6.5, 0, 0)
-
-[node name="CentralIsland" parent="StreetProps" instance=ExtResource("kit_planter_wide")]
-position = Vector3(3, 0, -0.7)
-
-[node name="SouthWestGarden" parent="StreetProps" instance=ExtResource("kit_planter_long")]
-position = Vector3(-6.2, 0, 7.8)
-
-[node name="EastGarden" parent="StreetProps" instance=ExtResource("kit_planter_long")]
-position = Vector3(8, 0, 5.3)
-rotation_degrees = Vector3(0, 90, 0)
-
-[node name="InformationIsland" parent="StreetProps" instance=ExtResource("kit_planter_information")]
-position = Vector3(3, 0, 7.6)
-
-[node name="Bench0" parent="StreetProps" instance=ExtResource("kit_bench_wood")]
-position = Vector3(3, 0, 1)
-
-[node name="Bench1" parent="StreetProps" instance=ExtResource("kit_bench_metal")]
-position = Vector3(-6.2, 0, 9.1)
-
-[node name="InformationBoard" parent="StreetProps" instance=ExtResource("kit_information_screen")]
-position = Vector3(3, 0, 7.6)
-
-[node name="EastBoard" parent="StreetProps" instance=ExtResource("kit_wall_advert")]
-position = Vector3(9.8, 0, -2.6)
-
-[node name="Kiosk0" parent="StreetProps" instance=ExtResource("kit_vending_machine")]
-position = Vector3(-8.2, 0, 4.5)
-
-[node name="Kiosk1" parent="StreetProps" instance=ExtResource("kit_service_terminal")]
-position = Vector3(-2.7, 0, -4.2)
-
-[node name="Plant" parent="StreetProps/WestGarden" instance=ExtResource("kit_city_tree_1")]
-position = Vector3(0, 0.5, 0)
-
-[node name="FlowerAccent" parent="StreetProps/WestGarden" instance=ExtResource("kit_city_flowers")]
-position = Vector3(0.65, 0.49, 0)
-
-[node name="Plant" parent="StreetProps/CentralIsland" instance=ExtResource("kit_city_tree_2")]
-position = Vector3(0, 0.5, 0)
-
-[node name="FlowerAccent" parent="StreetProps/CentralIsland" instance=ExtResource("kit_city_fern")]
-position = Vector3(0.65, 0.49, 0)
-
-[node name="Plant" parent="StreetProps/SouthWestGarden" instance=ExtResource("kit_city_tree_3")]
-position = Vector3(0, 0.5, 0)
-
-[node name="FlowerAccent" parent="StreetProps/SouthWestGarden" instance=ExtResource("kit_city_flowers")]
-position = Vector3(0.65, 0.49, 0)
-
-[node name="Plant" parent="StreetProps/EastGarden" instance=ExtResource("kit_city_tree_1")]
-position = Vector3(0, 0.5, 0)
-
-[node name="FlowerAccent" parent="StreetProps/EastGarden" instance=ExtResource("kit_city_fern")]
-position = Vector3(0.65, 0.49, 0)
-
-[node name="Plant" parent="StreetProps/InformationIsland" instance=ExtResource("kit_city_flowering_shrub")]
-position = Vector3(0, 0.5, 0)
-
-[node name="FlowerAccent" parent="StreetProps/InformationIsland" instance=ExtResource("kit_city_flowers")]
-position = Vector3(0.65, 0.49, 0)
-
-[node name="Hedge" parent="StreetProps/WestGarden" instance=ExtResource("kit_city_hedge")]
-position = Vector3(0, 0.49, 0)
-
-[node name="Grass" parent="StreetProps/EastGarden" instance=ExtResource("kit_city_grass")]
-position = Vector3(0, 0.49, 0)
-
-[node name="Shrub" parent="StreetProps/SouthWestGarden" instance=ExtResource("kit_city_shrub")]
-position = Vector3(0, 0.49, 0)
-
-[node name="Span0" parent="ElevatedWalkway" instance=ExtResource("kit_bridge_span_6")]
-position = Vector3(-14, 3.8, 0)
-
-[node name="Span1" parent="ElevatedWalkway" instance=ExtResource("kit_bridge_span_6")]
-position = Vector3(-8, 3.8, 0)
-
-[node name="Span2" parent="ElevatedWalkway" instance=ExtResource("kit_bridge_span_6")]
-position = Vector3(-2, 3.8, 0)
-
-[node name="Span3" parent="ElevatedWalkway" instance=ExtResource("kit_bridge_span_6")]
-position = Vector3(4, 3.8, 0)
-
-[node name="Span4" parent="ElevatedWalkway" instance=ExtResource("kit_bridge_span_6")]
-position = Vector3(10, 3.8, 0)
-
-[node name="Span5" parent="ElevatedWalkway" instance=ExtResource("kit_bridge_span_4")]
-position = Vector3(15, 3.8, 0)
-
-[node name="Pier-14" parent="ElevatedWalkway" instance=ExtResource("kit_bridge_pier")]
-position = Vector3(-14, 0, 0)
-
-[node name="Pier-7" parent="ElevatedWalkway" instance=ExtResource("kit_bridge_pier")]
-position = Vector3(-7, 0, 0)
-
-[node name="Pier7" parent="ElevatedWalkway" instance=ExtResource("kit_bridge_pier")]
-position = Vector3(7, 0, 0)
-
-[node name="Pier14" parent="ElevatedWalkway" instance=ExtResource("kit_bridge_pier")]
-position = Vector3(14, 0, 0)
-
-[node name="NorthWestTower" parent="Buildings" instance=ExtResource("kit_tower_industrial")]
-position = Vector3(-12, 0, -15.5)
-
-[node name="NorthEastTower" parent="Buildings" instance=ExtResource("kit_tower_glass")]
-position = Vector3(12, 0, -15.5)
-
-[node name="LandmarkTower" parent="Buildings" instance=ExtResource("kit_sentinel_station")]
-position = Vector3(1, 0, -15.5)
-
-[node name="DistantTower" parent="Buildings" instance=ExtResource("kit_tower_distant")]
-position = Vector3(-2, 0, -22.2)
-
-[node name="DistantTowerWest" parent="Buildings" instance=ExtResource("kit_tower_glass")]
-position = Vector3(-18, 0, -21)
-
-[node name="DistantTowerEast" parent="Buildings" instance=ExtResource("kit_tower_industrial")]
-position = Vector3(18, 0, -22)
-
-[node name="TrainHead" parent="ElevatedWalkway" instance=ExtResource("kit_train_cab")]
-position = Vector3(8, 4.3, 0)
-
-[node name="TrainMiddle" parent="ElevatedWalkway" instance=ExtResource("kit_train_car")]
-position = Vector3(2, 4.3, 0)
-
-[node name="TrainTail" parent="ElevatedWalkway" instance=ExtResource("kit_train_cab")]
-position = Vector3(-4, 4.3, 0)
-rotation_degrees = Vector3(0, 180, 0)
-
-[node name="WestBlock" parent="Buildings" instance=ExtResource("kit_street_west_corner")]
-position = Vector3(-13, 0, -2.5)
-
-[node name="EastBlock" parent="Buildings" instance=ExtResource("kit_street_east_corner")]
-position = Vector3(13, 0, -1.5)
-
-[node name="SouthWestBlock" parent="Buildings" instance=ExtResource("kit_street_south_terrace")]
-position = Vector3(-12, 0, 14.5)
-
-[node name="SouthEastBlock" parent="Buildings" instance=ExtResource("kit_street_south_court")]
-position = Vector3(12, 0, 14.5)
-
-[node name="TrashWest" parent="StreetProps" instance=ExtResource("kit_trash_bin")]
-position = Vector3(-8.8, 0, 0.5)
-
-[node name="TrashEast" parent="StreetProps" instance=ExtResource("kit_trash_bin")]
-position = Vector3(9, 0, 6.8)
-
-[node name="BannerWest" parent="StreetProps" instance=ExtResource("kit_street_banner")]
-position = Vector3(-8.8, 0, -2.2)
-
-[node name="BannerEast" parent="StreetProps" instance=ExtResource("kit_street_banner")]
-position = Vector3(8.7, 0, -3.4)
-rotation_degrees = Vector3(0, 180, 0)
-
-[node name="Wayfinding" parent="StreetProps" instance=ExtResource("kit_direction_sign")]
-position = Vector3(-8.8, 0, 5.2)
-
-[node name="UtilityBox" parent="StreetProps" instance=ExtResource("kit_electric_box")]
-position = Vector3(-9.9, 0, 6.1)
-rotation_degrees = Vector3(0, 90, 0)
-
-[node name="GuardWest" parent="StreetProps" instance=ExtResource("kit_guardrail")]
-position = Vector3(-8.8, 0, 7.2)
-rotation_degrees = Vector3(0, 90, 0)
-
-[node name="GuardEast" parent="StreetProps" instance=ExtResource("kit_guardrail")]
-position = Vector3(9.2, 0, 1)
-rotation_degrees = Vector3(0, 90, 0)
-
-[node name="Bollard0" parent="StreetProps" instance=ExtResource("kit_bollard")]
-position = Vector3(-7.8, 0, 12)
-
-[node name="Bollard1" parent="StreetProps" instance=ExtResource("kit_bollard")]
-position = Vector3(-4.6, 0, 12)
-
-[node name="Bollard2" parent="StreetProps" instance=ExtResource("kit_bollard")]
-position = Vector3(4.5, 0, 12)
-
-[node name="Bollard3" parent="StreetProps" instance=ExtResource("kit_bollard")]
-position = Vector3(7.7, 0, 12)
-
-[node name="AC" parent="Buildings/WestBlock" instance=ExtResource("kit_rooftop_ac")]
-position = Vector3(0, 6.6000000000000005, -1)
-
-[node name="RoofVent" parent="Buildings/WestBlock" instance=ExtResource("kit_vent_unit")]
-position = Vector3(1.1, 6.6000000000000005, -1)
-
-[node name="FacadePipe" parent="Buildings/WestBlock" instance=ExtResource("kit_service_pipe")]
-position = Vector3(-1.3, 0.2, -5.56)
-
-[node name="WindowCanopy" parent="Buildings/WestBlock" instance=ExtResource("kit_window_canopy")]
-position = Vector3(-0.8, 2.1, -5.8)
-rotation_degrees = Vector3(0, 180, 0)
-
-[node name="AC" parent="Buildings/EastBlock" instance=ExtResource("kit_rooftop_ac")]
-position = Vector3(0, 6.6000000000000005, -1)
-
-[node name="RoofVent" parent="Buildings/EastBlock" instance=ExtResource("kit_vent_unit")]
-position = Vector3(1.1, 6.6000000000000005, -1)
-
-[node name="FacadePipe" parent="Buildings/EastBlock" instance=ExtResource("kit_service_pipe")]
-position = Vector3(-1.3, 0.2, -5.06)
-
-[node name="WindowCanopy" parent="Buildings/EastBlock" instance=ExtResource("kit_window_canopy")]
-position = Vector3(-0.8, 2.1, -5.3)
-rotation_degrees = Vector3(0, 180, 0)
-
-[node name="AC" parent="Buildings/SouthWestBlock" instance=ExtResource("kit_rooftop_ac")]
-position = Vector3(0, 4.6000000000000005, -1)
-
-[node name="RoofVent" parent="Buildings/SouthWestBlock" instance=ExtResource("kit_vent_unit")]
-position = Vector3(1.1, 4.6000000000000005, -1)
-
-[node name="FacadePipe" parent="Buildings/SouthWestBlock" instance=ExtResource("kit_service_pipe")]
-position = Vector3(-1.3, 0.2, -2.56)
-
-[node name="WindowCanopy" parent="Buildings/SouthWestBlock" instance=ExtResource("kit_window_canopy")]
-position = Vector3(-0.8, 2.1, -2.8)
-rotation_degrees = Vector3(0, 180, 0)
-
-[node name="AC" parent="Buildings/SouthEastBlock" instance=ExtResource("kit_rooftop_ac")]
-position = Vector3(0, 4.6000000000000005, -1)
-
-[node name="RoofVent" parent="Buildings/SouthEastBlock" instance=ExtResource("kit_vent_unit")]
-position = Vector3(1.1, 4.6000000000000005, -1)
-
-[node name="FacadePipe" parent="Buildings/SouthEastBlock" instance=ExtResource("kit_service_pipe")]
-position = Vector3(-1.3, 0.2, -2.56)
-
-[node name="WindowCanopy" parent="Buildings/SouthEastBlock" instance=ExtResource("kit_window_canopy")]
-position = Vector3(-0.8, 2.1, -2.8)
-rotation_degrees = Vector3(0, 180, 0)
+[editable path="WavePrototype"]

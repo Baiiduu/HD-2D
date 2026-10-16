@@ -192,14 +192,20 @@ func integration_checks() -> void:
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("MapEffects/BGM").music_enabled = false
 	var session: WavePrototype = world.get_node("WavePrototype")
-	session.population_rules = session.population_rules.duplicate(true)
-	session.population_rules.simulation_mode = false
+	var profile := world.get_node("BattleConfiguration").configuration.duplicate() as SceneCombatConfiguration
+	profile.population_rules = profile.population_rules.duplicate(true) as WavePopulationRules
+	profile.population_rules.simulation_mode = false
+	profile.cards_per_draw = 100
+	profile.growth_definitions = profile.growth_definitions.duplicate()
+	world.get_node("BattleConfiguration").configuration = profile
+	# 本用例验证兼容技能与弹射成长，显式启用已退出正式池的 A02。
+	session.get_node("LightPierceAutoAttack").enabled = true
 	var growth: RunGrowth = session.get_node("RunGrowth")
 	growth.enabled = true
 	growth.cards_per_draw = 100
 	growth.get_node("GrowthChoiceUI").open_duration = 0.0
-	session.get_node("RunSkills").initial_cards_per_draw = 100
-	session.get_node("RunSkills/InitialSkillChoice").open_duration = 0.0
+	session.skill_draft.initial_cards_per_draw = 100
+	session.get_node("SkillDraft/InitialSkillChoice").open_duration = 0.0
 	root.add_child(world)
 	current_scene = world
 	await settle(12)
@@ -210,16 +216,16 @@ func integration_checks() -> void:
 	growth.set_physics_process(false)
 	var body := player.body_ricochet
 	var buffs: RunBuffs = session.get_node("RunBuffs")
-	var skills: RunSkills = session.get_node("RunSkills")
+	var skills: RunSkillManager = session.get_node("RunSkillManager")
 	var mods := session.combat_modifiers
 	var base := body.get_stats()
 	var save_before := session.loadout.state.export_state().duplicate(true)
 	check(buffs.definitions.size() == 6 and buffs.definitions.all(func(item): return item.required_levels.is_empty() and item.max_level == 0), "正式仅登记六种可持续成长，无专精前置")
 	check(buffs.candidates().filter(func(option): return option.ricochet_growth).size() == 3, "三种弹射成长得到明确抽牌分组")
 	check(session.start_run(), "实际开局仍先选择技能")
-	check(skills.initial_choice._options.all(func(option): return not option.ricochet_growth), "开局不混入弹射或共有成长")
-	check(skills.initial_choice.select_option(&"initial:light_pierce"), "初始技能学习沿用现有链路")
-	skills.initial_choice.confirm_selection()
+	check(session.skill_draft.initial_choice._options.all(func(option): return not option.ricochet_growth), "开局不混入弹射或共有成长")
+	check(session.skill_draft.initial_choice.select_option(&"initial:light_pierce"), "初始技能学习沿用现有链路")
+	session.skill_draft.initial_choice.confirm_selection()
 	growth._grant_experience(10)
 	check(growth.choice_ui.is_open and session.combat_frozen and not paused, "升级只冻结战斗")
 	var speed_index := -1
@@ -250,16 +256,16 @@ func integration_checks() -> void:
 	near(body._settings.flight_deceleration, locked, "后续成长不改写进行中的弹射快照")
 	body.cancel(true)
 	player.ricochet_rules = player.ricochet_rules.duplicate()
-	player.ricochet_rules.enabled = false
+	player.skill_manager.set_skill_enabled(CharacterSkillManager.BODY_RICOCHET, false)
 	check(not buffs.candidates().any(func(option): return option.ricochet_growth), "关闭弹射时三条成长都正确退出候选")
-	player.ricochet_rules.enabled = true
+	player.skill_manager.set_skill_enabled(CharacterSkillManager.BODY_RICOCHET, true)
 	var retained := mods.levels.duplicate()
 	session._set_phase(WavePrototype.Phase.REST)
 	check(mods.levels == retained and session.loadout.state.export_state() == save_before, "波间保留六类成长且不写永久存档")
 	session.retreat()
 	check(mods.levels.is_empty() and growth._draw_pool._preferred_ricochet.is_empty(), "结束清空属性与方向跟进")
 	session.retry()
-	check(skills.initial_choice.is_open and growth.rerolls_left == 3, "重试恢复初始技能与共享重抽预算")
+	check(session.skill_draft.initial_choice.is_open and growth.rerolls_left == 3, "重试恢复初始技能与共享重抽预算")
 	near(body.get_stats().maximum_launch_speed, base.maximum_launch_speed, "重试恢复基础速度")
 	world.queue_free()
 	await settle()

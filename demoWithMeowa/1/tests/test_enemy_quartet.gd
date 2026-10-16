@@ -310,12 +310,12 @@ func run() -> void:
 	wave.set_physics_process(false)
 	player.global_position = wave.global_position + Vector3.UP * 0.03
 	check(wave.start_run(), "正式地图使用新目录实际开局")
-	var choice: GrowthChoiceUI = wave.get_node("RunSkills/InitialSkillChoice")
+	var choice: GrowthChoiceUI = wave.get_node("SkillDraft/InitialSkillChoice")
 	if choice.is_open:
 		choice.reveal_now()
 		choice.select_option(choice._options[0].id)
 		choice.confirm_selection()
-	for component: Node in (wave.get_node("RunSkills") as RunSkills)._components.values(): component.process_mode = Node.PROCESS_MODE_DISABLED
+	for component: Node in (wave.get_node("RunSkillManager") as RunSkillManager)._components.values(): component.process_mode = Node.PROCESS_MODE_DISABLED
 	check(wave._pending == 18 and wave._wave_total(wave._run_waves[1]) == 28 and wave._wave_total(wave._run_waves[2]) == 40, "前三波初始总数保持 18／28／40")
 	for number in [1, 2, 3, 4, 10, 1000000000]:
 		var ids := {}
@@ -328,10 +328,24 @@ func run() -> void:
 	for property in ["charge_speed", "projectile_speed", "child_enemy_id", "boost_seconds"]:
 		check(parameters.any(func(item): return item.property == property and item.category == "战斗与成长"), "新怪物参数可从统一编辑器入口调整：" + property)
 	var late := wave._definition_for_wave(1000000000)
+	# 从真实晚期混编队列统计母体，不能把混合怪潮中的所有怪物都当成壶兽。
+	wave._spawn_queue.clear()
+	wave._set_phase(WavePrototype.Phase.REST)
+	wave.wave = 1000000000 - 1
+	check(wave.start_next_wave(), "极晚期波次可通过真实调度建立完整队列")
 	var late_children := 0
-	for entry in late.entries:
-		if entry.mixed_horde or entry.enemy.enemy_id == &"pot_brood": late_children += entry.count * 2
-	check(wave._run_population.max_queued_per_wave >= wave._wave_total(late) + late_children, "当前无尽混合编排的登记预算足以容纳一代分裂")
+	for job in wave._spawn_queue:
+		if job.enemy is PotBroodDefinition: late_children += 2
+	check(wave._spawn_queue.size() == wave._wave_total(late) and late_children > 0, "晚期真实队列包含全部主怪与可分裂母体")
+	check(wave._run_population.max_queued_per_wave >= wave._spawn_queue.size() + late_children, "实际混编数量为所有一代幼体保留登记预算")
+	wave.retreat()
+	wave.return_home()
+	player.global_position = wave.global_position + Vector3.UP * 0.03
+	check(wave.start_run(), "预算检查后重新开始正常怪物行为用例")
+	choice.reveal_now()
+	check(choice.select_option(choice._options[0].id), "重新开局选择有效技能")
+	choice.confirm_selection()
+	for component: Node in (wave.get_node("RunSkillManager") as RunSkillManager)._components.values(): component.process_mode = Node.PROCESS_MODE_DISABLED
 	wave._spawn_queue.clear()
 	origin = choose_origin()
 	print("Quartet sample: ", origin)

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="WaveMeleeEnemyDefinition" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/enemies/slime.tscn" id="1_87okb"]
+[ext_resource type="Script" path="res://scripts/combat/wave_melee_enemy_definition.gd" id="2_2a2wo"]
+
+[resource]
+script = ExtResource("2_2a2wo")
+separation_radius = 0.65
+separation_strength = 0.8
+pursuit_flank_strength = 0.15
+enemy_id = &"slime"
+scene = ExtResource("1_87okb")
+health = 200.0
+move_speed = 1.7

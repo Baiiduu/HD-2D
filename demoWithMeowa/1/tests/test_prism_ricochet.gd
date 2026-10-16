@@ -118,27 +118,33 @@ func run() -> void:
 func integration() -> void:
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
 	world.get_node("LoadoutUI").save_enabled = false
+	world.get_node("MapEffects/BGM").music_enabled = false
+	world.get_node("MapEffects/Weather").rain_audio_enabled = false
+	world.get_node("MapEffects/Weather").wind_audio_enabled = false
+	world.get_node("MapEffects/CoreFeedbackAudio").enabled = false
 	# 只隔离当前测试场地的装饰碰撞，不修改正式场景或地形文件。
-	load("res://scripts/previews/prop_preview_stage.gd").prepare(world)
+	var fixture := preload("res://tests/fixtures/combat_scene_fixture.gd")
+	fixture.clear_placed_obstacles(world)
+	fixture.enable_legacy_skills(world)
 	root.add_child(world)
 	current_scene = world
 	await settle(12)
 	var wave: WavePrototype = world.get_node("WavePrototype")
 	var player: Player = world.get_node("Player")
-	var skills: RunSkills = wave.get_node("RunSkills")
+	var skills: RunSkillManager = wave.get_node("RunSkillManager")
 	var attack: PrismRicochetAutoAttack = wave.get_node("PrismRicochetAutoAttack")
 	var growth: RunGrowth = wave.get_node("RunGrowth")
 	# 碰撞与成长夹具展示完整技能池；正式开局仍从有效池抽三张。
-	skills.initial_cards_per_draw = 100
+	wave.skill_draft.initial_cards_per_draw = 100
 	player.set_physics_process(false)
 	wave.set_physics_process(false)
 	growth.set_physics_process(false)
 	attack.audio_enabled = false
 	player.global_position = wave._path.ground_position(wave.global_position) + Vector3.UP * 0.03
 	check(wave.start_run() and wave.phase == WavePrototype.Phase.READY, "开局先显示技能选择，不提前进入战斗")
-	check(skills._initial_offered.has(&"initial:prism_ricochet") and skills._initial_offered.size() == skills._components.size(), "初始池保留棱光弹射并兼容新增技能")
-	skills.initial_choice.close()
-	skills._choose_initial(&"initial:prism_ricochet")
+	check(wave.skill_draft._initial_offered.has(&"initial:prism_ricochet") and wave.skill_draft._initial_offered.size() == skills._components.size(), "初始池保留棱光弹射并兼容新增技能")
+	wave.skill_draft.initial_choice.close()
+	wave.skill_draft._choose_initial(&"initial:prism_ricochet")
 	check(wave.phase == WavePrototype.Phase.BATTLE and skills.get_level(&"prism_ricochet") == 1, "选择棱光弹射后以实际一级开始本局")
 	attack.set_physics_process(false)
 	wave._spawn_queue.clear()
@@ -194,7 +200,7 @@ func integration() -> void:
 	await settle()
 	for level in range(2, 9):
 		skills.candidates()
-		skills._choose(growth.state.level, StringName("skill:prism_ricochet:%d" % level))
+		wave.skill_draft._choose(growth.state.level, StringName("skill:prism_ricochet:%d" % level))
 	check(skills.get_level(&"prism_ricochet") == 8 and not skills.candidates().any(func(option): return String(option.id).begins_with("skill:prism_ricochet:")), "真实成长达到八级后退出升级池")
 	attack.set_physics_process(false)
 	attack._cooldown = 0.0

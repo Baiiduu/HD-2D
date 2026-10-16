@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="Script" path="res://scripts/combat/wave_prototype.gd" id="wave"]
 [ext_resource type="Resource" path="res://data/enemies/wave_slime.tres" id="slime"]
@@ -12,7 +12,8 @@
 [ext_resource type="PackedScene" path="res://scenes/growth/run_growth.tscn" id="growth"]
 [ext_resource type="PackedScene" path="res://scenes/ui/wave_hud.tscn" id="hud"]
 [ext_resource type="PackedScene" path="res://scenes/combat/damage_numbers.tscn" id="damage_numbers"]
-[ext_resource type="Script" path="res://scripts/growth/run_skills.gd" id="skills"]
+[ext_resource type="Script" path="res://scripts/combat/run_skill_manager.gd" id="skills"]
+[ext_resource type="Script" path="res://scripts/growth/run_skill_draft.gd" id="skill_draft"]
 [ext_resource type="Script" path="res://scripts/growth/run_buffs.gd" id="buffs"]
 [ext_resource type="Script" path="res://scripts/growth/growth_buff_definition.gd" id="buff_definition"]
 [ext_resource type="Resource" path="res://data/growth/damage.tres" id="damage_buff"]
@@ -45,14 +46,9 @@ session = NodePath("..")
 [node name="RunGrowth" parent="." node_paths=PackedStringArray("session") instance=ExtResource("growth")]
 session = NodePath("..")
 
-[node name="RunSkills" type="Node" parent="." node_paths=PackedStringArray("session")]
+[node name="RunSkillManager" type="Node" parent="."]
 script = ExtResource("skills")
-session = NodePath("..")
 skill_paths = Array[NodePath]([NodePath("../FanAutoAttack"), NodePath("../LightPierceAutoAttack"), NodePath("../PrismRicochetAutoAttack"), NodePath("../MirrorMarkAutoAttack"), NodePath("../RicochetStorm")])
-
-[node name="InitialSkillChoice" parent="RunSkills" instance=ExtResource("choice")]
-title = "选择初始技能"
-confirm_text = "开始战斗"
 
 [node name="WaveHUD" parent="." node_paths=PackedStringArray("session") instance=ExtResource("hud")]
 session = NodePath("..")
@@ -64,3 +60,15 @@ session = NodePath("..")
 script = ExtResource("buffs")
 session = NodePath("..")
 definitions = Array[ExtResource("buff_definition")]([ExtResource("damage_buff"), ExtResource("cooldown_buff"), ExtResource("range_buff"), ExtResource("body_speed"), ExtResource("body_duration"), ExtResource("body_charge")])
+
+[node name="SkillDraft" type="Node" parent="." node_paths=PackedStringArray("session", "manager", "growth", "buffs", "initial_choice")]
+script = ExtResource("skill_draft")
+session = NodePath("..")
+manager = NodePath("../RunSkillManager")
+growth = NodePath("../RunGrowth")
+buffs = NodePath("../RunBuffs")
+initial_choice = NodePath("InitialSkillChoice")
+
+[node name="InitialSkillChoice" parent="SkillDraft" instance=ExtResource("choice")]
+title = "选择初始技能"
+confirm_text = "开始战斗"
