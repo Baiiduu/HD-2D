@@ -257,6 +257,7 @@ func multiple_skills() -> void:
 	var session := SessionProbe.new()
 	session.add_child(session.player)
 	var local_growth: RunGrowth = load("res://scenes/growth/run_growth.tscn").instantiate()
+	local_growth.rules = ExperienceRules.new()
 	local_growth.name = "RunGrowth"
 	local_growth.session = session
 	session.add_child(local_growth)

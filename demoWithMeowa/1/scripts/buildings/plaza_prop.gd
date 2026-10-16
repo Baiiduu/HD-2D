@@ -2,6 +2,8 @@
 class_name PlazaProp
 extends Node3D
 
+const STATIC_BATCH = preload("res://scripts/rendering/static_geometry_batch.gd")
+
 ## 广场道具共用本地网格合批与贴地；生成物不写进场景文件。
 const METAL_SHADER := preload("res://shaders/environment/plaza_metal.gdshader")
 const STONE_SHADER := preload("res://shaders/environment/lumina_building.gdshader")
@@ -25,6 +27,14 @@ var _build_queued := false
 var _streams: Dictionary = {}
 var _materials: Dictionary = {}
 
+func _enter_tree() -> void:
+	_register_static_geometry.call_deferred()
+
+func _register_static_geometry() -> void:
+	if not is_inside_tree() or not is_instance_valid(_generated): return
+	var batch: Node = STATIC_BATCH.for_owner(self)
+	if batch: batch.register_owner(self, _generated)
+
 func _ready() -> void:
 	build()
 
@@ -36,6 +46,8 @@ func _queue_build() -> void:
 func build() -> void:
 	_build_queued = false
 	if not is_inside_tree(): return
+	var batch: Node = STATIC_BATCH.for_owner(self)
+	if batch: batch.request_rebuild()
 	if is_instance_valid(_generated):
 		remove_child(_generated)
 		_generated.queue_free()
@@ -52,6 +64,7 @@ func build() -> void:
 		instance.name = key.capitalize()
 		instance.mesh = mesh
 		_generated.add_child(instance)
+	if batch: batch.register_owner(self, _generated)
 
 func _build_geometry() -> void:
 	pass

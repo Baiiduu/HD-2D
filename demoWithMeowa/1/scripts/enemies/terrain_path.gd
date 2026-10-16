@@ -295,9 +295,9 @@ func build(source: Terrain, radius: float, exclude: Array[RID], world_bounds := 
 	var obstacles: Array[RID] = exclude.duplicate()
 	# Terrain edges are validated from their corner heights below. Sweeping a
 	# straight line at a slope transition otherwise mistakes the floor for a wall.
-	if source._generated:
-		for body in source._generated.get_children():
-			if body is StaticBody3D: obstacles.append(body.get_rid())
+	if is_instance_valid(source._collision_body):
+		obstacles.append(source._collision_body.get_rid())
+	# Water blockers remain in every sweep, including shallow water and shores.
 	_query.exclude = obstacles
 	_query.motion = Vector3.ZERO
 	_clearance = radius+0.08

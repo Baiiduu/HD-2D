@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=26 format=3]
 
 [ext_resource type="Script" path="res://scripts/combat/wave_prototype.gd" id="wave"]
 [ext_resource type="Resource" path="res://data/enemies/wave_slime.tres" id="slime"]
@@ -22,6 +22,9 @@
 [ext_resource type="Resource" path="res://data/growth/ricochet/launch_speed.tres" id="body_speed"]
 [ext_resource type="Resource" path="res://data/growth/ricochet/flight_duration.tres" id="body_duration"]
 [ext_resource type="Resource" path="res://data/growth/ricochet/charge_efficiency.tres" id="body_charge"]
+[ext_resource type="Script" path="res://scripts/combat/run_score.gd" id="run_score"]
+[ext_resource type="Resource" path="res://data/score/default_score.tres" id="score_rules"]
+[ext_resource type="Script" path="res://scripts/ui/score_hud.gd" id="score_hud"]
 
 [node name="WavePrototype" type="Node3D"]
 script = ExtResource("wave")
@@ -72,3 +75,12 @@ initial_choice = NodePath("InitialSkillChoice")
 [node name="InitialSkillChoice" parent="SkillDraft" instance=ExtResource("choice")]
 title = "选择初始技能"
 confirm_text = "开始战斗"
+
+[node name="RunScore" type="Node" parent="." node_paths=PackedStringArray("session")]
+script = ExtResource("run_score")
+session = NodePath("..")
+rules = ExtResource("score_rules")
+
+[node name="ScoreHUD" type="CanvasLayer" parent="." node_paths=PackedStringArray("score")]
+script = ExtResource("score_hud")
+score = NodePath("../RunScore")

@@ -79,6 +79,7 @@ func run() -> void:
 	scene.add_child(camera)
 	player.movement_camera = camera
 	wave = load("res://scenes/combat/wave_prototype.tscn").instantiate()
+	wave.get_node("RunGrowth").rules = ExperienceRules.new()
 	# 只隔离本次接入的两种攻击，其它会话新增的技能保留在正式注册表。
 	wave.get_node("RunSkillManager").skill_paths.clear()
 	wave.get_node("RunSkillManager").skill_paths.append(NodePath("../FanAutoAttack"))

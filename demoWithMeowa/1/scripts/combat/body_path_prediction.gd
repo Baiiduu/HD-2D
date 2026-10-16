@@ -110,6 +110,7 @@ func _trace(body: CharacterBody3D, heading: Vector3, speed: float, seconds: floa
 			continue
 		var collider := _result.get_collider()
 		var terrain_contact := path and is_instance_valid(path.terrain) and collider is Node and path.terrain.is_ancestor_of(collider)
+		if terrain_contact and path.terrain.is_reflective_water_shape(collider, _result.get_collider_shape()): terrain_contact = false
 		normal.y = 0.0
 		normal = normal.normalized()
 		if terrain_contact:

@@ -2,11 +2,13 @@
 class_name TreePlanter
 extends Node3D
 
+const STATIC_BATCH = preload("res://scripts/rendering/static_geometry_batch.gd")
+
 ## 根节点底部为地面、+Z 为长椅正面。所有内容跟随本节点移动，不改动地图数据。
 const TREE_SHADER := preload("res://shaders/environment/tree_billboard.gdshader")
 const PLANT_SHADER := preload("res://shaders/environment/vegetation_wind.gdshader")
 const SURFACE_SHADER := preload("res://shaders/environment/lumina_building.gdshader")
-const LANTERN := preload("res://scenes/props/lantern.tscn")
+const STREETLAMP := preload("res://scenes/buildings/plaza_streetlamp.tscn")
 const TREE := preload("res://assets/meowa/buildings/tree_planter/tree.png")
 const STONE := preload("res://assets/meowa/buildings/materials/masonry.png")
 const CAP := preload("res://assets/meowa/buildings/materials/limestone.png")
@@ -62,7 +64,7 @@ const PLANTS := [
 	set(value): flower_scale = value; _queue_build()
 @export var bench_enabled := true:
 	set(value): bench_enabled = value; _queue_build()
-## 使用已有路灯与公共金色粒子。关闭只移除本花坛的路灯。
+## 复用现有黑铁双头路灯与公共金色粒子。关闭只移除本花坛的路灯。
 @export var lamp_enabled := true:
 	set(value): lamp_enabled = value; _queue_build()
 ## 灯头向下留出树冠间隙，避免风摆和转镜头时枝叶反复遮住灯芯。灯杆下端埋入花坛。
@@ -94,6 +96,14 @@ var _wind_clock := 0.0
 # bounds until that texture changes, so each instance does not read back the GPU.
 static var _plant_bounds_cache: Dictionary[Texture2D, Rect2i] = {}
 
+func _enter_tree() -> void:
+	_register_static_geometry.call_deferred()
+
+func _register_static_geometry() -> void:
+	if not is_inside_tree() or not is_instance_valid(_generated): return
+	var batch: Node = STATIC_BATCH.for_owner(self)
+	if batch: batch.register_owner(self, _generated)
+
 static func _plant_bounds(texture: Texture2D) -> Rect2i:
 	if not _plant_bounds_cache.has(texture):
 		var image := texture.get_image()
@@ -118,6 +128,8 @@ func _queue_build() -> void:
 func build() -> void:
 	_build_queued = false
 	if not is_inside_tree(): return
+	var batch: Node = STATIC_BATCH.for_owner(self)
+	if batch: batch.request_rebuild()
 	if get("cap_texture") == null: cap_texture = CAP
 	if get("tree_local_light_softness") == null: tree_local_light_softness = 4.0
 	if get("lamp_canopy_clearance") == null: lamp_canopy_clearance = 0.4
@@ -174,21 +186,19 @@ func build() -> void:
 		if bench_enabled:
 			_collision(body, Vector3(-0.15, 0.27, depth * 0.5 + 0.28), Vector3(width * 0.7, 0.54, 0.55))
 	if lamp_enabled:
-		var lamp: Node3D = LANTERN.instantiate()
+		var lamp := STREETLAMP.instantiate() as PlazaStreetlamp
 		lamp.name = "Lamp"
 		lamp.position = Vector3(width * 0.5 - 0.18, height + 0.075 - lamp_canopy_clearance, depth * 0.5 - 0.18)
-		lamp.set("direct_energy", 2.0)
-		lamp.set("fill_energy", 0.95)
-		lamp.set("water_energy", 0.0)
-		lamp.set("scattering", 2.0)
-		lamp.set("mist_density", 0.015)
-		lamp.set("ground_haze", 0.0)
-		lamp.set("beam_strength", 0.0)
-		lamp.set("halo_energy", 0.6)
-		lamp.set("halo_diameter", 0.8)
+		lamp.scale = Vector3.ONE * 0.4
+		# 花坛自身已经阻挡通行，附灯只复用外观；两灯分担原来的照明强度。
+		lamp.collision_enabled = false
+		lamp.light_energy = 1.0
+		lamp.light_range = 5.0
+		lamp.halo_energy = 0.3
 		_generated.add_child(lamp)
 	_sync_wind()
 	set_process(not _wind_materials.is_empty())
+	if batch: batch.register_owner(self, _generated)
 
 func _build_bench() -> void:
 	var bench_width := width * 0.7

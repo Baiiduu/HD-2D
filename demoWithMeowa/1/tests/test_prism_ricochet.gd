@@ -122,6 +122,7 @@ func integration() -> void:
 	world.get_node("MapEffects/Weather").rain_audio_enabled = false
 	world.get_node("MapEffects/Weather").wind_audio_enabled = false
 	world.get_node("MapEffects/CoreFeedbackAudio").enabled = false
+	for ui_audio in world.find_children("*", "UIAudio", true, false): ui_audio.enabled = false
 	# 只隔离当前测试场地的装饰碰撞，不修改正式场景或地形文件。
 	var fixture := preload("res://tests/fixtures/combat_scene_fixture.gd")
 	fixture.clear_placed_obstacles(world)
@@ -252,3 +253,4 @@ func integration() -> void:
 	check(wave.phase == WavePrototype.Phase.REST and attack._shots.is_empty(), "最后敌人死亡后进入休整，弹丸与特效清理")
 	world.free()
 	await settle()
+	await create_timer(0.1).timeout

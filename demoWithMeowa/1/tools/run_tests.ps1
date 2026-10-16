@@ -5,6 +5,7 @@ param(
     [string]$OutputDirectory = 'D:/.codexfile/work/godot-tests',
     [ValidateRange(5, 600)][int]$TimeoutSeconds = 120,
     [string[]]$Test,
+    [switch]$UseProjectSystemSwitches,
     [switch]$List,
     [switch]$FailFast
 )
@@ -24,6 +25,9 @@ $groups = @{
         'test_rooftop_pursuit', 'test_wave_health_growth', 'test_wave_hordes', 'test_wave_schedule',
         'test_spawn_queue_contract', 'test_enemy_roster_contract', 'test_combat_configuration_validation',
         'test_wave_core', 'test_wave_spawning', 'test_crowd_batch_lifecycle'
+        'test_spawn_sync_gate', 'test_surround_spawning', 'test_local_spawn_safety',
+        'test_run_score', 'test_score_settings', 'test_combat_extension_framework',
+        'test_player_sword', 'test_crowd_deflection'
     )
     render = @(
         'test_aim_target_image_cache', 'test_billboard_shadow_updates',
@@ -70,6 +74,20 @@ New-Item -ItemType Directory -Path $runDirectory | Out-Null
 $results = [System.Collections.Generic.List[object]]::new()
 foreach ($name in $selected) {
     Write-Output "RUN $name"
+    $testScript = "res://tests/$name.gd"
+    if (-not $UseProjectSystemSwitches) {
+        # Isolate gameplay fixtures from the user's editor switches without saving settings.
+        $bootstrapPath = Join-Path $runDirectory "$name.bootstrap.gd"
+        $bootstrap = @"
+extends "res://tests/$name.gd"
+func _initialize() -> void:
+    for system in [&"upgrades", &"draft", &"run_skills"]:
+        ProjectSettings.set_setting("game_manager/systems/" + String(system), true)
+    super._initialize()
+"@
+        [System.IO.File]::WriteAllText($bootstrapPath, $bootstrap, [System.Text.UTF8Encoding]::new($false))
+        $testScript = $bootstrapPath.Replace('\', '/')
+    }
     $start = [System.Diagnostics.ProcessStartInfo]::new()
     $start.FileName = $GodotPath
     $start.WorkingDirectory = $projectDirectory
@@ -78,7 +96,7 @@ foreach ($name in $selected) {
     $start.RedirectStandardOutput = $true
     $start.RedirectStandardError = $true
     $start.ArgumentList.Add('--headless')
-    foreach ($arg in @('--path', $projectDirectory, '--audio-driver', 'Dummy', '--script', "res://tests/$name.gd")) {
+    foreach ($arg in @('--path', $projectDirectory, '--audio-driver', 'Dummy', '--script', $testScript)) {
         $start.ArgumentList.Add($arg)
     }
     $process = [System.Diagnostics.Process]::new()

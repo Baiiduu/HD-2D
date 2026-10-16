@@ -2,6 +2,7 @@ shader_type spatial;
 
 #include "res://shaders/includes/rain_surface.gdshaderinc"
 #include "res://shaders/includes/wet_surface.gdshaderinc"
+#include "res://shaders/includes/aurora_reflection.gdshaderinc"
 #include "res://shaders/includes/terrain_surface.gdshaderinc"
 #include "res://shaders/includes/lumina_surface.gdshaderinc"
 
@@ -108,6 +109,7 @@ void fragment() {
 	float wet = mix(surface.z, grass_wet_response, grass) * clamp(wetness + weather_wetness, 0.0, 1.0);
 	float roughness = mix(surface.x, mix(wet_roughness, 0.62, grass), wet);
 	float surface_specular = 0.5;
+	vec3 aurora_reflection = vec3(0.0);
 	// Sparse damp patches catch the real light; roots and most grass stay matte.
 	float damp_patch = smoothstep(1.0 - grass_sheen, 1.1 - grass_sheen, noise(location * 1.9 + vec2(11.3, 7.1)));
 	roughness = mix(roughness, 0.22, grass * damp_patch * smoothstep(0.015, 0.1, wet));
@@ -209,11 +211,27 @@ void fragment() {
 		color = mix(color, vec3(0.62, 0.71, 0.77), splash);
 		vec3 film = wet_film(location, surface.z, grass_surface,
 			clamp(wetness + weather_wetness, 0.0, 1.0), rain_clock, rain.yz * rain_amount);
+		float aurora_area = 0.0;
+		if (aurora_enabled && wet_surface_enabled && grass_surface < 0.5 && surface.y < 0.5) {
+			aurora_area = aurora_region_mask(location) * (1.0 - grass_surface)
+				* smoothstep(0.06, 0.23, stone_luma);
+			// These selected stones carry a continuous thin film, rather than
+			// hoping the existing scattered wet patches happen to overlap them.
+			film.x = max(film.x, aurora_area * max(wet_surface_minimum, wet));
+		}
 		if (film.x > 0.0) {
 			vec3 film_normal = normalize(mat3(VIEW_MATRIX) * normalize(wet_plane_normal + vec3(film.y, 0.0, film.z)));
 			NORMAL = normalize(mix(NORMAL, film_normal, film.x * 0.95));
 			roughness = mix(roughness, wet_surface_roughness, film.x);
 			surface_specular = mix(0.5, 0.65 * wet_surface_reflectivity, film.x);
+			if (aurora_area > 0.0) {
+				float mask = aurora_area * film.x * wet_surface_reflectivity;
+				if (mask > 0.0) {
+					vec3 normal = normalize(wet_plane_normal + vec3(film.y, 0.0, film.z) * 0.18);
+					aurora_reflection = aurora_ground_reflection(normalize(CAMERA_POSITION_WORLD - world_position), normal, mask);
+					color *= 1.0 - aurora_area * 0.22;
+				}
+			}
 		}
 	}
 	// 地图边缘融进雾里：离地图边界越近，越接近雾色
@@ -222,7 +240,7 @@ void fragment() {
 	vec2 to_edge = min(location - map_min, map_max - location);
 	float edge = edge_fade_distance > 0.0 ? 1.0 - smoothstep(0.0, edge_fade_distance, min(to_edge.x, to_edge.y)) : 0.0;
 	ALBEDO = color * (1.0 - edge);
-	EMISSION = edge_fog_color.rgb * edge;
+	EMISSION = edge_fog_color.rgb * edge + aurora_reflection * (1.0 - edge);
 	SPECULAR = surface_specular;
 	ROUGHNESS = mix(roughness, 1.0, edge);
 	METALLIC = surface.y;

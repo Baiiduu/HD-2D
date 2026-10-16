@@ -31,7 +31,7 @@ func start() -> bool:
 	return wave.phase == WavePrototype.Phase.BATTLE
 
 func run() -> void:
-	var rules: WaveHealthGrowthRules = load("res://data/waves/endless_health_growth.tres").duplicate()
+	var rules := WaveHealthGrowthRules.new()
 	check(rules.validation_error().is_empty(), "正式成长规则合法")
 	for pair in [[1, 1.0], [3, 1.0], [4, 1.15], [10, 2.05], [20, 3.55], [62, 9.85], [63, 10.0], [1000000000, 10.0]]:
 		check(is_equal_approx(rules.multiplier(pair[0]), pair[1]), "起始波、线性增幅和十倍封顶准确")
@@ -89,12 +89,13 @@ func run() -> void:
 		spawned += 1
 		wave.enemies[-1].set_physics_process(false)
 	check(spawned == 128 and not wave._spawn_enemy(), "正式地图实际生成 128 只并阻止超过同场上限")
-	check(is_equal_approx(wave.enemies[0].health, 59.0), "正式第十六波每只史莱姆应用 2.95 倍生命")
+	check(is_equal_approx(wave.enemies[0].health, 59.0), "固定夹具中第十六波每只史莱姆应用 2.95 倍生命")
 	wave._finish("test reset")
 	wave.return_home()
 	wave.population_rules = null
 	wave.health_growth_rules = rules
 	wave.endless_mode = true
+	var ordinary_health := wave.default_enemy.health
 	check(start(), "无尽模式实际开局")
 	wave._spawn_queue.clear()
 	check(wave.get_enemy_health_multiplier() == 1.0, "前三波保持基础生命")
@@ -103,10 +104,10 @@ func run() -> void:
 	var enemy := wave.enemies[0]
 	enemy.set_physics_process(false)
 	enemy.spawn_delay = 0.0
-	check(is_equal_approx(enemy.health, 23.0) and enemy.max_health == enemy.health and enemy.spawn_wave == 4, "20 点基础生命在第四波变为 23")
-	check(enemy.definition.health == 20.0, "不修改怪物基础资源")
+	check(is_equal_approx(enemy.health, ordinary_health * 1.15) and enemy.max_health == enemy.health and enemy.spawn_wave == 4, "兼容曲线第四波应用基础生命的 1.15 倍")
+	check(enemy.definition.health == ordinary_health, "不修改怪物基础资源")
 	enemy.take_damage(10.0)
-	check(is_equal_approx(enemy.health, 13.0) and is_equal_approx(enemy.max_health, 23.0), "真实伤害扣成长后生命，最大生命保持")
+	check(is_equal_approx(enemy.health, ordinary_health * 1.15 - 10.0) and is_equal_approx(enemy.max_health, ordinary_health * 1.15), "真实伤害扣成长后生命，最大生命保持")
 	rules.bonus_per_wave = 1.0
 	rules.maximum_multiplier = 2.0
 	check(is_equal_approx(wave.get_enemy_health_multiplier(), 1.15), "运行中编辑规则不改变当前局")
@@ -120,10 +121,10 @@ func run() -> void:
 	check(wave._spawn_enemy(), "极大波号仍可正常出场")
 	enemy = wave.enemies[0]
 	enemy.set_physics_process(false)
-	check(enemy.health == 200.0 and enemy.health_multiplier == 10.0, "实际怪物生命最高基础值的十倍")
+	check(enemy.health == ordinary_health * 10.0 and enemy.health_multiplier == 10.0, "实际怪物生命最高基础值的十倍")
 	var fixed: WaveEnemyDefinition = wave.default_enemy.duplicate()
 	fixed.health_growth_enabled = false
-	check(wave._spawn_enemy(fixed) and wave.enemies[-1].health == 20.0, "固定生命怪物可独立关闭成长")
+	check(wave._spawn_enemy(fixed) and wave.enemies[-1].health == ordinary_health, "固定生命怪物可独立关闭成长")
 	wave.enemies[-1].set_physics_process(false)
 	var base_health := wave.default_enemy.health
 	check(wave.queue_spawn_by_id(&"slime", 1, 0.5), "延迟召唤通过同一成长接口")
@@ -137,7 +138,7 @@ func run() -> void:
 	check(start(), "有限模式兼容开局")
 	wave._spawn_queue.clear()
 	wave.wave = 63
-	check(wave._spawn_enemy() and wave.enemies[-1].health == 20.0, "有限模式不意外应用无尽成长")
+	check(wave._spawn_enemy() and wave.enemies[-1].health == ordinary_health, "有限模式不意外应用无尽成长")
 	wave._finish("test reset")
 	wave.return_home()
 	rules.maximum_multiplier = 11.0

@@ -69,8 +69,8 @@ func area_by_normal(faces: PackedVector3Array) -> Dictionary:
 	return result
 
 func structure_checks() -> void:
-	check(terrain.data.size == Vector2i(31, 31), "fixture reads the current 31 by 31 formal terrain")
-	check(raw.size() == 2170 * 3 and reduced.size() == 10 * 3, "formal collision reduces 2170 triangles to 10 without touching render vertices")
+	check(terrain.data.size == Vector2i(31, 31), "explicit dry fixture remains 31 by 31 independently of formal map edits")
+	check(raw.size() == 2170 * 3 and reduced.size() == 10 * 3, "dry collision reduces 2170 triangles to 10 without touching render vertices")
 	var before := area_by_normal(raw)
 	var after := area_by_normal(reduced)
 	var same := before.size() == after.size()
@@ -221,7 +221,8 @@ func fallback_checks() -> void:
 		await settle()
 		var full := original_faces(terrain)
 		check(actual_faces().to_byte_array() == full.to_byte_array(), "height or water/bridge/ramp edit %d keeps every original collision triangle" % index)
-		check(terrain._generated.get_node("Body").get_child_count() == (2 if index == 1 else 1), "edit %d preserves the expected separate water-blocker shapes" % index)
+		check(terrain._generated.get_node("Body").get_child_count() == 1, "edit %d keeps the sheet independent of water blockers" % index)
+		check(is_instance_valid(terrain._water_collision_body) == (index == 1), "edit %d generates a water body only for unbridged water" % index)
 	terrain.data = saved_data
 	await settle()
 	check(actual_faces() == reduced, "replacing the data with a flat rectangle compacts its freshly rebuilt collision")
@@ -241,7 +242,9 @@ func run() -> void:
 	root.add_child(world)
 	current_scene = world
 	terrain = Terrain.new()
-	terrain.data = load("res://data/world/world_terrain.tres").duplicate(true)
+	terrain.data = TerrainData.new()
+	terrain.data.size = Vector2i.ZERO
+	terrain.data.resize(Vector2i(-15,-15),Vector2i(31,31))
 	world.add_child(terrain)
 	await settle()
 	raw = original_faces(terrain)

@@ -81,11 +81,11 @@ func process_due(clock: float, generation: int, services: Services) -> void:
 			for job in jobs: job.blocked_since = -1.0
 		capacity_blocked = true
 		return
-	services.synchronize.call()
 	capacity_blocked = false
 	var revision := _revision
 	var checked := 0
 	var spawned := 0
+	var synchronized := false
 	if reserved_batch.is_empty():
 		for job in jobs:
 			if job.due > clock: break
@@ -108,6 +108,10 @@ func process_due(clock: float, generation: int, services: Services) -> void:
 			capacity_waiting += 1
 			continue
 		if checked >= services.check_budget or spawned >= services.spawn_budget or services.alive_count.call() >= services.active_limit: break
+		# Waits need no scan. Commit external movement once before the first real attempt.
+		if not synchronized:
+			services.synchronize.call()
+			synchronized = true
 		checked += 1
 		var success: bool = services.spawn.call(job)
 		if revision != _revision or not services.current.call(generation): return
@@ -121,6 +125,7 @@ func process_due(clock: float, generation: int, services: Services) -> void:
 				reserved_batch = {}
 				batch.erase("points")
 				batch.erase("zone")
+				batch.erase("front_points")
 			if job.blocked_since < 0: job.blocked_since = clock
 			job.next_attempt = clock + services.retry_interval
 			services.blocked.call()

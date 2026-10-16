@@ -3,10 +3,13 @@ extends MeshInstance3D
 
 const EFFECT_LAYER := preload("res://scripts/rendering/combat_effect_layer.gd")
 
-## 原生像素 UV 的腰部斜切；共用命中投影，平地复用网格、挡墙实时裁切。
+## 帧动画与窄弧共用真实扫击投影、平地网格和实时挡墙裁切。
 const ANGLES := 64
 const RINGS := 4
 var _material: ShaderMaterial
+var _frame_material: ShaderMaterial
+var _arc_material: ShaderMaterial
+var _meowa_material: ShaderMaterial
 var _indices := PackedInt32Array()
 var _flat_meshes: Dictionary[Vector3, ArrayMesh] = {}
 var _clipped: ArrayMesh
@@ -16,6 +19,7 @@ var _layout := Vector4(-1, -1, -1, -1)
 func _ready() -> void:
 	cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_material = EFFECT_LAYER.material(preload("res://shaders/combat/player_sword.gdshader"))
+	_frame_material = _material
 	material_override = _material
 	for angular in ANGLES:
 		for ring in RINGS:
@@ -27,35 +31,52 @@ func _ready() -> void:
 func display(origin: Vector3, heading: Vector3, radius: float, angle: float, reverse: bool,
 		frames: SpriteFrames, age: float, rules: PlayerSwordRules, path: TerrainPath,
 		surface: RefCounted, excluded: Array[RID]) -> void:
-	if not frames or not frames.has_animation(&"slash") or frames.get_frame_count(&"slash") == 0:
+	var meowa_arc := rules.effect_mode == PlayerSwordRules.SlashVisual.MEOWA_ARC
+	var arc_mode := rules.effect_mode != PlayerSwordRules.SlashVisual.FRAME_ANIMATION
+	var uses_frames := rules.effect_mode != PlayerSwordRules.SlashVisual.THIN_ARC
+	if uses_frames and (not frames or not frames.has_animation(&"slash") or frames.get_frame_count(&"slash") == 0):
 		hide()
 		return
-	var units := 0.0
-	for frame in frames.get_frame_count(&"slash"): units += frames.get_frame_duration(&"slash", frame)
-	# 前半段完整横扫、后半段完整消散；调动作节奏也不提前耗尽特效帧。
 	var progress := clampf(age / rules.sweep_seconds, 0.0, 1.0)
-	var fade_progress := clampf((age - rules.sweep_seconds) / rules.fade_seconds, 0.0, 1.0)
-	var elapsed := units * (progress * 0.5 if age < rules.sweep_seconds else 0.5 + fade_progress * 0.5)
-	var index := 0
-	while index < frames.get_frame_count(&"slash") - 1 and elapsed >= frames.get_frame_duration(&"slash", index):
-		elapsed -= frames.get_frame_duration(&"slash", index)
-		index += 1
-	var texture := frames.get_frame_texture(&"slash", index)
-	if texture is AtlasTexture:
-		var size: Vector2 = texture.atlas.get_size()
-		EFFECT_LAYER.set_parameter(_material, "slash_texture", texture.atlas)
-		EFFECT_LAYER.set_parameter(_material, "frame_rect", Vector4(texture.region.position.x / size.x, texture.region.position.y / size.y, texture.region.size.x / size.x, texture.region.size.y / size.y))
+	var fade_seconds := rules.meowa_tail_seconds if meowa_arc else rules.fade_seconds
+	var fade_progress := clampf((age - rules.sweep_seconds) / fade_seconds, 0.0, 1.0)
+	var canvas := Vector2(2, 2)
+	var art_radius := 1.0
+	if meowa_arc:
+		if not _meowa_material:
+			_meowa_material = EFFECT_LAYER.material(preload("res://shaders/combat/player_sword_meowa_arc.gdshader"))
+		_material = _meowa_material
+		EFFECT_LAYER.set_parameter(_material, "body_opacity", rules.meowa_body_opacity)
+		EFFECT_LAYER.set_parameter(_material, "tail_spread", rules.meowa_tail_spread)
+		EFFECT_LAYER.set_parameter(_material, "tail_inner_ratio", rules.meowa_tail_inner_ratio)
+	elif arc_mode:
+		if not _arc_material:
+			_arc_material = EFFECT_LAYER.material(preload("res://shaders/combat/player_sword_arc.gdshader"))
+		_material = _arc_material
 	else:
-		EFFECT_LAYER.set_parameter(_material, "slash_texture", texture)
-		EFFECT_LAYER.set_parameter(_material, "frame_rect", Vector4(0, 0, 1, 1))
+		_material = _frame_material
+	if arc_mode:
+		EFFECT_LAYER.set_parameter(_material, "attack_radius", radius)
+		EFFECT_LAYER.set_parameter(_material, "band_width", rules.arc_width * clampf(pow(radius / rules.normal_range, 0.25), 1.0, 1.6))
+		EFFECT_LAYER.set_parameter(_material, "trail_angle", deg_to_rad(rules.arc_trail_degrees))
+		if not meowa_arc:
+			EFFECT_LAYER.set_parameter(_material, "pixel_size", rules.arc_pixel_size)
+			EFFECT_LAYER.set_parameter(_material, "blade_color", rules.arc_blade_color)
+			EFFECT_LAYER.set_parameter(_material, "tail_color", rules.arc_tail_color)
+	if uses_frames:
+		var native_canvas := _bind_frame(frames, progress, fade_progress)
+		if meowa_arc:
+			EFFECT_LAYER.set_parameter(_material, "art_scale", Vector2.ONE * rules.art_radius_pixels / native_canvas)
+		else:
+			EFFECT_LAYER.set_parameter(_material, "half_angle", deg_to_rad(angle * 0.5))
+			canvas = native_canvas
+			art_radius = rules.art_radius_pixels
+			EFFECT_LAYER.set_parameter(_material, "art_scale", canvas / art_radius)
+	if material_override != _material: material_override = _material
 	EFFECT_LAYER.set_parameter(_material, "opacity", rules.effect_opacity)
 	EFFECT_LAYER.set_parameter(_material, "energy", rules.effect_energy)
 	EFFECT_LAYER.set_parameter(_material, "leading_angle", lerpf(-deg_to_rad(angle * 0.5), deg_to_rad(angle * 0.5), progress))
-	EFFECT_LAYER.set_parameter(_material, "half_angle", deg_to_rad(angle * 0.5))
-	EFFECT_LAYER.set_parameter(_material, "fade", 1.0 - fade_progress)
-	# 原生动画有自身旋转；将每帧厚刃对齐扇面，真实扫击进度统一负责方向与揭示。
-	var blade_angles: PackedFloat32Array = frames.get_meta(&"blade_angles", PackedFloat32Array())
-	EFFECT_LAYER.set_parameter(_material, "art_angle", blade_angles[index] if index < blade_angles.size() else 0.0)
+	if not meowa_arc: EFFECT_LAYER.set_parameter(_material, "fade", 1.0 - fade_progress)
 	global_position = origin
 	global_basis = Basis(Vector3.UP, atan2(-heading.x, -heading.z))
 	var camera := get_viewport().get_camera_3d()
@@ -69,9 +90,7 @@ func display(origin: Vector3, heading: Vector3, radius: float, angle: float, rev
 	slope += sideways * tan(deg_to_rad(rules.effect_tilt_degrees * 0.35)) * (-1.0 if reverse else 1.0)
 	slope = slope.limit_length(maxf(0.0, rules.effect_height - 0.08) / radius)
 	EFFECT_LAYER.set_parameter(_material, "plane_slope", slope)
-	var canvas := Vector2(texture.get_size())
-	EFFECT_LAYER.set_parameter(_material, "art_scale", canvas / rules.art_radius_pixels)
-	var layout := Vector4(rules.effect_height, rules.art_radius_pixels, canvas.x, canvas.y)
+	var layout := Vector4(rules.effect_height, art_radius, canvas.x, canvas.y)
 	if layout != _layout:
 		_layout = layout
 		_flat_meshes.clear()
@@ -98,7 +117,7 @@ func display(origin: Vector3, heading: Vector3, radius: float, angle: float, rev
 				var point := radial * distance
 				point.y = rules.effect_height if flat_ground else path.ground_position(origin + global_basis * point).y - origin.y + rules.effect_height
 				vertices.append(point)
-				var pixel := Vector2(radial.x * (-1.0 if reverse else 1.0), radial.z) * distance / radius * rules.art_radius_pixels
+				var pixel := Vector2(radial.x * (-1.0 if reverse else 1.0), radial.z) * distance / radius * art_radius
 				uvs.append(Vector2(0.5, 0.5) + pixel / canvas)
 		var result: ArrayMesh = _flat_meshes.get(key) if flat else _clipped
 		if result and DisplayServer.get_name() != "headless":
@@ -126,3 +145,23 @@ func display(origin: Vector3, heading: Vector3, radius: float, angle: float, rev
 			_flat_meshes[key] = result
 		else: _clipped = result
 	show()
+
+func _bind_frame(frames: SpriteFrames, progress: float, fade_progress: float) -> Vector2:
+	var units := 0.0
+	for frame in frames.get_frame_count(&"slash"): units += frames.get_frame_duration(&"slash", frame)
+	var elapsed := units * (progress * 0.5 if progress < 1.0 else 0.5 + fade_progress * 0.5)
+	var index := 0
+	while index < frames.get_frame_count(&"slash") - 1 and elapsed >= frames.get_frame_duration(&"slash", index):
+		elapsed -= frames.get_frame_duration(&"slash", index)
+		index += 1
+	var texture := frames.get_frame_texture(&"slash", index)
+	if texture is AtlasTexture:
+		var size: Vector2 = texture.atlas.get_size()
+		EFFECT_LAYER.set_parameter(_material, "slash_texture", texture.atlas)
+		EFFECT_LAYER.set_parameter(_material, "frame_rect", Vector4(texture.region.position.x / size.x, texture.region.position.y / size.y, texture.region.size.x / size.x, texture.region.size.y / size.y))
+	else:
+		EFFECT_LAYER.set_parameter(_material, "slash_texture", texture)
+		EFFECT_LAYER.set_parameter(_material, "frame_rect", Vector4(0, 0, 1, 1))
+	var blade_angles: PackedFloat32Array = frames.get_meta(&"blade_angles", PackedFloat32Array())
+	EFFECT_LAYER.set_parameter(_material, "art_angle", blade_angles[index] if index < blade_angles.size() else 0.0)
+	return Vector2(texture.get_size())

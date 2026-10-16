@@ -444,6 +444,7 @@ func run() -> void:
 	world.add_child(camera)
 	player.movement_camera = camera
 	wave = load("res://scenes/combat/wave_prototype.tscn").instantiate()
+	wave.get_node("RunGrowth").rules = ExperienceRules.new()
 	wave.player = player
 	wave.terrain = terrain
 	wave.battle_area = Rect2(-10, -10, 20, 20)

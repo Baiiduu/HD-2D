@@ -8,6 +8,8 @@ var target_id := 0
 var world_position := Vector3.ZERO
 var direction := Vector3.ZERO
 var source: StringName = &""
+## 本次发射的稳定编号；0 为普通攻击或飞行结束后的延迟技能伤害。
+var flight_id := 0
 ## 表现标签，与伤害公式独立；未知标签回退普通样式。
 var style: StringName = &"normal"
 var lethal := false
@@ -27,6 +29,7 @@ static func from_hit(enemy: WaveEnemy, dealt: float, requested: float, context: 
 	event.direction = context.get("direction", Vector3.ZERO)
 	if not event.direction.is_finite(): event.direction = Vector3.ZERO
 	event.source = context.get("source", &"")
+	event.flight_id = maxi(0, int(context.get("flight_id", 0)))
 	event.style = context.get("style", &"normal")
 	event.lethal = enemy.health <= 0.0
 	return event

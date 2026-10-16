@@ -102,6 +102,9 @@
 [ext_resource type="Script" path="res://scripts/combat/scene_combat_binding.gd" id="combat_binding"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/configuration.tres" id="combat_configuration"]
 
+[ext_resource type="Script" path="res://scripts/rendering/static_geometry_batch.gd" id="static_geometry_batch"]
+[ext_resource type="Script" path="res://scripts/ui/game_settings_ui.gd" id="game_settings_ui"]
+
 [sub_resource type="Image" id="Image_mrxq0"]
 data = {
 "data": PackedByteArray("JT04/0hwTv9ciVD/eaBf/7XOeP9ES1f/ZG51/4WJgP+qqJf/xr+q/46Rnv+4ta7/28+2/+vfw//06M3/ND9S/0hZaf9bcID/e4yZ/56srP8="),
@@ -587,6 +590,10 @@ metadata/battle_only = true
 [node name="BattleConfiguration" type="Node" parent="."]
 script = ExtResource("combat_binding")
 configuration = ExtResource("combat_configuration")
+
+[node name="StaticGeometryBatch" type="Node3D" parent="."]
+script = ExtResource("static_geometry_batch")
+enabled = false
 
 [node name="Homestead" type="Node3D" parent="." unique_id=632530697]
 script = ExtResource("homestead")
@@ -1132,6 +1139,11 @@ script = ExtResource("orbit_debug_ui")
 player = NodePath("../Player")
 session = NodePath("../WavePrototype")
 loadout = NodePath("../LoadoutUI")
+
+[node name="GameSettingsUI" type="CanvasLayer" parent="." node_paths=PackedStringArray("audio_page", "orbit_page")]
+script = ExtResource("game_settings_ui")
+audio_page = NodePath("../AudioMixUI")
+orbit_page = NodePath("../OrbitDebugUI")
 
 [editable path="GroundDressing"]
 [editable path="MapEffects"]

@@ -140,10 +140,41 @@ func manual_checks() -> void:
 	await flight()
 	var buffs := RunBuffs.new()
 	buffs.session = session
-	check(sword.get_stats(true).interval == sword.rules.duration(), "两级冷却时弹射挥剑已达到完整动作下限")
+	check(is_equal_approx(sword.get_stats(true).interval, 0.30 / 1.24) and sword.get_stats(true).interval < sword.rules.duration(), "第二次攻速仍缩短弹射挥剑间隔，完整动作同步加快")
 	check(buffs._has_effect(load("res://data/growth/cooldown.tres")), "弹射中仍可获得对普通攻击有效的下一级冷却增益")
 	check(session.get_attack_stats().any(func(item): return item.name == "弹射挥剑"), "成长资格同时读取两种攻击模式的真实数值")
 	buffs.free()
+
+func attack_speed_checks() -> void:
+	for step in [0.5, 1.0 / 30.0, 1.0 / 60.0, 1.0 / 120.0]:
+		await reset()
+		var mob := enemy(Vector3(1, 0, 0), 10000.0)
+		for rank in 30: session.combat_modifiers.apply_buff(load("res://data/growth/cooldown.tres"))
+		var stats := sword.get_stats(true)
+		check(is_equal_approx(stats.interval, sword.rules.minimum_attack_interval), "高攻速到达明确的最短间隔")
+		var elapsed := 0.0
+		while elapsed < 1.0 - 0.000001:
+			var delta := minf(step, 1.0 - elapsed)
+			sword._simulate(player.global_position, player.global_position, delta, true, Vector3.RIGHT)
+			sword._drain_hits()
+			elapsed += delta
+		check(strikes.size() == 9 and damage_events.size() == 9 and is_equal_approx(mob.health, 9910.0), "粗步长与高帧率均为九次独立完整挥剑，不重复伤害也不丢刀")
+		check(sword._settings.duration() <= stats.interval and is_equal_approx(sword._settings.windup_seconds / sword._settings.sweep_seconds, 0.5), "加速仍保留起手、扫刃、收尾的时长比例")
+		check(is_equal_approx(sword.rules.duration(), 0.25), "攻速不累计改写基础动作资源")
+	await reset()
+	var mob := enemy(Vector3(1, 0, 0))
+	sword.request_manual(Vector3.RIGHT)
+	sword._physics_process(0.02)
+	var original_duration := sword._settings.duration()
+	for rank in 5: session.combat_modifiers.apply_buff(load("res://data/growth/cooldown.tres"))
+	check(is_equal_approx(sword._settings.duration(), original_duration), "进行中的动作保留起手快照")
+	session.set_combat_frozen(true)
+	var age := sword._age
+	sword._physics_process(0.5)
+	check(is_equal_approx(age, sword._age) and mob.health == 200.0, "攻速成长后冻结仍不推进动作或扣血")
+	session.set_combat_frozen(false)
+	sword._physics_process(0.24)
+	check(mob.health == 190.0, "恢复后完成原来的一刀且不重复扣血")
 
 func flight_checks() -> void:
 	await reset()
@@ -252,8 +283,9 @@ func input_and_art_checks() -> void:
 	for frame in 60: sword._physics_process(1.0 / 60.0)
 	check(strikes.size() == 2, "左键松开后不补发攻击")
 	await reset()
-	var production := load("res://data/player/basic_sword.tres") as PlayerSwordRules
-	# 剑光已停用；旧素材仍单独验证，不重新绑定到正式攻击。
+	var production := load("res://data/player/basic_sword.tres").duplicate() as PlayerSwordRules
+	# 旧素材独立验证；不改写正式资源选中的窄弧模式。
+	production.effect_mode = PlayerSwordRules.SlashVisual.FRAME_ANIMATION
 	var frames := load("res://assets/meowa/combat/basic_sword/frames.tres") as SpriteFrames
 	check(frames.get_frame_count(&"slash") == 8 and frames.get_animation_speed(&"slash") == 40.0, "Meowa 八帧全部保留，横扫与消散原生打包")
 	check(is_equal_approx(production.normal_range / production.art_radius_pixels, 0.02 * 0.8), "基础剑光与当前人物同为 0.016 米每原生像素")
@@ -366,6 +398,7 @@ func run() -> void:
 	await settle()
 	session._path.build(terrain, 0.32, [player.get_rid()])
 	await manual_checks()
+	await attack_speed_checks()
 	await flight_checks()
 	await freeze_checks()
 	await input_and_art_checks()

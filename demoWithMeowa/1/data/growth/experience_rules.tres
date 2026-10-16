@@ -4,3 +4,6 @@
 
 [resource]
 script = ExtResource("rules")
+first_level_experience = 12
+per_level_increase = 8
+level_cap = 1000

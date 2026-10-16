@@ -22,13 +22,14 @@ func run() -> void:
 	AudioServer.set_bus_mute(0, true)
 	var bank := load("res://data/audio/core_sound_bank.tres") as CoreSoundBank
 	var entries := bank.audition_entries()
-	check(entries.size() == 40, "完整索引四十条实际运行音源")
+	check(entries.size() == 41, "完整索引四十一条实际运行音源")
 	var paths := {}
 	for entry in entries:
 		check(entry.clip is AudioStream and not entry.clip.resource_path.is_empty(), "试听音源具有稳定的资源路径：" + entry.id)
 		paths[entry.clip.resource_path] = true
-	check(paths.size() == 40, "每个变体独立调节")
+	check(paths.size() == 41, "每个变体独立调节")
 	check(entries[37].cue == &"storm_strike" and entries[39].cue == &"storm_chain", "试听编号与原网页一致")
+	check(entries[40].cue == &"flight_loop" and entries[40].id == "S41", "新增动能气流追加在末尾，旧试听编号保持")
 	var settings := AudioMixSettings.new()
 	var first := entries[0].clip as AudioStream
 	var path := first.resource_path
@@ -78,6 +79,7 @@ func run() -> void:
 	panel.loadout = loadout
 	world.add_child(panel)
 	await process_frame
+	near(panel._event_volume(&"flight_loop"), feedback.action_volume_db + feedback.flight_gain_db, "气流试听与实际参考速度共用基础音量")
 	var event := {"source": listener, "cue": &"mix_test", "kind": GameAudio.Kind.HURT,
 		"clips": [first], "position": Vector3.ZERO, "volume_db": -11.0}
 	audio.mix.set_clip_gain(path, -6.0)

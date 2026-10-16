@@ -63,14 +63,14 @@ func physical_bounces() -> void:
 func run() -> void:
 	AudioServer.set_bus_mute(0, true)
 	var bank := load("res://data/audio/core_sound_bank.tres") as CoreSoundBank
-	check(bank != null and bank.cues.size() == 27, "完整音效包登记二十七种真实事件")
+	check(bank != null and bank.cues.size() == 28, "完整音效包登记二十八种真实事件")
 	var count := 0
 	for cue in bank.cues:
 		check(not bank.clips_for(cue).is_empty(), "事件具有成品音源：" + cue)
 		for clip in bank.clips_for(cue):
 			count += 1
 			check(clip is AudioStreamWAV and clip.mix_rate == 48000 and not clip.stereo and clip.get_length() > 0.05, "单声道四十八千赫 WAV 可播放：" + cue)
-	check(count == 40, "成品和变体合计四十条，不包含制作源文件")
+	check(count == 41, "成品和变体合计四十一条，不包含制作源文件")
 	world = load("res://scenes/world/world.tscn").instantiate()
 	FIXTURE.clear_placed_obstacles(world)
 	var profile := FIXTURE.isolate_profile(world)
@@ -134,7 +134,31 @@ func run() -> void:
 	check(playing(&"core:charge_ready") and audio.get_debug_state().played == played, "满蓄只提示一次，保持蓄力不反复响铃")
 	check(player.body_ricochet.release_charge(), "真实发射成功")
 	check(playing(&"core:launch") and not playing(&"core:charge_loop"), "发射停止蓄力循环并播放发射声")
+	feedback._physics_process(0.5)
+	var flight_loops := audio._voices.filter(func(slot): return slot.active and slot.cue == &"core:flight_loop")
+	check(flight_loops.size() == 1 and flight_loops[0].follow_source, "飞行只保留一个跟随人物的气流循环")
+	var fast_volume: float = flight_loops[0].voice.volume_db
+	check(absf(fast_volume - feedback.action_volume_db - feedback.flight_gain_db) < 0.1, "达到参考速度时接近配置的气流音量")
+	player.body_ricochet.flight_speed = feedback.flight_reference_speed * 0.25
+	feedback._physics_process(0.5)
+	check(flight_loops[0].voice.volume_db < fast_volume - 8.0, "实际余速降低会平滑减小气流音量")
+	var flight_level := feedback._flight_level
+	wave.set_combat_frozen(true)
+	feedback._physics_process(1.0)
+	await settle(2) # Let the audio server commit pause on the newly started flight voice.
+	check(is_equal_approx(feedback._flight_level, flight_level) and flight_loops[0].voice.stream_paused, "升级冻结暂停飞行循环及其音量过渡")
+	wave.set_combat_frozen(false)
+	check(not flight_loops[0].voice.stream_paused, "解冻继续原循环，不叠加新的气流")
 	player.body_ricochet.cancel(true)
+	var fade_volume: float = flight_loops[0].voice.volume_db
+	check(playing(&"core:flight_loop"), "主动取消后保留气流的淡出尾音")
+	feedback._physics_process(feedback.flight_fade_out_seconds * 0.5)
+	check(playing(&"core:flight_loop") and flight_loops[0].voice.volume_db < fade_volume - 5.9, "淡出过半时降低振幅而非突然截断")
+	feedback._physics_process(feedback.flight_fade_out_seconds * 0.5 + 0.001)
+	check(not playing(&"core:flight_loop") and not feedback.is_physics_processing(), "淡出完成释放声道并停止闲置逐帧工作")
+	check(player.body_ricochet.begin_charge(Vector3.RIGHT) and player.body_ricochet.release_charge(), "快速点按同样能发射")
+	player.body_ricochet.cancel(true)
+	check(not playing(&"core:flight_loop"), "发射同帧取消不会遗留静音循环")
 	reset_audio()
 	audio.max_voices = 1
 	audio.important_reserve = 0

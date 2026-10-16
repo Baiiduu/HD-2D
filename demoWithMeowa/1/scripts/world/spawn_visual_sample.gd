@@ -20,7 +20,7 @@ signal style_changed(index: int, title: String)
 ## 只切光影、材质受光与天气；相机、布局、花草分布、像素材质开关独立保留。
 @export_enum("原始光影", "Lumina 黄金时段", "Lumina 细雨", "Lumina 夜晚") var style := 1:
 	set(value): style = clampi(value, 0, 3); _queue_apply()
-## 直接更改 Weather 的晴雨开关时，光照预设随之调整；原始画面不联动。
+## 直接更改晴雨时，黄金／细雨光照随之调整；原始和夜晚保留当前光照。
 @export var follow_weather := true
 @export_tool_button("应用视觉与天气", "Reload") var apply_button = apply_style
 @export_subgroup("游戏内切换")
@@ -330,7 +330,8 @@ func _process(_delta: float) -> void:
 	if style == 0 or not follow_weather or _queued: return
 	var weather := get_parent().get_node_or_null("MapEffects/Weather")
 	if weather and _weather_mode != weather.weather_mode:
-		style = 2 if weather.weather_mode == 1 else 3 if style == 3 else 1
+		_weather_mode = weather.weather_mode
+		if style != 3: style = 2 if weather.weather_mode == 1 else 1
 
 func _nodes(values: Dictionary) -> void:
 	for path in values:

@@ -31,6 +31,8 @@ var _path := TerrainPath.new()
 var _surface: RefCounted
 var _collision := ProjectileCollision.new()
 var _effect: GroundSlashEffect
+var _tail_pool: Array[Dictionary] = []
+var _frame_seconds := 0.0
 var _audio: GameAudio
 var _hit_sounds := 0
 var _piece_time := 0.0
@@ -79,12 +81,16 @@ func get_stats(flying := false, modifiers: RunCombatModifiers = null) -> Diction
 	var result := {"damage": rules.damage, "range": rules.flight_range if flying else rules.normal_range,
 		"angle": rules.flight_angle if flying else rules.normal_angle,
 		"interval": rules.flight_interval if flying else rules.normal_interval}
+	var interval_scale := 1.0
 	if not modifiers and session: modifiers = session.combat_modifiers
 	if modifiers:
 		result.damage *= modifiers.damage_multiplier()
 		result.range *= modifiers.range_multiplier()
-		result.interval *= modifiers.interval_multiplier()
-	result.interval = maxf(result.interval, rules.duration())
+		interval_scale = modifiers.interval_multiplier()
+	# 最短间隔同时约束完整动作，不截断上一刀，也不改变基础资源。
+	var base_interval: float = maxf(result.interval, rules.duration())
+	result.interval = maxf(base_interval * interval_scale, rules.minimum_attack_interval)
+	result.motion_scale = float(result.interval) / base_interval
 	return result
 
 func get_combat_stats(modifiers: RunCombatModifiers = null) -> Dictionary:
@@ -124,6 +130,8 @@ func _physics_process(delta: float) -> void:
 	if session and session.terrain:
 		_path.terrain = session.terrain
 		_path.data = session.terrain.data
+	_frame_seconds = delta
+	_advance_tails(delta)
 	var used := 0.0
 	var cursor := _last_position
 	for piece in _motion:
@@ -180,6 +188,8 @@ func _simulate(start: Vector3, end: Vector3, seconds: float, flying: bool, headi
 			var from := start.lerp(end, fraction)
 			var to := start.lerp(end, PlayerRicochetRules.segment_fraction(time + step, seconds, speed, deceleration))
 			_collect_hits(from, to, (_age - _settings.windup_seconds) / _settings.sweep_seconds, (_age + step - _settings.windup_seconds) / _settings.sweep_seconds, flying, _piece_time + time, step)
+			if _age + step >= _settings.windup_seconds + _settings.sweep_seconds - 0.000001:
+				_start_tail(to, maxf(0.0, _frame_seconds - _piece_time - time - step))
 		_age += step
 		_since_strike += step
 		time += step
@@ -190,6 +200,9 @@ func _simulate(start: Vector3, end: Vector3, seconds: float, flying: bool, headi
 func _begin(heading: Vector3, flying: bool) -> void:
 	_settings = rules.duplicate()
 	_stats = get_stats(flying)
+	_settings.windup_seconds *= float(_stats.motion_scale)
+	_settings.sweep_seconds *= float(_stats.motion_scale)
+	_settings.fade_seconds *= float(_stats.motion_scale)
 	_heading = heading.normalized()
 	_heading.y = 0.0
 	if _heading.is_zero_approx(): _heading = player.facing_direction()
@@ -223,8 +236,7 @@ func _can_reach(origin: Vector3, enemy: WaveEnemy) -> bool:
 	var length := TerrainPath.horizontal_distance(point, target)
 	var direction := (target - point).normalized()
 	if _collision.ground_limit(_path, point, direction, length, point.y, height) < length - 0.00001: return false
-	var ray := PhysicsRayQueryParameters3D.create(point + Vector3.UP * 0.45, target + Vector3.UP * 0.45, 1, [player.get_rid()])
-	return get_world_3d().direct_space_state.intersect_ray(ray).is_empty()
+	return _path.terrain.ray_clear(point + Vector3.UP * 0.45, target + Vector3.UP * 0.45, 1, [player.get_rid()])
 
 func _first_target(start: Vector3, end: Vector3, heading: Vector3, stats: Dictionary, auto_aim := false) -> Dictionary:
 	var result := {"entry": -1.0, "heading": heading}
@@ -291,7 +303,7 @@ func _collect_hits(start: Vector3, end: Vector3, first: float, last: float, movi
 			var origin := a.lerp(b, entry)
 			if not _can_reach(origin, enemy): continue
 			_hits[enemy.get_instance_id()] = true
-			_pending_hits.append({"enemy": enemy, "damage": _stats.damage, "origin": origin, "heading": _heading, "flying": _flight_swing and moving_flight, "time":start_time + seconds * (index + entry) / steps})
+			_pending_hits.append({"enemy": enemy, "damage": _stats.damage, "origin": origin, "heading": _heading, "flying": _flight_swing and moving_flight, "flight_id": player.body_ricochet.flight_serial if _flight_swing and moving_flight else 0, "time":start_time + seconds * (index + entry) / steps})
 
 static func swept_blade(point: Vector3, a: Vector3, tip_a: Vector3, tip_b: Vector3, b: Vector3) -> bool:
 	var p := Vector2(point.x, point.z)
@@ -321,7 +333,7 @@ func _drain_hits() -> void:
 		var enemy: WaveEnemy = hit.enemy
 		if not _eligible(enemy): continue
 		var before := enemy.health
-		enemy.take_damage(hit.damage, {"source": &"flight_sword" if hit.flying else &"basic_sword", "direction": hit.heading})
+		enemy.take_damage(hit.damage, {"source": &"flight_sword" if hit.flying else &"basic_sword", "direction": hit.heading, "flight_id": hit.get("flight_id", 0)})
 		if not is_instance_valid(enemy): continue
 		var dealt := before - enemy.health
 		if dealt <= 0.0 and not session.combat_modifiers.damage_disabled: continue
@@ -332,11 +344,53 @@ func _drain_hits() -> void:
 		hit_landed.emit(enemy, dealt, hit.flying)
 
 func _update_effect() -> void:
-	if not swinging or not _settings.frames or _age < _settings.windup_seconds or not _path.data or not _surface:
+	_update_tails()
+	if not swinging or _age < _settings.windup_seconds or not _path.data or not _surface:
+		_effect.hide()
+		return
+	if _settings.effect_mode == PlayerSwordRules.SlashVisual.MEOWA_ARC and _age >= _settings.windup_seconds + _settings.sweep_seconds - 0.000001:
 		_effect.hide()
 		return
 	_effect.display(_path.ground_position(player.global_position), _heading, _stats.range, _stats.angle, _reverse,
 		_settings.frames, _age - _settings.windup_seconds, _settings, _path, _surface, [player.get_rid()])
+
+func _start_tail(point: Vector3, elapsed: float) -> void:
+	if _settings.effect_mode != PlayerSwordRules.SlashVisual.MEOWA_ARC or not _settings.frames or not _path.data or not _surface or elapsed >= _settings.meowa_tail_seconds: return
+	var slot: Dictionary
+	for tail in _tail_pool:
+		if tail.age < 0.0:
+			slot = tail
+			break
+	if slot.is_empty():
+		var effect := GroundSlashEffect.new()
+		effect.name = "SwordResidue%d" % _tail_pool.size()
+		add_child(effect)
+		effect.top_level = true
+		slot = {"effect": effect}
+		_tail_pool.append(slot)
+	slot.merge({"age": elapsed, "origin": _path.ground_position(point), "heading": _heading,
+		"radius": _stats.range, "angle": _stats.angle, "reverse": _reverse, "settings": _settings, "fresh": true}, true)
+
+func _advance_tails(delta: float) -> void:
+	for tail in _tail_pool:
+		if tail.age < 0.0: continue
+		tail.age += delta
+		if tail.age >= tail.settings.meowa_tail_seconds - 0.000001:
+			tail.age = -1.0
+			tail.effect.hide()
+
+func _update_tails() -> void:
+	if not _path.data or not _surface: return
+	var excluded: Array[RID] = [player.get_rid()]
+	for tail in _tail_pool:
+		if tail.age < 0.0: continue
+		var settings: PlayerSwordRules = tail.settings
+		var effect: GroundSlashEffect = tail.effect
+		effect.display(tail.origin, tail.heading, tail.radius, tail.angle, tail.reverse, settings.frames,
+			settings.sweep_seconds + tail.age, settings, _path, _surface, excluded)
+		if tail.fresh:
+			effect.reset_physics_interpolation()
+			tail.fresh = false
 
 func _play_sound(hit: bool, point: Vector3) -> void:
 	if not rules.audio_enabled or (hit and _hit_sounds >= 2): return
@@ -387,4 +441,7 @@ func cancel(reset_clock := true) -> void:
 	if reset_clock:
 		_since_strike = 1000.0
 		_next_reverse = false
+		for tail in _tail_pool:
+			tail.age = -1.0
+			tail.effect.hide()
 	if is_instance_valid(_effect): _effect.hide()

@@ -129,6 +129,8 @@ var _has_landed_once := false
 var _blink: PlayerBlink
 var body_ricochet: PlayerRicochet
 var flight_trail: PlayerFlightTrail
+var bounce_effect: PlayerBounceEffect
+var fire_trail: PlayerFireTrail
 var action_animator: PlayerActionAnimator
 var sword: PlayerSword
 
@@ -216,6 +218,14 @@ func _ready() -> void:
 		_run_session.combat_frozen_changed.connect(skill_manager.set_combat_frozen)
 		_run_session.phase_changed.connect(_on_skill_phase_changed)
 		skill_manager.set_combat_frozen(_run_session.combat_frozen)
+
+	if action_visuals:
+		bounce_effect = PlayerBounceEffect.new()
+		bounce_effect.name = "BounceEffect"
+		add_child(bounce_effect)
+		fire_trail = PlayerFireTrail.new()
+		fire_trail.name = "GroundFireTrail"
+		add_child(fire_trail)
 
 func _on_skill_phase_changed(phase: WavePrototype.Phase) -> void:
 	if phase == WavePrototype.Phase.READY: skill_manager.reset()

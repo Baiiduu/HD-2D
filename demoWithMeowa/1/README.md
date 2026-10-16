@@ -42,6 +42,8 @@
 ./tools/run_tests.ps1 -Suite render # 仅查看人工验收入口
 ```
 
+测试进程默认临时启用升级、抽卡和局内技能系统，避免编辑器中关闭的开关影响战斗夹具；不保存设置或修改 `project.godot`。需要验证当前项目开关时传入 `-UseProjectSystemSwitches`。开关自身的契约测试仍在独立进程内显式切换并验证各组合。
+
 截图、渲染观感、UI 与玩法手感均由人工验收，使用 World 的 F5 和 City 的 F6：确认出生与镜头跟随，开局卡片与重抽，移动／普攻／蓄力瞄准与释放／反弹／闪身，升级冻结与恢复，隐藏底栏及打开管理页时世界继续，撤退与重试。自动测试只验证规则、状态、数据和坐标计算；未做的人工项目保留待验收，不以无界面断言代替。
 
 编辑器右侧的 **Game Manager** 页签集中控制项目级「升级系统」「抽卡系统」「局内技能管理器」，不在地图中创建 GameManager 节点。勾选立即保存到 `project.godot` 的 `game_manager/systems/*`，重新运行后对所有场景生效。若当前编辑器尚未加载新插件，在「项目 → 项目设置 → 插件」启用 Game Manager。各组件的本地 `Enabled` 也须开启；可在 `WavePrototype/RunGrowth`、`SkillDraft`、`RunSkillManager` 的检查器或参数总览中独立调整。
@@ -59,6 +61,8 @@
 `WavePrototype/RunSkillManager`（`scripts/combat/run_skill_manager.gd`）只管理局内可选技能的注册、学习等级、执行开关、候选和模拟装配，不接收人物固有技能输入。`WavePrototype/SkillDraft` 连接 RunSkillManager、RunGrowth、RunBuffs、选卡界面和战斗生命周期，负责候选合并、共用重抽、重试清理与可选技能冻结登记。开局界面路径为 `WavePrototype/SkillDraft/InitialSkillChoice`，初始抽取张数在 SkillDraft。重试重置学习等级，角色固有技能仍由角色自己的管理器保留和恢复；升级冻结同时停止固有技能计时。共享成长数值继续通过 RunCombatModifiers 作用于普攻、弹射和适用的可选技能。
 
 `BattleConfiguration` 的 `scene_combat_binding.gd` 只在组件就绪前装配所选场景的独立数值资源，不把角色接到局内技能管理器。World 和 City 均已保存角色技能子场景；其它保留预览由 Player 自动补齐同一角色组件。旧 `RunSkills` 类只兼容可学习技能入口。
+
+World 和 City 的实际平衡、动作槽和表现开关以各自独立配置为准；更新通用 `data/enemies`、`data/player`、`data/waves` 不会自动覆盖它们。新增反弹、火带和剑光实现保留，启用时在相应地图资源中配置。World 保留既有布局、地表、镜头与光影；新增极光和静态合批默认关闭，可在对应组件独立开启。计分与统一设置界面接入共享战斗和 World，不改变编辑器 Game Manager 的现有开关。
 
 波次数量、组间空档、批量分配和间隔增长的纯计算位于 `scripts/combat/wave_schedule_planner.gd`，不依赖地图、怪物实例或 UI。`wave_spawn_queue.gd` 持有实际待生成队列，统一处理分帧预算、整批预留、满员等待、位置重试和取消；`wave_enemy_roster.gd` 统一登记存活对象、分类数量、容量成本和空间索引，死亡与退出回调只释放一次。WavePrototype 连接地图查询、实际实例化和战斗阶段，既有调用入口与调参路径保留。规划只生成新的资源条目，不修改开场模板。
 

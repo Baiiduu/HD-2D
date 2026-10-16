@@ -41,10 +41,12 @@
 [ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/storm_strike_02.wav" id="storm_strike_02"]
 [ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/storm_chain.wav" id="storm_chain"]
 [ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/charge_loop.wav" id="charge_loop"]
+[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/flight_loop.wav" id="flight_loop"]
 
 [resource]
 script = ExtResource("bank")
 cues = {
+&"flight_loop": Array[AudioStream]([ExtResource("flight_loop")]),
 &"charge_start": Array[AudioStream]([ExtResource("charge_start")]),
 &"charge_ready": Array[AudioStream]([ExtResource("charge_ready")]),
 &"launch": Array[AudioStream]([ExtResource("launch_01"), ExtResource("launch_02")]),

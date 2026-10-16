@@ -1,5 +1,7 @@
 shader_type sky;
 
+#include "res://shaders/includes/aurora_sample.gdshaderinc"
+
 // 像素风雾夜天空：天幕渐变 + 星星 + 月晕 + 地平线雾带，
 // 地平线附近是几层"雾中剪影"（远山 → 四排松林），越远越小、越亮、越接近雾色，
 // 每排松林的树脚融进雾里。所有图案按固定角度步长量化，保持像素块面。
@@ -119,6 +121,16 @@ void sky() {
 	}
 	if (city_matte_enabled && !AT_CUBEMAP_PASS) {
 		color = city_background(SCREEN_UV);
+		if (aurora_enabled) {
+			// The matte is a fixed, downward-looking stage backdrop. Its virtual
+			// sky sits above the city; reflections sample the same angular atlas.
+			float sky_elevation = asin(clamp(dir.y, -1.0, 1.0)) + 1.05;
+			vec3 sky_direction = vec3(normalize(dir.xz) * cos(sky_elevation), sin(sky_elevation)).xzy;
+			// Fade above the painted skyline, leaving the city and holograms intact.
+			float skyline = mix(0.21, 0.075, smoothstep(0.12, 0.65, SCREEN_UV.x));
+			float sky_mask = 1.0 - smoothstep(skyline - 0.045, skyline, SCREEN_UV.y);
+			color += sample_aurora(sky_direction) * aurora_strength * sky_mask;
+		}
 	}
 	COLOR = hemisphere_fill_enabled && AT_CUBEMAP_PASS
 		? mix(hemisphere_ground_color, hemisphere_sky_color, dir.y * 0.5 + 0.5) : color;

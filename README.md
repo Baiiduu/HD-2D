@@ -16,6 +16,7 @@
 | --- | --- |
 | [demoWithMeowa/1](demoWithMeowa/1/README.md) | 当前 Godot 项目、运行素材、场景、代码、配置和测试 |
 | [docs](docs/README.md) | 玩法设计、功能说明、实机预览与参考图 |
+| [services/leaderboard](services/leaderboard/README.md) | 独立排行榜后端与接口；游戏内已计分，上传审核与平台登录待定 |
 | [benchmark/threejs](benchmark/threejs/README.md) | Three.js 视觉对照与实验 |
 | [archive](archive/README.md) | 早期制作脚本、分析和原输出的归档 |
 | `meowa-call-logs/` | 既有 Meowa 调用历史；当前记录暂停 |

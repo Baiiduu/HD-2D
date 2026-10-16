@@ -21,6 +21,8 @@ var enabled: bool:
 var direction := Vector3.RIGHT
 var flight_speed := 0.0
 var bounce_count := 0
+## 成功发射时递增，反弹与持续环绕不建立新的发射编号。
+var flight_serial := 0
 var crowd_deflection_count := 0
 var charging: bool:
 	get: return state == State.CHARGING
@@ -159,6 +161,7 @@ func release_charge() -> bool:
 	_plane = _path.ground_position(_player.global_position).y if _path.data else _player.global_position.y
 	_foot_offset = maxf(0.02, _player.global_position.y - _plane)
 	_mouse_charge = false
+	flight_serial += 1
 	_change_state(State.FLYING)
 	launched.emit(direction, flight_speed, fraction)
 	return true
@@ -317,6 +320,7 @@ func _advance_flight(delta: float) -> void:
 			if travelled <= 0.00001: _end_flight(&"ground_contact")
 			continue
 		var terrain_contact := is_instance_valid(_path.terrain) and hit.get_collider() is Node and _path.terrain.is_ancestor_of(hit.get_collider())
+		if terrain_contact and _path.terrain.is_reflective_water_shape(hit.get_collider(), hit.get_collider_shape_index()): terrain_contact = false
 		normal.y = 0.0
 		normal = normal.normalized()
 		if terrain_contact or normal.is_zero_approx() or direction.dot(normal) >= -0.00001:
