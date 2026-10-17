@@ -1,5 +1,5 @@
 param(
-    [ValidateSet('core', 'regression', 'render', 'all')]
+    [ValidateSet('core', 'regression', 'native', 'render', 'all')]
     [string]$Suite = 'regression',
     [string]$GodotPath = $env:GODOT_BIN,
     [string]$OutputDirectory = 'D:/.codexfile/work/godot-tests',
@@ -13,6 +13,9 @@ param(
 $ErrorActionPreference = 'Stop'
 $projectDirectory = Split-Path -Parent $PSScriptRoot
 $groups = @{
+    # Optional: requires a locally built native/swarm DLL; ordinary regression
+    # remains runnable on a fresh checkout without the prototype toolchain.
+    native = @('test_native_swarm_kernel', 'test_native_swarm_movement')
     core = @('test_run_skill_manager_standalone', 'test_run_skill_manager_contract', 'test_character_skill_ownership', 'test_game_system_switches', 'test_projectile_geometry', 'test_wave_schedule', 'test_spawn_queue_contract', 'test_enemy_roster_contract')
     regression = @(
         'test_run_skill_manager_standalone', 'test_run_skill_manager_contract', 'test_character_skill_ownership', 'test_game_system_switches', 'test_game_system_scene', 'test_scene_configuration_contract', 'test_world_startup',
@@ -27,7 +30,8 @@ $groups = @{
         'test_wave_core', 'test_wave_spawning', 'test_crowd_batch_lifecycle'
         'test_spawn_sync_gate', 'test_surround_spawning', 'test_local_spawn_safety',
         'test_run_score', 'test_score_settings', 'test_combat_extension_framework',
-        'test_player_sword', 'test_crowd_deflection', 'test_native_query_policy'
+        'test_player_sword', 'test_crowd_deflection', 'test_native_query_policy',
+        'test_enemy_update_batch', 'test_preview_query_deduplication'
     )
     render = @(
         'test_aim_target_image_cache', 'test_billboard_shadow_updates',
@@ -51,7 +55,7 @@ if ($Test) {
         if ($name -in $groups.render) { throw "Manual-only check: $name. Run visual acceptance in Godot; this runner only starts headless tests." }
     }
 } elseif ($Suite -eq 'all') {
-    $selected = @(Get-ChildItem -LiteralPath (Join-Path $projectDirectory 'tests') -Filter 'test_*.gd' | Sort-Object Name | ForEach-Object BaseName | Where-Object { $_ -notin $groups.render })
+    $selected = @(Get-ChildItem -LiteralPath (Join-Path $projectDirectory 'tests') -Filter 'test_*.gd' | Sort-Object Name | ForEach-Object BaseName | Where-Object { $_ -notin $groups.render -and $_ -notin $groups.native })
 } else {
     $selected = $groups[$Suite]
 }

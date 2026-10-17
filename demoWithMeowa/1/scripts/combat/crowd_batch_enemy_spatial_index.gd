@@ -34,12 +34,18 @@ var _planner := BatchPlanner.new()
 var _plan_frame := -1
 var _fallback_frame := -1
 var _forces := PackedVector3Array()
+var native_kernel: RefCounted:
+	set(value):
+		if native_kernel == value: return
+		native_kernel = value
+		_reset_plan()
 
 func _reset_plan() -> void:
 	_plan_frame = -1
 	_fallback_frame = -1
 	_forces.clear()
 	_planner.clear()
+	if native_kernel: native_kernel.clear()
 
 func reset_metrics() -> void:
 	batch_builds = 0
@@ -77,6 +83,7 @@ func remove(enemy: WaveEnemy) -> void:
 		_forces.clear()
 		_plan_frame = -1
 		_planner.clear()
+		if native_kernel: native_kernel.clear()
 
 func legacy_separation(enemy: WaveEnemy, radius: float) -> Vector3:
 	return super.separation(enemy, radius)
@@ -84,9 +91,14 @@ func legacy_separation(enemy: WaveEnemy, radius: float) -> Vector3:
 func _prepare_current_step(frame: int) -> void:
 	# No await/callback occurs during planning. The packed input describes one
 	# common current snapshot even though later movement commits mutate it.
-	_forces = _planner.plan(_cells, _positions, _ids, _active, _spacing, _bodies, CELL_SIZE, _crowd_revision)
+	var planner: RefCounted = native_kernel if native_kernel else _planner
+	_forces = planner.plan(_cells, _positions, _ids, _active, _spacing, _bodies, CELL_SIZE, _crowd_revision)
+	# The optional kernel may reject an unsupported packet. Never publish a
+	# short force array to callers; keep the established script implementation.
+	if _forces.size() != _positions.size():
+		_forces = _planner.plan(_cells, _positions, _ids, _active, _spacing, _bodies, CELL_SIZE, _crowd_revision)
 	_plan_frame = frame
-	if diagnostics_enabled:
+	if diagnostics_enabled and not native_kernel:
 		batch_builds += 1
 		plan_candidate_pairs += _planner.candidate_pairs
 		plan_accepted_pairs += _planner.accepted_pairs

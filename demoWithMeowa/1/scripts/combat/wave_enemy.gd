@@ -35,6 +35,23 @@ var combat_active: Callable
 var _speed_boosts: Dictionary[int, Dictionary] = {}
 var _push_wave: EnemyPushWave
 var _push_layer := 0
+var _central_update_owner: Node
+var _wave_tick_enabled := true
+## Optional prototype; absent native library and legacy backend keep this null.
+var _native_swarm: RefCounted
+
+## Explicit opt-in: scripts with custom physics callbacks keep their own driver.
+func supports_central_update() -> bool:
+	return false
+
+## Suspend/resume simulation under either backend. Process modes still control
+## combat freeze and scene pause; animation processing remains independent.
+func set_wave_tick_enabled(value: bool) -> void:
+	_wave_tick_enabled = value
+	set_physics_process(value and not is_instance_valid(_central_update_owner))
+
+func is_wave_tick_enabled() -> bool:
+	return _wave_tick_enabled and (is_instance_valid(_central_update_owner) or is_physics_processing())
 
 ## 聚群只改变普通移动，不调整实体碰撞体、攻击距离或导航半径。
 func get_crowd_spacing() -> float:
@@ -80,6 +97,7 @@ func configure_wave(context: Dictionary, definition: WaveEnemyDefinition, _warni
 	request_spawn = context.request_spawn
 	request_spawn_by_id = context.get("request_spawn_by_id", Callable())
 	combat_active = context.get("combat_active", Callable())
+	_native_swarm = context.get("native_swarm")
 	health_multiplier = clampf(context.get("health_multiplier", 1.0), 1.0, WaveHealthGrowthRules.HARD_MAX_MULTIPLIER)
 	spawn_wave = context.get("wave", 0)
 	max_health = definition.health * health_multiplier
@@ -113,11 +131,17 @@ func commit_spatial_state() -> void:
 	if spatial_index: spatial_index.update(self)
 
 func _exit_tree() -> void:
+	if is_instance_valid(_central_update_owner): _central_update_owner.untrack(self)
 	if spatial_index: spatial_index.remove(self)
 
 func _physics_process(delta: float) -> void:
 	if not wave_mode or dead or not is_instance_valid(wave_target): return
 	if combat_active.is_valid() and not combat_active.call(): return
+	_advance_wave_step(delta)
+
+## The batch has already checked the shared session predicate. Action handlers,
+## stun, external forces and the post-move index commit keep their original order.
+func _advance_wave_step(delta: float) -> void:
 	_tick_speed_boosts(delta)
 	spawn_delay = maxf(spawn_delay - delta, 0.0)
 	if spawn_delay <= 0.0:

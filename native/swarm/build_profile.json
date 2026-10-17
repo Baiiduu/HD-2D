@@ -1,0 +1,1 @@
+{"enabled_classes":["OS","RefCounted","CharacterBody3D","CollisionShape3D","CapsuleShape3D","BoxShape3D","SphereShape3D","CylinderShape3D","ConvexPolygonShape3D","ConcavePolygonShape3D","PhysicsServer3D","PhysicsTestMotionParameters3D","PhysicsTestMotionResult3D"]}

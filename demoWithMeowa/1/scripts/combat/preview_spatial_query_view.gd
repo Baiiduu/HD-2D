@@ -17,6 +17,10 @@ var active: PackedByteArray
 var bodies: PackedFloat64Array
 var cell_size: float
 var physics_frame: int
+## Candidate lists only: each traversal still applies its own current visited set.
+## Lifetime is this synchronous prediction, with no scene callbacks or awaits.
+var memoize_neighbors := false
+var _neighbor_candidates: Dictionary[float, Dictionary] = {}
 
 func _init(index: WaveEnemySpatialIndex, battle: WavePrototype) -> void:
 	source = index
@@ -38,6 +42,21 @@ func slot(enemy: WaveEnemy) -> int:
 ## Same z/x/cell insertion order and exact Vector2 distance as nearby_into.
 ## Caller-owned typed slots replace temporary Nodes and repeated global getters.
 func nearby_slots_into(point: Vector3, radius: float,
+		excluded: Dictionary[int, bool], result: Array[int]) -> void:
+	if not memoize_neighbors:
+		_scan_neighbors(point, radius, excluded, result)
+		return
+	if not _neighbor_candidates.has(radius): _neighbor_candidates[radius] = {}
+	var points: Dictionary = _neighbor_candidates[radius]
+	if not points.has(point):
+		var candidates: Array[int] = []
+		_scan_neighbors(point, radius, {}, candidates)
+		points[point] = candidates
+	result.clear()
+	for candidate: int in points[point]:
+		if not excluded.has(ids[candidate]): result.append(candidate)
+
+func _scan_neighbors(point: Vector3, radius: float,
 		excluded: Dictionary[int, bool], result: Array[int]) -> void:
 	result.clear()
 	var first_point := point - Vector3(radius, 0.0, radius)

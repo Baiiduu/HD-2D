@@ -2,6 +2,7 @@ class_name PlayerRicochet
 extends Node
 
 const PreviewQueryView = preload("res://scripts/combat/preview_spatial_query_view.gd")
+const PreviewObstacleBatch = preload("res://scripts/combat/preview_obstacle_batch.gd")
 
 signal state_changed(state: State)
 signal launched(direction: Vector3, speed: float, charge: float)
@@ -350,18 +351,36 @@ func motion_timing(seconds: float) -> Vector2:
 	return Vector2(flight_speed + _settings.flight_deceleration * seconds, _settings.flight_deceleration) if flying and _settings else Vector2.ZERO
 
 ## 沿本次蓄力快照预览；输出可供其它显示方式消费，不产生位移、攻击或拨怪事件。
-func predict_path(query: BodyPathPrediction, output: AimPathData, max_distance: float, preview_bounces: int, followup_distance := -1.0) -> void:
+func predict_path(query: BodyPathPrediction, output: AimPathData, max_distance: float, preview_bounces: int, followup_distance := -1.0, deduplicate_queries := false) -> void:
 	output.clear()
+	query.preview_batch_tests = 0
+	query.preview_batch_empty = 0
+	query.preview_batch_rays = 0
 	if not charging or not _settings: return
 	_path.terrain = _session.terrain if is_instance_valid(_session) else null
 	_path.data = _path.terrain.data if is_instance_valid(_path.terrain) else null
 	var speed := lerpf(_settings.minimum_launch_speed, _settings.maximum_launch_speed, charge_fraction)
 	# 短预测只查首次接触，无需为单次查询复制整份怪物空间快照。
-	var view := PreviewQueryView.new(_session._spatial_index, _session) if followup_distance < 0.0 and _settings.preview_spatial_queries_enabled and _settings.crowd_deflection_enabled and is_instance_valid(_session) else null
+	var batch_eligible: bool = deduplicate_queries and is_instance_valid(_path.terrain) and _path.terrain.get_script().resource_path == "res://scripts/terrain/terrain.gd" and not ProjectSettings.get_setting("physics/3d/run_on_separate_thread", false)
+	if batch_eligible:
+		batch_eligible = _path.terrain._wall_ray.collide_with_bodies and not _path.terrain._wall_ray.collide_with_areas
+	var view := PreviewQueryView.new(_session._spatial_index, _session) if (followup_distance < 0.0 or batch_eligible) and _settings.preview_spatial_queries_enabled and _settings.crowd_deflection_enabled and is_instance_valid(_session) else null
+	if view: view.memoize_neighbors = batch_eligible
+	var crowd := PlayerCrowdDeflection.new(_settings, _session, null, view) if _settings.crowd_deflection_enabled and is_instance_valid(_session) else null
+	var batch: RefCounted
+	if batch_eligible and crowd:
+		var scope := view if view else PreviewQueryView.new(_session._spatial_index, _session)
+		if scope.eligible:
+			batch = PreviewObstacleBatch.new(_path.terrain, [_player.get_rid()])
+			crowd._preview_obstacles = batch
 	query.trace(_player, direction, speed,
 		_settings.coast_seconds(speed), mini(preview_bounces, 1) if followup_distance >= 0.0 else preview_bounces, _settings.bounce_speed_retention,
 		_path, _player.bounds, _settings.ground_height_tolerance, output, max_distance,
-		PlayerCrowdDeflection.new(_settings, _session, null, view) if _settings.crowd_deflection_enabled and is_instance_valid(_session) else null, _settings, followup_distance)
+		crowd, _settings, followup_distance)
+	if batch:
+		query.preview_batch_tests = batch.tests
+		query.preview_batch_empty = batch.empty_volumes
+		query.preview_batch_rays = batch.proved_rays
 
 func _push_segment(start: Vector3, end: Vector3) -> void:
 	if not _settings.enemy_push_enabled: return

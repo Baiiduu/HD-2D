@@ -1,6 +1,9 @@
 # Generated Godot editor/import caches
 .godot/
 
+# Optional native prototype output; build and dependency caches live outside repo.
+/native/swarm/bin/
+
 # JavaScript dependencies and build output
 node_modules/
 dist/

@@ -4,6 +4,8 @@ extends RefCounted
 const PreviewQueryView = preload("res://scripts/combat/preview_spatial_query_view.gd")
 const EccentricPath = preload("res://scripts/player/player_eccentric_ricochet.gd")
 var _query_view: PreviewQueryView
+## Only the prediction producer can provide this synchronous empty-volume proof.
+var _preview_obstacles: RefCounted
 var _nearby_slots: Array[int] = []
 var _eccentric: EccentricPath
 var _orbit_members: Dictionary[int, WaveEnemy] = {}
@@ -64,6 +66,7 @@ func _init(settings: PlayerRicochetRules, battle: WavePrototype, shared: EnemyPu
 
 func _ray_clear(from: Vector3, to: Vector3) -> bool:
 	# Existing mirrors still interrupt capture/continuation before crowd turning.
+	if _preview_obstacles and _preview_obstacles.proves(from, to): return true
 	return session.terrain.ray_clear(from, to, ProjectileCollision.REFLECTION_MASK, _ray_excluded)
 
 func step(position: Vector3, heading: Vector3, distance: float) -> Dictionary:
@@ -316,6 +319,12 @@ func begin_contact(hit: Dictionary, point: Vector3, incoming: Vector3) -> bool:
 
 ## 首次捕获或续段时读取外沿；续段只读取已捕获群的存活相连成员。
 func _eccentric_outline(seed: WaveEnemy, point: Vector3, allowed: Dictionary[int, WaveEnemy] = {}) -> Dictionary:
+	if _preview_obstacles and _query_view and _query_view.is_current(session._spatial_index):
+		var slot := _query_view.slot(seed)
+		if slot >= 0: return _view_eccentric_outline(slot, point, allowed)
+	return _legacy_eccentric_outline(seed, point, allowed)
+
+func _legacy_eccentric_outline(seed: WaveEnemy, point: Vector3, allowed: Dictionary[int, WaveEnemy]) -> Dictionary:
 	var anchor := seed.global_position
 	var radius := minf(rules.eccentric_search_radius, rules.push_group_search_radius)
 	session.get_nearby_enemies_into(anchor, radius, {}, _nearby)
@@ -323,6 +332,14 @@ func _eccentric_outline(seed: WaveEnemy, point: Vector3, allowed: Dictionary[int
 	var bodies: Dictionary[int, float] = {}
 	var members: Dictionary[int, WaveEnemy] = {}
 	_ray_excluded = [session.player.get_rid()]
+	if _preview_obstacles:
+		var endpoints := PackedVector3Array([point + Vector3.UP * 0.45])
+		for actor in _nearby:
+			if actor.spawn_delay > 0.0: continue
+			if not allowed.is_empty() and not allowed.has(actor.get_instance_id()): continue
+			var position := actor.global_position
+			if absf(position.y - point.y) <= rules.push_height_tolerance: endpoints.append(position + Vector3.UP * 0.45)
+		_preview_obstacles.cover(endpoints)
 	for actor in _nearby:
 		if actor.spawn_delay > 0.0: continue
 		if not allowed.is_empty() and not allowed.has(actor.get_instance_id()): continue
@@ -368,6 +385,64 @@ func _eccentric_outline(seed: WaveEnemy, point: Vector3, allowed: Dictionary[int
 			var capsule := child.shape as CapsuleShape3D
 			player_radius = maxf(player_radius, capsule.radius * maxf(child.global_basis.x.length(), child.global_basis.z.length()))
 	return {"positions": PackedVector3Array(connected), "body_radius": body_radius, "player_radius": player_radius, "members": members}
+
+## Same candidate/BFS order and float64 radii as the live-node path. One
+## synchronous prediction reuses the authoritative post-move packed index.
+func _view_eccentric_outline(seed_slot: int, point: Vector3, allowed: Dictionary[int, WaveEnemy]) -> Dictionary:
+	var anchor: Vector3 = _query_view.positions[seed_slot]
+	var seed_id: int = _query_view.ids[seed_slot]
+	var radius := minf(rules.eccentric_search_radius, rules.push_group_search_radius)
+	_query_view.nearby_slots_into(anchor, radius, {}, _nearby_slots)
+	var samples: Array[int] = []
+	var endpoints := PackedVector3Array([point + Vector3.UP * 0.45])
+	for slot in _nearby_slots:
+		if _query_view.active[slot] == 0: continue
+		if not allowed.is_empty() and not allowed.has(_query_view.ids[slot]): continue
+		var position: Vector3 = _query_view.positions[slot]
+		if absf(position.y - point.y) > rules.push_height_tolerance: continue
+		samples.append(slot)
+		endpoints.append(position + Vector3.UP * 0.45)
+	_nearby_slots.clear()
+	_preview_obstacles.cover(endpoints)
+	var visible: Dictionary[int, int] = {}
+	_ray_excluded = [session.player.get_rid()]
+	for slot in samples:
+		if _ray_clear(point + Vector3.UP * 0.45, _query_view.positions[slot] + Vector3.UP * 0.45):
+			visible[_query_view.ids[slot]] = slot
+	var minimum := 3 if allowed.is_empty() else 1
+	if visible.size() < minimum or not visible.has(seed_id):
+		if debug_enabled: debug_capture_reason = "可见同层成员不足 %d 只（隔墙／异层对象已排除）" % minimum
+		return {}
+	var connected: Array[Vector3] = [anchor]
+	var visited: Dictionary[int, bool] = {seed_id:true}
+	var members: Dictionary[int, WaveEnemy] = {seed_id:_query_view.owners[seed_slot]}
+	var cursor := 0
+	var body_radius: float = _query_view.bodies[seed_slot]
+	var spread := 0.0
+	while cursor < connected.size():
+		var position := connected[cursor]
+		cursor += 1
+		spread = maxf(spread, TerrainPath.horizontal_distance(position, anchor))
+		_query_view.nearby_slots_into(position, rules.push_group_link_distance, visited, _nearby_slots)
+		for slot in _nearby_slots:
+			var id: int = _query_view.ids[slot]
+			if not visible.has(id): continue
+			var candidate: Vector3 = _query_view.positions[visible[id]]
+			if not _ray_clear(position + Vector3.UP * 0.45, candidate + Vector3.UP * 0.45): continue
+			visited[id] = true
+			members[id] = _query_view.owners[slot]
+			body_radius = maxf(body_radius, _query_view.bodies[slot])
+			connected.append(candidate)
+	_nearby_slots.clear()
+	if connected.size() < minimum or (allowed.is_empty() and spread < 0.3):
+		if debug_enabled: debug_capture_reason = "相连成员不足 %d 只" % minimum if connected.size() < minimum else "群体重叠，分布不足 0.3 米"
+		return {}
+	if debug_enabled: debug_capture_reason = "相连 %d 只，分布 %.2f 米" % [connected.size(), spread]
+	var player_radius := 0.0
+	for child in session.player.get_children():
+		if child is CollisionShape3D and not child.disabled and child.shape is CapsuleShape3D:
+			player_radius = maxf(player_radius, child.shape.radius * maxf(child.global_basis.x.length(), child.global_basis.z.length()))
+	return {"positions":PackedVector3Array(connected), "body_radius":body_radius, "player_radius":player_radius, "members":members}
 
 func _point(region: Dictionary, radii: Vector2, angle: float, height: float) -> Vector3:
 	var point: Vector3 = region.center + region.u * (cos(angle) * radii.x) + region.v * (sin(angle) * radii.y)

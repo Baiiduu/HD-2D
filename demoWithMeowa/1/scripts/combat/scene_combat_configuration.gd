@@ -18,6 +18,8 @@ extends Resource
 @export var waves: Array[WaveDefinition] = []
 @export var endless_mode := true
 @export var max_active_enemies := 128
+@export var centralized_enemy_updates := false
+@export var native_swarm_enabled := false
 @export var batch_crowd_enabled := true
 @export var native_chase_enabled := true
 @export var slime_ground_movement_enabled := true

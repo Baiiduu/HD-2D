@@ -29,6 +29,7 @@ func _on_stun_started() -> void:
 	super._on_stun_started()
 
 func _move_chase(delta: float, stop: float) -> void:
+	if _try_native_chase(delta, stop): return
 	var origin := global_position
 	var goal := target.global_position
 	var away := origin - goal

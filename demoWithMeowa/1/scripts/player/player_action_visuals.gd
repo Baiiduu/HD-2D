@@ -22,6 +22,9 @@ extends Resource
 ## Merge invisible intermediate physics previews into the next render update.
 ## Only display work changes; release, damage and real collisions stay physical.
 @export var coalesce_charge_preview := false
+## Coalesce empty-space ray checks inside one synchronous prediction only.
+## Dynamic walls/mirrors are queried again on every prediction.
+@export var deduplicate_charge_preview := false
 @export var preview_show_target := true
 ## 仅首次碰墙可显示一次反射；后续接触只截断短尾段。
 @export_range(0, 1, 1) var preview_bounces := 1

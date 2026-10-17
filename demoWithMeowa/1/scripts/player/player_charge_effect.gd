@@ -11,6 +11,11 @@ var _body: PlayerRicochet
 ## Visual-only A/B. Physics requests coalesce; actual release/motion are separate.
 var coalesce_preview_updates := false
 var _preview_pending := false
+## Read-only diagnostics; counters do not request any additional prediction.
+var prediction_count := 0
+var batch_shape_queries := 0
+var batch_empty_proofs := 0
+var batch_proved_rays := 0
 var _visuals: PlayerActionVisuals
 var _ring: MeshInstance3D
 var _aim: AimPathPreview
@@ -162,7 +167,12 @@ func _update_aim() -> void:
 		_aim.stop()
 		_target_enemy = null
 		return
-	_body.predict_path(_prediction, _route, _visuals.preview_distance, _visuals.preview_bounces, _visuals.preview_followup_distance)
+	_body.predict_path(_prediction, _route, _visuals.preview_distance, _visuals.preview_bounces, _visuals.preview_followup_distance, _visuals.deduplicate_charge_preview)
+	if is_instance_valid(_body._session) and _body._session.terrain.query_diagnostics_enabled:
+		prediction_count += 1
+		batch_shape_queries += _prediction.preview_batch_tests
+		batch_empty_proofs += _prediction.preview_batch_empty
+		batch_proved_rays += _prediction.preview_batch_rays
 	_target_enemy = _player.sword.preview_target(_route) if _visuals.preview_show_target and is_instance_valid(_player.sword) else null
 	_aim.display(_route, _player.movement_camera, _pixel, _foot_height, _radius + _pixel * 5.0,
 		_visuals.preview_line_width_pixels, _visuals.preview_color, _visuals.preview_opacity)

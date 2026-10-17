@@ -4,6 +4,8 @@ extends Node3D
 const CROWD_BATCH_INDEX = preload("res://scripts/combat/crowd_batch_enemy_spatial_index.gd")
 const SPAWN_QUEUE = preload("res://scripts/combat/wave_spawn_queue.gd")
 const ENEMY_ROSTER = preload("res://scripts/combat/wave_enemy_roster.gd")
+const ENEMY_UPDATE_BATCH = preload("res://scripts/combat/enemy_update_batch.gd")
+const NATIVE_SWARM = preload("res://scripts/combat/native_swarm_loader.gd")
 var _spawn_state := SPAWN_QUEUE.new()
 var _spawn_services := SPAWN_QUEUE.Services.new()
 var _enemy_roster := ENEMY_ROSTER.new()
@@ -59,6 +61,16 @@ var skill_draft: RunSkillDraft:
 @export var enemy_catalog: WaveEnemyCatalog
 ## 数量档位为空时沿用现有参数；正式地图用 horde_128，更大档位须单独压测，下一轮开始时生效。
 @export var population_rules: WavePopulationRules
+## One ordered driver for known wave actors; disable for the original callbacks.
+@export var centralized_enemy_updates := false:
+	set(value):
+		centralized_enemy_updates = value
+		_sync_enemy_updates()
+## Optional CPU prototype. Missing binaries select the original script path.
+@export var native_swarm_enabled := false:
+	set(value):
+		native_swarm_enabled = value
+		_sync_native_swarm()
 ## 普通避让在当前物理步统一计算精确成对力；关闭恢复逐怪实时累计。
 ## 只冻结本步避让规划，真实墙体移动和战斗空间查询继续立即提交／读取。
 @export var batch_crowd_enabled := false:
@@ -207,6 +219,9 @@ var _path_ready := false
 var _path_rebuild_pending := false
 var _generation := 0
 var _attack_root: Node3D
+var _enemy_update_batch: Node
+var _enemy_update_revision := 0
+var _native_kernel: RefCounted
 var _unreachable: Dictionary = {}
 var _reachability_clock := 0.0
 var _reachability_queue: Array[WaveEnemy] = []
@@ -234,6 +249,7 @@ func _init() -> void:
 
 func _ready() -> void:
 	_sync_batch_crowd_index()
+	_sync_native_swarm()
 	_random.seed = random_seed
 	_ui = UI_SCRIPT.new()
 	_ui.controller = self
@@ -259,6 +275,37 @@ func _ready() -> void:
 func _sync_batch_crowd_index() -> void:
 	if _spatial_index is CROWD_BATCH_INDEX:
 		(_spatial_index as CROWD_BATCH_INDEX).batch_enabled = batch_crowd_enabled
+
+func _native_for(enemy: WaveEnemy) -> RefCounted:
+	if not native_swarm_enabled or not _native_kernel or not enemy is SlimeEnemy: return null
+	if enemy.get_script().resource_path not in ["res://scripts/enemies/slime.gd", "res://scripts/enemies/creature_enemy.gd", "res://scripts/enemies/leaf_charger.gd", "res://scripts/enemies/lantern_spitter.gd", "res://scripts/enemies/pot_brood.gd", "res://scripts/enemies/bell_frog.gd", "res://scripts/enemies/mini_slime.gd"]: return null
+	return _native_kernel
+
+func _sync_native_swarm() -> void:
+	if not is_inside_tree(): return
+	if native_swarm_enabled and not _native_kernel: _native_kernel = NATIVE_SWARM.create()
+	if _spatial_index is CROWD_BATCH_INDEX:
+		(_spatial_index as CROWD_BATCH_INDEX).native_kernel = _native_kernel if native_swarm_enabled else null
+	for enemy in enemies:
+		if is_instance_valid(enemy): enemy._native_swarm = _native_for(enemy)
+
+func _sync_enemy_updates() -> void:
+	if not is_inside_tree(): return
+	if not centralized_enemy_updates:
+		if is_instance_valid(_enemy_update_batch): _enemy_update_batch.release_all()
+		return
+	if not is_instance_valid(_attack_root): return
+	_ensure_enemy_update_batch()
+	for enemy in enemies:
+		if is_instance_valid(enemy) and enemy.is_inside_tree(): _enemy_update_batch.track(enemy)
+
+func _ensure_enemy_update_batch() -> void:
+	if is_instance_valid(_enemy_update_batch): return
+	_enemy_update_batch = ENEMY_UPDATE_BATCH.new()
+	_enemy_update_batch.name = "EnemyUpdates"
+	_enemy_update_batch.session = self
+	add_child(_enemy_update_batch)
+	_enemy_update_batch.set_physics_process(false)
 
 func _initialize_path() -> void:
 	var tree := get_tree()
@@ -350,6 +397,7 @@ func _freeze_node(node: Node) -> void:
 
 func set_combat_frozen(value: bool) -> void:
 	if combat_frozen == value: return
+	_enemy_update_revision += 1
 	combat_frozen = value
 	if value:
 		for enemy in enemies: _freeze_node(enemy)
@@ -362,6 +410,7 @@ func set_combat_frozen(value: bool) -> void:
 	combat_frozen_changed.emit(value)
 
 func _set_phase(value: Phase) -> void:
+	_enemy_update_revision += 1
 	phase = value
 	if phase == Phase.RESULT:
 		add_to_group(&"gameplay_input_blockers")
@@ -760,6 +809,8 @@ func _begin_wave() -> void:
 	_attack_root = Node3D.new()
 	_attack_root.name = "EnemyAttacks"
 	add_child(_attack_root)
+	# Keep the same object/ID layout for both A/B arms, after projectile handlers.
+	_ensure_enemy_update_batch()
 	_hurt_clock = 0.5
 	for source_entry in definition.entries:
 		var entry: WaveSpawnEntry = source_entry
@@ -885,6 +936,7 @@ func _can_damage_player(amount: float, generation: int) -> bool:
 
 func _damage_player(amount: float, generation: int) -> bool:
 	if not _can_damage_player(amount, generation): return false
+	_enemy_update_revision += 1
 	if is_horde_simulation():
 		# 保留怪物命中资格、真实碰撞与共享受击间隔，只跳过最终扣血。
 		_hurt_clock = hurt_interval
@@ -1089,6 +1141,7 @@ func _spawn_enemy(definition: WaveEnemyDefinition = null, requested_position := 
 		return false
 	var enemy := instance as WaveEnemy
 	enemy.configure_wave({
+		"native_swarm": _native_for(enemy),
 		"health_loss_disabled":combat_modifiers.damage_disabled,
 		"enemy_occlusion_outline_enabled":enemy_occlusion_outline_enabled,
 		"wave":wave, "health_multiplier":get_enemy_health_multiplier() if definition.health_growth_enabled else 1.0,
@@ -1115,6 +1168,7 @@ func _spawn_enemy(definition: WaveEnemyDefinition = null, requested_position := 
 	_spawn_state.complete_member(batch, definition)
 	add_child(enemy)
 	if phase != Phase.BATTLE or generation != _generation: return false
+	if centralized_enemy_updates: _enemy_update_batch.track(enemy)
 	enemy.reset_physics_interpolation()
 	enemy_spawned.emit(enemy)
 	if not batch.is_empty() and batch.remaining == batch.size - 1 and phase == Phase.BATTLE and generation == _generation:
@@ -1232,7 +1286,13 @@ func _finish(reason: String, result := Outcome.ERROR) -> void:
 	if phase == Phase.RESULT and generation == _generation: run_ended.emit(reason)
 
 func _cleanup_attacks() -> void:
+	_enemy_update_revision += 1
 	_generation += 1
+	if is_instance_valid(_enemy_update_batch):
+		_enemy_update_batch.release_all()
+		remove_child(_enemy_update_batch)
+		_enemy_update_batch.queue_free()
+	_enemy_update_batch = null
 	if is_instance_valid(_attack_root):
 		_attack_root.process_mode = Node.PROCESS_MODE_DISABLED
 		remove_child(_attack_root)

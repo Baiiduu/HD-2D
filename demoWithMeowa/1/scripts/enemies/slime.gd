@@ -95,11 +95,43 @@ var _ground_real_velocity := Vector3.ZERO
 var _flat_motion: FlatGroundMotion
 @onready var sprite: Sprite3D = $Sprite
 
+func supports_central_update() -> bool:
+	return get_script().resource_path in [
+		"res://scripts/enemies/slime.gd", "res://scripts/enemies/creature_enemy.gd",
+		"res://scripts/enemies/leaf_charger.gd", "res://scripts/enemies/lantern_spitter.gd",
+		"res://scripts/enemies/pot_brood.gd", "res://scripts/enemies/bell_frog.gd",
+		"res://scripts/enemies/mini_slime.gd"]
+
 func get_crowd_spacing() -> float:
 	return separation_radius
 
 func get_crowd_body_radius() -> float:
 	return body_radius
+
+var _native_chase_input := PackedFloat64Array()
+
+## One reusable value packet avoids dozens of reflected property reads in C++.
+## Values are refreshed on every call, so parameter edits and buffs stay live.
+func _try_native_chase(delta: float, stop: float) -> bool:
+	if not _native_swarm or not target is Player or not navigation or not spatial_index: return false
+	if navigation.get_script() != TerrainPath or spatial_index.get_script().resource_path not in ["res://scripts/combat/wave_enemy_spatial_index.gd", "res://scripts/combat/crowd_batch_enemy_spatial_index.gd"]: return false
+	_native_chase_input.resize(15)
+	_native_chase_input[0] = _route_clock
+	_native_chase_input[1] = route_interval
+	_native_chase_input[2] = _waypoint
+	_native_chase_input[3] = _yield_side
+	_native_chase_input[4] = body_radius
+	_native_chase_input[5] = gravity
+	_native_chase_input[6] = combat_stop_distance
+	_native_chase_input[7] = contact_distance
+	_native_chase_input[8] = separation_radius
+	_native_chase_input[9] = separation_strength
+	_native_chase_input[10] = pursuit_flank_strength
+	_native_chase_input[11] = pursuit_lookahead
+	_native_chase_input[12] = 1.0 if ground_movement_enabled else 0.0
+	_native_chase_input[13] = 1.0 if _ground_moved else 0.0
+	_native_chase_input[14] = _push_remaining
+	return _native_swarm.move_chase(self, navigation, spatial_index, target, _route, _native_chase_input, _look, effective_move_speed(), (target as Player).crowd_clearance_distance, delta, stop)
 
 func _personal_stop_distance(base_stop: float) -> float:
 	if not target is Player or (target as Player).crowd_clearance_distance <= 0.0: return base_stop
@@ -418,6 +450,9 @@ func _stunned_tick(delta: float) -> void:
 	move_and_slide()
 
 func _combat_tick(delta: float) -> void:
+	if _try_native_chase(delta, combat_stop_distance):
+		_combat_contact()
+		return
 	velocity.y = 0.0 if _ground_moved or is_on_floor() else velocity.y - gravity * delta
 	# 规划期间没有移动；完成 move_and_slide 后的朝向与接触判定继续读取实际落点。
 	var origin := global_position
@@ -447,6 +482,9 @@ func _combat_tick(delta: float) -> void:
 	velocity.z = direction.z * actual_speed
 	_move_combat_body(delta)
 	_update_chase_facing(intended)
+	_combat_contact()
+
+func _combat_contact() -> void:
 	# 接触范围、高差和遮挡属于史莱姆招式，不放进通用波次控制器。
 	if TerrainPath.horizontal_distance(global_position, target.global_position) < contact_distance and absf(global_position.y - target.global_position.y) < contact_height and (not can_damage_player.is_valid() or can_damage_player.call(attack_damage)) and _can_see_target():
 		damage_player.call(attack_damage)
@@ -462,6 +500,12 @@ func _move_combat_body(delta: float) -> void:
 	var start := global_position
 	# Only ordinary grounded motion opts in. Special actions keep their own solver.
 	if navigation and delta > 0.0 and _push_remaining <= 0.0 and global_basis == Basis.IDENTITY and up_direction == Vector3.UP and motion_mode == MOTION_MODE_GROUNDED and velocity.y <= 0.0 and velocity.y >= -gravity * delta * 1.01:
+		if _native_swarm:
+			if _native_swarm.move_body(self, navigation, delta, body_radius):
+				_ground_moved = true
+				_ground_real_velocity = (global_position - start) / delta
+			else: move_and_slide()
+			return
 		if not _flat_motion: _flat_motion = FlatGroundMotion.new()
 		if _flat_motion.try_move(self, navigation, delta, body_radius):
 			_ground_moved = true

@@ -21,6 +21,11 @@ var population := 128
 var certificates := true
 var query_backend := Terrain.ObstacleQueryBackend.SCRIPT_CERTIFICATES
 var storm_level := 0
+var central_updates := false
+var preview_dedup := false
+var no_aim_guide := false
+var native_swarm := false
+var with_native_prototype := false
 var output := ""
 var world: Node3D
 var wave: WavePrototype
@@ -39,6 +44,7 @@ var measurements := {}
 var query_counts := {}
 var failures: Array[String] = []
 var layout: Array = []
+var spawn_instance_ids := PackedInt64Array()
 var behaviours: Array = []
 var hits := 0
 var flight_hits := 0
@@ -62,6 +68,14 @@ func _initialize() -> void:
 		elif arg == "--native": certificates = false
 		elif arg == "--native-queries": query_backend = Terrain.ObstacleQueryBackend.NATIVE_QUERIES
 		elif arg == "--native-rays": query_backend = Terrain.ObstacleQueryBackend.NATIVE_RAYS
+		elif arg == "--central-updates": central_updates = true
+		elif arg == "--preview-dedup": preview_dedup = true
+		elif arg == "--no-aim-guide": no_aim_guide = true
+		elif arg == "--with-native-prototype": with_native_prototype = true
+		elif arg == "--native-swarm":
+			native_swarm = true
+			with_native_prototype = true
+			central_updates = true
 		elif arg.begins_with("--storm="): storm_level = arg.trim_prefix("--storm=").to_int()
 		elif arg.begins_with("--output="): output = arg.trim_prefix("--output=")
 	physics_frame.connect(begin_physics)
@@ -112,8 +126,9 @@ func settle(count: int) -> void:
 
 func spawned(enemy: WaveEnemy) -> void:
 	# Prevent first-born movement from changing later safe spawn choices.
-	enemy.set_physics_process(false)
+	enemy.set_wave_tick_enabled(false)
 	layout.append([String(enemy.definition.enemy_id), enemy.global_position.x, enemy.global_position.y, enemy.global_position.z])
+	spawn_instance_ids.append(enemy.get_instance_id())
 	last_positions[enemy.get_instance_id()] = enemy.global_position
 	travel[enemy.get_instance_id()] = 0.0
 
@@ -153,7 +168,7 @@ func inspect_behaviour(tick: int) -> void:
 	var space := world.get_world_3d().direct_space_state
 	var histogram := {}
 	for enemy in wave.enemies:
-		controllers = controllers and enemy.is_physics_processing()
+		controllers = controllers and enemy.is_wave_tick_enabled()
 		var id := String(enemy.definition.enemy_id)
 		histogram[id] = int(histogram.get(id, 0)) + 1
 		var wall := WallOracle.inspect(space, enemy.get_node("Collision"), enemy.navigation._query.exclude, 0.003)
@@ -198,6 +213,12 @@ func run() -> void:
 	ProjectSettings.set_setting("game_manager/systems/upgrades", false)
 	ProjectSettings.set_setting("game_manager/systems/draft", false)
 	ProjectSettings.set_setting("game_manager/systems/run_skills", true)
+	# Load/construct the same optional native object in BOTH comparison arms.
+	# This keeps birth IDs equal: crowd yielding currently depends on those IDs.
+	var prototype: RefCounted = WavePrototype.NATIVE_SWARM.create() if with_native_prototype else null
+	ensure(not with_native_prototype or prototype != null, "Requested native comparison has a built, loadable kernel")
+	if not failures.is_empty(): quit(1); return
+	if prototype: prototype.diagnostics_enabled = true
 	probe = EndProbe.new()
 	probe.audit = self
 	probe.process_physics_priority = 1000000
@@ -215,12 +236,18 @@ func run() -> void:
 	profile.population_rules.simulation_mode = true
 	profile.population_rules.simulation_enemy_count = population
 	profile.population_rules.simulation_skills.clear()
+	profile.centralized_enemy_updates = central_updates
+	profile.native_swarm_enabled = native_swarm
+	profile.action_visuals = profile.action_visuals.duplicate() as PlayerActionVisuals
+	profile.action_visuals.deduplicate_charge_preview = preview_dedup
+	profile.action_visuals.show_aim_guide = not no_aim_guide
 	world.get_node("BattleConfiguration").configuration = profile
 	terrain = world.get_node("Homestead")
 	terrain.obstacle_certificates_enabled = certificates
 	terrain.obstacle_query_backend = query_backend
 	terrain.query_diagnostics_enabled = true
 	wave = world.get_node("WavePrototype")
+	wave._native_kernel = prototype
 	wave.random_seed = SEED
 	wave.enemy_spawned.connect(spawned)
 	root.add_child(world)
@@ -249,7 +276,7 @@ func run() -> void:
 		ensure(wave.run_skill_manager.set_skill_level(storm.skill_definition.id, storm_level), "Requested storm level is valid")
 	for enemy in wave.enemies:
 		enemy.spawn_delay = 0.0
-		enemy.set_physics_process(true)
+		enemy.set_wave_tick_enabled(true)
 		enemy.commit_spatial_state()
 	await settle(120)
 	var health := player.current_health
@@ -291,7 +318,21 @@ func run() -> void:
 	ensure(storm_level == 0 or storm_hits > 0, "Equipped storm makes real hits")
 	ensure(moved >= population * 0.8, "At least 80% of monsters move over 10cm")
 	ensure(wave.kills == 0 and is_equal_approx(player.current_health, health) and not player.ricochet_rules.enemy_push_enabled, "Simulation preserves population, health and no-push rules")
-	var result := {"kind":"headless_fixed60_scene_cpu_not_fps", "engine":Engine.get_version_info().string, "processor":OS.get_processor_name(), "count":population, "certificates":certificates, "query_backend":query_backend, "storm_level":storm_level, "seed":SEED, "spawn_layout_sha256":JSON.stringify(layout).sha256_text(), "phases":summary, "behaviour":behaviours, "hits":hits, "flight_hits":flight_hits, "strikes":strikes, "storm_hits":storm_hits, "deflections":deflections, "wall_bounces":wall_bounces, "flying_ticks":flying_ticks, "preview_frames":preview_frames, "moved_over_10cm":moved, "terrain_queries":query_counts, "failures":failures}
+	var effect := player.body_ricochet._charge_effect
+	var preview_metrics := {"predictions":effect.prediction_count, "batch_shapes":effect.batch_shape_queries, "empty_proofs":effect.batch_empty_proofs, "proved_rays":effect.batch_proved_rays} if is_instance_valid(effect) else {}
+	var native_actor_callbacks := 0
+	for enemy in wave.enemies:
+		if enemy.is_physics_processing(): native_actor_callbacks += 1
+	var centrally_updated: int = wave._enemy_update_batch.last_updated
+	ensure(native_actor_callbacks == (0 if central_updates else population), "Selected scheduler owns all actor callbacks")
+	ensure(not central_updates or centrally_updated == population, "Central scheduler advances every live actor each physics step")
+	var result := {"kind":"headless_fixed60_scene_cpu_not_fps", "engine":Engine.get_version_info().string, "processor":OS.get_processor_name(), "count":population, "certificates":certificates, "query_backend":query_backend, "central_updates":central_updates, "preview_dedup":preview_dedup, "preview_metrics":preview_metrics, "storm_level":storm_level, "seed":SEED, "spawn_layout_sha256":JSON.stringify(layout).sha256_text(), "phases":summary, "behaviour":behaviours, "hits":hits, "flight_hits":flight_hits, "strikes":strikes, "storm_hits":storm_hits, "deflections":deflections, "wall_bounces":wall_bounces, "flying_ticks":flying_ticks, "preview_frames":preview_frames, "moved_over_10cm":moved, "terrain_queries":query_counts, "failures":failures}
+	result["scheduler"] = {"native_actor_callbacks":native_actor_callbacks, "last_central_updates":centrally_updated}
+	result["spawn_instance_ids"] = Array(spawn_instance_ids)
+	result["no_aim_guide"] = no_aim_guide
+	result["native_swarm"] = native_swarm
+	result["native_metrics"] = prototype.get_metrics() if prototype else {}
+	ensure(not native_swarm or (wave._spatial_index.native_kernel == prototype and int(result.native_metrics.native_moves) > population), "Native backend actually runs batch forces and ordinary body motion")
 	if not output.is_empty():
 		var file := FileAccess.open(output, FileAccess.WRITE)
 		file.store_string(JSON.stringify(result, "\t"))

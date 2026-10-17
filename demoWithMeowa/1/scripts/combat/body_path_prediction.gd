@@ -5,6 +5,9 @@ extends RefCounted
 var _parameters := PhysicsTestMotionParameters3D.new()
 var _result := PhysicsTestMotionResult3D.new()
 var _collision := ProjectileCollision.new()
+var preview_batch_tests := 0
+var preview_batch_empty := 0
+var preview_batch_rays := 0
 
 func trace(body: CharacterBody3D, heading: Vector3, speed: float, seconds: float,
 		bounce_limit: int, retention: float, path: TerrainPath, bounds: Rect2,
