@@ -240,6 +240,7 @@ func run() -> void:
 	root.add_child(probe)
 	world = load("res://scenes/world/world.tscn").instantiate()
 	world.get_node("LoadoutUI").save_enabled = false
+	world.get_node("GameSettingsUI").save_graphics_settings = false
 	world.get_node("MapEffects/BGM").music_enabled = false
 	world.get_node("MapEffects/Weather").rain_audio_enabled = false
 	world.get_node("MapEffects/Weather").wind_audio_enabled = false

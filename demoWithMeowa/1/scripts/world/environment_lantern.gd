@@ -69,6 +69,9 @@ const BEAM_LAYER := 1 << 17
 @export_group("阴影")
 @export var shadows_enabled := true:
 	set(v): shadows_enabled = v; _queue_apply()
+## 本灯全向补光阴影；同时服从本地图 ArtDirection 的全向补光阴影开关。关闭保留补光照明和其它阴影。
+@export var fill_shadows_enabled := true:
+	set(v): fill_shadows_enabled = v; _queue_apply()
 @export_range(0.0, 1.0, 0.05) var shadow_opacity := 1.0:
 	set(v): shadow_opacity = v; _queue_apply()
 @export_range(0.0, 0.2, 0.005, "suffix:m") var shadow_size := 0.025:
@@ -122,6 +125,15 @@ func _queue_apply() -> void:
 	_apply_queued = true
 	apply.call_deferred()
 
+func _map_shadows_enabled(property: StringName) -> bool:
+	# Resolve only when settings are applied, including lamps created after map setup.
+	var ancestor := get_parent()
+	while ancestor:
+		var art := ancestor.get_node_or_null("MapEffects/ArtDirection") as ArtDirection
+		if art: return art.get(property) != false
+		ancestor = ancestor.get_parent()
+	return true
+
 func apply() -> void:
 	# 编辑器热重载可能给新增导出字段留下 Nil，只恢复缺失值。
 	_restoring_missing = true
@@ -143,7 +155,7 @@ func apply() -> void:
 	fill.omni_range = light_range
 	fill.light_specular = specular_strength
 	fill.light_volumetric_fog_energy = scattering * 0.12
-	fill.shadow_enabled = shadows_enabled
+	fill.shadow_enabled = shadows_enabled and fill_shadows_enabled and _map_shadows_enabled(&"street_fill_shadows_enabled")
 	fill.shadow_opacity = shadow_opacity
 	fill.light_size = shadow_size
 	fill.shadow_bias = shadow_bias
@@ -172,7 +184,7 @@ func apply() -> void:
 	cone.rotation_degrees = Vector3(-90.0 + tilt, azimuth, 0.0)
 	cone.light_specular = specular_strength
 	cone.light_volumetric_fog_energy = scattering
-	cone.shadow_enabled = shadows_enabled
+	cone.shadow_enabled = shadows_enabled and _map_shadows_enabled(&"street_cone_shadows_enabled")
 	cone.shadow_opacity = shadow_opacity
 	cone.light_size = shadow_size
 	cone.shadow_bias = shadow_bias

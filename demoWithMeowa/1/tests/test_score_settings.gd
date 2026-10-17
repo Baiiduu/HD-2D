@@ -19,6 +19,7 @@ func run() -> void:
 	AudioServer.set_bus_mute(0, true)
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
 	world.get_node("LoadoutUI").save_enabled = false
+	world.get_node("GameSettingsUI").save_graphics_settings = false
 	world.get_node("MapEffects/BGM").music_enabled = false
 	world.get_node("MapEffects/Weather").rain_audio_enabled = false
 	world.get_node("MapEffects/Weather").wind_audio_enabled = false
@@ -52,6 +53,9 @@ func run() -> void:
 	check(settings.get_viewport().get_visible_rect().encloses(settings._panel.get_global_rect()), "Settings panel fits the current viewport")
 	check(settings.menu_open and audio.menu_open and get_first_node_in_group(&"gameplay_input_blockers") == settings, "Settings owns player input and opens the embedded audio page")
 	check(not paused and not wave.combat_frozen, "Opening settings does not pause or freeze the world")
+	settings.select_page(2)
+	check(settings._graphics_page.visible and not audio.menu_open and not orbit._panel.visible, "Graphics page shares the unified settings without keeping audio or diagnostics open")
+	settings.select_page(0)
 	audio.play_selected()
 	check(audio._preview.playing, "Embedded audio page retains audition playback")
 	settings.select_page(1)
@@ -123,6 +127,7 @@ func run() -> void:
 	var original_scale := root.content_scale_size
 	root.content_scale_size = Vector2i.ZERO
 	root.size = Vector2i(640, 480)
+	settings.select_page(2)
 	for frame in 6: await process_frame
 	check(settings.get_viewport().get_visible_rect().encloses(settings._panel.get_global_rect()), "Unified settings stays inside a small viewport with scrolling")
 	check(settings.get_viewport().get_visible_rect().encloses(settings._fps_label.get_global_rect()), "FPS stays inside the viewport after resizing")

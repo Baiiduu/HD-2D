@@ -125,6 +125,8 @@ const LABELS := {
 	"ground_rain_enabled": "地面落雨开关", "ground_splash_size": "地面雨纹半径", "ground_splash_density": "地面雨纹密度", "ground_splash_strength": "地面雨纹强度",
 	"ground_sheen": "草地湿亮斑覆盖",
 	"stable_shadows": "固定柔和簇影",
+	"street_fill_shadows_enabled": "路灯全向补光阴影开关", "fill_shadows_enabled": "本灯全向补光阴影开关",
+	"street_cone_shadows_enabled": "路灯聚光阴影开关",
 	"blink_plant_strength": "闪身压弯花草", "blink_rain_strength": "闪身带偏雨滴",
 	"speed": "人物速度", "blink_distance": "闪身距离", "blink_cooldown": "闪身间隔", "jump_height": "跳跃高度",
 	"damage": "伤害", "attack_range": "攻击范围", "attack_interval": "攻击间隔", "fan_angle": "扇角",
@@ -193,6 +195,7 @@ const LABELS := {
 	"limiter_ceiling_db": "总输出峰值上限",
 }
 const COMMON := {
+	"environment_lantern.gd": ["fill_shadows_enabled"],
 	"scene_combat_binding.gd": ["configuration"],
 	"scene_combat_configuration.gd": ["ricochet_rules", "sword_rules", "population_rules", "waves", "max_active_enemies", "endless_mode", "storm_damage", "storm_attack_interval", "crowd_clearance_distance"],
 	"aurora_sky.gd": ["enabled", "sky_strength", "reflection_strength", "flow_speed", "green_color", "blue_color", "purple_color", "pink_color", "reflection_regions"],
@@ -214,7 +217,7 @@ const COMMON := {
 	"environment_dynamics.gd": ["enabled", "style_wind", "style_wind_tempo", "style_fireflies", "night_firefly_size", "region_wind", "region_fireflies", "region_blend_width", "transition_seconds", "battle_fireflies_enabled"],
 	"spawn_visual_sample.gd": ["style", "runtime_switch_enabled", "style_key", "original_light_refinement_enabled", "original_light_preset", "pixel_art_enabled", "color_ramps_enabled", "color_palette", "grass_variation_enabled", "grass_variation_strength", "grass_variation_size", "value_sample_enabled", "value_sample_profile", "fog_post_enabled", "fog_post_presets"],
 	"follow_camera.gd": ["distance", "pitch_degrees", "fov", "dof_amount", "focus_height", "ricochet_camera_settings"],
-	"art_direction.gd": ["exposure", "contrast", "saturation", "bloom", "moon_energy", "ambient_energy", "hemisphere_fill_enabled", "hemisphere_sky_color", "hemisphere_ground_color", "fog_begin", "fog_end", "fog_curve", "fog_amount", "low_fog", "volumetric_density", "bloom_threshold", "bloom_floor", "vignette", "vignette_radius", "shadow_lift", "split_toning", "wet_surface_enabled", "wet_surface_minimum", "wet_surface_coverage", "wet_surface_roughness", "wet_surface_reflectivity", "wet_surface_ripple_strength", "wet_surface_ripple_speed"],
+	"art_direction.gd": ["street_fill_shadows_enabled", "exposure", "contrast", "saturation", "bloom", "moon_energy", "ambient_energy", "hemisphere_fill_enabled", "hemisphere_sky_color", "hemisphere_ground_color", "fog_begin", "fog_end", "fog_curve", "fog_amount", "low_fog", "volumetric_density", "bloom_threshold", "bloom_floor", "vignette", "vignette_radius", "shadow_lift", "split_toning", "wet_surface_enabled", "wet_surface_minimum", "wet_surface_coverage", "wet_surface_roughness", "wet_surface_reflectivity", "wet_surface_ripple_strength", "wet_surface_ripple_speed"],
 	"weather.gd": ["weather_mode", "rain_intensity", "ground_rain_enabled", "ground_splash_size", "ground_splash_density", "ground_splash_strength", "wind_strength", "blink_plant_strength", "blink_rain_strength", "rain_volume_db", "wind_volume_db"],
 	"player.gd": ["speed", "blink_distance", "blink_cooldown", "jump_height", "ricochet_rules", "action_visuals", "sword_rules", "flight_trail_settings", "crowd_clearance_distance"],
 	"fan_auto_attack.gd": ["damage", "attack_range", "attack_interval", "fan_angle", "effect_opacity", "skill_definition", "audio_enabled", "audio_volume_db", "hit_sound_limit"],
@@ -275,7 +278,7 @@ func category(filename: String, group: String) -> String:
 	if filename in ["damage_numbers.gd", "damage_number_style.gd"]: return "战斗与成长"
 	if filename.begins_with("ricochet_storm"): return "战斗与成长"
 	if filename in ["leaf_charger_definition.gd", "lantern_spitter_definition.gd", "pot_brood_definition.gd", "bell_frog_definition.gd", "creature_enemy.gd", "leaf_charger.gd", "lantern_spitter.gd", "pot_brood.gd", "bell_frog.gd", "mini_slime.gd"]: return "战斗与成长"
-	if filename == "environment_dynamics.gd": return "视觉"
+	if filename in ["environment_dynamics.gd", "environment_lantern.gd"]: return "视觉"
 	if filename in ["game_audio.gd", "bgm.gd", "bgm_track.gd", "bgm_playlist.gd", "player_movement_audio.gd", "movement_sound_bank.gd", "ui_audio.gd", "ui_sound_bank.gd"] or "声音" in group or "音效" in group or "风声" in group: return "声音"
 	if filename in ["character_skill_manager.gd", "player.gd", "player_blink.gd", "player_ricochet_rules.gd", "player_action_visuals.gd", "player_sword_rules.gd", "player_flight_trail_settings.gd", "character_lighting.gd"]: return "人物"
 	if filename == "wave_hud.gd": return "UI"

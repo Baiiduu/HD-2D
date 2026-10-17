@@ -22,7 +22,7 @@ $groups = @{
         'test_run_skills', 'test_growth_draw', 'test_combat_buffs',
         'test_battle_only_world', 'test_ricochet_growth',
         'test_ricochet_storm', 'test_horde_simulation',
-        'test_parameter_catalog', 'test_ui_live_world', 'test_projectile_geometry',
+        'test_parameter_catalog', 'test_graphics_settings', 'test_ui_live_world', 'test_projectile_geometry',
         'test_core_feedback_audio', 'test_enemy_quartet', 'test_enemy_stun',
         'test_light_pierce_attack', 'test_mirror_mark', 'test_prism_ricochet',
         'test_rooftop_pursuit', 'test_wave_health_growth', 'test_wave_hordes', 'test_wave_schedule',

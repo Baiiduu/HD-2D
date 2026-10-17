@@ -123,7 +123,7 @@ func _process(_delta: float) -> void:
 	# Use physical render pixels, rather than the stretched UI's logical size.
 	var viewport := get_viewport()
 	var render_size := DisplayServer.window_get_size((viewport as Window).get_window_id()) if viewport is Window else Vector2i(viewport.get_texture().get_size())
-	var size := Vector2i(Vector2(render_size) * resolution_scale)
+	var size := Vector2i(Vector2(render_size) * resolution_scale * viewport.scaling_3d_scale)
 	size = Vector2i(maxi(16, size.x), maxi(16, size.y))
 	if size != _last_size:
 		_last_size = size

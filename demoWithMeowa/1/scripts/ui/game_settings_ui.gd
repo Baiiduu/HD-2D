@@ -1,9 +1,12 @@
 class_name GameSettingsUI
 extends CanvasLayer
 
+const GRAPHICS_PAGE = preload("res://scripts/ui/graphics_settings_page.gd")
+
 signal menu_changed(open: bool)
 @export var audio_page: AudioMixUI
 @export var orbit_page: CanvasLayer
+@export var save_graphics_settings := true
 var menu_open := false
 var _root: Control
 var _panel: PanelContainer
@@ -16,6 +19,7 @@ var _selected := 0
 var _fps_label: Label
 var _fps_toggle: CheckBox
 var _fps_timer: Timer
+var _graphics_page
 
 func _ready() -> void:
 	layer = 40
@@ -93,8 +97,8 @@ func _build() -> void:
 	navigation.custom_minimum_size.x = 160
 	navigation.add_theme_constant_override("separation", 10)
 	body.add_child(navigation)
-	for index in 2:
-		var button := _button(["声音", "环绕调试"][index], select_page.bind(index))
+	for index in 3:
+		var button := _button(["声音", "环绕调试", "画质与显示"][index], select_page.bind(index))
 		button.toggle_mode = true
 		navigation.add_child(button)
 		_tabs.append(button)
@@ -111,6 +115,8 @@ func _build() -> void:
 	pages.add_child(_audio_host)
 	_orbit_host = VBoxContainer.new()
 	pages.add_child(_orbit_host)
+	_graphics_page = GRAPHICS_PAGE.new()
+	pages.add_child(_graphics_page)
 	var enabled := CheckBox.new()
 	enabled.text = "开启环绕调试"
 	enabled.toggled.connect(func(value: bool):
@@ -155,6 +161,9 @@ func _refresh_fps() -> void:
 func _embed() -> void:
 	audio_page.embed_in(_audio_host, _theme)
 	orbit_page.embed_in(_orbit_host, _theme)
+	# Headless test suites must not load or write the player's display preferences.
+	_graphics_page.save_enabled = save_graphics_settings and DisplayServer.get_name() != "headless"
+	_graphics_page.configure(get_parent(), _theme)
 	audio_page.settings_requested.connect(func(): open_menu(); select_page(0))
 	select_page(0)
 
@@ -168,10 +177,11 @@ func _fit() -> void:
 	_panel.position = (viewport - _panel.size) * 0.5
 
 func select_page(index: int) -> void:
-	_selected = clampi(index, 0, 1)
+	_selected = clampi(index, 0, 2)
 	for item in _tabs.size(): _tabs[item].set_pressed_no_signal(item == _selected)
 	_audio_host.visible = _selected == 0
 	_orbit_host.visible = _selected == 1
+	_graphics_page.visible = _selected == 2
 	if audio_page._embedded: audio_page.set_embedded_visible(menu_open and _selected == 0)
 	if orbit_page._embedded: orbit_page.set_embedded_visible(menu_open and _selected == 1)
 

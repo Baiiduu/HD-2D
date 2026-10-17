@@ -2,6 +2,8 @@
 class_name ArtDirection
 extends Node
 
+signal applied
+
 const BEAM_LAYER := 1 << 17 # Layer 18; water mirror layers 19/20 remain separate.
 
 ## 美术总控：把调画面最常用的参数集中在一个节点上。
@@ -326,6 +328,12 @@ const BEAM_LAYER := 1 << 17 # Layer 18; water mirror layers 19/20 remain separat
 ## 路灯阴影开关；人物、灯杆的遮挡会同时影响地面和雾中光束。
 @export var street_shadows_enabled := true:
 	set(v): street_shadows_enabled = v; _queue_apply()
+## 全向补光阴影开关；也约束本地图独立环境路灯。关闭保留补光照明、聚光与水面阴影，Style 不重置。
+@export var street_fill_shadows_enabled := true:
+	set(v): street_fill_shadows_enabled = v; _queue_apply()
+## 独立控制向下聚光灯的阴影，保留照明与全向补光设置。
+@export var street_cone_shadows_enabled := true:
+	set(v): street_cone_shadows_enabled = v; _queue_apply()
 ## 路灯阴影浓度；0 无阴影，1 完整遮挡。
 @export_range(0.0, 1.0, 0.05) var street_shadow_opacity := 1.0:
 	set(v): street_shadow_opacity = v; _queue_apply()
@@ -494,6 +502,7 @@ func apply(include_daylight := true) -> void:
 		var atmosphere := get_parent().get_node_or_null("AtmosphericLight")
 		if atmosphere:
 			atmosphere.apply_atmosphere()
+	applied.emit()
 
 func get_ground_material() -> ShaderMaterial:
 	if terrain:
@@ -535,7 +544,7 @@ func _apply_street_lights() -> void:
 		light.light_color = street_light_color
 		light.omni_range = street_fill_range
 		light.light_specular = street_specular
-		light.shadow_enabled = street_shadows_enabled
+		light.shadow_enabled = street_shadows_enabled and street_fill_shadows_enabled
 		light.shadow_opacity = street_shadow_opacity
 		var cone := light.get_node("Cone") as SpotLight3D
 		cone.light_energy = cone_energy if cone_enabled else 0.0
@@ -546,7 +555,7 @@ func _apply_street_lights() -> void:
 		cone.light_specular = street_specular
 		cone.light_volumetric_fog_energy = cone_scattering
 		cone.light_size = cone_shadow_size
-		cone.shadow_enabled = street_shadows_enabled
+		cone.shadow_enabled = street_shadows_enabled and street_cone_shadows_enabled
 		cone.shadow_opacity = street_shadow_opacity
 		cone.light_cull_mask |= BEAM_LAYER
 		var beam := light.get_node("Beam") as MeshInstance3D

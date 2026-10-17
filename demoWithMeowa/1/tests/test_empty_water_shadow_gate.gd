@@ -49,6 +49,15 @@ func run() -> void:
 	sync(false, "no receiver disables only runtime water shadow")
 	check(lantern.shadows_enabled, "source desired remains enabled")
 	check(lantern.get_node("Light").shadow_enabled and lantern.get_node("Cone").shadow_enabled, "fill and cone shadows remain enabled")
+	var fill := lantern.get_node("Light") as OmniLight3D
+	var fill_energy := fill.light_energy
+	lantern.set("fill_shadows_enabled", false)
+	lantern.apply()
+	check(not fill.shadow_enabled and lantern.get_node("Cone").shadow_enabled and water.shadow_enabled, "Local fill shadow switch preserves cone and water shadows")
+	check(is_equal_approx(fill.light_energy, fill_energy), "Local shadow switch preserves fill lighting")
+	lantern.set("fill_shadows_enabled", true)
+	lantern.apply()
+	check(fill.shadow_enabled, "Local fill shadow switch can restore shadows")
 	lantern.apply()
 	check(water.shadow_enabled, "Style/apply honors desired immediately")
 	sync(false, "Style/apply is gated at current draw boundary")
