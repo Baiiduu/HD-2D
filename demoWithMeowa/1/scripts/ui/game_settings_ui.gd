@@ -13,6 +13,9 @@ var _orbit_host: VBoxContainer
 var _tabs: Array[Button] = []
 var _theme: Theme
 var _selected := 0
+var _fps_label: Label
+var _fps_toggle: CheckBox
+var _fps_timer: Timer
 
 func _ready() -> void:
 	layer = 40
@@ -77,6 +80,10 @@ func _build() -> void:
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 	header.add_child(_button("返回游戏 · ESC", close_menu))
+	_fps_toggle = CheckBox.new()
+	_fps_toggle.text = "显示实时帧率"
+	_fps_toggle.toggled.connect(_set_fps_visible)
+	layout.add_child(_fps_toggle)
 	layout.add_child(HSeparator.new())
 	var body := HBoxContainer.new()
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -120,6 +127,30 @@ func _build() -> void:
 	footer.add_theme_color_override("font_color", Color("a6b2bd"))
 	layout.add_child(footer)
 	_root.hide()
+	_fps_label = Label.new()
+	_fps_label.name = "LiveFPS"
+	_fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_fps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_fps_label.add_theme_color_override("font_color", Color.BLACK)
+	_fps_label.add_theme_font_size_override("font_size", 20)
+	_fps_label.hide()
+	add_child(_fps_label)
+	_fps_timer = Timer.new()
+	_fps_timer.wait_time = 0.5
+	_fps_timer.ignore_time_scale = true
+	_fps_timer.timeout.connect(_refresh_fps)
+	add_child(_fps_timer)
+
+func _set_fps_visible(enabled: bool) -> void:
+	_fps_label.visible = enabled
+	if enabled:
+		_refresh_fps()
+		_fps_timer.start()
+	else:
+		_fps_timer.stop()
+
+func _refresh_fps() -> void:
+	_fps_label.text = "FPS: %d" % Engine.get_frames_per_second()
 
 func _embed() -> void:
 	audio_page.embed_in(_audio_host, _theme)
@@ -131,6 +162,8 @@ func _fit() -> void:
 	var viewport := get_viewport().get_visible_rect().size
 	_launcher.position = Vector2(viewport.x - 90, 22)
 	_launcher.size = Vector2(68, 38)
+	_fps_label.position = Vector2(viewport.x - 152, 68)
+	_fps_label.size = Vector2(130, 28)
 	_panel.size = Vector2(minf(1020, viewport.x - 48), minf(800, viewport.y - 48))
 	_panel.position = (viewport - _panel.size) * 0.5
 

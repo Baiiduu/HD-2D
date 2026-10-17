@@ -42,8 +42,12 @@ func run() -> void:
 	var settings: GameSettingsUI = world.get_node("GameSettingsUI")
 	var audio: AudioMixUI = world.get_node("AudioMixUI")
 	var orbit = world.get_node("OrbitDebugUI")
+	check(not settings._fps_label.visible and settings._fps_timer.is_stopped(), "Live FPS defaults off without periodic updates")
+	check(settings._fps_label.get_theme_color("font_color") == Color.BLACK and settings._fps_label.mouse_filter == Control.MOUSE_FILTER_IGNORE, "Live FPS uses black text and never intercepts gameplay clicks")
 	check(not audio._launcher.visible and not orbit._launcher.visible and not orbit._details_button.visible, "Only the unified settings launcher remains")
 	settings.open_menu()
+	settings._fps_toggle.button_pressed = true
+	check(settings._fps_label.visible and not settings._fps_timer.is_stopped() and settings._fps_label.text == "FPS: %d" % Engine.get_frames_per_second(), "Settings checkbox enables the engine FPS display immediately")
 	for frame in 4: await process_frame
 	check(settings.get_viewport().get_visible_rect().encloses(settings._panel.get_global_rect()), "Settings panel fits the current viewport")
 	check(settings.menu_open and audio.menu_open and get_first_node_in_group(&"gameplay_input_blockers") == settings, "Settings owns player input and opens the embedded audio page")
@@ -57,6 +61,7 @@ func run() -> void:
 	settings._orbit_host.get_child(0).button_pressed = true
 	check(orbit.debug_enabled and orbit.player.body_ricochet.orbit_debug_enabled and not orbit._details_button.visible, "Embedded diagnostic controls keep the real debug implementation without another launcher")
 	settings.close_menu()
+	check(settings._fps_label.is_visible_in_tree() and not settings._fps_timer.is_stopped(), "FPS stays visible and refreshing after settings closes")
 	check(not settings.menu_open and orbit.debug_enabled and not orbit._panel.visible and get_first_node_in_group(&"gameplay_input_blockers") == null, "Closing settings releases input and allows observing enabled world diagnostics")
 	orbit.set_debug_enabled(false)
 	var skills := wave.run_skill_manager
@@ -120,6 +125,9 @@ func run() -> void:
 	root.size = Vector2i(640, 480)
 	for frame in 6: await process_frame
 	check(settings.get_viewport().get_visible_rect().encloses(settings._panel.get_global_rect()), "Unified settings stays inside a small viewport with scrolling")
+	check(settings.get_viewport().get_visible_rect().encloses(settings._fps_label.get_global_rect()), "FPS stays inside the viewport after resizing")
+	settings._fps_toggle.button_pressed = false
+	check(not settings._fps_label.visible and settings._fps_timer.is_stopped(), "Disabling FPS hides the display and stops periodic work")
 	settings.close_menu()
 	root.size = original_size
 	root.content_scale_size = original_scale
