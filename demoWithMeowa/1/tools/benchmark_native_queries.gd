@@ -26,6 +26,8 @@ var preview_dedup := false
 var no_aim_guide := false
 var native_swarm := false
 var with_native_prototype := false
+var rendered_fps := false
+var frame_stamp := 0
 var output := ""
 var world: Node3D
 var wave: WavePrototype
@@ -72,6 +74,7 @@ func _initialize() -> void:
 		elif arg == "--preview-dedup": preview_dedup = true
 		elif arg == "--no-aim-guide": no_aim_guide = true
 		elif arg == "--with-native-prototype": with_native_prototype = true
+		elif arg == "--rendered-fps": rendered_fps = true
 		elif arg == "--native-swarm":
 			native_swarm = true
 			with_native_prototype = true
@@ -115,6 +118,10 @@ func begin_process() -> void:
 
 func end_process(delta: float) -> void:
 	if process_stamp > 0:
+		if rendered_fps:
+			var now := Time.get_ticks_usec()
+			if frame_stamp > 0: push_sample(process_stage, "wall_frame_ms", float(now - frame_stamp) / 1000.0)
+			frame_stamp = now
 		fixed_clock_valid = fixed_clock_valid and is_equal_approx(delta, 1.0 / 60.0)
 		push_sample(process_stage, "process_callbacks_ms", float(Time.get_ticks_usec() - process_stamp) / 1000.0)
 		if process_stage == "charge" and player.body_ricochet._charge_effect and player.body_ricochet._charge_effect.visible:
@@ -202,7 +209,14 @@ func statistics(values: Array) -> Dictionary:
 	return {"samples":values.size(), "total_ms":total, "mean_ms":total / values.size(), "p95_ms":ordered[int(ordered.size() * 0.95)], "p99_ms":ordered[int(ordered.size() * 0.99)]}
 
 func run() -> void:
-	if DisplayServer.get_name() != "headless" or Engine.physics_ticks_per_second != 60:
+	if rendered_fps:
+		if DisplayServer.get_name() == "headless" or "--fixed-fps" in OS.get_cmdline_args() or population != 128:
+			push_error("Rendered FPS requires an actual display, real-time clock, and 128 enemies")
+			quit(2)
+			return
+		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+		Engine.max_fps = 0
+	elif DisplayServer.get_name() != "headless" or Engine.physics_ticks_per_second != 60:
 		push_error("Run this CPU audit with --headless --fixed-fps 60 and 60 physics ticks/sec")
 		quit(2)
 		return
@@ -218,7 +232,7 @@ func run() -> void:
 	var prototype: RefCounted = WavePrototype.NATIVE_SWARM.create() if with_native_prototype else null
 	ensure(not with_native_prototype or prototype != null, "Requested native comparison has a built, loadable kernel")
 	if not failures.is_empty(): quit(1); return
-	if prototype: prototype.diagnostics_enabled = true
+	if prototype: prototype.diagnostics_enabled = not rendered_fps
 	probe = EndProbe.new()
 	probe.audit = self
 	probe.process_physics_priority = 1000000
@@ -245,7 +259,7 @@ func run() -> void:
 	terrain = world.get_node("Homestead")
 	terrain.obstacle_certificates_enabled = certificates
 	terrain.obstacle_query_backend = query_backend
-	terrain.query_diagnostics_enabled = true
+	terrain.query_diagnostics_enabled = not rendered_fps
 	wave = world.get_node("WavePrototype")
 	wave._native_kernel = prototype
 	wave.random_seed = SEED
@@ -278,11 +292,25 @@ func run() -> void:
 		enemy.spawn_delay = 0.0
 		enemy.set_wave_tick_enabled(true)
 		enemy.commit_spatial_state()
-	await settle(120)
+	if rendered_fps:
+		# Stationary warmup keeps the camera and gathered population comparable.
+		# Prewarming a flight leaves each arm at a different place on the map.
+		var warmup_origin := player.global_position
+		for tick in 1200:
+			if tick % 30 == 0: player.sword.request_manual(aim_at_enemy())
+			if tick == 240: player.body_ricochet.begin_charge(aim_at_enemy())
+			if tick == 360: player.body_ricochet.cancel(true)
+			await probe.completed
+		player.body_ricochet.cancel(true)
+		ensure(TerrainPath.horizontal_distance(warmup_origin, player.global_position) < 0.01, "Stationary warmup retains the same camera target")
+	else:
+		await settle(120)
 	var health := player.current_health
 	for phase: String in PHASES:
 		stage = phase
 		measurements[phase] = {"physics_callbacks_ms":[], "physics_span_ms":[], "process_callbacks_ms":[]}
+		if rendered_fps: measurements[phase]["wall_frame_ms"] = []
+		frame_stamp = 0
 		terrain.reset_query_metrics()
 		if phase == "charge":
 			key(0)
@@ -296,10 +324,13 @@ func run() -> void:
 			if phase == "charge" and tick % 6 == 0: player.body_ricochet.aim(aim_at_enemy())
 			await probe.completed
 			if player.body_ricochet.flying: flying_ticks += 1
-			if tick % 30 == 0: inspect_behaviour(tick)
+			if not rendered_fps and tick % 30 == 0: inspect_behaviour(tick)
 		# Flush the final process frame before switching stage labels.
 		await probe.process_completed
 		recording = false
+		# Expensive QA is outside rendered frame sampling. Collision acceptance is
+		# separately verified with the fixed-clock and every-step contact tests.
+		if rendered_fps: inspect_behaviour(-1)
 		process_stamp = 0
 		span_stamp = 0
 		query_counts[phase] = terrain.get_query_metrics()
@@ -309,11 +340,13 @@ func run() -> void:
 		for metric in measurements[phase]: summary[phase][metric] = statistics(measurements[phase][metric])
 		# Separate rates explicitly; never multiply a headless FPS into a claim.
 		summary[phase]["one_physics_plus_one_process_ms"] = summary[phase].physics_span_ms.mean_ms + summary[phase].process_callbacks_ms.mean_ms
+		if rendered_fps:
+			summary[phase]["average_fps"] = 1000.0 / summary[phase].wall_frame_ms.mean_ms
 	var moved := 0
 	for distance in travel.values():
 		if distance > 0.1: moved += 1
-	ensure(started_charge and released_charge and preview_frames > 30 and flying_ticks > 0, "Real charge, process preview and release ran")
-	ensure(fixed_clock_valid, "Every sampled process delta uses the required --fixed-fps 60 clock")
+	ensure(started_charge and released_charge and preview_frames > (0 if rendered_fps else 30) and flying_ticks > 0, "Real charge, process preview and release ran")
+	ensure(rendered_fps or fixed_clock_valid, "Every sampled process delta uses the required --fixed-fps 60 clock")
 	ensure(hits > 0 and flight_hits > 0 and deflections > 0, "Real sword hits and crowd curvature retained")
 	ensure(storm_level == 0 or storm_hits > 0, "Equipped storm makes real hits")
 	ensure(moved >= population * 0.8, "At least 80% of monsters move over 10cm")
@@ -327,6 +360,12 @@ func run() -> void:
 	ensure(native_actor_callbacks == (0 if central_updates else population), "Selected scheduler owns all actor callbacks")
 	ensure(not central_updates or centrally_updated == population, "Central scheduler advances every live actor each physics step")
 	var result := {"kind":"headless_fixed60_scene_cpu_not_fps", "engine":Engine.get_version_info().string, "processor":OS.get_processor_name(), "count":population, "certificates":certificates, "query_backend":query_backend, "central_updates":central_updates, "preview_dedup":preview_dedup, "preview_metrics":preview_metrics, "storm_level":storm_level, "seed":SEED, "spawn_layout_sha256":JSON.stringify(layout).sha256_text(), "phases":summary, "behaviour":behaviours, "hits":hits, "flight_hits":flight_hits, "strikes":strikes, "storm_hits":storm_hits, "deflections":deflections, "wall_bounces":wall_bounces, "flying_ticks":flying_ticks, "preview_frames":preview_frames, "moved_over_10cm":moved, "terrain_queries":query_counts, "failures":failures}
+	if rendered_fps:
+		result.kind = "rendered_realtime_uncapped_fps"
+		result["gpu"] = RenderingServer.get_video_adapter_name()
+		result["viewport"] = [root.size.x, root.size.y]
+		result["frames_drawn"] = Engine.get_frames_drawn()
+		ensure(Engine.get_frames_drawn() > 30, "Real frames were drawn")
 	result["scheduler"] = {"native_actor_callbacks":native_actor_callbacks, "last_central_updates":centrally_updated}
 	result["spawn_instance_ids"] = Array(spawn_instance_ids)
 	result["no_aim_guide"] = no_aim_guide

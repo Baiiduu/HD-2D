@@ -492,10 +492,21 @@ func _combat_contact() -> void:
 func _supports_ground_movement() -> bool:
 	return true
 
+## Ordinary spacing is solved by pursuit/clearance, not by native recovery
+## pushing the monster out of the player and into a neighbouring wall.
+## The exception is scoped: charge hit detection and other actions keep the
+## original player collider, and externally owned exceptions remain untouched.
+func _slide_ordinary() -> void:
+	var ignored := wave_target if wave_mode and is_instance_valid(wave_target) else null
+	var added := ignored != null and not get_collision_exceptions().has(ignored)
+	if added: add_collision_exception_with(ignored)
+	move_and_slide()
+	if added and is_instance_valid(ignored): remove_collision_exception_with(ignored)
+
 func _move_combat_body(delta: float) -> void:
 	_ground_moved = false
 	if not ground_movement_enabled or not _supports_ground_movement():
-		move_and_slide()
+		_slide_ordinary()
 		return
 	var start := global_position
 	# Only ordinary grounded motion opts in. Special actions keep their own solver.
@@ -504,14 +515,14 @@ func _move_combat_body(delta: float) -> void:
 			if _native_swarm.move_body(self, navigation, delta, body_radius):
 				_ground_moved = true
 				_ground_real_velocity = (global_position - start) / delta
-			else: move_and_slide()
+			else: _slide_ordinary()
 			return
 		if not _flat_motion: _flat_motion = FlatGroundMotion.new()
-		if _flat_motion.try_move(self, navigation, delta, body_radius):
+		if _flat_motion.try_move(self, navigation, delta, body_radius, wave_target if wave_mode else null):
 			_ground_moved = true
 			_ground_real_velocity = (global_position - start) / delta
 			return
-	move_and_slide()
+	_slide_ordinary()
 
 func _damage_feedback() -> void:
 	_hit_flash = hit_flash_seconds

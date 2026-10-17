@@ -1,8 +1,9 @@
 # Optional CPU swarm prototype
 
 This is an opt-in, single-threaded Godot GDExtension experiment. World and City
-continue to use GDScript. It is **not approved for production activation**:
-128-enemy validation exposed a low-monument collision failure in both backends.
+continue to use GDScript. It is **not enabled in production**. The captured
+128-enemy monument collision regression is now fixed in both backends;
+the performance target still requires further work.
 See [performance evidence](../../docs/gameplay/attack-performance.md).
 
 ## Scope and rollback
@@ -22,7 +23,10 @@ damage, animation, wall geometry, and simulation frequency remain unchanged.
 
 The ground motor faithfully ports the existing sweeps and conservative absence
 proofs; uncertain geometry returns to `CharacterBody3D.move_and_slide()`. This
-preserves existing behavior, including the unresolved monument-edge issue.
+keeps real wall collision. Ordinary movement excludes the player's body from
+recovery; its CharacterBody fallback adds and removes a scoped exception. This
+prevents implicit player overlap recovery from pushing monsters into walls.
+Lock-line charge retains real player contact and damage.
 Do not relax the 3 mm inner-capsule QA threshold to accept a timing result.
 
 ## Build locally
@@ -52,6 +56,21 @@ are not implemented. A normal exported game does not include this prototype.
 ./demoWithMeowa/1/tools/benchmark_native_swarm.ps1 -GodotPath <Godot.exe> -Pairs 2
 ```
 
+When explicitly requested, use the actual display for FPS measurement:
+
+```powershell
+& <Godot.exe> --resolution 1440x900 --disable-vsync --max-fps 0 --path demoWithMeowa/1 --audio-driver Dummy --script res://tools/benchmark_combat_fps.gd -- --count=128 --native-queries --with-native-prototype --output=D:/.codexfile/work/fps-script.json
+```
+
+Add `--native-swarm` after `--` for the candidate. Create the output directory
+first. This is a real-time rendered test; do not pass `--headless` or
+`--fixed-fps`. It uses a stationary 20-second simulation warmup, then the same
+3/2/2/4-second nominal gameplay phases. Expensive wall QA runs outside frame
+sampling. It records actual wall-clock FPS and the phase-end frustum population.
+Counters and nested native timers are off. Optional `--gpu-timing` adds viewport
+timers for a separate diagnostic run; leave it off for primary FPS comparisons.
+No screenshots are captured. Sound is muted by the benchmark.
+
 Tests require the DLL. Ordinary `regression` and `all` exclude optional native
 tests and remain usable without a compiler. The comparison runs script/native/
 native/script in separate headless processes, verifies source and DLL hashes,
@@ -65,9 +84,11 @@ unsuccessfully. No timing from rejected runs constitutes performance acceptance.
 
 The benchmark samples wall intrusion every 30 ticks. The separate movement tests
 check every tested step; neither covers every possible crowd contact. A diagnostic
-every-step replay has also detected transient monument-edge intrusion during
-normal CharacterBody fallback. Passing the sampled benchmark alone does not
-close that known issue. Visuals, frame rate, and gameplay feel require manual QA.
+every-step replay originally detected transient monument-edge intrusion during
+normal CharacterBody fallback. After the scoped-player fix, the original failed
+case and the native case each pass 84,480 per-step checks. Passing sampled
+benchmarks alone is still insufficient evidence for untested contacts. Visuals
+and gameplay feel require manual QA.
 
 ## Dependency license
 

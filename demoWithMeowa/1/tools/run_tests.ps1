@@ -15,7 +15,7 @@ $projectDirectory = Split-Path -Parent $PSScriptRoot
 $groups = @{
     # Optional: requires a locally built native/swarm DLL; ordinary regression
     # remains runnable on a fresh checkout without the prototype toolchain.
-    native = @('test_native_swarm_kernel', 'test_native_swarm_movement')
+    native = @('test_native_swarm_kernel', 'test_native_swarm_movement', 'test_native_low_obstacles')
     core = @('test_run_skill_manager_standalone', 'test_run_skill_manager_contract', 'test_character_skill_ownership', 'test_game_system_switches', 'test_projectile_geometry', 'test_wave_schedule', 'test_spawn_queue_contract', 'test_enemy_roster_contract')
     regression = @(
         'test_run_skill_manager_standalone', 'test_run_skill_manager_contract', 'test_character_skill_ownership', 'test_game_system_switches', 'test_game_system_scene', 'test_scene_configuration_contract', 'test_world_startup',
@@ -31,7 +31,7 @@ $groups = @{
         'test_spawn_sync_gate', 'test_surround_spawning', 'test_local_spawn_safety',
         'test_run_score', 'test_score_settings', 'test_combat_extension_framework',
         'test_player_sword', 'test_crowd_deflection', 'test_native_query_policy',
-        'test_enemy_update_batch', 'test_preview_query_deduplication'
+        'test_enemy_update_batch', 'test_preview_query_deduplication', 'test_ground_low_obstacles'
     )
     render = @(
         'test_aim_target_image_cache', 'test_billboard_shadow_updates',

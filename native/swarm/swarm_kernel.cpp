@@ -33,6 +33,7 @@ class HDSwarmKernel : public RefCounted {
         const StringName _route_clock{"_route_clock"};
         const StringName _waypoint{"_waypoint"};
         const StringName _yield_side{"_yield_side"};
+        const StringName _slide_ordinary{"_slide_ordinary"};
         const StringName body_radius{"body_radius"};
         const StringName can_walk_direct{"can_walk_direct"};
         const StringName chase_route{"chase_route"};
@@ -68,6 +69,7 @@ class HDSwarmKernel : public RefCounted {
     Ref<PhysicsTestMotionParameters3D> parameters;
     Ref<PhysicsTestMotionResult3D> result;
     RID floor_rid;
+    RID ordinary_target_rid;
     int64_t native_moves = 0, certified_moves = 0, fallback_moves = 0, direct_moves = 0;
     bool diagnostics_enabled = false;
     int64_t chase_ns = 0, ground_ns = 0, proof_ns = 0, plan_ns = 0;
@@ -158,7 +160,7 @@ class HDSwarmKernel : public RefCounted {
         }
         return true;
     }
-    bool flat_move(CharacterBody3D *body, Object *path, double delta, double radius) {
+    bool flat_move(CharacterBody3D *body, Object *path, double delta, double radius, CollisionObject3D *ignored) {
         Timing timing(diagnostics_enabled,ground_ns);
         const Transform3D start = body->get_global_transform();
         const Vector3 velocity = body->get_velocity();
@@ -170,7 +172,13 @@ class HDSwarmKernel : public RefCounted {
         auto *support = Object::cast_to<PhysicsBody3D>(terrain->call(keys.ground_collision_body));
         if (!support || (body->get_collision_mask() & support->get_collision_layer())==0) return false;
         const RID rid = support->get_rid();
-        if (rid!=floor_rid) { floor_rid=rid; TypedArray<RID> excluded; excluded.push_back(rid); parameters->set_exclude_bodies(excluded); }
+        const RID target_rid = ignored ? ignored->get_rid() : RID();
+        if (rid!=floor_rid || target_rid!=ordinary_target_rid) {
+            floor_rid=rid; ordinary_target_rid=target_rid;
+            TypedArray<RID> excluded; excluded.push_back(rid);
+            if (target_rid.is_valid()) excluded.push_back(target_rid);
+            parameters->set_exclude_bodies(excluded);
+        }
         if (flag(terrain,keys.obstacle_certificates_enabled)) {
             Object *field = terrain->call(keys.obstacle_field);
             if (field && flag(field,keys.enabled) && clear_body(body,support,field,motion)) {
@@ -224,7 +232,8 @@ public:
     bool move_body(CharacterBody3D *body,Object *path,double delta,double radius) {
         if(!body || !path || !std::isfinite(delta) || delta<=0 || !std::isfinite(radius) || radius<0)return false;
         ++direct_moves;
-        return flat_move(body,path,delta,radius);
+        Object *target=body->get(keys.target);
+        return flat_move(body,path,delta,radius,Object::cast_to<CollisionObject3D>(target));
     }
     PackedVector3Array plan(const Dictionary &cells,const PackedVector3Array &positions,const PackedInt64Array &ids,
         const PackedByteArray &active,const PackedFloat64Array &spacing,const PackedFloat64Array &bodies,double size,int64_t rev) {
@@ -355,12 +364,12 @@ public:
         bool grounded=false;
         if(input[12]!=0 && body->get_global_basis()==Basis() && body->get_up_direction()==Vector3(0,1,0) &&
            body->get_motion_mode()==CharacterBody3D::MOTION_MODE_GROUNDED && input[14]<=0 && velocity.y<=0 && velocity.y>=-gravity*delta*1.01)
-            grounded=flat_move(body,path,delta,radius);
+            grounded=flat_move(body,path,delta,radius,Object::cast_to<CollisionObject3D>(target));
         Vector3 real_velocity;
         if(grounded) {
             real_velocity=(body->get_global_position()-origin)/real_t(delta);
             body->set(keys._ground_moved,true);body->set(keys._ground_real_velocity,real_velocity);++native_moves;
-        } else {body->move_and_slide();real_velocity=body->get_real_velocity();++fallback_moves;}
+        } else {body->call(keys._slide_ordinary);real_velocity=body->get_real_velocity();++fallback_moves;}
         Vector3 heading=intended.normalized();
         if(heading.is_zero_approx() || real_velocity.dot(heading)<0.15) {heading=target->get_global_position()-body->get_global_position();heading.y=0;}
         if(!heading.is_zero_approx())body->set(keys._look,heading.normalized());

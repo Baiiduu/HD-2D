@@ -27,7 +27,7 @@ func obstacle_checks() -> void:
 	var actor := creature("leaf_charger", Vector3(-1.8, 0.001, -0.93))
 	for frame in 150:
 		await settle(1)
-		motion(actor, Vector3(-1.020119, 0, 2.282402).normalized(), 2.5)
+		motion(actor, Vector3(1.020119, 0, 2.282402).normalized(), 2.5)
 		intact(actor, "actual octagonal monument foot")
 	clear_actors()
 	monument.queue_free()
