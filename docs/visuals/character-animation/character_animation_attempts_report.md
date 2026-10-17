@@ -80,21 +80,21 @@
 
 **参考：当时留存的角色／姿势参考**。
 
-![当时留存的角色／姿势参考（参考输入）](<../../art_test/character_animation_report/references/33eeb60939/display.png>)
+![当时留存的角色／姿势参考（参考输入）](<../../references/character-animation/character_animation_report/references/33eeb60939/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/33eeb60939/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/33eeb60939/original.png>)
 
 **参考：横扫蓄力F1结构稿（关联存档）**。
 
-![横扫蓄力F1结构稿（关联存档）（参考输入）](<../../art_test/character_animation_report/references/270fa65a77/display.png>)
+![横扫蓄力F1结构稿（关联存档）（参考输入）](<../../references/character-animation/character_animation_report/references/270fa65a77/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/270fa65a77/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/270fa65a77/original.png>)
 
 **参考：反斜上切F4结构稿（关联存档）**。
 
-![反斜上切F4结构稿（关联存档）（参考输入）](<../../art_test/character_animation_report/references/405d768953/display.png>)
+![反斜上切F4结构稿（关联存档）（参考输入）](<../../references/character-animation/character_animation_report/references/405d768953/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/405d768953/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/405d768953/original.png>)
 
 ### 该方案的序列效果
 
@@ -102,13 +102,13 @@
 
 预览按原帧顺序排列；以整数倍率最近邻放大，背景棋盘格仅用于检视。
 
-![圣女骑士：Meowa 战斗站姿与关键帧图集预览](<../../art_test/character_animation_report/case-03/main/atlas-preview-01.png>)
+![圣女骑士：Meowa 战斗站姿与关键帧图集预览](<../../references/character-animation/character_animation_report/case-03/main/atlas-preview-01.png>)
 
 **原生序列图：64×64 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-![圣女骑士：Meowa 战斗站姿与关键帧原生序列图](<../../art_test/character_animation_report/case-03/main/native-sequence.png>)
+![圣女骑士：Meowa 战斗站姿与关键帧原生序列图](<../../references/character-animation/character_animation_report/case-03/main/native-sequence.png>)
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-03/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-03/main/native-sequence.png>)
 
 **结果对应的源文件：** D:/.codexfile/work/meowa-saint-pose-20261014/outputs/修改参考图1的人物姿势_匹配参考图2_双腿左右拉开站稳_上方手臂举剑过头顶_剑身_646b9557/remove_bg.png
 
@@ -118,13 +118,13 @@
 
 预览按原帧顺序排列；以整数倍率最近邻放大，背景棋盘格仅用于检视。
 
-![F1 横扫蓄力起始帧图集预览](<../../art_test/character_animation_report/case-03/additional-01/atlas-preview-01.png>)
+![F1 横扫蓄力起始帧图集预览](<../../references/character-animation/character_animation_report/case-03/additional-01/atlas-preview-01.png>)
 
 **原生序列图：96×96 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-![F1 横扫蓄力起始帧原生序列图](<../../art_test/character_animation_report/case-03/additional-01/native-sequence.png>)
+![F1 横扫蓄力起始帧原生序列图](<../../references/character-animation/character_animation_report/case-03/additional-01/native-sequence.png>)
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-03/additional-01/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-03/additional-01/native-sequence.png>)
 
 **结果对应的源文件：** D:/.codexfile/work/saint-attack-start-frame-meowa-20261014/delivery/F1_start.png
 
@@ -134,13 +134,13 @@
 
 预览按原帧顺序排列；以整数倍率最近邻放大，背景棋盘格仅用于检视。
 
-![F4 左剑反斜上切图集预览](<../../art_test/character_animation_report/case-03/additional-02/atlas-preview-01.png>)
+![F4 左剑反斜上切图集预览](<../../references/character-animation/character_animation_report/case-03/additional-02/atlas-preview-01.png>)
 
 **原生序列图：96×96 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-![F4 左剑反斜上切原生序列图](<../../art_test/character_animation_report/case-03/additional-02/native-sequence.png>)
+![F4 左剑反斜上切原生序列图](<../../references/character-animation/character_animation_report/case-03/additional-02/native-sequence.png>)
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-03/additional-02/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-03/additional-02/native-sequence.png>)
 
 **结果对应的源文件：** D:/.codexfile/work/saint-normal-attack-6f-f04-20261014/delivery/normal_attack_6f_F4.png
 
@@ -160,15 +160,15 @@
 
 **参考：N01 准备姿势**。
 
-![N01 准备姿势（参考输入）](<../../art_test/character_animation_report/references/97890aa9b7/display.png>)
+![N01 准备姿势（参考输入）](<../../references/character-animation/character_animation_report/references/97890aa9b7/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/97890aa9b7/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/97890aa9b7/original.png>)
 
 **参考：N04 主斩姿势**。
 
-![N04 主斩姿势（参考输入）](<../../art_test/character_animation_report/references/b669a134c2/display.png>)
+![N04 主斩姿势（参考输入）](<../../references/character-animation/character_animation_report/references/b669a134c2/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/b669a134c2/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/b669a134c2/original.png>)
 
 ### 该方案的序列效果
 
@@ -176,19 +176,19 @@
 
 预览按原帧顺序排列；以整数倍率最近邻放大，背景棋盘格仅用于检视。
 
-![圣女骑士：Meowa N1 八帧普攻图集预览](<../../art_test/character_animation_report/case-04/main/atlas-preview-01.png>)
+![圣女骑士：Meowa N1 八帧普攻图集预览](<../../references/character-animation/character_animation_report/case-04/main/atlas-preview-01.png>)
 
 **动画检视**（像素分支为慢放，非原生帧文件）
 
-![圣女骑士：Meowa N1 八帧普攻动画检视](<../../art_test/character_animation_report/case-04/main/animation-review.gif>)
+![圣女骑士：Meowa N1 八帧普攻动画检视](<../../references/character-animation/character_animation_report/case-04/main/animation-review.gif>)
 
-[打开原始动画文件](<../../art_test/character_animation_report/case-04/main/animation-original.webp>)
+[打开原始动画文件](<../../references/character-animation/character_animation_report/case-04/main/animation-original.webp>)
 
 **原生序列图：768×96 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-![圣女骑士：Meowa N1 八帧普攻原生序列图](<../../art_test/character_animation_report/case-04/main/native-sequence.png>)
+![圣女骑士：Meowa N1 八帧普攻原生序列图](<../../references/character-animation/character_animation_report/case-04/main/native-sequence.png>)
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-04/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-04/main/native-sequence.png>)
 
 **结果对应的源文件：** D:/.codexfile/work/saint-normal-attack-n1-20261014/delivery/normal_attack_n1.webp
 
@@ -196,9 +196,9 @@
 
 这一项与N1整理版是同一组原生帧，区别在播放时长；下面按服务返回的原时长播放，画面仅作3倍最近邻显示。
 
-![N1原始Meowa时间版](<../../art_test/character_animation_report/case-04/raw-meowa/original-timing-preview.gif>)
+![N1原始Meowa时间版](<../../references/character-animation/character_animation_report/case-04/raw-meowa/original-timing-preview.gif>)
 
-[打开原始Meowa无损动画](<../../art_test/character_animation_report/case-04/raw-meowa/original-meowa-native.webp>)
+[打开原始Meowa无损动画](<../../references/character-animation/character_animation_report/case-04/raw-meowa/original-meowa-native.webp>)
 
 ---
 
@@ -218,9 +218,9 @@
 
 **参考：战斗站姿骨架**。
 
-![战斗站姿骨架（参考输入）](<../../art_test/character_animation_report/references/96af2ea348/display.png>)
+![战斗站姿骨架（参考输入）](<../../references/character-animation/character_animation_report/references/96af2ea348/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/96af2ea348/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/96af2ea348/original.png>)
 
 ### 该方案的序列效果
 
@@ -228,15 +228,15 @@
 
 预览按原帧顺序排列；大图／结构稿仅在此预览缩小，下面的原生序列图保留原始像素。
 
-![二维骨架六帧：先确定全身运动图集预览](<../../art_test/character_animation_report/case-05/main/atlas-preview-01.png>)
+![二维骨架六帧：先确定全身运动图集预览](<../../references/character-animation/character_animation_report/case-05/main/atlas-preview-01.png>)
 
 **动画检视**（展示用尺寸）
 
-![二维骨架六帧：先确定全身运动动画检视](<../../art_test/character_animation_report/case-05/main/animation-review.gif>)
+![二维骨架六帧：先确定全身运动动画检视](<../../references/character-animation/character_animation_report/case-05/main/animation-review.gif>)
 
 **原生序列图：1800×660 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-05/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-05/main/native-sequence.png>)
 
 **结果对应的源文件：** D:/.codexfile/work/saint-stickman-6f-20261014/F01_skeleton.png；D:/.codexfile/work/saint-stickman-6f-20261014/F02_skeleton.png；其余 4 张按文件名顺序读取。
 
@@ -256,9 +256,9 @@
 
 **参考：横扫／斜切的起始战斗骨架**。
 
-![横扫／斜切的起始战斗骨架（参考输入）](<../../art_test/character_animation_report/references/f319a4ffb4/display.png>)
+![横扫／斜切的起始战斗骨架（参考输入）](<../../references/character-animation/character_animation_report/references/f319a4ffb4/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/f319a4ffb4/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/f319a4ffb4/original.png>)
 
 ### 该方案的序列效果
 
@@ -266,15 +266,15 @@
 
 预览按原帧顺序排列；大图／结构稿仅在此预览缩小，下面的原生序列图保留原始像素。
 
-![二维骨架六帧：横扫＋反斜上切图集预览](<../../art_test/character_animation_report/case-06/main/atlas-preview-01.png>)
+![二维骨架六帧：横扫＋反斜上切图集预览](<../../references/character-animation/character_animation_report/case-06/main/atlas-preview-01.png>)
 
 **动画检视**（展示用尺寸）
 
-![二维骨架六帧：横扫＋反斜上切动画检视](<../../art_test/character_animation_report/case-06/main/animation-review.gif>)
+![二维骨架六帧：横扫＋反斜上切动画检视](<../../references/character-animation/character_animation_report/case-06/main/animation-review.gif>)
 
 **原生序列图：1800×660 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-06/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-06/main/native-sequence.png>)
 
 **结果对应的源文件：** D:/.codexfile/work/saint-stickman-sweep-chop-6f-20261014/F01_skeleton.png；D:/.codexfile/work/saint-stickman-sweep-chop-6f-20261014/F02_skeleton.png；其余 4 张按文件名顺序读取。
 
@@ -294,9 +294,9 @@
 
 **参考：统一空间站姿底稿**。
 
-![统一空间站姿底稿（参考输入）](<../../art_test/character_animation_report/references/24a6d0dac8/display.png>)
+![统一空间站姿底稿（参考输入）](<../../references/character-animation/character_animation_report/references/24a6d0dac8/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/24a6d0dac8/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/24a6d0dac8/original.png>)
 
 ### 该方案的序列效果
 
@@ -304,15 +304,15 @@
 
 预览按原帧顺序排列；大图／结构稿仅在此预览缩小，下面的原生序列图保留原始像素。
 
-![空间骨架六帧：透视横扫与斜劈图集预览](<../../art_test/character_animation_report/case-07/main/atlas-preview-01.png>)
+![空间骨架六帧：透视横扫与斜劈图集预览](<../../references/character-animation/character_animation_report/case-07/main/atlas-preview-01.png>)
 
 **动画检视**（展示用尺寸）
 
-![空间骨架六帧：透视横扫与斜劈动画检视](<../../art_test/character_animation_report/case-07/main/animation-review.gif>)
+![空间骨架六帧：透视横扫与斜劈动画检视](<../../references/character-animation/character_animation_report/case-07/main/animation-review.gif>)
 
 **原生序列图：2000×800 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-07/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-07/main/native-sequence.png>)
 
 **结果对应的源文件：** D:/.codexfile/work/saint-perspective-sweep-chop-6f-20261014/F01_3d.png；D:/.codexfile/work/saint-perspective-sweep-chop-6f-20261014/F02_3d.png；其余 4 张按文件名顺序读取。
 
@@ -332,9 +332,9 @@
 
 **参考：同阶段留存的骑士准备姿势（关联资料，非已核实的该次输入）**。
 
-![同阶段留存的骑士准备姿势（关联资料，非已核实的该次输入）（参考输入）](<../../art_test/character_animation_report/references/97890aa9b7/display.png>)
+![同阶段留存的骑士准备姿势（关联资料，非已核实的该次输入）（参考输入）](<../../references/character-animation/character_animation_report/references/97890aa9b7/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/97890aa9b7/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/97890aa9b7/original.png>)
 
 ### 该方案的序列效果
 
@@ -342,19 +342,19 @@
 
 预览按原帧顺序排列；以整数倍率最近邻放大，背景棋盘格仅用于检视。
 
-![Meowa 六帧全身动作候选图集预览](<../../art_test/character_animation_report/case-08/main/atlas-preview-01.png>)
+![Meowa 六帧全身动作候选图集预览](<../../references/character-animation/character_animation_report/case-08/main/atlas-preview-01.png>)
 
 **动画检视**（像素分支为慢放，非原生帧文件）
 
-![Meowa 六帧全身动作候选动画检视](<../../art_test/character_animation_report/case-08/main/animation-review.gif>)
+![Meowa 六帧全身动作候选动画检视](<../../references/character-animation/character_animation_report/case-08/main/animation-review.gif>)
 
-[打开原始动画文件](<../../art_test/character_animation_report/case-08/main/animation-original.webp>)
+[打开原始动画文件](<../../references/character-animation/character_animation_report/case-08/main/animation-original.webp>)
 
 **原生序列图：576×96 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-![Meowa 六帧全身动作候选原生序列图](<../../art_test/character_animation_report/case-08/main/native-sequence.png>)
+![Meowa 六帧全身动作候选原生序列图](<../../references/character-animation/character_animation_report/case-08/main/native-sequence.png>)
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-08/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-08/main/native-sequence.png>)
 
 **结果对应的源文件：** D:/.codexfile/work/saint-n1-battlestance-motion-6f-20261014/The_dual-sword_knight_performs_one_powerful_full-body_combo_facing_screen-right_a_horizontal_sweep_with_her_an_bc51adea/result_output_url.bin
 
@@ -374,15 +374,15 @@
 
 **参考：原始单剑动作参考**。
 
-![原始单剑动作参考（参考输入）](<../../art_test/character_animation_report/references/5b6e97d12e/display.png>)
+![原始单剑动作参考（参考输入）](<../../references/character-animation/character_animation_report/references/5b6e97d12e/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/5b6e97d12e/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/5b6e97d12e/original.png>)
 
 **参考：实际抽出的五个关键姿势**。
 
-![实际抽出的五个关键姿势（参考输入）](<../../art_test/character_animation_report/references/2d62b41b06/display.png>)
+![实际抽出的五个关键姿势（参考输入）](<../../references/character-animation/character_animation_report/references/2d62b41b06/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/2d62b41b06/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/2d62b41b06/original.png>)
 
 ### 原参考的拆分产物
 
@@ -390,15 +390,15 @@
 
 **第一行动作条带**
 
-![第一行动作条带](<../../art_test/character_animation_report/references/source-action-strips/attack-1-sequence.png>)
+![第一行动作条带](<../../references/character-animation/character_animation_report/references/source-action-strips/attack-1-sequence.png>)
 
-[打开原尺寸条带](<../../art_test/character_animation_report/references/source-action-strips/attack-1-sequence.png>)
+[打开原尺寸条带](<../../references/character-animation/character_animation_report/references/source-action-strips/attack-1-sequence.png>)
 
 **第三行完整13姿势条带**
 
-![第三行完整13姿势条带](<../../art_test/character_animation_report/references/source-action-strips/attack-3-sequence.png>)
+![第三行完整13姿势条带](<../../references/character-animation/character_animation_report/references/source-action-strips/attack-3-sequence.png>)
 
-[打开原尺寸条带](<../../art_test/character_animation_report/references/source-action-strips/attack-3-sequence.png>)
+[打开原尺寸条带](<../../references/character-animation/character_animation_report/references/source-action-strips/attack-3-sequence.png>)
 
 ### 该方案的序列效果
 
@@ -406,15 +406,15 @@
 
 预览按原帧顺序排列；大图／结构稿仅在此预览缩小，下面的原生序列图保留原始像素。
 
-![现有单剑参考→双剑五个关键姿势图集预览](<../../art_test/character_animation_report/case-09/main/atlas-preview-01.png>)
+![现有单剑参考→双剑五个关键姿势图集预览](<../../references/character-animation/character_animation_report/case-09/main/atlas-preview-01.png>)
 
 **动画检视**（展示用尺寸）
 
-![现有单剑参考→双剑五个关键姿势动画检视](<../../art_test/character_animation_report/case-09/main/animation-review.gif>)
+![现有单剑参考→双剑五个关键姿势动画检视](<../../references/character-animation/character_animation_report/case-09/main/animation-review.gif>)
 
 **原生序列图：3000×460 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-09/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-09/main/native-sequence.png>)
 
 **结果对应的源文件：** C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/dual-sword-study/dual-pose-01.png；C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/dual-sword-study/dual-pose-02.png；其余 3 张按文件名顺序读取。
 
@@ -434,9 +434,9 @@
 
 **参考：原始13帧动作参考**。
 
-![原始13帧动作参考（参考输入）](<../../art_test/character_animation_report/references/cdc99c461c/display.png>)
+![原始13帧动作参考（参考输入）](<../../references/character-animation/character_animation_report/references/cdc99c461c/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/cdc99c461c/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/cdc99c461c/original.png>)
 
 ### 该方案的序列效果
 
@@ -444,17 +444,17 @@
 
 预览按原帧顺序排列；大图／结构稿仅在此预览缩小，下面的原生序列图保留原始像素。
 
-![双剑完整13帧：第一轮重建图集预览](<../../art_test/character_animation_report/case-10/main/atlas-preview-01.png>)
+![双剑完整13帧：第一轮重建图集预览](<../../references/character-animation/character_animation_report/case-10/main/atlas-preview-01.png>)
 
-![双剑完整13帧：第一轮重建图集预览](<../../art_test/character_animation_report/case-10/main/atlas-preview-02.png>)
+![双剑完整13帧：第一轮重建图集预览](<../../references/character-animation/character_animation_report/case-10/main/atlas-preview-02.png>)
 
 **动画检视**（展示用尺寸）
 
-![双剑完整13帧：第一轮重建动画检视](<../../art_test/character_animation_report/case-10/main/animation-review.gif>)
+![双剑完整13帧：第一轮重建动画检视](<../../references/character-animation/character_animation_report/case-10/main/animation-review.gif>)
 
 **原生序列图：2560×1200 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-10/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-10/main/native-sequence.png>)
 
 **结果对应的源文件：** C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/dual-sword-13-frame-study/dual-01.png；C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/dual-sword-13-frame-study/dual-02.png；其余 11 张按文件名顺序读取。
 
@@ -474,15 +474,15 @@
 
 **参考：原始13帧动作参考**。
 
-![原始13帧动作参考（参考输入）](<../../art_test/character_animation_report/references/cdc99c461c/display.png>)
+![原始13帧动作参考（参考输入）](<../../references/character-animation/character_animation_report/references/cdc99c461c/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/cdc99c461c/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/cdc99c461c/original.png>)
 
 **参考：上一轮13帧对照**。
 
-![上一轮13帧对照（参考输入）](<../../art_test/character_animation_report/references/0c93d408b5/display.png>)
+![上一轮13帧对照（参考输入）](<../../references/character-animation/character_animation_report/references/0c93d408b5/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/0c93d408b5/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/0c93d408b5/original.png>)
 
 ### 该方案的序列效果
 
@@ -490,17 +490,17 @@
 
 预览按原帧顺序排列；大图／结构稿仅在此预览缩小，下面的原生序列图保留原始像素。
 
-![双剑完整13帧：逐帧人体与相邻帧审查图集预览](<../../art_test/character_animation_report/case-11/main/atlas-preview-01.png>)
+![双剑完整13帧：逐帧人体与相邻帧审查图集预览](<../../references/character-animation/character_animation_report/case-11/main/atlas-preview-01.png>)
 
-![双剑完整13帧：逐帧人体与相邻帧审查图集预览](<../../art_test/character_animation_report/case-11/main/atlas-preview-02.png>)
+![双剑完整13帧：逐帧人体与相邻帧审查图集预览](<../../references/character-animation/character_animation_report/case-11/main/atlas-preview-02.png>)
 
 **动画检视**（展示用尺寸）
 
-![双剑完整13帧：逐帧人体与相邻帧审查动画检视](<../../art_test/character_animation_report/case-11/main/animation-review.gif>)
+![双剑完整13帧：逐帧人体与相邻帧审查动画检视](<../../references/character-animation/character_animation_report/case-11/main/animation-review.gif>)
 
 **原生序列图：6270×3762 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-11/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-11/main/native-sequence.png>)
 
 **结果对应的源文件：** C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/dual-sword-sequential-review/frame-01.png；C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/dual-sword-sequential-review/frame-02.png；其余 11 张按文件名顺序读取。
 
@@ -520,15 +520,15 @@
 
 **参考：原动作13帧**。
 
-![原动作13帧（参考输入）](<../../art_test/character_animation_report/references/cdc99c461c/display.png>)
+![原动作13帧（参考输入）](<../../references/character-animation/character_animation_report/references/cdc99c461c/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/cdc99c461c/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/cdc99c461c/original.png>)
 
 **参考：上一轮主体审查图集**。
 
-![上一轮主体审查图集（参考输入）](<../../art_test/character_animation_report/references/517ed9377d/display.png>)
+![上一轮主体审查图集（参考输入）](<../../references/character-animation/character_animation_report/references/517ed9377d/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/517ed9377d/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/517ed9377d/original.png>)
 
 ### 该方案的序列效果
 
@@ -536,17 +536,17 @@
 
 预览按原帧顺序排列；大图／结构稿仅在此预览缩小，下面的原生序列图保留原始像素。
 
-![双剑完整13帧：等长武器与透视修订图集预览](<../../art_test/character_animation_report/case-12/main/atlas-preview-01.png>)
+![双剑完整13帧：等长武器与透视修订图集预览](<../../references/character-animation/character_animation_report/case-12/main/atlas-preview-01.png>)
 
-![双剑完整13帧：等长武器与透视修订图集预览](<../../art_test/character_animation_report/case-12/main/atlas-preview-02.png>)
+![双剑完整13帧：等长武器与透视修订图集预览](<../../references/character-animation/character_animation_report/case-12/main/atlas-preview-02.png>)
 
 **动画检视**（展示用尺寸）
 
-![双剑完整13帧：等长武器与透视修订动画检视](<../../art_test/character_animation_report/case-12/main/animation-review.gif>)
+![双剑完整13帧：等长武器与透视修订动画检视](<../../references/character-animation/character_animation_report/case-12/main/animation-review.gif>)
 
 **原生序列图：6270×3762 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-12/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-12/main/native-sequence.png>)
 
 **结果对应的源文件：** C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/dual-sword-equal-length-review/frame-01.png；C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/dual-sword-equal-length-review/frame-02.png；其余 11 张按文件名顺序读取。
 
@@ -568,23 +568,23 @@
 
 **参考：起始姿势参考的8倍检视存档**。
 
-![起始姿势参考的8倍检视存档（参考输入）](<../../art_test/character_animation_report/references/c878774f6a/display.png>)
+![起始姿势参考的8倍检视存档（参考输入）](<../../references/character-animation/character_animation_report/references/c878774f6a/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/c878774f6a/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/c878774f6a/original.png>)
 
 **参考：结束姿势参考的8倍检视存档**。
 
-![结束姿势参考的8倍检视存档（参考输入）](<../../art_test/character_animation_report/references/1a243f7d15/display.png>)
+![结束姿势参考的8倍检视存档（参考输入）](<../../references/character-animation/character_animation_report/references/1a243f7d15/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/1a243f7d15/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/1a243f7d15/original.png>)
 
 ### 同阶段的局部返修与补充参考
 
 **参考：第2姿势的双剑修订引导存档**。
 
-![第2姿势的双剑修订引导存档（参考输入）](<../../art_test/character_animation_report/references/161161d2a5/display.png>)
+![第2姿势的双剑修订引导存档（参考输入）](<../../references/character-animation/character_animation_report/references/161161d2a5/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/161161d2a5/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/161161d2a5/original.png>)
 
 ### 该方案的序列效果
 
@@ -592,17 +592,17 @@
 
 预览按原帧顺序排列；大图／结构稿仅在此预览缩小，下面的原生序列图保留原始像素。
 
-![圣女角色：蹬跳、腾挪、反弹13姿势图集预览](<../../art_test/character_animation_report/case-13/main/atlas-preview-01.png>)
+![圣女角色：蹬跳、腾挪、反弹13姿势图集预览](<../../references/character-animation/character_animation_report/case-13/main/atlas-preview-01.png>)
 
-![圣女角色：蹬跳、腾挪、反弹13姿势图集预览](<../../art_test/character_animation_report/case-13/main/atlas-preview-02.png>)
+![圣女角色：蹬跳、腾挪、反弹13姿势图集预览](<../../references/character-animation/character_animation_report/case-13/main/atlas-preview-02.png>)
 
 **动画检视**（展示用尺寸）
 
-![圣女角色：蹬跳、腾挪、反弹13姿势动画检视](<../../art_test/character_animation_report/case-13/main/animation-review.gif>)
+![圣女角色：蹬跳、腾挪、反弹13姿势动画检视](<../../references/character-animation/character_animation_report/case-13/main/animation-review.gif>)
 
 **原生序列图：6270×3762 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-13/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-13/main/native-sequence.png>)
 
 **结果对应的源文件：** C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/saint-hop-dual-sword-sequence/pose-01.png；C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/saint-hop-dual-sword-sequence/pose-02.png；其余 11 张按文件名顺序读取。
 
@@ -622,25 +622,25 @@
 
 **参考：旋转段角色及站姿参考**。
 
-![旋转段角色及站姿参考（参考输入）](<../../art_test/character_animation_report/references/ee4468b778/display.png>)
+![旋转段角色及站姿参考（参考输入）](<../../references/character-animation/character_animation_report/references/ee4468b778/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/ee4468b778/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/ee4468b778/original.png>)
 
 **参考：前段蹬跳动作设定**。
 
-![前段蹬跳动作设定（参考输入）](<../../art_test/character_animation_report/references/76b9930b52/display.png>)
+![前段蹬跳动作设定（参考输入）](<../../references/character-animation/character_animation_report/references/76b9930b52/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/76b9930b52/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/76b9930b52/original.png>)
 
 ### 同阶段的局部返修与补充参考
 
 **参考：旋转中段的姿态与等长双剑引导存档（每次调用的输入参数未全部留存）**。
 
-![旋转中段的姿态与等长双剑引导存档（每次调用的输入参数未全部留存）（参考输入）](<../../art_test/character_animation_report/references/e001f6081b/reference-preview-01.png>)
+![旋转中段的姿态与等长双剑引导存档（每次调用的输入参数未全部留存）（参考输入）](<../../references/character-animation/character_animation_report/references/e001f6081b/reference-preview-01.png>)
 
-![旋转中段的姿态与等长双剑引导存档（每次调用的输入参数未全部留存）（参考输入）](<../../art_test/character_animation_report/references/e001f6081b/reference-preview-02.png>)
+![旋转中段的姿态与等长双剑引导存档（每次调用的输入参数未全部留存）（参考输入）](<../../references/character-animation/character_animation_report/references/e001f6081b/reference-preview-02.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/e001f6081b/reference-native-atlas.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/e001f6081b/reference-native-atlas.png>)
 
 ### 该方案的序列效果
 
@@ -648,17 +648,17 @@
 
 预览按原帧顺序排列；大图／结构稿仅在此预览缩小，下面的原生序列图保留原始像素。
 
-![双剑旋转攻击16帧与29帧合并图集预览](<../../art_test/character_animation_report/case-14/main/atlas-preview-01.png>)
+![双剑旋转攻击16帧与29帧合并图集预览](<../../references/character-animation/character_animation_report/case-14/main/atlas-preview-01.png>)
 
-![双剑旋转攻击16帧与29帧合并图集预览](<../../art_test/character_animation_report/case-14/main/atlas-preview-02.png>)
+![双剑旋转攻击16帧与29帧合并图集预览](<../../references/character-animation/character_animation_report/case-14/main/atlas-preview-02.png>)
 
 **动画检视**（展示用尺寸）
 
-![双剑旋转攻击16帧与29帧合并动画检视](<../../art_test/character_animation_report/case-14/main/animation-review.gif>)
+![双剑旋转攻击16帧与29帧合并动画检视](<../../references/character-animation/character_animation_report/case-14/main/animation-review.gif>)
 
 **原生序列图：8960×6144 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-14/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-14/main/native-sequence.png>)
 
 **结果对应的源文件：** C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/saint-dual-sword-spin/pose-14.png；C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/saint-dual-sword-spin/pose-15.png；其余 14 张按文件名顺序读取。
 
@@ -668,21 +668,21 @@
 
 预览按原帧顺序排列；大图／结构稿仅在此预览缩小，下面的原生序列图保留原始像素。
 
-![合并后的完整29帧图集预览](<../../art_test/character_animation_report/case-14/additional-01/atlas-preview-01.png>)
+![合并后的完整29帧图集预览](<../../references/character-animation/character_animation_report/case-14/additional-01/atlas-preview-01.png>)
 
-![合并后的完整29帧图集预览](<../../art_test/character_animation_report/case-14/additional-01/atlas-preview-02.png>)
+![合并后的完整29帧图集预览](<../../references/character-animation/character_animation_report/case-14/additional-01/atlas-preview-02.png>)
 
-![合并后的完整29帧图集预览](<../../art_test/character_animation_report/case-14/additional-01/atlas-preview-03.png>)
+![合并后的完整29帧图集预览](<../../references/character-animation/character_animation_report/case-14/additional-01/atlas-preview-03.png>)
 
-![合并后的完整29帧图集预览](<../../art_test/character_animation_report/case-14/additional-01/atlas-preview-04.png>)
+![合并后的完整29帧图集预览](<../../references/character-animation/character_animation_report/case-14/additional-01/atlas-preview-04.png>)
 
 **动画检视**（展示用尺寸）
 
-![合并后的完整29帧动画检视](<../../art_test/character_animation_report/case-14/additional-01/animation-review.gif>)
+![合并后的完整29帧动画检视](<../../references/character-animation/character_animation_report/case-14/additional-01/animation-review.gif>)
 
 **原生序列图：8960×9216 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-14/additional-01/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-14/additional-01/native-sequence.png>)
 
 **结果对应的源文件：** C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/saint-dual-sword-spin/combo-frames/pose-01.png；C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/saint-dual-sword-spin/combo-frames/pose-02.png；其余 27 张按文件名顺序读取。
 
@@ -702,9 +702,9 @@
 
 **参考：编排前完整29帧**。
 
-![编排前完整29帧（参考输入）](<../../art_test/character_animation_report/references/c6bcc14140/display.png>)
+![编排前完整29帧（参考输入）](<../../references/character-animation/character_animation_report/references/c6bcc14140/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/c6bcc14140/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/c6bcc14140/original.png>)
 
 ### 该方案的序列效果
 
@@ -712,19 +712,19 @@
 
 预览按原帧顺序排列；大图／结构稿仅在此预览缩小，下面的原生序列图保留原始像素。
 
-![动作重排：22帧持续攻击与7帧反弹墙图集预览](<../../art_test/character_animation_report/case-15/main/atlas-preview-01.png>)
+![动作重排：22帧持续攻击与7帧反弹墙图集预览](<../../references/character-animation/character_animation_report/case-15/main/atlas-preview-01.png>)
 
-![动作重排：22帧持续攻击与7帧反弹墙图集预览](<../../art_test/character_animation_report/case-15/main/atlas-preview-02.png>)
+![动作重排：22帧持续攻击与7帧反弹墙图集预览](<../../references/character-animation/character_animation_report/case-15/main/atlas-preview-02.png>)
 
-![动作重排：22帧持续攻击与7帧反弹墙图集预览](<../../art_test/character_animation_report/case-15/main/atlas-preview-03.png>)
+![动作重排：22帧持续攻击与7帧反弹墙图集预览](<../../references/character-animation/character_animation_report/case-15/main/atlas-preview-03.png>)
 
 **动画检视**（展示用尺寸）
 
-![动作重排：22帧持续攻击与7帧反弹墙动画检视](<../../art_test/character_animation_report/case-15/main/animation-review.gif>)
+![动作重排：22帧持续攻击与7帧反弹墙动画检视](<../../references/character-animation/character_animation_report/case-15/main/animation-review.gif>)
 
 **原生序列图：8960×7680 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-15/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-15/main/native-sequence.png>)
 
 **结果对应的源文件：** C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/saint-reordered-actions/continuous-attack-22/frames/continuous-attack-22-01.png；C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/saint-reordered-actions/continuous-attack-22/frames/continuous-attack-22-02.png；其余 20 张按文件名顺序读取。
 
@@ -734,15 +734,15 @@
 
 预览按原帧顺序排列；大图／结构稿仅在此预览缩小，下面的原生序列图保留原始像素。
 
-![独立反弹墙7帧图集预览](<../../art_test/character_animation_report/case-15/additional-01/atlas-preview-01.png>)
+![独立反弹墙7帧图集预览](<../../references/character-animation/character_animation_report/case-15/additional-01/atlas-preview-01.png>)
 
 **动画检视**（展示用尺寸）
 
-![独立反弹墙7帧动画检视](<../../art_test/character_animation_report/case-15/additional-01/animation-review.gif>)
+![独立反弹墙7帧动画检视](<../../references/character-animation/character_animation_report/case-15/additional-01/animation-review.gif>)
 
 **原生序列图：8960×3072 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-15/additional-01/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-15/additional-01/native-sequence.png>)
 
 **结果对应的源文件：** C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/saint-reordered-actions/wall-rebound-07/frames/wall-rebound-07-01.png；C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/saint-reordered-actions/wall-rebound-07/frames/wall-rebound-07-02.png；其余 5 张按文件名顺序读取。
 
@@ -762,9 +762,9 @@
 
 **参考：抽帧前持续攻击22帧**。
 
-![抽帧前持续攻击22帧（参考输入）](<../../art_test/character_animation_report/references/4869fcfbd4/display.png>)
+![抽帧前持续攻击22帧（参考输入）](<../../references/character-animation/character_animation_report/references/4869fcfbd4/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/4869fcfbd4/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/4869fcfbd4/original.png>)
 
 ### 该方案的序列效果
 
@@ -772,17 +772,17 @@
 
 预览按原帧顺序排列；大图／结构稿仅在此预览缩小，下面的原生序列图保留原始像素。
 
-![旋转抽帧：17帧持续攻击图集预览](<../../art_test/character_animation_report/case-16/main/atlas-preview-01.png>)
+![旋转抽帧：17帧持续攻击图集预览](<../../references/character-animation/character_animation_report/case-16/main/atlas-preview-01.png>)
 
-![旋转抽帧：17帧持续攻击图集预览](<../../art_test/character_animation_report/case-16/main/atlas-preview-02.png>)
+![旋转抽帧：17帧持续攻击图集预览](<../../references/character-animation/character_animation_report/case-16/main/atlas-preview-02.png>)
 
 **动画检视**（展示用尺寸）
 
-![旋转抽帧：17帧持续攻击动画检视](<../../art_test/character_animation_report/case-16/main/animation-review.gif>)
+![旋转抽帧：17帧持续攻击动画检视](<../../references/character-animation/character_animation_report/case-16/main/animation-review.gif>)
 
 **原生序列图：8960×6144 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-16/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-16/main/native-sequence.png>)
 
 **结果对应的源文件：** C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/saint-reordered-actions/continuous-attack-22/frames/continuous-attack-22-01.png；C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/saint-reordered-actions/continuous-attack-22/frames/continuous-attack-22-02.png；其余 15 张按文件名顺序读取。
 
@@ -802,21 +802,21 @@
 
 **参考：上传的64×64外观母版**。
 
-![上传的64×64外观母版（参考输入）](<../../art_test/character_animation_report/references/a158441236/display.png>)
+![上传的64×64外观母版（参考输入）](<../../references/character-animation/character_animation_report/references/a158441236/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/a158441236/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/a158441236/original.png>)
 
 **参考：实际大图动作参考01–05**。
 
-![实际大图动作参考01–05（参考输入）](<../../art_test/character_animation_report/references/4a6a7aa2b7/reference-preview-01.png>)
+![实际大图动作参考01–05（参考输入）](<../../references/character-animation/character_animation_report/references/4a6a7aa2b7/reference-preview-01.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/4a6a7aa2b7/reference-native-atlas.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/4a6a7aa2b7/reference-native-atlas.png>)
 
 **参考：实际64像素姿势引导**。
 
-![实际64像素姿势引导（参考输入）](<../../art_test/character_animation_report/references/fcd5f72a7d/reference-preview-01.png>)
+![实际64像素姿势引导（参考输入）](<../../references/character-animation/character_animation_report/references/fcd5f72a7d/reference-preview-01.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/fcd5f72a7d/reference-native-atlas.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/fcd5f72a7d/reference-native-atlas.png>)
 
 ### 该方案的序列效果
 
@@ -824,17 +824,17 @@
 
 预览按原帧顺序排列；以整数倍率最近邻放大，背景棋盘格仅用于检视。
 
-![Meowa 原生64×64：前五帧图集预览](<../../art_test/character_animation_report/case-17/main/atlas-preview-01.png>)
+![Meowa 原生64×64：前五帧图集预览](<../../references/character-animation/character_animation_report/case-17/main/atlas-preview-01.png>)
 
 **动画检视**（像素分支为慢放，非原生帧文件）
 
-![Meowa 原生64×64：前五帧动画检视](<../../art_test/character_animation_report/case-17/main/animation-review.gif>)
+![Meowa 原生64×64：前五帧动画检视](<../../references/character-animation/character_animation_report/case-17/main/animation-review.gif>)
 
 **原生序列图：320×64 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-![Meowa 原生64×64：前五帧原生序列图](<../../art_test/character_animation_report/case-17/main/native-sequence.png>)
+![Meowa 原生64×64：前五帧原生序列图](<../../references/character-animation/character_animation_report/case-17/main/native-sequence.png>)
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-17/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-17/main/native-sequence.png>)
 
 **结果对应的源文件：** C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/meowa-pixel64-first5/frames/attack-01.png；C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/meowa-pixel64-first5/frames/attack-02.png；其余 3 张按文件名顺序读取。
 
@@ -854,23 +854,23 @@
 
 **参考：64×64角色外观母版**。
 
-![64×64角色外观母版（参考输入）](<../../art_test/character_animation_report/references/0d905fbfc3/display.png>)
+![64×64角色外观母版（参考输入）](<../../references/character-animation/character_animation_report/references/0d905fbfc3/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/0d905fbfc3/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/0d905fbfc3/original.png>)
 
 **参考：该组实际姿势引导**。
 
-![该组实际姿势引导（参考输入）](<../../art_test/character_animation_report/references/2e960d93e1/reference-preview-01.png>)
+![该组实际姿势引导（参考输入）](<../../references/character-animation/character_animation_report/references/2e960d93e1/reference-preview-01.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/2e960d93e1/reference-native-atlas.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/2e960d93e1/reference-native-atlas.png>)
 
 ### 同阶段的局部返修与补充参考
 
 **参考：第7–10帧的局部返修参考存档**。
 
-![第7–10帧的局部返修参考存档（参考输入）](<../../art_test/character_animation_report/references/088ca5e988/reference-preview-01.png>)
+![第7–10帧的局部返修参考存档（参考输入）](<../../references/character-animation/character_animation_report/references/088ca5e988/reference-preview-01.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/088ca5e988/reference-native-atlas.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/088ca5e988/reference-native-atlas.png>)
 
 ### 该方案的序列效果
 
@@ -878,17 +878,17 @@
 
 预览按原帧顺序排列；以整数倍率最近邻放大，背景棋盘格仅用于检视。
 
-![Meowa 原生64×64：第6–10帧初版图集预览](<../../art_test/character_animation_report/case-18/main/atlas-preview-01.png>)
+![Meowa 原生64×64：第6–10帧初版图集预览](<../../references/character-animation/character_animation_report/case-18/main/atlas-preview-01.png>)
 
 **动画检视**（像素分支为慢放，非原生帧文件）
 
-![Meowa 原生64×64：第6–10帧初版动画检视](<../../art_test/character_animation_report/case-18/main/animation-review.gif>)
+![Meowa 原生64×64：第6–10帧初版动画检视](<../../references/character-animation/character_animation_report/case-18/main/animation-review.gif>)
 
 **原生序列图：320×64 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-![Meowa 原生64×64：第6–10帧初版原生序列图](<../../art_test/character_animation_report/case-18/main/native-sequence.png>)
+![Meowa 原生64×64：第6–10帧初版原生序列图](<../../references/character-animation/character_animation_report/case-18/main/native-sequence.png>)
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-18/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-18/main/native-sequence.png>)
 
 **结果对应的源文件：** C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/meowa-pixel64-06-10/frames/attack-06.png；C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/meowa-pixel64-06-10/frames/attack-07.png；其余 3 张按文件名顺序读取。
 
@@ -908,29 +908,29 @@
 
 **参考：同角色外观参考**。
 
-![同角色外观参考（参考输入）](<../../art_test/character_animation_report/references/f05af865d1/display.png>)
+![同角色外观参考（参考输入）](<../../references/character-animation/character_animation_report/references/f05af865d1/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/f05af865d1/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/f05af865d1/original.png>)
 
 **参考：实际统一骨架引导**。
 
-![实际统一骨架引导（参考输入）](<../../art_test/character_animation_report/references/0344d063af/reference-preview-01.png>)
+![实际统一骨架引导（参考输入）](<../../references/character-animation/character_animation_report/references/0344d063af/reference-preview-01.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/0344d063af/reference-native-atlas.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/0344d063af/reference-native-atlas.png>)
 
 ### 同阶段的局部返修与补充参考
 
 **参考：统一人体试验的固定角色母版**。
 
-![统一人体试验的固定角色母版（参考输入）](<../../art_test/character_animation_report/references/033e0f081e/display.png>)
+![统一人体试验的固定角色母版（参考输入）](<../../references/character-animation/character_animation_report/references/033e0f081e/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/033e0f081e/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/033e0f081e/original.png>)
 
 **参考：该分支发型修订的实际动画输入**。
 
-![该分支发型修订的实际动画输入（参考输入）](<../../art_test/character_animation_report/references/3a91f3f93e/reference-preview-01.png>)
+![该分支发型修订的实际动画输入（参考输入）](<../../references/character-animation/character_animation_report/references/3a91f3f93e/reference-preview-01.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/3a91f3f93e/original.webp>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/3a91f3f93e/original.webp>)
 
 ### 该方案的序列效果
 
@@ -938,19 +938,19 @@
 
 预览按原帧顺序排列；以整数倍率最近邻放大，背景棋盘格仅用于检视。
 
-![统一骨架与重绘64×64：大小修正试验图集预览](<../../art_test/character_animation_report/case-19/main/atlas-preview-01.png>)
+![统一骨架与重绘64×64：大小修正试验图集预览](<../../references/character-animation/character_animation_report/case-19/main/atlas-preview-01.png>)
 
 **动画检视**（像素分支为慢放，非原生帧文件）
 
-![统一骨架与重绘64×64：大小修正试验动画检视](<../../art_test/character_animation_report/case-19/main/animation-review.gif>)
+![统一骨架与重绘64×64：大小修正试验动画检视](<../../references/character-animation/character_animation_report/case-19/main/animation-review.gif>)
 
-[打开原始动画文件](<../../art_test/character_animation_report/case-19/main/animation-original.webp>)
+[打开原始动画文件](<../../references/character-animation/character_animation_report/case-19/main/animation-original.webp>)
 
 **原生序列图：320×64 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-![统一骨架与重绘64×64：大小修正试验原生序列图](<../../art_test/character_animation_report/case-19/main/native-sequence.png>)
+![统一骨架与重绘64×64：大小修正试验原生序列图](<../../references/character-animation/character_animation_report/case-19/main/native-sequence.png>)
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-19/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-19/main/native-sequence.png>)
 
 **结果对应的源文件：** C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/meowa-pixel64-06-10-uniform/attack-06-10-uniform-native.webp
 
@@ -970,23 +970,23 @@
 
 **参考：原64像素前五帧**。
 
-![原64像素前五帧（参考输入）](<../../art_test/character_animation_report/references/ed413db6fa/display.png>)
+![原64像素前五帧（参考输入）](<../../references/character-animation/character_animation_report/references/ed413db6fa/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/ed413db6fa/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/ed413db6fa/original.png>)
 
 **参考：96像素扩边透明输入存档**。
 
-![96像素扩边透明输入存档（参考输入）](<../../art_test/character_animation_report/references/fd0c94d106/reference-preview-01.png>)
+![96像素扩边透明输入存档（参考输入）](<../../references/character-animation/character_animation_report/references/fd0c94d106/reference-preview-01.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/fd0c94d106/reference-native-atlas.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/fd0c94d106/reference-native-atlas.png>)
 
 ### 同阶段的局部返修与补充参考
 
 **参考：实际提交生成时的纯绿背景输入**。
 
-![实际提交生成时的纯绿背景输入（参考输入）](<../../art_test/character_animation_report/references/c1563fd975/reference-preview-01.png>)
+![实际提交生成时的纯绿背景输入（参考输入）](<../../references/character-animation/character_animation_report/references/c1563fd975/reference-preview-01.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/c1563fd975/reference-native-atlas.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/c1563fd975/reference-native-atlas.png>)
 
 ### 该方案的序列效果
 
@@ -994,17 +994,17 @@
 
 预览按原帧顺序排列；以整数倍率最近邻放大，背景棋盘格仅用于检视。
 
-![96×96扩边：前五帧保留主体并增加剑气图集预览](<../../art_test/character_animation_report/case-20/main/atlas-preview-01.png>)
+![96×96扩边：前五帧保留主体并增加剑气图集预览](<../../references/character-animation/character_animation_report/case-20/main/atlas-preview-01.png>)
 
 **动画检视**（像素分支为慢放，非原生帧文件）
 
-![96×96扩边：前五帧保留主体并增加剑气动画检视](<../../art_test/character_animation_report/case-20/main/animation-review.gif>)
+![96×96扩边：前五帧保留主体并增加剑气动画检视](<../../references/character-animation/character_animation_report/case-20/main/animation-review.gif>)
 
 **原生序列图：480×96 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-![96×96扩边：前五帧保留主体并增加剑气原生序列图](<../../art_test/character_animation_report/case-20/main/native-sequence.png>)
+![96×96扩边：前五帧保留主体并增加剑气原生序列图](<../../references/character-animation/character_animation_report/case-20/main/native-sequence.png>)
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-20/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-20/main/native-sequence.png>)
 
 **结果对应的源文件：** C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/meowa-pixel96-first5-swordqi/frames/attack-01.png；C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/meowa-pixel96-first5-swordqi/frames/attack-02.png；其余 3 张按文件名顺序读取。
 
@@ -1012,9 +1012,9 @@
 
 这是当时交付的5格96×96独立效果图层，与人物主体分开保存。
 
-![独立剑气原生图层](<../../art_test/character_animation_report/case-20/effects/swordqi-original-sheet-96.png>)
+![独立剑气原生图层](<../../references/character-animation/character_animation_report/case-20/effects/swordqi-original-sheet-96.png>)
 
-[打开独立剑气原生图层](<../../art_test/character_animation_report/case-20/effects/swordqi-original-sheet-96.png>)
+[打开独立剑气原生图层](<../../references/character-animation/character_animation_report/case-20/effects/swordqi-original-sheet-96.png>)
 
 ---
 
@@ -1032,15 +1032,15 @@
 
 **参考：实际尺度参考**。
 
-![实际尺度参考（参考输入）](<../../art_test/character_animation_report/references/01ebfcf731/display.png>)
+![实际尺度参考（参考输入）](<../../references/character-animation/character_animation_report/references/01ebfcf731/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/01ebfcf731/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/01ebfcf731/original.png>)
 
 **参考：该次原6–10动作输入**。
 
-![该次原6–10动作输入（参考输入）](<../../art_test/character_animation_report/references/86bdd58443/reference-preview-01.png>)
+![该次原6–10动作输入（参考输入）](<../../references/character-animation/character_animation_report/references/86bdd58443/reference-preview-01.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/86bdd58443/original.webp>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/86bdd58443/original.webp>)
 
 ### 该方案的序列效果
 
@@ -1048,19 +1048,19 @@
 
 预览按原帧顺序排列；以整数倍率最近邻放大，背景棋盘格仅用于检视。
 
-![96像素批量“只修大小”：中间试验A图集预览](<../../art_test/character_animation_report/case-21/main/atlas-preview-01.png>)
+![96像素批量“只修大小”：中间试验A图集预览](<../../references/character-animation/character_animation_report/case-21/main/atlas-preview-01.png>)
 
 **动画检视**（像素分支为慢放，非原生帧文件）
 
-![96像素批量“只修大小”：中间试验A动画检视](<../../art_test/character_animation_report/case-21/main/animation-review.gif>)
+![96像素批量“只修大小”：中间试验A动画检视](<../../references/character-animation/character_animation_report/case-21/main/animation-review.gif>)
 
-[打开原始动画文件](<../../art_test/character_animation_report/case-21/main/animation-original.webp>)
+[打开原始动画文件](<../../references/character-animation/character_animation_report/case-21/main/animation-original.webp>)
 
 **原生序列图：480×96 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-![96像素批量“只修大小”：中间试验A原生序列图](<../../art_test/character_animation_report/case-21/main/native-sequence.png>)
+![96像素批量“只修大小”：中间试验A原生序列图](<../../references/character-animation/character_animation_report/case-21/main/native-sequence.png>)
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-21/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-21/main/native-sequence.png>)
 
 **结果对应的源文件：** D:/.codexfile/work/saint-06-10-pose-locked-scale96-01a13daf/pose-preserving-size-correction/这是大小修正_不是重新设计动作_参考图是已确认的第1至5帧_按原生像素同倍率横排_d26a4dfd/frames_edit.webp
 
@@ -1070,13 +1070,13 @@
 
 预览按原帧顺序排列；以整数倍率最近邻放大，背景棋盘格仅用于检视。
 
-![只修第7帧大小的单帧尝试（不构成五帧序列）图集预览](<../../art_test/character_animation_report/case-21/additional-01/atlas-preview-01.png>)
+![只修第7帧大小的单帧尝试（不构成五帧序列）图集预览](<../../references/character-animation/character_animation_report/case-21/additional-01/atlas-preview-01.png>)
 
 **原生序列图：96×96 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-![只修第7帧大小的单帧尝试（不构成五帧序列）原生序列图](<../../art_test/character_animation_report/case-21/additional-01/native-sequence.png>)
+![只修第7帧大小的单帧尝试（不构成五帧序列）原生序列图](<../../references/character-animation/character_animation_report/case-21/additional-01/native-sequence.png>)
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-21/additional-01/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-21/additional-01/native-sequence.png>)
 
 **结果对应的源文件：** D:/.codexfile/work/saint-06-10-pose-locked-scale96-01a13daf/frame07-size-only-original-action/仅把现有这位双剑女骑士的人物体格放大约20_匹配同一角色前五帧的人物大小_保持_45ca969c/remove_bg.png
 
@@ -1096,11 +1096,11 @@
 
 **参考：实际十帧输入**。
 
-![实际十帧输入（参考输入）](<../../art_test/character_animation_report/references/5c69bb96fe/reference-preview-01.png>)
+![实际十帧输入（参考输入）](<../../references/character-animation/character_animation_report/references/5c69bb96fe/reference-preview-01.png>)
 
-![实际十帧输入（参考输入）](<../../art_test/character_animation_report/references/5c69bb96fe/reference-preview-02.png>)
+![实际十帧输入（参考输入）](<../../references/character-animation/character_animation_report/references/5c69bb96fe/reference-preview-02.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/5c69bb96fe/original.webp>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/5c69bb96fe/original.webp>)
 
 ### 该方案的序列效果
 
@@ -1108,21 +1108,21 @@
 
 预览按原帧顺序排列；以整数倍率最近邻放大，背景棋盘格仅用于检视。
 
-![96像素十帧联合“只修大小”：中间试验B图集预览](<../../art_test/character_animation_report/case-22/main/atlas-preview-01.png>)
+![96像素十帧联合“只修大小”：中间试验B图集预览](<../../references/character-animation/character_animation_report/case-22/main/atlas-preview-01.png>)
 
-![96像素十帧联合“只修大小”：中间试验B图集预览](<../../art_test/character_animation_report/case-22/main/atlas-preview-02.png>)
+![96像素十帧联合“只修大小”：中间试验B图集预览](<../../references/character-animation/character_animation_report/case-22/main/atlas-preview-02.png>)
 
 **动画检视**（像素分支为慢放，非原生帧文件）
 
-![96像素十帧联合“只修大小”：中间试验B动画检视](<../../art_test/character_animation_report/case-22/main/animation-review.gif>)
+![96像素十帧联合“只修大小”：中间试验B动画检视](<../../references/character-animation/character_animation_report/case-22/main/animation-review.gif>)
 
-[打开原始动画文件](<../../art_test/character_animation_report/case-22/main/animation-original.webp>)
+[打开原始动画文件](<../../references/character-animation/character_animation_report/case-22/main/animation-original.webp>)
 
 **原生序列图：960×96 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-![96像素十帧联合“只修大小”：中间试验B原生序列图](<../../art_test/character_animation_report/case-22/main/native-sequence.png>)
+![96像素十帧联合“只修大小”：中间试验B原生序列图](<../../references/character-animation/character_animation_report/case-22/main/native-sequence.png>)
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-22/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-22/main/native-sequence.png>)
 
 **结果对应的源文件：** D:/.codexfile/work/saint-06-10-pose-locked-scale96-01a13daf/ten-original-actions-size-only/仅修正这段10帧动画中第6至10帧的人物尺度_第1至5帧是已经确认的原动作和人物大小_bedec5d5/frames_edit.webp
 
@@ -1142,23 +1142,23 @@
 
 **参考：1–5帧尺度参照**。
 
-![1–5帧尺度参照（参考输入）](<../../art_test/character_animation_report/references/01ebfcf731/display.png>)
+![1–5帧尺度参照（参考输入）](<../../references/character-animation/character_animation_report/references/01ebfcf731/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/01ebfcf731/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/01ebfcf731/original.png>)
 
 **参考：最终使用的锁定姿势与尺度引导**。
 
-![最终使用的锁定姿势与尺度引导（参考输入）](<../../art_test/character_animation_report/references/2250b9e088/reference-preview-01.png>)
+![最终使用的锁定姿势与尺度引导（参考输入）](<../../references/character-animation/character_animation_report/references/2250b9e088/reference-preview-01.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/2250b9e088/reference-native-atlas.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/2250b9e088/reference-native-atlas.png>)
 
 ### 同阶段的局部返修与补充参考
 
 **参考：第8帧尺寸引导中的武器整理参考**。
 
-![第8帧尺寸引导中的武器整理参考（参考输入）](<../../art_test/character_animation_report/references/4ad5f887d6/display.png>)
+![第8帧尺寸引导中的武器整理参考（参考输入）](<../../references/character-animation/character_animation_report/references/4ad5f887d6/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/4ad5f887d6/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/4ad5f887d6/original.png>)
 
 ### 该方案的序列效果
 
@@ -1166,17 +1166,17 @@
 
 预览按原帧顺序排列；以整数倍率最近邻放大，背景棋盘格仅用于检视。
 
-![保持原动作的尺度引导→Meowa清稿：第6–10帧图集预览](<../../art_test/character_animation_report/case-23/main/atlas-preview-01.png>)
+![保持原动作的尺度引导→Meowa清稿：第6–10帧图集预览](<../../references/character-animation/character_animation_report/case-23/main/atlas-preview-01.png>)
 
 **动画检视**（像素分支为慢放，非原生帧文件）
 
-![保持原动作的尺度引导→Meowa清稿：第6–10帧动画检视](<../../art_test/character_animation_report/case-23/main/animation-review.gif>)
+![保持原动作的尺度引导→Meowa清稿：第6–10帧动画检视](<../../references/character-animation/character_animation_report/case-23/main/animation-review.gif>)
 
 **原生序列图：480×96 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-![保持原动作的尺度引导→Meowa清稿：第6–10帧原生序列图](<../../art_test/character_animation_report/case-23/main/native-sequence.png>)
+![保持原动作的尺度引导→Meowa清稿：第6–10帧原生序列图](<../../references/character-animation/character_animation_report/case-23/main/native-sequence.png>)
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-23/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-23/main/native-sequence.png>)
 
 **结果对应的源文件：** C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/meowa-06-10-pose-preserved96/frames/attack-06.png；C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/meowa-06-10-pose-preserved96/frames/attack-07.png；其余 3 张按文件名顺序读取。
 
@@ -1196,27 +1196,27 @@
 
 **参考：实际七帧动作引导**。
 
-![实际七帧动作引导（参考输入）](<../../art_test/character_animation_report/references/5bfcdbab7d/reference-preview-01.png>)
+![实际七帧动作引导（参考输入）](<../../references/character-animation/character_animation_report/references/5bfcdbab7d/reference-preview-01.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/5bfcdbab7d/original.webp>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/5bfcdbab7d/original.webp>)
 
 **参考：使用的第10帧尺度／画风参考**。
 
-![使用的第10帧尺度／画风参考（参考输入）](<../../art_test/character_animation_report/references/8101094715/display.png>)
+![使用的第10帧尺度／画风参考（参考输入）](<../../references/character-animation/character_animation_report/references/8101094715/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/8101094715/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/8101094715/original.png>)
 
 **参考：第14帧返修动作输入**。
 
-![第14帧返修动作输入（参考输入）](<../../art_test/character_animation_report/references/26efb4cd64/display.png>)
+![第14帧返修动作输入（参考输入）](<../../references/character-animation/character_animation_report/references/26efb4cd64/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/26efb4cd64/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/26efb4cd64/original.png>)
 
 **参考：第15帧返修动作输入**。
 
-![第15帧返修动作输入（参考输入）](<../../art_test/character_animation_report/references/5d3e2968f5/display.png>)
+![第15帧返修动作输入（参考输入）](<../../references/character-animation/character_animation_report/references/5d3e2968f5/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/5d3e2968f5/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/5d3e2968f5/original.png>)
 
 ### 该方案的序列效果
 
@@ -1224,17 +1224,17 @@
 
 预览按原帧顺序排列；以整数倍率最近邻放大，背景棋盘格仅用于检视。
 
-![继续制作第11–17帧，形成17帧像素序列图集预览](<../../art_test/character_animation_report/case-24/main/atlas-preview-01.png>)
+![继续制作第11–17帧，形成17帧像素序列图集预览](<../../references/character-animation/character_animation_report/case-24/main/atlas-preview-01.png>)
 
 **动画检视**（像素分支为慢放，非原生帧文件）
 
-![继续制作第11–17帧，形成17帧像素序列动画检视](<../../art_test/character_animation_report/case-24/main/animation-review.gif>)
+![继续制作第11–17帧，形成17帧像素序列动画检视](<../../references/character-animation/character_animation_report/case-24/main/animation-review.gif>)
 
 **原生序列图：672×96 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-![继续制作第11–17帧，形成17帧像素序列原生序列图](<../../art_test/character_animation_report/case-24/main/native-sequence.png>)
+![继续制作第11–17帧，形成17帧像素序列原生序列图](<../../references/character-animation/character_animation_report/case-24/main/native-sequence.png>)
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-24/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-24/main/native-sequence.png>)
 
 **结果对应的源文件：** C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/meowa-11-17-pose96/frames/attack-11.png；C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/meowa-11-17-pose96/frames/attack-12.png；其余 5 张按文件名顺序读取。
 
@@ -1244,19 +1244,19 @@
 
 预览按原帧顺序排列；以整数倍率最近邻放大，背景棋盘格仅用于检视。
 
-![迁移前形象的完整17帧图集预览](<../../art_test/character_animation_report/case-24/additional-01/atlas-preview-01.png>)
+![迁移前形象的完整17帧图集预览](<../../references/character-animation/character_animation_report/case-24/additional-01/atlas-preview-01.png>)
 
-![迁移前形象的完整17帧图集预览](<../../art_test/character_animation_report/case-24/additional-01/atlas-preview-02.png>)
+![迁移前形象的完整17帧图集预览](<../../references/character-animation/character_animation_report/case-24/additional-01/atlas-preview-02.png>)
 
 **动画检视**（像素分支为慢放，非原生帧文件）
 
-![迁移前形象的完整17帧动画检视](<../../art_test/character_animation_report/case-24/additional-01/animation-review.gif>)
+![迁移前形象的完整17帧动画检视](<../../references/character-animation/character_animation_report/case-24/additional-01/animation-review.gif>)
 
 **原生序列图：960×192 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-![迁移前形象的完整17帧原生序列图](<../../art_test/character_animation_report/case-24/additional-01/native-sequence.png>)
+![迁移前形象的完整17帧原生序列图](<../../references/character-animation/character_animation_report/case-24/additional-01/native-sequence.png>)
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-24/additional-01/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-24/additional-01/native-sequence.png>)
 
 **结果对应的源文件：** C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/meowa-pixel96-first5-swordqi/frames/attack-01.png；C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/meowa-pixel96-first5-swordqi/frames/attack-02.png；其余 15 张按文件名顺序读取。
 
@@ -1276,27 +1276,27 @@
 
 **参考：用户上传的完整形象参考**。
 
-![用户上传的完整形象参考（参考输入）](<../../art_test/character_animation_report/references/73c3c11280/display.png>)
+![用户上传的完整形象参考（参考输入）](<../../references/character-animation/character_animation_report/references/73c3c11280/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/73c3c11280/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/73c3c11280/original.png>)
 
 **参考：实际使用的聚焦外观参考**。
 
-![实际使用的聚焦外观参考（参考输入）](<../../art_test/character_animation_report/references/455d64a19e/display.png>)
+![实际使用的聚焦外观参考（参考输入）](<../../references/character-animation/character_animation_report/references/455d64a19e/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/455d64a19e/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/455d64a19e/original.png>)
 
 **参考：输入动画1–5**。
 
-![输入动画1–5（参考输入）](<../../art_test/character_animation_report/references/9bf40f1e29/reference-preview-01.png>)
+![输入动画1–5（参考输入）](<../../references/character-animation/character_animation_report/references/9bf40f1e29/reference-preview-01.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/9bf40f1e29/original.webp>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/9bf40f1e29/original.webp>)
 
 **参考：输入动画6–10**。
 
-![输入动画6–10（参考输入）](<../../art_test/character_animation_report/references/8f7fb9912f/reference-preview-01.png>)
+![输入动画6–10（参考输入）](<../../references/character-animation/character_animation_report/references/8f7fb9912f/reference-preview-01.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/8f7fb9912f/original.webp>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/8f7fb9912f/original.webp>)
 
 ### 该方案的序列效果
 
@@ -1304,19 +1304,19 @@
 
 预览按原帧顺序排列；以整数倍率最近邻放大，背景棋盘格仅用于检视。
 
-![新形象迁移：前十帧批量编辑试版图集预览](<../../art_test/character_animation_report/case-25/main/atlas-preview-01.png>)
+![新形象迁移：前十帧批量编辑试版图集预览](<../../references/character-animation/character_animation_report/case-25/main/atlas-preview-01.png>)
 
-![新形象迁移：前十帧批量编辑试版图集预览](<../../art_test/character_animation_report/case-25/main/atlas-preview-02.png>)
+![新形象迁移：前十帧批量编辑试版图集预览](<../../references/character-animation/character_animation_report/case-25/main/atlas-preview-02.png>)
 
 **动画检视**（像素分支为慢放，非原生帧文件）
 
-![新形象迁移：前十帧批量编辑试版动画检视](<../../art_test/character_animation_report/case-25/main/animation-review.gif>)
+![新形象迁移：前十帧批量编辑试版动画检视](<../../references/character-animation/character_animation_report/case-25/main/animation-review.gif>)
 
 **原生序列图：960×96 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-![新形象迁移：前十帧批量编辑试版原生序列图](<../../art_test/character_animation_report/case-25/main/native-sequence.png>)
+![新形象迁移：前十帧批量编辑试版原生序列图](<../../references/character-animation/character_animation_report/case-25/main/native-sequence.png>)
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-25/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-25/main/native-sequence.png>)
 
 **结果对应的源文件：** C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/meowa-reference-reskin-first10-96/inspection/candidate-01.png；C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/meowa-reference-reskin-first10-96/inspection/candidate-02.png；其余 8 张按文件名顺序读取。
 
@@ -1336,29 +1336,29 @@
 
 **参考：完整形象参考**。
 
-![完整形象参考（参考输入）](<../../art_test/character_animation_report/references/73c3c11280/display.png>)
+![完整形象参考（参考输入）](<../../references/character-animation/character_animation_report/references/73c3c11280/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/73c3c11280/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/73c3c11280/original.png>)
 
 **参考：逐帧编辑实际使用的外观细节参考**。
 
-![逐帧编辑实际使用的外观细节参考（参考输入）](<../../art_test/character_animation_report/references/77e6d6c301/display.png>)
+![逐帧编辑实际使用的外观细节参考（参考输入）](<../../references/character-animation/character_animation_report/references/77e6d6c301/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/77e6d6c301/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/77e6d6c301/original.png>)
 
 **参考：原生动作输入1–10**。
 
-![原生动作输入1–10（参考输入）](<../../art_test/character_animation_report/references/786ce556bd/reference-preview-01.png>)
+![原生动作输入1–10（参考输入）](<../../references/character-animation/character_animation_report/references/786ce556bd/reference-preview-01.png>)
 
-![原生动作输入1–10（参考输入）](<../../art_test/character_animation_report/references/786ce556bd/reference-preview-02.png>)
+![原生动作输入1–10（参考输入）](<../../references/character-animation/character_animation_report/references/786ce556bd/reference-preview-02.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/786ce556bd/reference-native-atlas.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/786ce556bd/reference-native-atlas.png>)
 
 **参考：第9帧朝向返修前的迁移图**。
 
-![第9帧朝向返修前的迁移图（参考输入）](<../../art_test/character_animation_report/references/73e1fe010d/display.png>)
+![第9帧朝向返修前的迁移图（参考输入）](<../../references/character-animation/character_animation_report/references/73e1fe010d/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/73e1fe010d/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/73e1fe010d/original.png>)
 
 ### 该方案的序列效果
 
@@ -1366,19 +1366,19 @@
 
 预览按原帧顺序排列；以整数倍率最近邻放大，背景棋盘格仅用于检视。
 
-![新形象迁移：逐帧严格编辑＋保留原轨迹图集预览](<../../art_test/character_animation_report/case-26/main/atlas-preview-01.png>)
+![新形象迁移：逐帧严格编辑＋保留原轨迹图集预览](<../../references/character-animation/character_animation_report/case-26/main/atlas-preview-01.png>)
 
-![新形象迁移：逐帧严格编辑＋保留原轨迹图集预览](<../../art_test/character_animation_report/case-26/main/atlas-preview-02.png>)
+![新形象迁移：逐帧严格编辑＋保留原轨迹图集预览](<../../references/character-animation/character_animation_report/case-26/main/atlas-preview-02.png>)
 
 **动画检视**（像素分支为慢放，非原生帧文件）
 
-![新形象迁移：逐帧严格编辑＋保留原轨迹动画检视](<../../art_test/character_animation_report/case-26/main/animation-review.gif>)
+![新形象迁移：逐帧严格编辑＋保留原轨迹动画检视](<../../references/character-animation/character_animation_report/case-26/main/animation-review.gif>)
 
 **原生序列图：960×96 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-![新形象迁移：逐帧严格编辑＋保留原轨迹原生序列图](<../../art_test/character_animation_report/case-26/main/native-sequence.png>)
+![新形象迁移：逐帧严格编辑＋保留原轨迹原生序列图](<../../references/character-animation/character_animation_report/case-26/main/native-sequence.png>)
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-26/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-26/main/native-sequence.png>)
 
 **结果对应的源文件：** C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/meowa-reference-reskin-first10-96/frames/attack-01.png；C:/Users/PC/.codex/visualizations/2026/10/15/01a13daf-c9be-7fd2-9ba6-93226b01beaf/meowa-reference-reskin-first10-96/frames/attack-02.png；其余 8 张按文件名顺序读取。
 
@@ -1398,9 +1398,9 @@
 
 **参考：该讨论的像素挥剑／拖影参考**。
 
-![该讨论的像素挥剑／拖影参考（参考输入）](<../../art_test/character_animation_report/references/eebbb17262/display.png>)
+![该讨论的像素挥剑／拖影参考（参考输入）](<../../references/character-animation/character_animation_report/references/eebbb17262/display.png>)
 
-[打开参考原文件／原尺寸参考图集](<../../art_test/character_animation_report/references/eebbb17262/original.png>)
+[打开参考原文件／原尺寸参考图集](<../../references/character-animation/character_animation_report/references/eebbb17262/original.png>)
 
 ### 该方案的序列效果
 
@@ -1408,21 +1408,21 @@
 
 预览按原帧顺序排列；大图／结构稿仅在此预览缩小，下面的原生序列图保留原始像素。
 
-![程序控制刚体武器：24帧空间斜砍图集预览](<../../art_test/character_animation_report/case-27/main/atlas-preview-01.png>)
+![程序控制刚体武器：24帧空间斜砍图集预览](<../../references/character-animation/character_animation_report/case-27/main/atlas-preview-01.png>)
 
-![程序控制刚体武器：24帧空间斜砍图集预览](<../../art_test/character_animation_report/case-27/main/atlas-preview-02.png>)
+![程序控制刚体武器：24帧空间斜砍图集预览](<../../references/character-animation/character_animation_report/case-27/main/atlas-preview-02.png>)
 
-![程序控制刚体武器：24帧空间斜砍图集预览](<../../art_test/character_animation_report/case-27/main/atlas-preview-03.png>)
+![程序控制刚体武器：24帧空间斜砍图集预览](<../../references/character-animation/character_animation_report/case-27/main/atlas-preview-03.png>)
 
 **动画检视**（展示用尺寸）
 
-![程序控制刚体武器：24帧空间斜砍动画检视](<../../art_test/character_animation_report/case-27/main/animation-review.gif>)
+![程序控制刚体武器：24帧空间斜砍动画检视](<../../references/character-animation/character_animation_report/case-27/main/animation-review.gif>)
 
 画面外的帧号只用于检视，确保GIF保留每一张源帧；原生序列图没有叠加帧号。
 
 **原生序列图：3200×3200 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-[打开／保存原生序列图](<../../art_test/character_animation_report/case-27/main/native-sequence.png>)
+[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-27/main/native-sequence.png>)
 
 **结果对应的源文件：** E:/meowjitoProject/HD-2D/demoWithMeowa/1/art_test/knight_greatsword_slash/frames/slash_01.png；E:/meowjitoProject/HD-2D/demoWithMeowa/1/art_test/knight_greatsword_slash/frames/slash_02.png；其余 22 张按文件名顺序读取。
 
@@ -1469,16 +1469,16 @@
 
 ## 来源与文件说明
 
-图像均来自已留存的项目资源、用户上传参考、当前对话产物和既有工作目录。报告配套图片存放在项目 art_test/character_animation_report/，Markdown位于 docs/animation/。没有覆盖或移动原始素材。
+图像均来自已留存的项目资源、用户上传参考、当前对话产物和既有工作目录。报告配套图片存放在docs/references/character-animation/character_animation_report/，Markdown位于 docs/visuals/character-animation/。没有覆盖或移动原始素材。
 
-单把武器试验的详细约束：[knight_greatsword_slash_constraints.md](<../../art_test/knight_greatsword_slash/knight_greatsword_slash_constraints.md>)
+单把武器试验的详细约束：[knight_greatsword_slash_constraints.md](<../../references/character-animation/knight_greatsword_slash/knight_greatsword_slash_constraints.md>)
 
 ## 跨分支代表帧速览
 
 每格仅取该方案中间的一帧，便于快速辨认版本；完整动作效果以上面各节的图集与动画为准。
 
-![跨分支效果速览](<../../art_test/character_animation_report/overview-01.png>)
+![跨分支效果速览](<../../references/character-animation/character_animation_report/overview-01.png>)
 
-![跨分支效果速览](<../../art_test/character_animation_report/overview-02.png>)
+![跨分支效果速览](<../../references/character-animation/character_animation_report/overview-02.png>)
 
-![跨分支效果速览](<../../art_test/character_animation_report/overview-03.png>)
+![跨分支效果速览](<../../references/character-animation/character_animation_report/overview-03.png>)

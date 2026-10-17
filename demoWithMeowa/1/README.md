@@ -1,6 +1,6 @@
 # Godot 项目目录
 
-使用 Godot 4.7.2 打开本目录的 `project.godot`。F5 默认运行正式主场景 [scenes/world/world.tscn](scenes/world/world.tscn)，只保留当前战斗区及外围绕行带，布局说明见 [正式地图](scenes/world/README.md)。[四境视觉沙盒](scenes/previews/four_realms.tscn)保留作光影与材质对照。地图切换和参数总览均位于编辑器右侧。
+使用 Godot 4.7.2 打开本目录的 `project.godot`。F5 默认运行正式主场景 [scenes/world/world.tscn](scenes/world/world.tscn)，当前活动范围为 32×32 米战斗核心，布局说明见 [正式地图](scenes/world/README.md)。[四境视觉沙盒](scenes/previews/four_realms.tscn)保留作光影与材质对照。地图切换和参数总览均位于编辑器右侧。
 
 ## 文件放置
 
@@ -27,9 +27,11 @@
 | `materials/` | 可复用材质资源 |
 | `addons/` | 编辑器工具 |
 | `tests/` | 当前回归检查与共享夹具，保留被其它测试继承的基类 |
-| `tools/` | 可重复使用的资产准备工具 |
+| `tools/` | 可重复使用的资产准备、测试运行与性能诊断工具 |
 
 `.gd.uid`、`.gdshader.uid` 等跟随所属资源保留，`.import` 跟随对应素材。资源移动后同时更新场景引用、`preload/load`、Shader include、配置和说明链接；不通过复制同一资源创建新的 UID。
+
+不参与游戏运行的角色美术试作统一位于仓库级 `docs/references/character-animation/`，动画报告位于 `docs/visuals/character-animation/`；不放进 Godot 工程目录。原图、原生动画、导入配套文件和历史脚本保留。
 
 ## 运行与检查
 
@@ -62,7 +64,9 @@
 
 `BattleConfiguration` 的 `scene_combat_binding.gd` 只在组件就绪前装配所选场景的独立数值资源，不把角色接到局内技能管理器。World 和 City 均已保存角色技能子场景；其它保留预览由 Player 自动补齐同一角色组件。旧 `RunSkills` 类只兼容可学习技能入口。
 
-World 和 City 的实际平衡、动作槽和表现开关以各自独立配置为准；更新通用 `data/enemies`、`data/player`、`data/waves` 不会自动覆盖它们。新增反弹、火带和剑光实现保留，启用时在相应地图资源中配置。World 保留既有布局、地表、镜头与光影；新增极光和静态合批默认关闭，可在对应组件独立开启。计分与统一设置界面接入共享战斗和 World，不改变编辑器 Game Manager 的现有开关。
+World 和 City 的实际平衡、动作槽和表现开关以各自独立配置为准；更新通用 `data/enemies`、`data/player`、`data/waves` 不会自动覆盖它们。反弹、火带、剑光与极光由对应地图资源或组件独立选择；静态合批保留原型，当前正式地图未启用。计分与统一设置界面接入共享战斗和 World，不改变编辑器 Game Manager 的现有开关。
+
+World 的「设置 → 画质与显示」集中提供显示、抗锯齿、阴影、后处理、水面和天气选项，控件悬停可查看说明；完整用法见[画质参数解释](../../docs/technical/parameters-and-styles.md#画质参数的含义)。全屏分辨率调整的是实际 3D 缓冲，UI 保持输出分辨率；个人设置保存至 `user://graphics_settings.cfg`，不回写地图。内嵌运行不提供全屏切换，需改用独立窗口。
 
 波次数量、组间空档、批量分配和间隔增长的纯计算位于 `scripts/combat/wave_schedule_planner.gd`，不依赖地图、怪物实例或 UI。`wave_spawn_queue.gd` 持有实际待生成队列，统一处理分帧预算、整批预留、满员等待、位置重试和取消；`wave_enemy_roster.gd` 统一登记存活对象、分类数量、容量成本和空间索引，死亡与退出回调只释放一次。WavePrototype 连接地图查询、实际实例化和战斗阶段，既有调用入口与调参路径保留。规划只生成新的资源条目，不修改开场模板。
 

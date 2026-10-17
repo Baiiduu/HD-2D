@@ -1,6 +1,6 @@
 # 项目文档
 
-当前 Godot 项目：`demoWithMeowa/1`。正式地图集中在战斗区与外围绕行带，视觉测试地图独立维护。本体蓄力弹射、墙面反弹与同旋向切线拨怪已接入；人物自带普攻和弹射挥剑独立于 A01，并与已有自动技能共享局内属性增益。设计提案与实际接入状态分别标明。
+当前 Godot 项目：`demoWithMeowa/1`，F5 运行正式地图，活动范围为 32×32 米战斗核心，视觉测试地图独立维护。本体蓄力弹射、墙面反弹与怪群外沿自动环绕已接入，正式拨怪关闭；人物自带普攻和弹射挥剑独立于 A01，并与已有技能共享局内属性增益。设计提案与实际接入状态分别标明。
 
 总体玩法与战斗核心设计保留在本目录，便于持续讨论。其余文件按用途分组：
 
@@ -12,7 +12,7 @@
 | `audio/` | 动作和 UI 声音说明，战斗声音接口见自动扇击文档 |
 | `technical/` | 参数入口、性能、制作教程与问题反馈 |
 | `media/` | 实机截图、动画、试听，保留各功能原有预览目录名 |
-| `references/` | 已确认参考、界面部件展示与原始反馈证据 |
+| `references/` | 已确认参考、原始美术试作、界面部件展示与反馈证据；试作不代表正式采用 |
 | `archive/` | 已结束的历史设计 |
 
 当前项目入口和代码目录见 [仓库说明](../README.md) 与 [Godot 目录说明](../demoWithMeowa/1/README.md)。
@@ -22,8 +22,8 @@
 | 文档 | 内容 |
 | --- | --- |
 | [当前玩法与实现状态](rpg-game-design.md) | 手动普攻与本体弹射的确认范围、已接入原型及待定规则 |
-| [人物本体弹射框架](gameplay/player-ricochet.md) | 右键蓄力、胶囊反弹、同向切线拨怪、五类动作资源槽与试玩参数 |
-| [人物自带基础剑术](gameplay/player-sword.md) | 左键普攻、弹射自动挥剑、真实连续命中与共享属性；当前独立剑光停用 |
+| [人物本体弹射框架](gameplay/player-ricochet.md) | 右键蓄力、胶囊反弹、怪群外沿与自动环绕、动作资源槽与试玩参数 |
+| [人物自带基础剑术](gameplay/player-sword.md) | 左键普攻、弹射自动挥剑、真实连续命中与共享属性；表现由各地图资源独立选择 |
 | [伤害数字框架](gameplay/damage-numbers.md) | 真实伤害事件、可替换样式、弹跳错位、旋转投影、冻结与节点复用 |
 | [战斗内容候选](combat-core-design.md) | 原自动攻击方案的怪物、攻击、增益与构筑讨论池；具体数量与规则继续讨论 |
 | [趣味海克斯提案](hex-system-proposal.md) | 阵法边界、地陷、庇护与上一局援场等候选，尚未接入 |
@@ -40,11 +40,11 @@
 | [本局战斗增益](gameplay/combat-buffs.md) | 伤害、冷却、范围的升级卡、叠加、封顶与参数调节 |
 | [无尽波次](gameplay/endless-waves.md) | 无限续波、清波休整、数量和节奏增长、上限与参数 |
 | [地图效果接入](visuals/map-effects.md) | 通用效果场景、正式地图连接与调节入口 |
-| [参数总览与 Style](technical/parameters-and-styles.md) | Godot 七类参数入口、控制对象、R 切光影天气与 T 重试 |
+| [参数总览、画质与 Style](technical/parameters-and-styles.md) | 编辑器参数入口、游戏内画质选项含义、全屏分辨率、R 切光影天气与 T 重试 |
 | [计分、得分 HUD 与排行榜接口](technical/leaderboard-api.md) | 真实击杀与清波计分、数字动效、独立后端及 PostgreSQL 部署；登录与上传待定 |
 | [游戏启动性能](technical/startup-performance.md) | 正式地图草花区域检索瓶颈、优化前后计时与后续方案 |
-| [攻击性能与资源复用](gameplay/attack-performance.md) | A01 网格与查询优化、A02 拖尾及星芒复用、敌方受击资格和后续攻击要求 |
-| [正式地图说明](../demoWithMeowa/1/scenes/world/README.md) | 当前战斗区、外围绕行带、弹射障碍与手绘地表 |
+| [CPU 与 GPU 性能优化](gameplay/attack-performance.md) | 独立隔离方法、当前证据、复现入口与完整 128 怪验收；区分降画质和实现收益 |
+| [正式地图说明](../demoWithMeowa/1/scenes/world/README.md) | 当前战斗核心、弹射障碍与手绘地表 |
 | [地表画笔](../demoWithMeowa/1/addons/terrain_painter/README.md) | 地表绘制、画笔配置、保存与撤销 |
 | [编辑器地图切换](../demoWithMeowa/1/addons/map_switcher/README.md) | 打开、运行与设置默认开发地图 |
 | [训练小屋](gameplay/training-hut.md) | 保留原型的交互、属性、建筑参数与存档；已退出正式地图 |
@@ -67,6 +67,7 @@
 | [技能栏](ui/skill-hud.md) | 已确认的槽位外框、本局技能图标与等级、视觉参数 |
 | [UI 操作音效](audio/ui-audio.md) | 共用声音、操作对应与音量配置 |
 | [人物动作音效](audio/movement-audio.md) | 地表脚步过渡、起跳与落地 |
+| [角色动画试作报告](visuals/character-animation/character_animation_attempts_report.md) | 多分支试作、失败与限制；[离线 HTML](visuals/character-animation/character_animation_attempts_report.html)，配套原图与中间产物集中在 `references/character-animation/` |
 | [背景音乐与曲池](audio/background-music.md) | 探索／战斗状态选曲、双路衔接、曲池扩展与参数入口 |
 
 ## 视觉与声音
