@@ -1,5 +1,8 @@
 shader_type spatial;
 render_mode unshaded, cull_disabled, depth_test_disabled, depth_draw_never, shadows_disabled, fog_disabled;
+#include "res://shaders/includes/character_motion.gdshaderinc"
+instance uniform vec3 motion_lean = vec3(0.0);
+instance uniform vec3 motion_pivot = vec3(0.0);
 
 // Draw only the hidden silhouette edge; leave the character and scene depth intact.
 uniform sampler2D sprite_texture : filter_nearest, repeat_disable;
@@ -26,7 +29,7 @@ void vertex() {
 	mat4 billboard = mat4(vec4(right * length(MODEL_MATRIX[0].xyz), 0.0),
 		vec4(up * length(MODEL_MATRIX[1].xyz), 0.0),
 		vec4(facing * length(MODEL_MATRIX[2].xyz), 0.0), MODEL_MATRIX[3]);
-	MODELVIEW_MATRIX = VIEW_MATRIX * billboard;
+	MODELVIEW_MATRIX = VIEW_MATRIX * character_motion_card(billboard, motion_pivot, motion_lean);
 }
 
 float coverage(vec2 uv) {

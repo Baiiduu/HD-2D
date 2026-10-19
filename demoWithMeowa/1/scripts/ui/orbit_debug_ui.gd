@@ -84,10 +84,7 @@ func _check(text: String, initial: bool, callback: Callable) -> CheckBox:
 	return check
 
 func _build_ui() -> void:
-	var font := SystemFont.new()
-	font.font_names = PackedStringArray(["Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC"])
 	var theme := Theme.new()
-	theme.default_font = loadout._theme.default_font if loadout and loadout._theme else font
 	theme.default_font_size = 16
 	_launcher = _button("环绕调试", func(): set_debug_enabled(not debug_enabled))
 	_launcher.theme = theme

@@ -11,6 +11,8 @@ uniform float trail_angle = 1.08;
 uniform float band_width = 0.25;
 uniform float body_opacity = 0.08;
 uniform float tail_spread = 2.5;
+uniform float tail_width_scale = 1.0;
+uniform float visibility_strength = 0.0;
 uniform float tail_inner_ratio = 0.3;
 uniform float opacity = 0.9;
 uniform float energy = 0.08;
@@ -48,16 +50,20 @@ void fragment() {
 	// 外端对应真实刀锋，后缘沿曲线收回腰侧，不绘制人物至刀锋的直线。
 	float curve_radius = attack_radius * mix(tail_inner_ratio, 1.0, pow(1.0 - tail, 1.5));
 	float width = max(min(band_width, curve_radius * 0.65) * taper, 0.0001);
-	float trail_width = max(min(band_width * tail_spread, curve_radius * 0.65) * taper, 0.0001);
+	float trail_width = max(min(band_width * tail_spread * tail_width_scale, curve_radius * 0.65) * taper, 0.0001);
 	float radial = length(point) - curve_radius;
 	vec4 body = original_band((radial + width) / width, tail, 1.70);
 	vec4 trail = original_band((radial + trail_width) / trail_width, tail, 2.80);
 	// 白刃只留少量提示；有色笔触及碎屑在更宽的区域直接取自原帧。
 	body.a *= (1.0 - colored_tail(body.rgb)) * body_opacity;
 	trail.a *= colored_tail(trail.rgb);
+	// 对比集中在前端短刃；保留原图颜色与透明碎屑，强度 0 恢复原版。
+	float front = visibility_strength * (1.0 - smoothstep(0.16, 0.60, tail));
+	body.a = mix(body.a, min(body.a * 5.0, 0.9), front);
+	trail.a = mix(trail.a, min(trail.a * 1.7, 0.9), visibility_strength);
 	float combined_alpha = body.a + trail.a * (1.0 - body.a);
 	vec3 color = (body.rgb * body.a + trail.rgb * trail.a * (1.0 - body.a)) / max(combined_alpha, 0.0001);
 	ALBEDO = color;
-	EMISSION = color * energy;
+	EMISSION = color * (energy + visibility_strength * 0.35);
 	ALPHA = combined_alpha * opacity * angular_mask;
 }

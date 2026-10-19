@@ -115,6 +115,7 @@ func _enabled() -> bool:
 	return rules.enabled
 
 func _physics_process(delta: float) -> void:
+	if player.hit_stop_active: return
 	if not _enabled() or not rules.validation_error().is_empty() or player.current_health <= 0.0:
 		cancel()
 		_last_position = player.global_position
@@ -187,7 +188,7 @@ func _simulate(start: Vector3, end: Vector3, seconds: float, flying: bool, headi
 		if _age >= _settings.windup_seconds - 0.000001 and _age < _settings.windup_seconds + _settings.sweep_seconds - 0.000001:
 			var from := start.lerp(end, fraction)
 			var to := start.lerp(end, PlayerRicochetRules.segment_fraction(time + step, seconds, speed, deceleration))
-			_collect_hits(from, to, (_age - _settings.windup_seconds) / _settings.sweep_seconds, (_age + step - _settings.windup_seconds) / _settings.sweep_seconds, flying, _piece_time + time, step)
+			_collect_hits(from, to, (_age - _settings.windup_seconds) / _settings.sweep_seconds, (_age + step - _settings.windup_seconds) / _settings.sweep_seconds, flying, _piece_time + time, step, maxf(0.0, speed - deceleration * time), deceleration)
 			if _age + step >= _settings.windup_seconds + _settings.sweep_seconds - 0.000001:
 				_start_tail(to, maxf(0.0, _frame_seconds - _piece_time - time - step))
 		_age += step
@@ -199,6 +200,9 @@ func _simulate(start: Vector3, end: Vector3, seconds: float, flying: bool, headi
 
 func _begin(heading: Vector3, flying: bool) -> void:
 	_settings = rules.duplicate()
+	if _settings.ribbon_visual: _settings.ribbon_visual = _settings.ribbon_visual.duplicate()
+	if flying and player.action_visuals and player.action_visuals.combat_readability_enabled and _settings.meowa_body_opacity > 0.0:
+		_settings.meowa_body_opacity = maxf(_settings.meowa_body_opacity, player.action_visuals.combat_sword_body_opacity)
 	_stats = get_stats(flying)
 	_settings.windup_seconds *= float(_stats.motion_scale)
 	_settings.sweep_seconds *= float(_stats.motion_scale)
@@ -216,7 +220,7 @@ func _begin(heading: Vector3, flying: bool) -> void:
 	_tap = false
 	_requested_heading = Vector3.ZERO
 	player.face_world_direction(_heading)
-	player.action_animator.request_attack(&"flight_attack" if flying else &"normal_attack", _heading)
+	player.action_animator.play_attack(&"flight_attack" if flying else &"normal_attack", _heading, _settings.duration())
 	player.normal_attack_requested.emit(_heading)
 	strike_started.emit(_heading, flying, _reverse)
 	_play_sound(false, player.global_position)
@@ -229,10 +233,10 @@ func _eligible(enemy: WaveEnemy) -> bool:
 
 func _can_reach(origin: Vector3, enemy: WaveEnemy) -> bool:
 	var height := _settings.height_tolerance if swinging else rules.height_tolerance
-	if not _eligible(enemy) or absf(_path.ground_position(origin).y - _path.ground_position(enemy.global_position).y) > height: return false
+	if not _eligible(enemy): return false
 	var point := _path.ground_position(origin)
-	if absf(enemy.global_position.y - point.y) > height: return false
 	var target := _path.ground_position(enemy.global_position)
+	if absf(point.y - target.y) > height or absf(enemy.global_position.y - point.y) > height: return false
 	var length := TerrainPath.horizontal_distance(point, target)
 	var direction := (target - point).normalized()
 	if _collision.ground_limit(_path, point, direction, length, point.y, height) < length - 0.00001: return false
@@ -281,13 +285,15 @@ func preview_target(route: AimPathData) -> WaveEnemy:
 		if target: return target
 	return null
 
-func _collect_hits(start: Vector3, end: Vector3, first: float, last: float, moving_flight: bool, start_time: float, seconds: float) -> void:
+func _collect_hits(start: Vector3, end: Vector3, first: float, last: float, moving_flight: bool, start_time: float, seconds: float, speed := 0.0, deceleration := 0.0) -> void:
 	if not _combat_active(): return
 	var basis := Basis(Vector3.UP, atan2(-_heading.x, -_heading.z))
 	var angle: float = deg_to_rad(_stats.angle)
 	var steps := maxi(1, maxi(ceili(TerrainPath.horizontal_distance(start, end) / 0.03), ceili(absf(last - first) * angle / deg_to_rad(2.0))))
-	var candidates := session.get_nearby_enemies((start + end) * 0.5, _stats.range + TerrainPath.horizontal_distance(start, end) * 0.5)
+	# 公共查询的覆写可能返回共享列表；切片内只裁减本次自己的候选。
+	var candidates: Array[WaveEnemy] = session.get_nearby_enemies((start + end) * 0.5, _stats.range + TerrainPath.horizontal_distance(start, end) * 0.5).duplicate()
 	for index in steps:
+		if candidates.is_empty(): break
 		var a := start.lerp(end, float(index) / steps)
 		var b := start.lerp(end, float(index + 1) / steps)
 		var p := lerpf(first, last, float(index) / steps)
@@ -296,14 +302,27 @@ func _collect_hits(start: Vector3, end: Vector3, first: float, last: float, movi
 		var right := lerpf(-angle * 0.5, angle * 0.5, 1.0 - q if _reverse else q)
 		var tip_a: Vector3 = a + basis * Vector3(sin(left), 0, -cos(left)) * float(_stats.range)
 		var tip_b: Vector3 = b + basis * Vector3(sin(right), 0, -cos(right)) * float(_stats.range)
-		for enemy in candidates:
-			if not _eligible(enemy) or _hits.has(enemy.get_instance_id()): continue
+		# 已处理目标不再参与剩余切片；顺序和未命中目标的精确采样保持不变。
+		var candidate_index := 0
+		while candidate_index < candidates.size():
+			var enemy: WaveEnemy = candidates[candidate_index]
+			if not _eligible(enemy) or _hits.has(enemy.get_instance_id()):
+				candidates.remove_at(candidate_index)
+				continue
 			var entry := PlayerRicochet.circle_entry(a, b, enemy.global_position, _stats.range)
-			if entry < 0.0 or not swept_blade(enemy.global_position, a, tip_a, tip_b, b): continue
+			if entry < 0.0 or not swept_blade(enemy.global_position, a, tip_a, tip_b, b):
+				candidate_index += 1
+				continue
 			var origin := a.lerp(b, entry)
-			if not _can_reach(origin, enemy): continue
+			if not _can_reach(origin, enemy):
+				candidate_index += 1
+				continue
 			_hits[enemy.get_instance_id()] = true
-			_pending_hits.append({"enemy": enemy, "damage": _stats.damage, "origin": origin, "heading": _heading, "flying": _flight_swing and moving_flight, "flight_id": player.body_ricochet.flight_serial if _flight_swing and moving_flight else 0, "time":start_time + seconds * (index + entry) / steps})
+			candidates.remove_at(candidate_index)
+			var time := PlayerRicochetRules.segment_time((index + entry) / steps, seconds, speed, deceleration)
+			var motion := (end - start).normalized() * maxf(0.0, speed - deceleration * time) if speed > 0.0 else (end - start) / maxf(seconds, 0.000001)
+			_pending_hits.append({"enemy": enemy, "damage": _stats.damage, "origin": origin, "heading": _heading, "flying": _flight_swing and moving_flight, "flight_id": player.body_ricochet.flight_serial if _flight_swing and moving_flight else 0, "time":start_time + seconds * (index + entry) / steps,
+				"motion_velocity": motion, "contact_distance": TerrainPath.horizontal_distance(origin, enemy.global_position), "slash_direction": (tip_b - tip_a).normalized()})
 
 static func swept_blade(point: Vector3, a: Vector3, tip_a: Vector3, tip_b: Vector3, b: Vector3) -> bool:
 	var p := Vector2(point.x, point.z)
@@ -333,29 +352,41 @@ func _drain_hits() -> void:
 		var enemy: WaveEnemy = hit.enemy
 		if not _eligible(enemy): continue
 		var before := enemy.health
-		enemy.take_damage(hit.damage, {"source": &"flight_sword" if hit.flying else &"basic_sword", "direction": hit.heading, "flight_id": hit.get("flight_id", 0)})
+		enemy.take_damage(hit.damage, {"source": &"flight_sword" if hit.flying else &"basic_sword", "direction": hit.heading, "flight_id": hit.get("flight_id", 0), "motion_velocity": hit.get("motion_velocity", Vector3.ZERO), "contact_distance": hit.get("contact_distance", TerrainPath.horizontal_distance(hit.origin, enemy.global_position)), "slash_direction": hit.get("slash_direction", Vector3.ZERO)})
 		if not is_instance_valid(enemy): continue
 		var dealt := before - enemy.health
 		if dealt <= 0.0 and not session.combat_modifiers.damage_disabled: continue
+		if hit.flying and not enemy.dead: _show_melee_contact(enemy, hit.heading, hit.origin)
 		_play_sound(true, enemy.global_position)
 		if hit.flying and not enemy.dead:
 			if session.combat_frozen: _pending_pushes.append(hit)
 			else: player.body_ricochet.push_after_sword_hit(enemy, hit.origin, hit.heading, hit.time)
 		hit_landed.emit(enemy, dealt, hit.flying)
 
+func _show_melee_contact(enemy: WaveEnemy, heading: Vector3, origin: Vector3) -> void:
+	var visuals := player.action_visuals
+	if not visuals or not visuals.combat_readability_enabled or not is_instance_valid(session._attack_root): return
+	var feedback := session._attack_root.get_node_or_null("EnemyFeedbackPool") as EnemyFeedbackPool
+	if not feedback:
+		feedback = EnemyFeedbackPool.new()
+		feedback.name = "EnemyFeedbackPool"
+		session._attack_root.add_child(feedback)
+	feedback.melee_contact(enemy.get_contact_feedback_position(origin), player.sprite.pixel_size * player.sprite.global_basis.x.length(), heading, visuals)
+
 func _update_effect() -> void:
 	_update_tails()
 	if not swinging or _age < _settings.windup_seconds or not _path.data or not _surface:
 		_effect.hide()
 		return
-	if _settings.effect_mode == PlayerSwordRules.SlashVisual.MEOWA_ARC and _age >= _settings.windup_seconds + _settings.sweep_seconds - 0.000001:
+	if _settings.has_world_tail() and _age >= _settings.windup_seconds + _settings.sweep_seconds - 0.000001:
 		_effect.hide()
 		return
 	_effect.display(_path.ground_position(player.global_position), _heading, _stats.range, _stats.angle, _reverse,
 		_settings.frames, _age - _settings.windup_seconds, _settings, _path, _surface, [player.get_rid()])
 
 func _start_tail(point: Vector3, elapsed: float) -> void:
-	if _settings.effect_mode != PlayerSwordRules.SlashVisual.MEOWA_ARC or not _settings.frames or not _path.data or not _surface or elapsed >= _settings.meowa_tail_seconds: return
+	if not _settings.has_world_tail() or not _path.data or not _surface or elapsed >= _settings.tail_seconds(): return
+	if _settings.effect_mode == PlayerSwordRules.SlashVisual.MEOWA_ARC and not _settings.frames: return
 	var slot: Dictionary
 	for tail in _tail_pool:
 		if tail.age < 0.0:
@@ -369,13 +400,13 @@ func _start_tail(point: Vector3, elapsed: float) -> void:
 		slot = {"effect": effect}
 		_tail_pool.append(slot)
 	slot.merge({"age": elapsed, "origin": _path.ground_position(point), "heading": _heading,
-		"radius": _stats.range, "angle": _stats.angle, "reverse": _reverse, "settings": _settings, "fresh": true}, true)
+		"radius": _stats.range, "angle": _stats.angle, "reverse": _reverse, "settings": _settings, "flying": _flight_swing, "fresh": true}, true)
 
 func _advance_tails(delta: float) -> void:
 	for tail in _tail_pool:
 		if tail.age < 0.0: continue
 		tail.age += delta
-		if tail.age >= tail.settings.meowa_tail_seconds - 0.000001:
+		if tail.age >= tail.settings.tail_seconds() - 0.000001:
 			tail.age = -1.0
 			tail.effect.hide()
 
@@ -386,8 +417,11 @@ func _update_tails() -> void:
 		if tail.age < 0.0: continue
 		var settings: PlayerSwordRules = tail.settings
 		var effect: GroundSlashEffect = tail.effect
+		var opacity := 1.0
+		if tail.get("flying", false) and player.action_visuals and player.action_visuals.combat_readability_enabled:
+			opacity = lerpf(1.0, player.action_visuals.combat_residue_opacity, smoothstep(0.0, 0.16, tail.age))
 		effect.display(tail.origin, tail.heading, tail.radius, tail.angle, tail.reverse, settings.frames,
-			settings.sweep_seconds + tail.age, settings, _path, _surface, excluded)
+			settings.sweep_seconds + tail.age, settings, _path, _surface, excluded, opacity)
 		if tail.fresh:
 			effect.reset_physics_interpolation()
 			tail.fresh = false

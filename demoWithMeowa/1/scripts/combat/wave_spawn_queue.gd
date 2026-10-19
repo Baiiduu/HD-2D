@@ -1,6 +1,8 @@
 class_name WaveSpawnQueue
 extends RefCounted
 ## 持有待生成任务、批次预留和重试状态；地图与会话通过显式端口接入。
+signal warning_started(job: Dictionary, seconds: float)
+signal warning_finished(id: int, spawned: bool)
 
 class Services extends RefCounted:
 	var active_limit := 1
@@ -8,6 +10,8 @@ class Services extends RefCounted:
 	var spawn_budget := 1
 	var retry_interval := 0.3
 	var block_timeout := 10.0
+	var warning_seconds := 0.0
+	var prepare: Callable
 	var alive_count: Callable
 	var has_capacity: Callable
 	var spawn: Callable
@@ -20,6 +24,8 @@ class Services extends RefCounted:
 
 var jobs: Array[Dictionary] = []
 var reserved_batch: Dictionary = {}
+## 仅保存已验证的预告落点；不实例化怪物，也不登记到伤害／找怪索引。
+var prepared_jobs: Dictionary[int, Dictionary] = {}
 var sequence := 0
 var queued_total := 0
 var capacity_waiting := 0
@@ -27,11 +33,40 @@ var capacity_blocked := false
 var _revision := 0
 
 func clear() -> void:
+	_revision += 1
+	for id: int in prepared_jobs.keys(): _release_warning(id, false)
 	jobs.clear()
 	reserved_batch.clear()
 	capacity_waiting = 0
 	capacity_blocked = false
-	_revision += 1
+
+func _release_warning(id: int, spawned: bool) -> void:
+	if not prepared_jobs.has(id): return
+	var job := prepared_jobs[id]
+	prepared_jobs.erase(id)
+	job.erase("spawn_point")
+	job.erase("ready_at")
+	warning_finished.emit(id, spawned)
+
+## 整批尚未出生的成员 + 批外预告 + 当前申请，只计算一次容量。
+func capacity_reservation(job: Dictionary) -> Dictionary:
+	var members: Array[WaveEnemyDefinition] = []
+	if not reserved_batch.is_empty():
+		for definition: WaveEnemyDefinition in reserved_batch.counts:
+			for index in int(reserved_batch.counts[definition]): members.append(definition)
+	for prepared: Dictionary in prepared_jobs.values():
+		if prepared.batch.is_empty() or prepared.batch.id != reserved_batch.get("id", -1): members.append(prepared.enemy)
+	if job.batch.is_empty():
+		if not prepared_jobs.has(int(job.id)): members.append(job.enemy)
+	elif job.batch.id != reserved_batch.get("id", -1):
+		for definition: WaveEnemyDefinition in job.batch.counts:
+			for index in int(job.batch.counts[definition]): members.append(definition)
+	return make_batch(members, -1)
+
+func _batch_has_warning(batch: Dictionary) -> bool:
+	for job: Dictionary in prepared_jobs.values():
+		if not job.batch.is_empty() and job.batch.id == batch.id: return true
+	return false
 
 static func make_batch(members: Array[WaveEnemyDefinition], id: int) -> Dictionary:
 	var counts := {}
@@ -86,19 +121,27 @@ func process_due(clock: float, generation: int, services: Services) -> void:
 	var checked := 0
 	var spawned := 0
 	var synchronized := false
+	var warnings_enabled := services.warning_seconds > 0.0 and services.prepare.is_valid()
 	if reserved_batch.is_empty():
 		for job in jobs:
 			if job.due > clock: break
 			if not job.batch.is_empty() and job.next_attempt <= clock:
+				if warnings_enabled and not services.has_capacity.call(job): continue
 				reserved_batch = job.batch
 				break
 	# 追加任务不进入本帧快照；取消或更换会话立即终止旧迭代。
 	for job in jobs.duplicate():
 		if job.due > clock: break
 		if job.next_attempt > clock: continue
+		# 预告等待不查位置、不同步索引；冻结时 clock 同样保持不变。
+		if job.has("ready_at") and float(job.ready_at) > clock: continue
 		var batch: Dictionary = job.batch
 		if not batch.is_empty():
-			if reserved_batch.is_empty(): reserved_batch = batch
+			if reserved_batch.is_empty():
+				if warnings_enabled and not services.has_capacity.call(job):
+					capacity_waiting += 1
+					continue
+				reserved_batch = batch
 			if reserved_batch.id != batch.id:
 				job.blocked_since = -1.0
 				capacity_waiting += 1
@@ -113,22 +156,46 @@ func process_due(clock: float, generation: int, services: Services) -> void:
 			services.synchronize.call()
 			synchronized = true
 		checked += 1
+		if warnings_enabled and not prepared_jobs.has(int(job.id)):
+			var prepared: bool = services.prepare.call(job)
+			if revision != _revision or not services.current.call(generation): return
+			if prepared:
+				job.ready_at = clock + services.warning_seconds
+				prepared_jobs[int(job.id)] = job
+				spawned += 1 # 创建预告也遵守本帧预算，不把整批工作挤到同一帧。
+				warning_started.emit(job, services.warning_seconds)
+				if revision != _revision or not services.current.call(generation) or services.frozen.call(): return
+				continue
+			if _retry(job, batch, clock, services): return
+			if revision != _revision or not services.current.call(generation): return
+			continue
 		var success: bool = services.spawn.call(job)
 		if revision != _revision or not services.current.call(generation): return
 		if success:
 			jobs.erase(job)
+			_release_warning(int(job.id), true)
+			if revision != _revision or not services.current.call(generation): return
 			spawned += 1
 			services.changed.call()
 			if revision != _revision or not services.current.call(generation) or services.frozen.call(): return
 		else:
-			if not batch.is_empty() and batch.remaining == batch.size:
-				reserved_batch = {}
-				batch.erase("points")
-				batch.erase("zone")
-				batch.erase("front_points")
-			if job.blocked_since < 0: job.blocked_since = clock
-			job.next_attempt = clock + services.retry_interval
-			services.blocked.call()
-			if clock - float(job.blocked_since) >= services.block_timeout:
-				services.timed_out.call()
-				return
+			_release_warning(int(job.id), false)
+			if revision != _revision or not services.current.call(generation): return
+			if _retry(job, batch, clock, services): return
+			if revision != _revision or not services.current.call(generation): return
+
+func _retry(job: Dictionary, batch: Dictionary, clock: float, services: Services) -> bool:
+	if not batch.is_empty() and batch.remaining == batch.size and not _batch_has_warning(batch):
+		reserved_batch = {}
+		batch.erase("points")
+		batch.erase("zone")
+		batch.erase("front_points")
+	if job.blocked_since < 0: job.blocked_since = clock
+	job.next_attempt = clock + services.retry_interval
+	var revision := _revision
+	services.blocked.call()
+	if revision != _revision: return true
+	if clock - float(job.blocked_since) >= services.block_timeout:
+		services.timed_out.call()
+		return true
+	return false

@@ -34,6 +34,7 @@ uniform float blink_plant_duration = 0.85;
 uniform float blink_plant_rebound = 0.2;
 uniform float blink_plant_response = 1.0;
 varying vec3 blink_bend;
+#include "res://shaders/includes/charge_airflow.gdshaderinc"
 
 group_uniforms lighting;
 uniform bool lighting_enabled = true;
@@ -99,6 +100,7 @@ void vertex() {
 	// Limit overlapping impulses so repeated blinks do not stretch a clump indefinitely.
 	blink_bend /= max(1.0, length(blink_bend));
 	blink_bend *= blink_plant_strength * blink_plant_response * blink_weight;
+	blink_bend += charge_airflow(root) * blink_plant_response * blink_weight;
 	VERTEX.x += dot(blink_bend, right);
 	VERTEX.z += dot(blink_bend, forward);
 	// Wind and blink still animate the sprite; the ground's clump outline stays put.

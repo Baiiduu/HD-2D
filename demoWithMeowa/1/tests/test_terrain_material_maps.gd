@@ -27,7 +27,7 @@ func data_image(texture: Texture2D) -> Image:
 
 func _run() -> void:
 	var protected := {}
-	for path in ["res://data/world/world_surface.tres","res://data/world/world_terrain.tres","res://scenes/world/world.tscn"]:
+	for path in ["res://data/world/world_surface.res","res://data/world/world_terrain.tres","res://scenes/world/world.tscn"]:
 		protected[path]=FileAccess.get_sha256(path)
 	var palette := load("res://data/world/spawn_paint_palette.tres") as TerrainPaintPalette
 	check(palette.validation_error().is_empty(),"Existing palette accepts the aligned material maps")

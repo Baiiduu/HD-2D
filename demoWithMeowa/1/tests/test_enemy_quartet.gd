@@ -296,6 +296,12 @@ func run() -> void:
 		if actor.death_sound: check(actor.death_sound.get_length() > 0.0 and actor.death_sound.get_length() < 2.0, "壶兽碎裂 Meowa 音效正常导入")
 		actor.free()
 	world = load("res://scenes/world/world.tscn").instantiate()
+	# 无界面怪物逻辑检查不继承编辑器开启的人工入场预览。
+	world.get_node("WorldEntry").preview_on_direct_run = false
+	# 清波即时规则在此独立验证；最后一击演出由专门用例验收。
+	var presentation := world.get_node("WavePresentation") as WavePresentation
+	presentation.settings = presentation.settings.duplicate()
+	presentation.settings.finish_shot_enabled = false
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("WavePrototype/RunGrowth").enabled = false
 	root.add_child(world)

@@ -4,6 +4,7 @@
 
 | 地图 | 场景 |
 | --- | --- |
+| 回弹 · 动态主菜单 | `res://scenes/ui/main_menu.tscn` |
 | 正式连续地图 | `res://scenes/world/world.tscn` |
 | 视觉预览 | `res://scenes/previews/four_realms.tscn` |
 | 树池建筑预览 | `res://scenes/previews/tree_planter_preview.tscn` |

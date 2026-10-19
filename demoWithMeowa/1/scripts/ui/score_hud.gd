@@ -25,6 +25,8 @@ var _merge_time := 0.0
 var _feedback_time := 0.0
 var _kind: StringName = &"kill"
 var _details := {}
+## World 统一提供波次视觉配置；数值、入账与加分反馈不受标题样式影响。
+var wave_style: WavePresentationSettings
 
 func _ready() -> void:
 	layer = 12
@@ -51,9 +53,6 @@ func _build() -> void:
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.size = Vector2(310, 150)
 	add_child(_root)
-	var font := SystemFont.new()
-	font.font_names = PackedStringArray(["Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC"])
-	_root.add_theme_font_override("font", font)
 	_title = _label("本局得分", 16)
 	_title.size = Vector2(310, 25)
 	_root.add_child(_title)
@@ -116,7 +115,9 @@ func _commit() -> void:
 	_target = score.state.total
 	_count_time = 0.0
 	_gain.text = "+%s" % _format(_pending)
-	_hint.text = "第 %d 波完成" % int(_details.get("wave", 0)) if _kind == &"wave" else ("弹射连杀 %d" % int(_details.get("kills", 0)) if _kind == &"performance" else "")
+	var separate_title := wave_style and wave_style.compact_clear_enabled and score.session.is_endless()
+	var wave_hint := "第 %d 波完成" % int(_details.get("wave", 0)) if not separate_title else ""
+	_hint.text = wave_hint if _kind == &"wave" else ("弹射连杀 %d" % int(_details.get("kills", 0)) if _kind == &"performance" else "")
 	_feedback_time = 0.85 if _kind == &"wave" else 0.62
 	_pending = 0
 	# 在入账时确定变化位，逐帧计数不反复触发起跳。
@@ -130,6 +131,7 @@ func _commit() -> void:
 		if at < 0 or target_at < 0 or before[at] != after[target_at]: _pulse[index] = 0.26
 
 func _process(delta: float) -> void:
+	delta /= maxf(Engine.time_scale, 0.001)
 	_root.visible = not score.session.combat_frozen
 	for blocker in get_tree().get_nodes_in_group(&"gameplay_input_blockers"):
 		if blocker != score.session: _root.hide(); break

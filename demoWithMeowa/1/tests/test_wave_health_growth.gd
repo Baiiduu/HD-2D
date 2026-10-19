@@ -55,6 +55,8 @@ func run() -> void:
 	check(rules.multiplier(1000000000) == 1.0, "极小正增幅不溢出步数")
 	rules.bonus_per_wave = 0.15
 	world = load("res://scenes/world/world.tscn").instantiate()
+	world.get_node("WorldEntry").preview_on_direct_run = false
+	world.get_node("WavePresentation").enabled = false
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("WavePrototype/RunGrowth").enabled = false
 	var profile := preload("res://tests/fixtures/combat_scene_fixture.gd").isolate_profile(world)
@@ -73,6 +75,8 @@ func run() -> void:
 	current_scene = world
 	await settle(16)
 	wave = world.get_node("WavePrototype")
+	# 固定生命成长夹具沿用即时生成；不让新增视觉预告改变取样时刻。
+	wave.spawn_shadow_settings = null
 	wave.set_physics_process(false)
 	wave.player.set_physics_process(false)
 	check(wave.population_rules == profile.population_rules, "地图读取自己的独立数量配置")

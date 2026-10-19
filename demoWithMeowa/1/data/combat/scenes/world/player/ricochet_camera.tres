@@ -1,7 +1,36 @@
-[gd_resource type="Resource" script_class="RicochetCameraSettings" format=3]
+[gd_resource type="Resource" script_class="RicochetCameraSettings" format=3 uid="uid://b05nj64putm5m"]
 
 [ext_resource type="Script" uid="uid://bbk7ebwd1135n" path="res://scripts/camera/ricochet_camera_settings.gd" id="settings"]
+
+[sub_resource type="Curve" id="Curve_rebound"]
+_limits = [-1.0, 1.0, 0.0, 1.0]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.18, 1), 0.0, 0.0, 0, 0, Vector2(0.46, -0.2), 0.0, 0.0, 0, 0, Vector2(0.72, 0.025), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 5
 
 [resource]
 script = ExtResource("settings")
 lead_settle_seconds = 0.3
+bounce_inertia_seconds = 0.09
+flight_speed_camera_enabled = true
+flight_charge_focus_enabled = true
+orbit_focus_enabled = true
+combat_beat_enabled = true
+charge_focus_enabled = true
+charge_zoom_ratio = 0.12
+charge_onset_ratio = 0.5
+charge_focus_seconds = 0.08
+charge_release_seconds = 0.26
+charge_staging_enabled = true
+charge_tremor_enabled = true
+charge_release_handoff_enabled = true
+charge_release_burst = 1.0
+charge_direction_bias_ratio = 0.022
+charge_full_shake_enabled = true
+impact_shot_enabled = true
+impact_shot_curve = SubResource("Curve_rebound")
+impact_shot_seconds = 0.28
+impact_shot_offset_ratio = 0.024
+impact_shot_yaw_degrees = 1.5
+impact_shot_roll_degrees = 0.25
+impact_shot_pullback_ratio = 0.012
+impact_split_enabled = true

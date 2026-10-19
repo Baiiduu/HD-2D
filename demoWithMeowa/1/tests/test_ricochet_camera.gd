@@ -136,9 +136,9 @@ func lifecycle_checks() -> void:
 func settings_checks() -> void:
 	var formal: Node = load("res://scenes/world/world.tscn").instantiate()
 	var formal_settings: RicochetCameraSettings = formal.get_node("MapEffects/Camera3D").ricochet_camera_settings
-	check(formal_settings != null and formal_settings.enabled and formal_settings == load("res://data/player/ricochet_camera.tres"), "正式地图默认接入共享弹射镜头反馈配置")
+	check(formal_settings != null and formal_settings.enabled and formal_settings == load("res://data/combat/scenes/world/player/ricochet_camera.tres"), "正式地图编辑器与运行时共用独立弹射镜头配置")
 	var entries: Array[Dictionary] = preload("res://addons/parameter_hub/catalog.gd").new().collect(formal)
-	for property in ["launch_lag_seconds", "lookahead_ratio", "bounce_inertia_seconds", "max_offset_ratio", "impact_shake_pixels"]:
+	for property in ["launch_lag_seconds", "lookahead_ratio", "bounce_inertia_seconds", "max_offset_ratio", "impact_shake_pixels", "impact_shot_curve", "impact_split_enabled", "impact_punch_pixels", "impact_punch_seconds", "charge_focus_enabled", "charge_zoom_ratio", "charge_onset_ratio", "charge_focus_seconds", "charge_release_seconds", "charge_cancel_seconds", "charge_full_shake_enabled", "charge_full_shake_pixels", "charge_full_shake_seconds"]:
 		check(entries.any(func(item): return item.property == property and item.category == "视觉" and item.common), "视觉参数入口可调整：" + property)
 	formal.get_node("LoadoutUI").save_enabled = false
 	formal.get_node("WavePrototype/RunGrowth").enabled = false
@@ -147,6 +147,170 @@ func settings_checks() -> void:
 	for audio in formal.find_children("*", "AudioStreamPlayer", true, false): audio.stop()
 	formal.free()
 	await settle()
+
+func charge_checks() -> void:
+	if not "charge_focus_enabled" in settings:
+		check(false, "镜头配置需要独立的蓄力聚焦开关")
+		return
+	settings.enabled = true
+	settings.set("charge_focus_enabled", true)
+	player.ricochet_rules.full_charge_seconds = 0.5
+	await reset()
+	camera.focus -= Vector3(0.4, 0.0, 0.0)
+	camera._apply_transform()
+	var entry_pose := camera.global_transform
+	check(body.begin_charge(Vector3.RIGHT), "蓄力聚焦使用真实人物状态")
+	camera._process(0.0)
+	check(camera.global_transform.is_equal_approx(entry_pose), "开始蓄力接住走路构图，零时间不跳变")
+	var previous_distance := camera._orbit_offset().length()
+	var monotonic := true
+	for frame in 60:
+		if frame < 30:
+			player.position.x += 0.025
+			player.reset_physics_interpolation()
+		body.advance(1.0 / 60.0, Vector3.ZERO, false)
+		camera._process(1.0 / 60.0)
+		var actual := camera._orbit_offset().length()
+		monotonic = monotonic and actual <= previous_distance + 0.00001
+		previous_distance = actual
+	check(monotonic and previous_distance < camera.distance * 0.95, "蓄力持续推近，满蓄有明确取景变化")
+	check(camera.focus.distance_to(camera._target_point()) < 0.02, "边走边蓄力围绕当前人物聚焦，不追旧起点")
+	var ratio: float = settings.get("charge_zoom_ratio")
+	check(absf(previous_distance / camera.distance - (1.0 - ratio)) < 0.001, "满蓄取景受配置比例限制")
+	var full_distance := previous_distance
+	for frame in 20: camera._process(1.0 / 60.0)
+	check(absf(camera._orbit_offset().length() - full_distance) < 0.002, "满蓄维持取景，不持续抽近或抖动")
+	var heading := body.direction
+	var rotated_distance := camera._orbit_offset().length()
+	camera._yaw_offset_degrees = 45.0
+	camera._process(0.0)
+	check(body.direction == heading and is_equal_approx(camera._orbit_offset().length(), rotated_distance), "聚焦期间可旋转镜头，保持推近量及世界瞄准方向")
+	var launch_distance := camera._orbit_offset().length()
+	check(body.release_charge(), "松手立即发射，不等待运镜完成")
+	camera._process(0.0)
+	check(is_equal_approx(camera._orbit_offset().length(), launch_distance), "发射从已有推近量拉开，事件帧不重置距离")
+	for frame in 20:
+		body.advance(1.0 / 60.0, Vector3.ZERO, false)
+		player.reset_physics_interpolation()
+		camera._process(1.0 / 60.0)
+	check(is_equal_approx(camera._orbit_offset().length(), camera.distance), "发射拉开完成后恢复基础距离")
+	check(camera._ricochet_camera.framing.length() > 0.001, "推近释放平滑接续既有飞行前视")
+	check(camera.fov == 28.0 and camera.distance == 15.0 and camera.pitch_degrees == 25.414 and Engine.time_scale == 1.0, "运行时推近不改写编辑器基础镜头或游戏时间")
+	camera._yaw_offset_degrees = 0.0
+	await reset()
+	check(body.begin_charge(Vector3.RIGHT), "可重新开始蓄力")
+	body.advance(0.3, Vector3.ZERO, false)
+	camera._process(0.12)
+	var cancelled_distance := camera._orbit_offset().length()
+	var cancelled_focus := camera.focus
+	body.cancel(true)
+	camera._process(0.0)
+	check(is_equal_approx(camera._orbit_offset().length(), cancelled_distance) and camera.focus.is_equal_approx(cancelled_focus), "取消时从当前距离与构图回位，事件帧不跳变")
+	camera._process(0.04)
+	check(camera._orbit_offset().length() > cancelled_distance and camera._orbit_offset().length() < camera.distance, "取消回位具有连续过渡")
+	var repress_distance := camera._orbit_offset().length()
+	check(body.begin_charge(Vector3.RIGHT), "回位中可以再次蓄力")
+	camera._process(0.0)
+	check(is_equal_approx(camera._orbit_offset().length(), repress_distance), "快速重按继承尚未回完的推近量")
+	camera._process(0.05)
+	var frozen_pose := camera.global_transform
+	session.set_combat_frozen(true)
+	camera._process(0.5)
+	check(camera.global_transform.is_equal_approx(frozen_pose), "升级冻结同时保留蓄力聚焦状态")
+	session.set_combat_frozen(false)
+	body.cancel(true)
+	for frame in 30: camera._process(1.0 / 60.0)
+	check(not camera._ricochet_camera.active and is_equal_approx(camera._orbit_offset().length(), camera.distance), "取消回位结束释放镜头时间线")
+	check(body.begin_charge(Vector3.RIGHT), "重置用例开始蓄力")
+	body.advance(0.25, Vector3.ZERO, false)
+	camera._process(0.1)
+	camera.snap_to_target()
+	check(is_equal_approx(camera._orbit_offset().length(), camera.distance), "显式镜头重置清除运行时推近量")
+	camera._process(0.05)
+	settings.enabled = false
+	camera._process(0.02)
+	check(not camera._ricochet_camera.active and is_equal_approx(camera._orbit_offset().length(), camera.distance), "关闭总开关不会遗留推近状态")
+	body.cancel(true)
+	settings.enabled = true
+	settings.set("charge_focus_enabled", false)
+	camera.snap_to_target()
+	var world_profile := load("res://data/combat/scenes/world/configuration.tres") as SceneCombatConfiguration
+	var city_profile := load("res://data/combat/scenes/city/configuration.tres") as SceneCombatConfiguration
+	check(world_profile.ricochet_camera_settings.get("charge_focus_enabled") == true, "World 独立配置明确开启蓄力聚焦")
+	check(is_equal_approx(world_profile.ricochet_camera_settings.charge_zoom_ratio, 0.12), "World 蓄力推近增强到百分之十二")
+	check(is_equal_approx(world_profile.ricochet_camera_settings.charge_onset_ratio, 0.5), "World 起手先追向最大推近的一半")
+	check(city_profile.ricochet_camera_settings.get("charge_focus_enabled") == false, "City 保留当前镜头表现")
+
+func full_charge_checks() -> void:
+	if not "charge_full_shake_enabled" in settings:
+		check(false, "满蓄需要独立的单次定向轻震配置")
+		return
+	settings.charge_focus_enabled = true
+	settings.set("charge_full_shake_enabled", true)
+	await reset()
+	check(body.begin_charge(Vector3.RIGHT), "满蓄反馈使用实际蓄力状态")
+	body.advance(0.49, Vector3.ZERO, false)
+	camera._process(0.01)
+	var feedback := camera._ricochet_camera
+	check(feedback.shake.is_zero_approx(), "未满蓄时不提前震动")
+	body.advance(0.02, Vector3.ZERO, false)
+	camera._process(0.01)
+	camera._process(0.025)
+	var pulse := feedback.shake
+	check(not pulse.is_zero_approx() and pulse.x > 0.0 and absf(pulse.y) < 0.000001, "刚满蓄时沿实际瞄准方向产生一次镜头反馈")
+	check(pulse.length() * 800.0 <= float(settings.get("charge_full_shake_pixels")) + 0.001, "满蓄震动服从像素强度上限")
+	var age: float = feedback.get("_full_shake_age")
+	var pose := camera.global_transform
+	session.set_combat_frozen(true)
+	camera._process(0.3)
+	check(feedback.get("_full_shake_age") == age and camera.global_transform.is_equal_approx(pose), "升级冻结暂停满蓄反馈的时间与位置")
+	session.set_combat_frozen(false)
+	var follows_heading := body.direction
+	check(body.release_charge(), "满蓄震动中同样立即发射")
+	camera._process(0.0)
+	check(camera.global_transform.is_equal_approx(pose) and body.direction == follows_heading, "发射接住尚未结束的满蓄反馈，零时间不跳变或改方向")
+	for frame in 20: camera._process(1.0 / 60.0)
+	check(feedback.shake.is_zero_approx(), "发射后满蓄轻震按时收尾")
+	body.cancel(true)
+	await reset()
+	check(body.begin_charge(Vector3.RIGHT), "新一次蓄力可重新触发满蓄反馈")
+	body.advance(0.5, Vector3.ZERO, false)
+	camera._process(0.01)
+	camera._process(0.025)
+	check(not feedback.shake.is_zero_approx(), "第二次满蓄重新触发一次轻震")
+	var cancel_pose := camera.global_transform
+	body.cancel(true)
+	camera._process(0.0)
+	check(camera.global_transform.is_equal_approx(cancel_pose), "取消蓄力同样接住震动尾部，避免突然截断")
+	for frame in 25: camera._process(1.0 / 60.0)
+	check(not feedback.active and feedback.shake.is_zero_approx(), "取消后轻震与推近共同清理")
+	await reset()
+	check(body.begin_charge(Vector3.RIGHT), "持续满蓄用例可开始")
+	body.advance(0.5, Vector3.ZERO, false)
+	camera._process(0.01)
+	for frame in 60: camera._process(1.0 / 60.0)
+	check(feedback.shake.is_zero_approx(), "持续按住满蓄不反复震动")
+	check(body.release_charge(), "渲染采样前达到满蓄也能发射")
+	body.cancel(true)
+	await reset()
+	check(body.begin_charge(Vector3.RIGHT), "快速满蓄发射用例可开始")
+	body.advance(0.5, Vector3.ZERO, false)
+	check(body.release_charge(), "实际满蓄后不等待额外渲染帧即可发射")
+	camera._process(0.025)
+	check(not feedback.shake.is_zero_approx(), "刚满即松手时仍保留一次满蓄反馈")
+	body.cancel(true)
+	await reset()
+	settings.set("charge_full_shake_enabled", false)
+	check(body.begin_charge(Vector3.RIGHT), "独立开关对照用例可开始")
+	body.advance(0.5, Vector3.ZERO, false)
+	camera._process(0.025)
+	check(feedback.shake.is_zero_approx() and camera._orbit_offset().length() < camera.distance, "关闭满蓄震动后仍保留蓄力推近")
+	body.cancel(true)
+	settings.charge_focus_enabled = false
+	var profile := load("res://data/combat/scenes/world/configuration.tres") as SceneCombatConfiguration
+	var city := load("res://data/combat/scenes/city/configuration.tres") as SceneCombatConfiguration
+	check(profile.ricochet_camera_settings.get("charge_full_shake_enabled") == true, "World 明确开启满蓄反馈")
+	check(city.ricochet_camera_settings.get("charge_full_shake_enabled") == false, "City 不自动加入满蓄反馈")
 
 func run() -> void:
 	root.size = Vector2i(1280, 800)
@@ -164,6 +328,8 @@ func run() -> void:
 	player.ricochet_rules = PlayerRicochetRules.new()
 	player.ricochet_rules.minimum_launch_speed = 8.0
 	player.ricochet_rules.maximum_launch_speed = 8.0
+	# 固定镜头夹具的续航，不依赖正式弹射耗速的后续调参。
+	player.ricochet_rules.flight_deceleration = 6.0
 	player.ricochet_rules.bounce_speed_retention = 1.0
 	var sprite := Sprite3D.new()
 	sprite.name = "Sprite"
@@ -193,6 +359,8 @@ func run() -> void:
 	var feedback := await motion_checks(true)
 	check(baseline == feedback, "反馈开关不改变实际飞行路径、速度和反弹结果")
 	await lifecycle_checks()
+	await charge_checks()
+	await full_charge_checks()
 	await settings_checks()
 	world.queue_free()
 	await settle()

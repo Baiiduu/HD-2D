@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="WorldEntrySettings" format=3 uid="uid://cu5rr4m8pbd7v"]
+
+[ext_resource type="Script" uid="uid://c0ov31ah2b0hb" path="res://scripts/world/world_entry_settings.gd" id="1"]
+[ext_resource type="AudioStream" uid="uid://c05pg3ejmmb6" path="res://assets/meowa/audio/world_entry/mist_glide.mp3" id="2"]
+
+[resource]
+resource_name = "正式地图 · 建筑间穿雾入场"
+script = ExtResource("1")
+duration_seconds = 8.2
+arrival_ratio = 0.67
+camera_bank_degrees = 20.0
+traversal_sound = ExtResource("2")

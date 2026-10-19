@@ -9,4 +9,4 @@ script = ExtResource("track")
 track_id = &"exploration"
 track_title = "探索曲"
 stream = ExtResource("stream")
-volume_db = -18.0
+volume_db = -19.5

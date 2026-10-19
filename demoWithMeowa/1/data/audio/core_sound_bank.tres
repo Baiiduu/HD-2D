@@ -1,77 +1,101 @@
-[gd_resource type="Resource" script_class="CoreSoundBank" format=3]
+[gd_resource type="Resource" script_class="CoreSoundBank" format=3 uid="uid://hmnosxw3mmpy"]
 
-[ext_resource type="Script" path="res://scripts/audio/core_sound_bank.gd" id="bank"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/charge_start.wav" id="charge_start"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/charge_ready.wav" id="charge_ready"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/launch_01.wav" id="launch_01"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/bounce_stone_01.wav" id="bounce_stone_01"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/push_stun_01.wav" id="push_stun_01"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/player_hurt_01.wav" id="player_hurt_01"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/experience_01.wav" id="experience_01"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/storm_strike_01.wav" id="storm_strike_01"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/bounce_stone_02.wav" id="bounce_stone_02"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/bounce_stone_03.wav" id="bounce_stone_03"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/bounce_wood_01.wav" id="bounce_wood_01"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/bounce_wood_02.wav" id="bounce_wood_02"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/bounce_metal_01.wav" id="bounce_metal_01"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/bounce_metal_02.wav" id="bounce_metal_02"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/launch_02.wav" id="launch_02"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/push_stun_02.wav" id="push_stun_02"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/flight_end.wav" id="flight_end"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/player_hurt_02.wav" id="player_hurt_02"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/low_health.wav" id="low_health"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/defeat.wav" id="defeat"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/experience_02.wav" id="experience_02"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/level_up.wav" id="level_up"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/card_reveal.wav" id="card_reveal"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/reroll.wav" id="reroll"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/growth_apply.wav" id="growth_apply"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/wave_start.wav" id="wave_start"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/horde_arrival.wav" id="horde_arrival"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/wave_clear.wav" id="wave_clear"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/enemy_hit_soft_01.wav" id="enemy_hit_soft_01"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/enemy_hit_soft_02.wav" id="enemy_hit_soft_02"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/enemy_hit_hard_01.wav" id="enemy_hit_hard_01"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/enemy_hit_hard_02.wav" id="enemy_hit_hard_02"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/slime_death_01.wav" id="slime_death_01"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/slime_death_02.wav" id="slime_death_02"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/creature_death_01.wav" id="creature_death_01"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/creature_death_02.wav" id="creature_death_02"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/split_spawn.wav" id="split_spawn"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/storm_strike_02.wav" id="storm_strike_02"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/storm_chain.wav" id="storm_chain"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/charge_loop.wav" id="charge_loop"]
-[ext_resource type="AudioStream" path="res://assets/meowa/audio/core_pack/flight_loop.wav" id="flight_loop"]
+[ext_resource type="Script" uid="uid://caw36su4f2yr5" path="res://scripts/audio/core_sound_bank.gd" id="bank"]
+[ext_resource type="AudioStream" uid="uid://d28wge8swi80x" path="res://assets/meowa/audio/core_pack/bounce_metal_01.wav" id="bounce_metal_01"]
+[ext_resource type="AudioStream" uid="uid://n02ogbfv2hmp" path="res://assets/meowa/audio/core_pack/bounce_metal_02.wav" id="bounce_metal_02"]
+[ext_resource type="AudioStream" uid="uid://dbtguokn21u6p" path="res://assets/meowa/audio/core_pack/bounce_stone_01.wav" id="bounce_stone_01"]
+[ext_resource type="AudioStream" uid="uid://bmavffyfbt1x3" path="res://assets/meowa/audio/core_pack/bounce_stone_02.wav" id="bounce_stone_02"]
+[ext_resource type="AudioStream" uid="uid://dbo5ayqf64qtk" path="res://assets/meowa/audio/core_pack/bounce_stone_03.wav" id="bounce_stone_03"]
+[ext_resource type="AudioStream" uid="uid://d12trqftokkjs" path="res://assets/meowa/audio/core_pack/bounce_wood_01.wav" id="bounce_wood_01"]
+[ext_resource type="AudioStream" uid="uid://dnnob0yi23upo" path="res://assets/meowa/audio/core_pack/bounce_wood_02.wav" id="bounce_wood_02"]
+[ext_resource type="AudioStream" uid="uid://dlxdvc5f4buw1" path="res://assets/meowa/audio/core_pack/card_reveal.wav" id="card_reveal"]
+[ext_resource type="AudioStream" uid="uid://dgkd6tg10ej2e" path="res://assets/meowa/audio/core_pack/charge_loop.wav" id="charge_loop"]
+[ext_resource type="AudioStream" uid="uid://dqsxgb2ssk0ni" path="res://assets/meowa/audio/core_pack/charge_ready.wav" id="charge_ready"]
+[ext_resource type="AudioStream" uid="uid://dnj6t387w7k40" path="res://assets/meowa/audio/core_pack/charge_start.wav" id="charge_start"]
+[ext_resource type="AudioStream" uid="uid://b7xvpfw6vjl1e" path="res://assets/meowa/audio/core_pack/charge_wind.wav" id="charge_wind"]
+[ext_resource type="AudioStream" uid="uid://jtpn53ufhm0q" path="res://assets/meowa/audio/common_hit/enemy_hit_01.wav" id="common_hit_01"]
+[ext_resource type="AudioStream" uid="uid://c4id1q7mu8ijh" path="res://assets/meowa/audio/common_hit/enemy_hit_02.wav" id="common_hit_02"]
+[ext_resource type="AudioStream" uid="uid://dtwm11088upwq" path="res://assets/meowa/audio/common_hit/enemy_hit_03.wav" id="common_hit_03"]
+[ext_resource type="AudioStream" uid="uid://60iwhwqwg0pl" path="res://assets/meowa/audio/core_pack/creature_death_01.wav" id="creature_death_01"]
+[ext_resource type="AudioStream" uid="uid://drycyle4ni2h1" path="res://assets/meowa/audio/core_pack/creature_death_02.wav" id="creature_death_02"]
+[ext_resource type="AudioStream" uid="uid://c508s1vsykjib" path="res://assets/meowa/audio/core_pack/defeat.wav" id="defeat"]
+[ext_resource type="AudioStream" uid="uid://nae4yli420au" path="res://assets/meowa/audio/core_pack/enemy_hit_hard_01.wav" id="enemy_hit_hard_01"]
+[ext_resource type="AudioStream" uid="uid://l3skjmbkjpql" path="res://assets/meowa/audio/core_pack/enemy_hit_hard_02.wav" id="enemy_hit_hard_02"]
+[ext_resource type="AudioStream" uid="uid://ydimlr0ii7tg" path="res://assets/meowa/audio/core_pack/enemy_hit_soft_01.wav" id="enemy_hit_soft_01"]
+[ext_resource type="AudioStream" uid="uid://ceshnhrpohawa" path="res://assets/meowa/audio/core_pack/enemy_hit_soft_02.wav" id="enemy_hit_soft_02"]
+[ext_resource type="AudioStream" uid="uid://cdgiipkmslthq" path="res://assets/meowa/audio/core_pack/experience_01.wav" id="experience_01"]
+[ext_resource type="AudioStream" uid="uid://unjn0cvl3pph" path="res://assets/meowa/audio/core_pack/experience_02.wav" id="experience_02"]
+[ext_resource type="AudioStream" uid="uid://cma0uie7k4lb1" path="res://assets/meowa/audio/core_pack/flight_end.wav" id="flight_end"]
+[ext_resource type="AudioStream" uid="uid://j6bg40hdb3ky" path="res://assets/meowa/audio/core_pack/flight_loop.wav" id="flight_loop"]
+[ext_resource type="AudioStream" uid="uid://c0qap5sqq17u8" path="res://assets/meowa/enemies/bell_frog/attack.mp3" id="frog_pulse"]
+[ext_resource type="AudioStream" uid="uid://c7vsbg1rmglrp" path="res://assets/meowa/audio/core_pack/growth_apply.wav" id="growth_apply"]
+[ext_resource type="AudioStream" uid="uid://cv2gj17n1r62f" path="res://assets/meowa/audio/core_pack/horde_arrival.wav" id="horde_arrival"]
+[ext_resource type="AudioStream" uid="uid://bep8y8mot3lgt" path="res://assets/meowa/audio/kill_feedback/toss_air.wav" id="kill_air"]
+[ext_resource type="AudioStream" uid="uid://capj4s7m60wdm" path="res://assets/meowa/audio/kill_feedback/group_collapse.wav" id="kill_group"]
+[ext_resource type="AudioStream" uid="uid://dt2cach35w7a2" path="res://assets/meowa/audio/kill_feedback/soft_landing.wav" id="kill_land"]
+[ext_resource type="AudioStream" uid="uid://bqvxtbio7b6kn" path="res://assets/meowa/audio/kill_feedback/slime_kill_01.wav" id="kill_slime_01"]
+[ext_resource type="AudioStream" uid="uid://0w3xh5o6l6cm" path="res://assets/meowa/audio/kill_feedback/slime_kill_02.wav" id="kill_slime_02"]
+[ext_resource type="AudioStream" uid="uid://dccsbhpxnu2yg" path="res://assets/meowa/enemies/lantern_spitter/attack.mp3" id="lantern_shot"]
+[ext_resource type="AudioStream" uid="uid://dfpkuss31oab" path="res://assets/meowa/audio/core_pack/launch_01.wav" id="launch_01"]
+[ext_resource type="AudioStream" uid="uid://rcus1o2y5pbe" path="res://assets/meowa/audio/core_pack/launch_02.wav" id="launch_02"]
+[ext_resource type="AudioStream" uid="uid://vpdi2p8345v7" path="res://assets/meowa/enemies/leaf_charger/attack.mp3" id="leaf_windup"]
+[ext_resource type="AudioStream" uid="uid://ck1vbpq66rk1w" path="res://assets/meowa/audio/core_pack/level_up.wav" id="level_up"]
+[ext_resource type="AudioStream" uid="uid://ccq4ygmipmset" path="res://assets/meowa/audio/core_pack/low_health.wav" id="low_health"]
+[ext_resource type="AudioStream" uid="uid://g1hqph1qunll" path="res://assets/meowa/audio/core_pack/player_hurt_01.wav" id="player_hurt_01"]
+[ext_resource type="AudioStream" uid="uid://c80mi6ipvrcga" path="res://assets/meowa/audio/core_pack/player_hurt_02.wav" id="player_hurt_02"]
+[ext_resource type="AudioStream" uid="uid://dji1yffln6kwx" path="res://assets/meowa/enemies/pot_brood/death.mp3" id="pot_shatter"]
+[ext_resource type="AudioStream" uid="uid://c1vl15rtnixrt" path="res://assets/meowa/audio/core_pack/push_stun_01.wav" id="push_stun_01"]
+[ext_resource type="AudioStream" uid="uid://bm868lugxmioh" path="res://assets/meowa/audio/core_pack/push_stun_02.wav" id="push_stun_02"]
+[ext_resource type="AudioStream" uid="uid://lopmqtktftv5" path="res://assets/meowa/audio/core_pack/reroll.wav" id="reroll"]
+[ext_resource type="AudioStream" uid="uid://gkqmurgs7o6t" path="res://assets/meowa/audio/core_pack/slime_death_01.wav" id="slime_death_01"]
+[ext_resource type="AudioStream" uid="uid://dfltdfdro8twm" path="res://assets/meowa/audio/core_pack/slime_death_02.wav" id="slime_death_02"]
+[ext_resource type="AudioStream" uid="uid://0vf8nuofxy0r" path="res://assets/meowa/audio/core_pack/split_spawn.wav" id="split_spawn"]
+[ext_resource type="AudioStream" uid="uid://dukoxytf5lt1v" path="res://assets/meowa/audio/core_pack/storm_chain.wav" id="storm_chain"]
+[ext_resource type="AudioStream" uid="uid://blgoxocc4mort" path="res://assets/meowa/audio/core_pack/storm_strike_01.wav" id="storm_strike_01"]
+[ext_resource type="AudioStream" uid="uid://b84a1jvxj7br" path="res://assets/meowa/audio/core_pack/storm_strike_02.wav" id="storm_strike_02"]
+[ext_resource type="AudioStream" uid="uid://budq5xjks1i7r" path="res://assets/meowa/audio/core_pack/wave_clear.wav" id="wave_clear"]
+[ext_resource type="AudioStream" uid="uid://b87ydnnvxfu3s" path="res://assets/meowa/audio/core_pack/wave_start.wav" id="wave_start"]
 
 [resource]
 script = ExtResource("bank")
 cues = {
-&"flight_loop": Array[AudioStream]([ExtResource("flight_loop")]),
-&"charge_start": Array[AudioStream]([ExtResource("charge_start")]),
-&"charge_ready": Array[AudioStream]([ExtResource("charge_ready")]),
-&"launch": Array[AudioStream]([ExtResource("launch_01"), ExtResource("launch_02")]),
-&"bounce_stone": Array[AudioStream]([ExtResource("bounce_stone_01"), ExtResource("bounce_stone_02"), ExtResource("bounce_stone_03")]),
-&"push_stun": Array[AudioStream]([ExtResource("push_stun_01"), ExtResource("push_stun_02")]),
-&"player_hurt": Array[AudioStream]([ExtResource("player_hurt_01"), ExtResource("player_hurt_02")]),
-&"experience": Array[AudioStream]([ExtResource("experience_01"), ExtResource("experience_02")]),
-&"storm_strike": Array[AudioStream]([ExtResource("storm_strike_01"), ExtResource("storm_strike_02")]),
-&"bounce_wood": Array[AudioStream]([ExtResource("bounce_wood_01"), ExtResource("bounce_wood_02")]),
 &"bounce_metal": Array[AudioStream]([ExtResource("bounce_metal_01"), ExtResource("bounce_metal_02")]),
-&"flight_end": Array[AudioStream]([ExtResource("flight_end")]),
-&"low_health": Array[AudioStream]([ExtResource("low_health")]),
-&"defeat": Array[AudioStream]([ExtResource("defeat")]),
-&"level_up": Array[AudioStream]([ExtResource("level_up")]),
+&"bounce_stone": Array[AudioStream]([ExtResource("bounce_stone_01"), ExtResource("bounce_stone_02"), ExtResource("bounce_stone_03")]),
+&"bounce_wood": Array[AudioStream]([ExtResource("bounce_wood_01"), ExtResource("bounce_wood_02")]),
 &"card_reveal": Array[AudioStream]([ExtResource("card_reveal")]),
-&"reroll": Array[AudioStream]([ExtResource("reroll")]),
-&"growth_apply": Array[AudioStream]([ExtResource("growth_apply")]),
-&"wave_start": Array[AudioStream]([ExtResource("wave_start")]),
-&"horde_arrival": Array[AudioStream]([ExtResource("horde_arrival")]),
-&"wave_clear": Array[AudioStream]([ExtResource("wave_clear")]),
-&"enemy_hit_soft": Array[AudioStream]([ExtResource("enemy_hit_soft_01"), ExtResource("enemy_hit_soft_02")]),
-&"enemy_hit_hard": Array[AudioStream]([ExtResource("enemy_hit_hard_01"), ExtResource("enemy_hit_hard_02")]),
-&"slime_death": Array[AudioStream]([ExtResource("slime_death_01"), ExtResource("slime_death_02")]),
+&"charge_loop": Array[AudioStream]([ExtResource("charge_loop")]),
+&"charge_ready": Array[AudioStream]([ExtResource("charge_ready")]),
+&"charge_start": Array[AudioStream]([ExtResource("charge_start")]),
+&"charge_wind": Array[AudioStream]([ExtResource("charge_wind")]),
 &"creature_death": Array[AudioStream]([ExtResource("creature_death_01"), ExtResource("creature_death_02")]),
+&"defeat": Array[AudioStream]([ExtResource("defeat")]),
+&"enemy_hit_common": Array[AudioStream]([ExtResource("common_hit_01"), ExtResource("common_hit_02"), ExtResource("common_hit_03")]),
+&"enemy_hit_hard": Array[AudioStream]([ExtResource("enemy_hit_hard_01"), ExtResource("enemy_hit_hard_02")]),
+&"enemy_hit_soft": Array[AudioStream]([ExtResource("enemy_hit_soft_01"), ExtResource("enemy_hit_soft_02")]),
+&"experience": Array[AudioStream]([ExtResource("experience_01"), ExtResource("experience_02")]),
+&"flight_end": Array[AudioStream]([ExtResource("flight_end")]),
+&"flight_loop": Array[AudioStream]([ExtResource("flight_loop")]),
+&"frog_pulse": Array[AudioStream]([ExtResource("frog_pulse")]),
+&"growth_apply": Array[AudioStream]([ExtResource("growth_apply")]),
+&"horde_arrival": Array[AudioStream]([ExtResource("horde_arrival")]),
+&"kill_air": Array[AudioStream]([ExtResource("kill_air")]),
+&"kill_group": Array[AudioStream]([ExtResource("kill_group")]),
+&"kill_land": Array[AudioStream]([ExtResource("kill_land")]),
+&"kill_slime": Array[AudioStream]([ExtResource("kill_slime_02")]),
+&"kill_slime_retired": Array[AudioStream]([ExtResource("kill_slime_01")]),
+&"lantern_shot": Array[AudioStream]([ExtResource("lantern_shot")]),
+&"launch": Array[AudioStream]([ExtResource("launch_01"), ExtResource("launch_02")]),
+&"leaf_windup": Array[AudioStream]([ExtResource("leaf_windup")]),
+&"level_up": Array[AudioStream]([ExtResource("level_up")]),
+&"low_health": Array[AudioStream]([ExtResource("low_health")]),
+&"player_hurt": Array[AudioStream]([ExtResource("player_hurt_01"), ExtResource("player_hurt_02")]),
+&"pot_shatter": Array[AudioStream]([ExtResource("pot_shatter")]),
+&"push_stun": Array[AudioStream]([ExtResource("push_stun_01"), ExtResource("push_stun_02")]),
+&"reroll": Array[AudioStream]([ExtResource("reroll")]),
+&"slime_death": Array[AudioStream]([ExtResource("slime_death_01"), ExtResource("slime_death_02")]),
 &"split_spawn": Array[AudioStream]([ExtResource("split_spawn")]),
 &"storm_chain": Array[AudioStream]([ExtResource("storm_chain")]),
-&"charge_loop": Array[AudioStream]([ExtResource("charge_loop")])
+&"storm_strike": Array[AudioStream]([ExtResource("storm_strike_01"), ExtResource("storm_strike_02")]),
+&"wave_clear": Array[AudioStream]([ExtResource("wave_clear")]),
+&"wave_start": Array[AudioStream]([ExtResource("wave_start")])
 }

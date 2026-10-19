@@ -2,6 +2,7 @@ class_name PlayerCrowdDeflection
 extends RefCounted
 
 const PreviewQueryView = preload("res://scripts/combat/preview_spatial_query_view.gd")
+const ObstacleBatch = preload("res://scripts/combat/preview_obstacle_batch.gd")
 const EccentricPath = preload("res://scripts/player/player_eccentric_ricochet.gd")
 var _query_view: PreviewQueryView
 ## Only the prediction producer can provide this synchronous empty-volume proof.
@@ -12,6 +13,8 @@ var _orbit_members: Dictionary[int, WaveEnemy] = {}
 var _orbit_seed: WaveEnemy
 var orbiting: bool:
 	get: return _eccentric != null and _eccentric.turning and not _orbit_members.is_empty()
+var presentation_center: Vector3:
+	get: return _eccentric.presentation_center if orbiting else Vector3.ZERO
 
 ## 一次发射／一次预览的几何状态。只查询场景，不移动、扣血或拨怪。
 var rules: PlayerRicochetRules
@@ -319,9 +322,15 @@ func begin_contact(hit: Dictionary, point: Vector3, incoming: Vector3) -> bool:
 
 ## 首次捕获或续段时读取外沿；续段只读取已捕获群的存活相连成员。
 func _eccentric_outline(seed: WaveEnemy, point: Vector3, allowed: Dictionary[int, WaveEnemy] = {}) -> Dictionary:
-	if _preview_obstacles and _query_view and _query_view.is_current(session._spatial_index):
-		var slot := _query_view.slot(seed)
-		if slot >= 0: return _view_eccentric_outline(slot, point, allowed)
+	# 实际接群也只在本次同步函数内读取已提交的索引；不能存入飞行状态。
+	var view := _query_view
+	var obstacles := _preview_obstacles
+	if view == null and is_instance_valid(session.terrain):
+		view = PreviewQueryView.new(session._spatial_index, session)
+		if view.eligible: obstacles = ObstacleBatch.new(session.terrain, [session.player.get_rid()])
+	if obstacles and view and view.is_current(session._spatial_index):
+		var slot := view.slot(seed)
+		if slot >= 0: return _view_eccentric_outline(slot, point, allowed, view, obstacles)
 	return _legacy_eccentric_outline(seed, point, allowed)
 
 func _legacy_eccentric_outline(seed: WaveEnemy, point: Vector3, allowed: Dictionary[int, WaveEnemy]) -> Dictionary:
@@ -349,7 +358,7 @@ func _legacy_eccentric_outline(seed: WaveEnemy, point: Vector3, allowed: Diction
 		visible[actor.get_instance_id()] = position
 		bodies[actor.get_instance_id()] = actor.get_crowd_body_radius()
 	_nearby.clear()
-	var minimum := 3 if allowed.is_empty() else 1
+	var minimum := rules.eccentric_minimum_members if allowed.is_empty() else 1
 	if visible.size() < minimum or not visible.has(seed.get_instance_id()):
 		if debug_enabled: debug_capture_reason = "可见同层成员不足 %d 只（隔墙／异层对象已排除）" % minimum
 		return {}
@@ -375,7 +384,7 @@ func _legacy_eccentric_outline(seed: WaveEnemy, point: Vector3, allowed: Diction
 			body_radius = maxf(body_radius, bodies[id])
 			connected.append(visible[id])
 	_nearby.clear()
-	if connected.size() < minimum or (allowed.is_empty() and spread < 0.3):
+	if connected.size() < minimum or (allowed.is_empty() and connected.size() > 1 and spread < 0.3):
 		if debug_enabled: debug_capture_reason = "相连成员不足 %d 只" % minimum if connected.size() < minimum else "群体重叠，分布不足 0.3 米"
 		return {}
 	if debug_enabled: debug_capture_reason = "相连 %d 只，分布 %.2f 米" % [connected.size(), spread]
@@ -388,53 +397,55 @@ func _legacy_eccentric_outline(seed: WaveEnemy, point: Vector3, allowed: Diction
 
 ## Same candidate/BFS order and float64 radii as the live-node path. One
 ## synchronous prediction reuses the authoritative post-move packed index.
-func _view_eccentric_outline(seed_slot: int, point: Vector3, allowed: Dictionary[int, WaveEnemy]) -> Dictionary:
-	var anchor: Vector3 = _query_view.positions[seed_slot]
-	var seed_id: int = _query_view.ids[seed_slot]
+func _view_eccentric_outline(seed_slot: int, point: Vector3, allowed: Dictionary[int, WaveEnemy], view: PreviewQueryView, obstacles: RefCounted) -> Dictionary:
+	var anchor: Vector3 = view.positions[seed_slot]
+	var seed_id: int = view.ids[seed_slot]
 	var radius := minf(rules.eccentric_search_radius, rules.push_group_search_radius)
-	_query_view.nearby_slots_into(anchor, radius, {}, _nearby_slots)
+	view.nearby_slots_into(anchor, radius, {}, _nearby_slots)
 	var samples: Array[int] = []
 	var endpoints := PackedVector3Array([point + Vector3.UP * 0.45])
 	for slot in _nearby_slots:
-		if _query_view.active[slot] == 0: continue
-		if not allowed.is_empty() and not allowed.has(_query_view.ids[slot]): continue
-		var position: Vector3 = _query_view.positions[slot]
+		if view.active[slot] == 0: continue
+		if not allowed.is_empty() and not allowed.has(view.ids[slot]): continue
+		var position: Vector3 = view.positions[slot]
 		if absf(position.y - point.y) > rules.push_height_tolerance: continue
 		samples.append(slot)
 		endpoints.append(position + Vector3.UP * 0.45)
 	_nearby_slots.clear()
-	_preview_obstacles.cover(endpoints)
+	obstacles.cover(endpoints)
 	var visible: Dictionary[int, int] = {}
 	_ray_excluded = [session.player.get_rid()]
 	for slot in samples:
-		if _ray_clear(point + Vector3.UP * 0.45, _query_view.positions[slot] + Vector3.UP * 0.45):
-			visible[_query_view.ids[slot]] = slot
-	var minimum := 3 if allowed.is_empty() else 1
+		if _outline_ray_clear(point + Vector3.UP * 0.45, view.positions[slot] + Vector3.UP * 0.45, obstacles):
+			visible[view.ids[slot]] = slot
+	var minimum := rules.eccentric_minimum_members if allowed.is_empty() else 1
 	if visible.size() < minimum or not visible.has(seed_id):
 		if debug_enabled: debug_capture_reason = "可见同层成员不足 %d 只（隔墙／异层对象已排除）" % minimum
 		return {}
 	var connected: Array[Vector3] = [anchor]
 	var visited: Dictionary[int, bool] = {seed_id:true}
-	var members: Dictionary[int, WaveEnemy] = {seed_id:_query_view.owners[seed_slot]}
+	var members: Dictionary[int, WaveEnemy] = {seed_id:view.owners[seed_slot]}
 	var cursor := 0
-	var body_radius: float = _query_view.bodies[seed_slot]
+	var body_radius: float = view.bodies[seed_slot]
 	var spread := 0.0
 	while cursor < connected.size():
 		var position := connected[cursor]
 		cursor += 1
 		spread = maxf(spread, TerrainPath.horizontal_distance(position, anchor))
-		_query_view.nearby_slots_into(position, rules.push_group_link_distance, visited, _nearby_slots)
+		# 同步只读视图中已收齐所有可见成员；余下队列只需统计原有分布。
+		if visited.size() == visible.size(): continue
+		view.nearby_slots_into(position, rules.push_group_link_distance, visited, _nearby_slots)
 		for slot in _nearby_slots:
-			var id: int = _query_view.ids[slot]
+			var id: int = view.ids[slot]
 			if not visible.has(id): continue
-			var candidate: Vector3 = _query_view.positions[visible[id]]
-			if not _ray_clear(position + Vector3.UP * 0.45, candidate + Vector3.UP * 0.45): continue
+			var candidate: Vector3 = view.positions[visible[id]]
+			if not _outline_ray_clear(position + Vector3.UP * 0.45, candidate + Vector3.UP * 0.45, obstacles): continue
 			visited[id] = true
-			members[id] = _query_view.owners[slot]
-			body_radius = maxf(body_radius, _query_view.bodies[slot])
+			members[id] = view.owners[slot]
+			body_radius = maxf(body_radius, view.bodies[slot])
 			connected.append(candidate)
 	_nearby_slots.clear()
-	if connected.size() < minimum or (allowed.is_empty() and spread < 0.3):
+	if connected.size() < minimum or (allowed.is_empty() and connected.size() > 1 and spread < 0.3):
 		if debug_enabled: debug_capture_reason = "相连成员不足 %d 只" % minimum if connected.size() < minimum else "群体重叠，分布不足 0.3 米"
 		return {}
 	if debug_enabled: debug_capture_reason = "相连 %d 只，分布 %.2f 米" % [connected.size(), spread]
@@ -443,6 +454,9 @@ func _view_eccentric_outline(seed_slot: int, point: Vector3, allowed: Dictionary
 		if child is CollisionShape3D and not child.disabled and child.shape is CapsuleShape3D:
 			player_radius = maxf(player_radius, child.shape.radius * maxf(child.global_basis.x.length(), child.global_basis.z.length()))
 	return {"positions":PackedVector3Array(connected), "body_radius":body_radius, "player_radius":player_radius, "members":members}
+
+func _outline_ray_clear(from: Vector3, to: Vector3, obstacles: RefCounted) -> bool:
+	return obstacles.proves(from, to) or _ray_clear(from, to)
 
 func _point(region: Dictionary, radii: Vector2, angle: float, height: float) -> Vector3:
 	var point: Vector3 = region.center + region.u * (cos(angle) * radii.x) + region.v * (sin(angle) * radii.y)

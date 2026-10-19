@@ -15,19 +15,19 @@ metadata/_custom_type_script = "uid://dig3yvspfwrug"
 [sub_resource type="Resource" id="Resource_68p4h"]
 script = ExtResource("2_tq264")
 skill_definition = ExtResource("4_qiowe")
-skill_level = 0
+skill_level = 4
 metadata/_custom_type_script = "uid://dig3yvspfwrug"
 
 [sub_resource type="Resource" id="Resource_10m1j"]
 script = ExtResource("2_tq264")
 skill_definition = ExtResource("5_upwco")
-skill_level = 0
+skill_level = 8
 metadata/_custom_type_script = "uid://dig3yvspfwrug"
 
 [resource]
 resource_name = "正式怪潮 128 · 渐进容量"
 script = ExtResource("1_sbixa")
-simulation_enemy_count = 30
+simulation_enemy_count = 50
 simulation_skills = Array[ExtResource("2_tq264")]([SubResource("Resource_7oshb"), SubResource("Resource_68p4h"), SubResource("Resource_10m1j")])
 role_limits = PackedInt32Array(128, 12, 4, 1)
 max_wave_enemies = 512

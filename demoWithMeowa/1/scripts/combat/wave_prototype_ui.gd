@@ -17,9 +17,6 @@ func _ready() -> void:
 	_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var theme := Theme.new()
-	var font := SystemFont.new()
-	font.font_names = PackedStringArray(["Microsoft YaHei", "SimSun"])
-	theme.default_font = font
 	theme.default_font_size = 20
 	_root.theme = theme
 	add_child(_root)

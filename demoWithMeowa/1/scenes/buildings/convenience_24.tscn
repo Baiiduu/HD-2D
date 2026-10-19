@@ -6,7 +6,7 @@
 [sub_resource type="BoxShape3D" id="BoxShape_shell"]
 size = Vector3(5.2, 6, 3.5)
 
-[node name="Convenience24" type="Node3D"]
+[node name="Convenience24" type="Node3D" groups=["occlusion_buildings"]]
 script = ExtResource("2_script")
 
 [node name="Model" parent="." instance=ExtResource("1_model")]

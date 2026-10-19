@@ -27,6 +27,7 @@ const DESCRIPTIONS := {
 	"wet_surface":"控制雨后湿膜与灯光倒影，保留原地表纹理；与 SSR 开关共同影响反光表现。",
 	"water_mirror":"在支持镜像的水面可见时，用额外视角绘制倒影；没有活动镜像时关闭不会明显提速。",
 	"water_mirror_scale":"水面镜像相对场景渲染分辨率的宽高比例。50% 对应约四分之一像素，倒影会更模糊。",
+	"rain":"独立切换下雨，保留当前光影风格和已调雨量。雨声、雨纹随天气变化，基础风摆保持；停雨后地面按原速度退湿。",
 	"rain_intensity":"调整实际雨量；现有雨声、地面雨纹和湿润反馈也会随雨量变化。",
 	"rain_amount":"雨幕中的雨丝数量，越多越密，也会增加粒子绘制和透明叠加开销。",
 	"ground_rain":"显示落在地面的雨纹，不改变人物和怪物逻辑。",
@@ -60,6 +61,7 @@ const SPECS := [
 	{"key":"wet_surface", "group":"水面与地面", "label":"湿地面与灯光倒影", "target":"art", "property":"wet_surface_enabled"},
 	{"key":"water_mirror", "group":"水面与地面", "label":"水面镜像反射", "target":"art", "property":"water_reflection_enabled"},
 	{"key":"water_mirror_scale", "group":"水面与地面", "label":"水面反射分辨率比例", "target":"art", "property":"water_reflection_scale", "values":[0.25,0.5,0.75,1.0], "labels":["25%","50%","75%","100%"]},
+	{"key":"rain", "group":"天气与装饰", "label":"下雨", "target":"weather", "property":"raining"},
 	{"key":"rain_intensity", "group":"天气与装饰", "label":"降雨强度", "target":"weather", "property":"rain_intensity", "range":[0.0,1.0,0.05]},
 	{"key":"rain_amount", "group":"天气与装饰", "label":"雨丝数量", "target":"weather", "property":"rain_amount", "range":[100,8000,100], "integer":true},
 	{"key":"ground_rain", "group":"天气与装饰", "label":"地面雨纹", "target":"weather", "property":"ground_rain_enabled"},
@@ -119,6 +121,9 @@ func configure(scene: Node, settings_theme: Theme) -> void:
 	sync_controls()
 
 func available(spec: Dictionary) -> bool:
+	if spec.key == "rain":
+		var style := world.get_node_or_null("VisualSample")
+		if style and not style.get("independent_weather"): return false
 	return spec.target in ["display", "resolution", "vsync"] or is_instance_valid(targets.get(spec.target))
 
 func read_value(spec: Dictionary) -> Variant:

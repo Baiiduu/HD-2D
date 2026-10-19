@@ -3,7 +3,7 @@ extends SceneTree
 const OUTPUT := "D:/.codexfile/work/free-surface-painter/battle_surface.tres"
 const BEFORE := "D:/.codexfile/work/free-surface-painter/before/"
 const TERRAIN_PATH := "res://data/world/world_terrain.tres"
-const SURFACE_PATH := "res://data/world/world_surface.tres"
+const SURFACE_PATH := "res://data/world/world_surface.res"
 const PALETTE_PATH := "res://data/world/spawn_paint_palette.tres"
 const SOURCE := "res://assets/meowa/city_plaza/fixed/"
 const WORLD_RECT := Rect2(-15.2, 29.6, 30.4, 30.4)

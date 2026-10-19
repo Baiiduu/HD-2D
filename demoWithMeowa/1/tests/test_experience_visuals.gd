@@ -18,6 +18,7 @@ func settle() -> void:
 
 func run() -> void:
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
+	world.get_node("WorldEntry").preview_on_direct_run = false
 	var loadout: LoadoutUI = world.get_node("LoadoutUI")
 	loadout.save_enabled = false
 	world.get_node("WavePrototype/FanAutoAttack").enabled = true

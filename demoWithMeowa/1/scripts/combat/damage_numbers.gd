@@ -30,6 +30,7 @@ var _fallback := DamageNumberStyle.new()
 var _created := 0
 var _reused := 0
 var _peak_active := 0
+var _last_tick := 0
 
 func _ready() -> void:
 	layer = 5
@@ -39,6 +40,7 @@ func _ready() -> void:
 	session.enemy_spawned.connect(_watch_enemy)
 	session.run_started.connect(clear)
 	session.run_ended.connect(_on_run_ended)
+	session.combat_frozen_changed.connect(_frozen_changed)
 	session.register_combat_node(self)
 	for enemy in session.enemies: _watch_enemy(enemy)
 
@@ -67,6 +69,7 @@ func present(event: CombatDamageEvent) -> void:
 	number.begin(event, profile, slot, number_stack_spacing, get_viewport().get_camera_3d())
 	_active.append(number)
 	_peak_active = maxi(_peak_active, _active.size())
+	if not is_processing(): _last_tick = Time.get_ticks_usec()
 	set_process(true)
 
 func style_for(id: StringName) -> DamageNumberStyle:
@@ -84,13 +87,21 @@ func _create_number() -> DamageNumber:
 	return number
 
 func _process(delta: float) -> void:
+	var now := Time.get_ticks_usec()
+	var real_delta := maxf(0.0, (now - _last_tick) / 1000000.0) if _last_tick > 0 else 0.0
+	_last_tick = now
 	var camera := get_viewport().get_camera_3d()
+	# 切入短顿的一帧仍可能带有旧 delta，不能用新倍率反推真实时长。
+	if camera is FollowCamera and camera.hit_stop_active: delta = real_delta
 	for index in range(_active.size() - 1, -1, -1):
 		var number := _active[index]
 		if not number.advance(delta, camera):
 			_active.remove_at(index)
 			_recycle(number)
 	if _active.is_empty(): set_process(false)
+
+func _frozen_changed(_frozen: bool) -> void:
+	_last_tick = Time.get_ticks_usec()
 
 func _recycle(number: DamageNumber) -> void:
 	var id := number.event.target_id
@@ -105,6 +116,7 @@ func clear() -> void:
 	for number in _active: _recycle(number)
 	_active.clear()
 	_lanes.clear()
+	_last_tick = 0
 	set_process(false)
 
 func get_pool_stats() -> Dictionary:

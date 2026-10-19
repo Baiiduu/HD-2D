@@ -43,6 +43,7 @@ func run() -> void:
 	check(world_profile.call("validation_errors").is_empty(), "Validation never rewrites the shared World template")
 	# 无效配置不能先打开开局选卡，或悄悄用场景默认值启动。
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
+	world.get_node("WorldEntry").preview_on_direct_run = false
 	world.get_node("BattleConfiguration").configuration = profile
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("MapEffects/BGM").music_enabled = false

@@ -5,6 +5,7 @@ extends Node3D
 signal discharge_started(point: Vector3)
 signal patch_landed(layer: int, count: int)
 signal hit_landed(enemy: WaveEnemy, damage: float)
+signal presentation_landed(point: Vector3, hits: int, kills: int, flight_id: int)
 
 @export_group("战斗连接")
 @export var session: WavePrototype
@@ -196,7 +197,9 @@ func _trace_piece(piece: Dictionary) -> bool:
 		if not _active(): return false
 		point = point.lerp(end, entry)
 		_until_pulse = float(_flight_stats.interval)
-		if not discharge(point, _flight_stats): _until_pulse = 0.0
+		var speed := maxf(0.0, float(piece.get("speed", 0.0)) - float(piece.get("deceleration", 0.0)) * elapsed)
+		var motion: Vector3 = piece.heading * speed if speed > 0.0 else (end - start) / maxf(seconds, 0.000001)
+		if not discharge(point, _flight_stats, motion): _until_pulse = 0.0
 		if not _active(): return false
 		if elapsed >= seconds: break
 	# 电痕来自真实折线路段，不跨过转角画一条直线，也不产生额外伤害。
@@ -266,7 +269,7 @@ func _plan_layer(frontier: Array[Dictionary], radius: float, seen: Dictionary, c
 	return result
 
 ## 每轮独立预留与去重；跨轮可再次命中，不与旧雷潮共享记录。飞行调度负责冷却。
-func discharge(origin: Vector3, stats: Dictionary = {}) -> bool:
+func discharge(origin: Vector3, stats: Dictionary = {}, motion_velocity: Variant = null) -> bool:
 	if not _active(): return false
 	if stats.is_empty(): stats = get_attack_stats()
 	var seen := {}
@@ -279,6 +282,8 @@ func discharge(origin: Vector3, stats: Dictionary = {}) -> bool:
 		frontier = layer
 	if layers.is_empty(): return false
 	var burst := {"layers": layers, "next": 0, "wait": 0.0, "stats": stats.duplicate(), "generation": session._generation, "landed": {0: origin}, "blocked": {}, "seen": seen}
+	# 首次触发时保存真实路段速度，后续取消、反弹或冻结不重读人物的当前速度。
+	burst.motion_velocity = session.player.velocity if motion_velocity == null else motion_velocity
 	burst.flight_id = _body.flight_serial if is_instance_valid(_body) and _body.flying else 0
 	_bursts.append(burst)
 	discharge_started.emit(origin)
@@ -302,6 +307,9 @@ func _deliver_layer(burst: Dictionary) -> void:
 		burst.current = []
 		burst.cursor = 0
 		burst.patch_points = PackedVector3Array()
+		burst.presentation_hits = 0
+		burst.presentation_kills = 0
+		burst.presentation_sum = Vector3.ZERO
 		# 同片资格全部锁定后才扣血；冻结发生在死亡回调中也不重复已扣伤害。
 		for contact in burst.layers[burst.next]:
 			var enemy := contact.enemy.get_ref() as WaveEnemy
@@ -339,11 +347,17 @@ func _deliver_layer(burst: Dictionary) -> void:
 		var before := enemy.health
 		burst.seen[contact.id] = 1
 		var scoring_flight := int(burst.get("flight_id", 0)) if is_instance_valid(_body) and _body.flying and _body.flight_serial == int(burst.get("flight_id", 0)) else 0
-		enemy.take_damage(float(burst.stats.damage), {"source": &"ricochet_storm", "style": &"lightning", "direction": enemy.global_position - contact.from, "flight_id": scoring_flight})
+		enemy.take_damage(float(burst.stats.damage), {"source": &"ricochet_storm", "style": &"lightning", "direction": enemy.global_position - contact.from, "flight_id": scoring_flight, "motion_velocity": burst.motion_velocity, "storm_layer": int(burst.next)})
 		var dealt := before - enemy.health
-		if dealt > 0.0 or session.combat_modifiers.damage_disabled: hit_landed.emit(enemy, dealt)
+		if dealt > 0.0 or session.combat_modifiers.damage_disabled:
+			burst.presentation_hits += 1
+			burst.presentation_kills += int(enemy.dead)
+			burst.presentation_sum += contact.point
+			hit_landed.emit(enemy, dealt)
 	if not _active(): return
 	# 只把本片实际落雷的位置组成电涌面；不补目标、不扩大伤害或生成假传播线。
+	if burst.presentation_hits > 0:
+		presentation_landed.emit(burst.presentation_sum / burst.presentation_hits, burst.presentation_hits, burst.presentation_kills, int(burst.get("flight_id", 0)))
 	effects.show_patch(burst.patch_points)
 	if not confirmed.is_empty():
 		_play_patch_sound(confirmed[0].point, int(burst.next))

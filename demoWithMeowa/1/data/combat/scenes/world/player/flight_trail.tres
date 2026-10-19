@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="PlayerFlightTrailSettings" format=3]
+[gd_resource type="Resource" script_class="PlayerFlightTrailSettings" format=3 uid="uid://cp56vpgfvqd8h"]
 
-[ext_resource type="Script" path="res://scripts/player/player_flight_trail_settings.gd" id="settings"]
+[ext_resource type="Script" uid="uid://cmfp5cu1gjqh5" path="res://scripts/player/player_flight_trail_settings.gd" id="settings"]
 
 [resource]
 script = ExtResource("settings")
+bounce_rhythm_enabled = true

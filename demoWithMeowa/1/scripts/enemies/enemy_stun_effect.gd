@@ -60,12 +60,17 @@ func _process(delta: float) -> void:
 		stop()
 		return
 	_age += delta
-	global_position = _enemy.get_global_transform_interpolated().origin + Vector3.UP * _height
-	global_basis = _camera.global_basis.orthonormalized() if is_instance_valid(_camera) else Basis.IDENTITY
-	var size := Vector2(_material.albedo_texture.get_size()) * _pixel
 	var opacity := minf(1.0, _enemy.stun_remaining / 0.12)
+	display_at(_enemy.get_global_transform_interpolated().origin + Vector3.UP * _height, _pixel, _age, opacity, _camera)
+
+## 死亡快照共用同一组金星；只呈现，不持有怪物或施加真实眩晕。
+func display_at(point: Vector3, pixel: float, age: float, opacity: float, camera: Camera3D) -> void:
+	show()
+	global_position = point
+	global_basis = camera.global_basis.orthonormalized() if is_instance_valid(camera) else Basis.IDENTITY
+	var size := Vector2(_material.albedo_texture.get_size()) * pixel
 	for index in 3:
-		var angle := _age * TAU / 0.65 + index * TAU / 3.0
-		var offset := Vector3(roundf(cos(angle) * 14.0), roundf(sin(angle) * 4.0), 0.0) * _pixel
+		var angle := age * TAU / 0.65 + index * TAU / 3.0
+		var offset := Vector3(roundf(cos(angle) * 14.0), roundf(sin(angle) * 4.0), 0.0) * pixel
 		multimesh.set_instance_transform(index, Transform3D(Basis.from_scale(Vector3(size.x, size.y, 1.0)), offset))
 		multimesh.set_instance_color(index, Color(1, 1, 1, opacity))

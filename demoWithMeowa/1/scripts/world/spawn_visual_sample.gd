@@ -17,11 +17,13 @@ const FOG_POST_DEFAULTS := {"fog_curve": 1.0, "bloom_threshold": 1.0, "bloom_flo
 signal style_changed(index: int, title: String)
 
 @export_group("画面风格")
-## 只切光影、材质受光与天气；相机、布局、花草分布、像素材质开关独立保留。
+## 切光影与材质受光；启用独立天气后保留晴雨。相机、布局和植被分布不变。
 @export_enum("原始光影", "Lumina 黄金时段", "Lumina 细雨", "Lumina 夜晚") var style := 1:
 	set(value): style = clampi(value, 0, 3); _queue_apply()
 ## 直接更改晴雨时，黄金／细雨光照随之调整；原始和夜晚保留当前光照。
 @export var follow_weather := true
+## 对应地图明确启用后，晴雨与雨量由 Weather 和游戏内开关独立控制。
+@export var independent_weather := false
 @export_tool_button("应用视觉与天气", "Reload") var apply_button = apply_style
 @export_subgroup("游戏内切换")
 @export var runtime_switch_enabled := true
@@ -292,8 +294,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 func _visual_property(path: String, property: String) -> bool:
-	if path in ["MapEffects/ArtDirection", "Player/Sprite"]: return true
-	if path == "MapEffects/Weather": return property in ["weather_mode", "rain_amount", "rain_intensity"]
+	if path == "Player/Sprite": return not property.begins_with("occlusion_")
+	if path == "MapEffects/ArtDirection": return true
+	if path == "MapEffects/Weather": return not independent_weather and property in ["weather_mode", "rain_amount", "rain_intensity"]
 	if path == "MapEffects/AtmosphericLight": return property in ["distant_enabled", "light_color", "map_accents_enabled", "surface_energy", "follow_global_direction"]
 	if path == "MapEffects/DaylightPreview": return property == "enabled"
 	# 投影轮廓和湿草地亮斑独立保留，切光影不重设用户选择。
@@ -327,7 +330,7 @@ func _process(_delta: float) -> void:
 	if Engine.is_editor_hint():
 		if not _editor_grass_preview_initialized: apply_grass_variation()
 		return
-	if style == 0 or not follow_weather or _queued: return
+	if independent_weather or style == 0 or not follow_weather or _queued: return
 	var weather := get_parent().get_node_or_null("MapEffects/Weather")
 	if weather and _weather_mode != weather.weather_mode:
 		_weather_mode = weather.weather_mode

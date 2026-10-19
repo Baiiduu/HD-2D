@@ -1,0 +1,56 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Shader" path="res://shaders/combat/player_speed_flow.gdshader" id="shader"]
+[ext_resource type="Texture2D" path="res://assets/meowa/combat/speed_flow/streamline.png" id="texture"]
+
+[sub_resource type="ShaderMaterial" id="Material"]
+shader = ExtResource("shader")
+shader_parameter/airflow_texture = ExtResource("texture")
+shader_parameter/brush_region = Vector4(0.0208333, 0.4074074, 0.9583333, 0.1481481)
+
+[sub_resource type="Gradient" id="Fade"]
+offsets = PackedFloat32Array(0, 0.12, 0.45, 1)
+colors = PackedColorArray(1, 0.98, 0.9, 0, 1, 0.98, 0.9, 0.75, 1, 0.98, 0.9, 0.5, 1, 0.98, 0.9, 0)
+
+[sub_resource type="GradientTexture1D" id="FadeTexture"]
+gradient = SubResource("Fade")
+
+[sub_resource type="Curve" id="Taper"]
+_data = [Vector2(0, 0.82), 0.0, 0.0, 0, 0, Vector2(0.18, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.7), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="TaperTexture"]
+curve = SubResource("Taper")
+
+[sub_resource type="ParticleProcessMaterial" id="Process"]
+resource_local_to_scene = true
+emission_shape = 4
+direction = Vector3(0, 0, -1)
+spread = 1.5
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 1.2
+initial_velocity_max = 1.4
+color_ramp = SubResource("FadeTexture")
+scale_curve = SubResource("TaperTexture")
+
+[sub_resource type="QuadMesh" id="BrushCard"]
+size = Vector2(0.152, 0.95)
+
+[node name="SpeedFlow" type="GPUParticles3D"]
+material_override = SubResource("Material")
+visible = false
+emitting = false
+amount = 4
+lifetime = 0.18
+local_coords = false
+fixed_fps = 60
+interpolate = true
+fract_delta = true
+visibility_aabb = AABB(-4, -2, -4, 8, 5, 8)
+transform_align = 3
+use_fixed_seed = true
+seed = 1279
+cast_shadow = 0
+gi_mode = 0
+process_material = SubResource("Process")
+draw_pass_1 = SubResource("BrushCard")

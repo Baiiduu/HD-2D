@@ -682,5 +682,392 @@
       1
     ],
     "source_sha256": "eba75023393d2670e7f3a11e43db6be00836fdd65db3966d3d6eab48599cfaf2"
+  },
+  "res://assets/finalart/attack1/frame_01.png": {
+    "normal": "res://assets/surface_normals/world_character_attack1_frame_01.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "acf308984ed13d451a8b2db94209a7ce8cec1d87651401604714ddb714ab7ac5"
+  },
+  "res://assets/finalart/attack1/frame_02.png": {
+    "normal": "res://assets/surface_normals/world_character_attack1_frame_02.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "06595436b3b3e74a60b411284a14d924a422e5477fe3c8fb5786b0370bd78363"
+  },
+  "res://assets/finalart/attack1/frame_03.png": {
+    "normal": "res://assets/surface_normals/world_character_attack1_frame_03.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "1ab5553bddbf0bef72982d2ff5894f79909d564bbf06f07e44e9ca540c10b082"
+  },
+  "res://assets/finalart/attack1/frame_04.png": {
+    "normal": "res://assets/surface_normals/world_character_attack1_frame_04.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "361f375d4fa6f82d694ab8c4a673c03588399596fee55efa0312acb2c36d8376"
+  },
+  "res://assets/finalart/attack1/frame_05.png": {
+    "normal": "res://assets/surface_normals/world_character_attack1_frame_05.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "9818c4f770a1820b0d323b5f6ab48b8507852e6a50e335ad614eccf2beb4b694"
+  },
+  "res://assets/finalart/attack1/frame_06.png": {
+    "normal": "res://assets/surface_normals/world_character_attack1_frame_06.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "dc45d49c823ae97b86ebd4c8fb656b52928775bde969c7cb8590ef83437abc86"
+  },
+  "res://assets/finalart/attack1/frame_07.png": {
+    "normal": "res://assets/surface_normals/world_character_attack1_frame_07.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "de80216e8252e3a6b6ba3039bdd76a22f806c7dfe3791c770da0594b0ad6b73a"
+  },
+  "res://assets/finalart/attack1/frame_08.png": {
+    "normal": "res://assets/surface_normals/world_character_attack1_frame_08.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "61f75ed6595141e4227f8f9442f1dc9541624071e0bc7b5a0398f4c6c98436d4"
+  },
+  "res://assets/finalart/attack1/frame_09.png": {
+    "normal": "res://assets/surface_normals/world_character_attack1_frame_09.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "d57b0a92755057a40e4bdb753191e080ecf18a2e8c13fc4df6aa94f23579272c"
+  },
+  "res://assets/finalart/attack1/frame_10.png": {
+    "normal": "res://assets/surface_normals/world_character_attack1_frame_10.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "7fcd35705ec2c70eebc0e90fb85cc0237cf1a256f770d5d2f6fe5268640948e1"
+  },
+  "res://assets/finalart/attack1/frame_11.png": {
+    "normal": "res://assets/surface_normals/world_character_attack1_frame_11.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "2afab3e7cc5f68e0390e0d46fc6be334c5c7d6cc8ebaea70d6cc475d8e70ff95"
+  },
+  "res://assets/finalart/attack1/frame_12.png": {
+    "normal": "res://assets/surface_normals/world_character_attack1_frame_12.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "46e5ce0308fe9a45a7595ed4b171f66d1b8c87909e6817ed15d1eac8255c72ef"
+  },
+  "res://assets/finalart/ricochet/loop_15/frame_01.png": {
+    "normal": "res://assets/surface_normals/world_character_ricochet_loop_15_frame_01.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "dc50861c46d0a6ab54291b27625b959a173d11da3afb91290a281e47d922205b"
+  },
+  "res://assets/finalart/ricochet/loop_15/frame_02.png": {
+    "normal": "res://assets/surface_normals/world_character_ricochet_loop_15_frame_02.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "15db21bb001d3ef0ee81a39a8fa6e3e0af8756c6e01da3da6378eab30d93617f"
+  },
+  "res://assets/finalart/ricochet/loop_15/frame_03.png": {
+    "normal": "res://assets/surface_normals/world_character_ricochet_loop_15_frame_03.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "2c28be52f845ccc3c6cdccf4674fae1efbc399e14dfe7d10c2f2fc648abe5b69"
+  },
+  "res://assets/finalart/ricochet/loop_15/frame_04.png": {
+    "normal": "res://assets/surface_normals/world_character_ricochet_loop_15_frame_04.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "9c899c29b43240840fdde6618520129cbadecea8cd442e494375224e3049711b"
+  },
+  "res://assets/finalart/ricochet/loop_15/frame_05.png": {
+    "normal": "res://assets/surface_normals/world_character_ricochet_loop_15_frame_05.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "db2ee45993cc5d7426a2ebf685ac98ca10456689f7ffb47cad5c8f5d4067742d"
+  },
+  "res://assets/finalart/ricochet/loop_15/frame_06.png": {
+    "normal": "res://assets/surface_normals/world_character_ricochet_loop_15_frame_06.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "b267896fe35551c3ea532a3777f684ed70c435d9ddd8688a6fb492a5568ea714"
+  },
+  "res://assets/finalart/ricochet/loop_15/frame_07.png": {
+    "normal": "res://assets/surface_normals/world_character_ricochet_loop_15_frame_07.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "e2631db24d99633027e4df809e25d2974d30e8ce82ce8627dffc85bfa76b8166"
+  },
+  "res://assets/finalart/ricochet/loop_15/frame_08.png": {
+    "normal": "res://assets/surface_normals/world_character_ricochet_loop_15_frame_08.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "13b727e63f7d0fc02f8266ff771d7ca171ffba43171e834e9fd3e6294a1b8577"
+  },
+  "res://assets/finalart/ricochet/loop_15/frame_09.png": {
+    "normal": "res://assets/surface_normals/world_character_ricochet_loop_15_frame_09.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "3fd3c1510112930e6943cdda5382c192aa47f1e52d4385ee051d0eeed925413e"
+  },
+  "res://assets/finalart/ricochet/loop_15/frame_10.png": {
+    "normal": "res://assets/surface_normals/world_character_ricochet_loop_15_frame_10.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "0ac8e9352156f4d6d38aabb2d8b5aaa2c656bf1726d4787fbf889cf1600b23b9"
+  },
+  "res://assets/finalart/ricochet/loop_15/frame_11.png": {
+    "normal": "res://assets/surface_normals/world_character_ricochet_loop_15_frame_11.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "aaa9fee8da243bb7f616b785b45cea266ab81c97f7118e6eacc80b9e9cf58547"
+  },
+  "res://assets/finalart/ricochet/loop_15/frame_12.png": {
+    "normal": "res://assets/surface_normals/world_character_ricochet_loop_15_frame_12.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "cdb3f8a390f7730bbb640efb76cc9245ca2c8f483f632506b83f9ae0c90e1cc2"
+  },
+  "res://assets/finalart/ricochet/loop_15/frame_13.png": {
+    "normal": "res://assets/surface_normals/world_character_ricochet_loop_15_frame_13.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "15c6d72d98d8c44d77608af9bddb2659de2d2d1328edc0211aad8adbf3c25dac"
+  },
+  "res://assets/finalart/ricochet/loop_15/frame_14.png": {
+    "normal": "res://assets/surface_normals/world_character_ricochet_loop_15_frame_14.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "de61b70e3c7e17271483aff244ecc284c2ab94bb6e21e3fd0805beeb4f99fb6e"
+  },
+  "res://assets/finalart/ricochet/loop_15/frame_15.png": {
+    "normal": "res://assets/surface_normals/world_character_ricochet_loop_15_frame_15.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "890aac48c94666153aa0fda85cc958a7ca7f444ccb6cc373137a9a38b3b139ce"
+  },
+  "res://assets/finalart/idle/idle_01.png": {
+    "normal": "res://assets/surface_normals/world_character_idle_idle_01.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "0475199b34954e891950c48b44a204b5a03f994c5602c0ae33796ac79d260f4d"
+  },
+  "res://assets/finalart/idle/idle_02.png": {
+    "normal": "res://assets/surface_normals/world_character_idle_idle_02.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "b20b4de004ab811e86fa8aed5ac1442e4c1ead354fae99a4ba67494d2e351afe"
+  },
+  "res://assets/finalart/idle/idle_03.png": {
+    "normal": "res://assets/surface_normals/world_character_idle_idle_03.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "5369f8963b31685a4884c0e04ddf646bd1e53a08e816bf3e4e594659c436ff68"
+  },
+  "res://assets/finalart/idle/idle_04.png": {
+    "normal": "res://assets/surface_normals/world_character_idle_idle_04.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "353826aec5c5567f963a7f926ed86b122479ecd8e65f5028b73bec9062784a02"
+  },
+  "res://assets/finalart/idle/idle_05.png": {
+    "normal": "res://assets/surface_normals/world_character_idle_idle_05.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "a05ea95ce9b816114104875c2b05c38850acaa2d052c554fbc90ce9d8bddda89"
+  },
+  "res://assets/finalart/idle/idle_06.png": {
+    "normal": "res://assets/surface_normals/world_character_idle_idle_06.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "51e6c5e27527cfcd9b1fbea7a1f74a49a562dcf8924ec2a1a1823f9f4d3c9aae"
+  },
+  "res://assets/finalart/idle/idle_07.png": {
+    "normal": "res://assets/surface_normals/world_character_idle_idle_07.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "15247829338304ae271600c4c94d1629a3824adc18e7d2bcb23619e1f72a121f"
+  },
+  "res://assets/finalart/idle/idle_08.png": {
+    "normal": "res://assets/surface_normals/world_character_idle_idle_08.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "f2410a30a30778e73bda655977b88c4de2e818a4bfaca45c0cd3115ffebc74d8"
+  },
+  "res://assets/finalart/walk/walk_01.png": {
+    "normal": "res://assets/surface_normals/world_character_walk_walk_01.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "f85f5f93fdae80ce40c1525a98a88080b496f0a0187f7efe45a81c0305bbb611"
+  },
+  "res://assets/finalart/walk/walk_02.png": {
+    "normal": "res://assets/surface_normals/world_character_walk_walk_02.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "8cd7a61c49088e8d524aa8431cbbd16abe19571a827f9e6c378e1b80336b26eb"
+  },
+  "res://assets/finalart/walk/walk_03.png": {
+    "normal": "res://assets/surface_normals/world_character_walk_walk_03.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "fd2216b56c165a7d2ea015ab67f1ded92ac938e67309d4da8c79b0076673f49c"
+  },
+  "res://assets/finalart/walk/walk_04.png": {
+    "normal": "res://assets/surface_normals/world_character_walk_walk_04.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "8b56c35a72a2f80157183a5d246ab8dfc7ba49974da11c962b572b4407d41c58"
+  },
+  "res://assets/finalart/walk/walk_05.png": {
+    "normal": "res://assets/surface_normals/world_character_walk_walk_05.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "ed3b0f02c437ff1bde422edd5d90c5547b901ac30b010dc9a55fdab9f4858216"
+  },
+  "res://assets/finalart/walk/walk_06.png": {
+    "normal": "res://assets/surface_normals/world_character_walk_walk_06.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "f58a021f38278c8e923c8fdb81ab8103b86a2c12f599be58084b52d44c44ce28"
+  },
+  "res://assets/finalart/walk/walk_07.png": {
+    "normal": "res://assets/surface_normals/world_character_walk_walk_07.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "0f6e8ed1131839f90eb549736dba18c07e2d92cab0ccff15ad36509cf8fefa7a"
+  },
+  "res://assets/finalart/walk/walk_08.png": {
+    "normal": "res://assets/surface_normals/world_character_walk_walk_08.png",
+    "kind": "character",
+    "grid": [
+      1,
+      1
+    ],
+    "source_sha256": "2b7eff6bf612bd1338f330d6b43845ab23a3ab44fb3a9788222714b47f965ce1"
   }
 }

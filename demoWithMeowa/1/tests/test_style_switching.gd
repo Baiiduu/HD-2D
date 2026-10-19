@@ -31,6 +31,9 @@ func key(code: Key, echo := false, shift := false) -> void:
 func run() -> void:
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
 	world.get_node("LoadoutUI").save_enabled = false
+	world.get_node("WorldEntry").preview_on_direct_run = false
+	world.get_node("WorldMainMenu").show_on_world_start = false
+	world.get_node("GameSettingsUI").save_graphics_settings = false
 	# Keyboard-cycle expectations start at golden hour; the formal default can be original.
 	world.get_node("VisualSample").style = 1
 	world.get_node("WavePrototype/RunGrowth").enabled = false
@@ -40,6 +43,7 @@ func run() -> void:
 	var sample: SpawnVisualSample = world.get_node("VisualSample")
 	var camera: FollowCamera = world.get_node("MapEffects/Camera3D")
 	var wave: WavePrototype = world.get_node("WavePrototype")
+	if wave.skill_draft: wave.skill_draft.enabled = false
 	var terrain: Terrain = world.get_node("Homestead")
 	var dressing := world.get_node("GroundDressing")
 	var props := world.get_node("WorldDetails/BattleCourts").get_children()
@@ -60,7 +64,7 @@ func run() -> void:
 	var geometry := []
 	var sites := []
 	for prop in props:
-		geometry.append(prop.get_node("Geometry"))
+		geometry.append(prop.find_children("*", "GeometryInstance3D", true, false) + prop.find_children("*", "CollisionShape3D", true, false))
 		sites.append(prop.transform)
 	var flora: Node3D = dressing._generated
 	var terrain_mesh: Node3D = terrain._generated
@@ -75,7 +79,7 @@ func run() -> void:
 		check(camera.global_transform == camera_pose and camera.distance == 29.0 and camera._yaw_offset_degrees == 45.0, "Style preserves custom camera and current rotation")
 		for index in props.size():
 			check(props[index].transform == sites[index], "Style preserves obstacle layout")
-			check(props[index].get_node("Geometry") == geometry[index], "Style preserves obstacle geometry and collisions")
+			check(props[index].find_children("*", "GeometryInstance3D", true, false) + props[index].find_children("*", "CollisionShape3D", true, false) == geometry[index], "Style preserves obstacle geometry and collisions")
 		check(dressing._generated == flora and dressing.grass_density == density and terrain._generated == terrain_mesh, "Style does not rebuild plants or terrain")
 		check(weather.blink_plant_strength == 0.21 and weather.rain_volume_db == -23.0, "Style preserves independently adjusted blink and audio")
 		check(dressing.ground_sheen == sheen and is_equal_approx(terrain.top_material.get_shader_parameter("grass_sheen"), sheen), "Style preserves disabled and custom grass sheen")

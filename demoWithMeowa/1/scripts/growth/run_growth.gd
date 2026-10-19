@@ -232,6 +232,7 @@ func _levels_gained(_count: int) -> void:
 
 func _try_open_choice() -> void:
 	if not active or not _draft_enabled or state.pending_choices <= 0 or choice_ui.is_open or _choice_error: return
+	if session.is_wave_finish_pending(): return
 	if get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null: return
 	while state.pending_choices > 0:
 		_candidate_pool = candidate_provider.call() if candidate_provider.is_valid() else _fallback_options.duplicate()

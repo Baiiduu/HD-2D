@@ -1,11 +1,86 @@
-[gd_resource type="Resource" script_class="PlayerActionVisuals" format=3]
+[gd_resource type="Resource" script_class="PlayerActionVisuals" format=3 uid="uid://bd8sa76co577a"]
 
-[ext_resource type="Script" uid="uid://cvtrdilce5oma" path="res://scripts/player/player_action_visuals.gd" id="visuals"]
+[ext_resource type="Texture2D" uid="uid://bt0hh1xxq00fq" path="res://assets/meowa/combat/body_rebound/departure_airflow.png" id="airflow"]
 [ext_resource type="SpriteFrames" uid="uid://b6mvb2n71m2n3" path="res://assets/meowa/combat/body_bounce/bounce_frames.tres" id="bounce"]
+[ext_resource type="SpriteFrames" path="res://data/combat/scenes/world/player/character_attack.tres" id="character_attack"]
+[ext_resource type="SpriteFrames" path="res://data/combat/scenes/world/player/character_flight.tres" id="character_flight"]
+[ext_resource type="Texture2D" uid="uid://nhhuw2d5mneb" path="res://assets/meowa/combat/kill_slash/slash.png" id="kill_slash"]
+[ext_resource type="Script" uid="uid://cvtrdilce5oma" path="res://scripts/player/player_action_visuals.gd" id="visuals"]
+[ext_resource type="Texture2D" path="res://assets/meowa/combat/surface_wave/shockwave.png" id="surface_wave"]
+[ext_resource type="Texture2D" path="res://assets/meowa/combat/speed_flow/streamline.png" id="speed_flow"]
 
 [resource]
 script = ExtResource("visuals")
+normal_attack = ExtResource("character_attack")
+flight = ExtResource("character_flight")
+charge_dynamic_enabled = true
+charge_wind_enabled = true
+charge_wind_texture = ExtResource("airflow")
+charge_wind_funnel_enabled = true
+charge_wind_radius_pixels = 58.0
+charge_wind_bottom_radius_pixels = 44.0
+charge_wind_height_pixels = 64.0
+charge_wind_width_pixels = 12.0
+charge_wind_layers = 3
+charge_wind_trail_span = 0.26
+charge_wind_body_clearance_pixels = 3.0
+charge_wind_opacity = 0.3
+charge_wind_cycle_seconds = 1.15
+charge_wind_full_speed_multiplier = 2.0
 coalesce_charge_preview = true
 bounce_frames = ExtResource("bounce")
 bounce_anchor_pixels = Vector2(19, 24)
+bounce_particles_enabled = true
+motion_feedback_enabled = true
+departure_airflow_enabled = true
+departure_airflow_texture = ExtResource("airflow")
+surface_wave_enabled = true
+surface_wave_texture = ExtResource("surface_wave")
+surface_wave_radius = 1.45
+surface_wave_seconds = 0.5
+surface_wave_energy = 2.8
+speed_rim_enabled = false
+speed_flow_enabled = true
+speed_flow_mode = 1
+speed_flow_texture = ExtResource("speed_flow")
+speed_flow_texture_region = Rect2(0.0208333, 0.4074074, 0.9583333, 0.1481481)
+speed_flow_length = 1.4
+speed_flow_lifetime = 0.18
+speed_flow_radius = 0.42
+speed_flow_opacity = 0.55
 show_fire_trail = true
+combat_readability_enabled = true
+combat_contact_frames = ExtResource("bounce")
+feedback_prewarm_deaths = 20
+feedback_prewarm_contacts = 8
+enemy_hit_reaction_enabled = true
+enemy_hit_silhouette_seconds = 0.16
+enemy_hit_silhouette_interval = 0.24
+hit_debris_enabled = true
+hit_debris_count = 16
+hit_debris_speed_multiplier = 2.4
+hit_debris_seconds = 0.42
+kill_slash_enabled = true
+kill_slash_texture = ExtResource("kill_slash")
+kill_impact_enabled = true
+sword_hit_impact_enabled = true
+sword_hitstop_seconds = 0.035
+sword_hit_impact_interval = 0.35
+sword_hit_shake_seconds = 0.14
+sword_hit_shake_pixels = 3.0
+kill_shot_enabled = true
+kill_shot_minimum_kills = 3
+kill_shot_group_window = 0.12
+kill_shot_enter_seconds = 0.24
+kill_shot_interval = 1.1
+kill_shot_seconds = 0.72
+kill_shot_zoom_scale = 0.94
+melee_death_enabled = true
+melee_death_seconds = 0.85
+melee_death_distance = 3.2
+melee_death_height = 1.8
+melee_death_spin_degrees = 480.0
+melee_death_impact_frames = ExtResource("bounce")
+melee_death_trail_enabled = true
+melee_death_landing_enabled = true
+melee_death_cluster_enabled = true

@@ -51,8 +51,22 @@ func path_checks() -> void:
 	prism.launch(Vector3.ZERO, Vector3.RIGHT, stats)
 	var shot: Dictionary = prism._shots[-1]
 	prism._advance_shot(shot, 0.35)
-	check(shot.bounces == 1 and shot.direction.dot(expected) > 0.999, "棱光弹射按首次镜印法线反射并消耗自己的次数")
+	check(shot.bounces == 1 and shot.direction.x < -0.99, "怪物实体在内部镜片前时，棱光先在真实身体外沿反射")
 	check(is_equal_approx(actor.health, before - stats.damage), "镜片接触与紧邻回程不对宿主重复扣血")
+	prism.cancel_current()
+	# Put the fixture's finite mirror in front of the body to verify true contact ordering.
+	var saved_surface_transform: Transform3D = mark.effect._surface.global_transform
+	var saved_remote_path: NodePath = mark.effect._surface._follow.remote_path
+	mark.effect._surface._follow.remote_path = NodePath()
+	mark.effect._surface.global_position += Vector3.LEFT
+	mark.effect._surface.force_update_transform()
+	await settle()
+	before = actor.health
+	mark.effect._glint_age = 0.5
+	prism.launch(Vector3.ZERO, Vector3.RIGHT, stats)
+	shot = prism._shots[-1]
+	prism._advance_shot(shot, 0.35)
+	check(shot.bounces == 1 and shot.direction.dot(expected) > 0.999 and actor.health == before, "实际位于怪物之前的镜面按固定法线反射，不穿镜伤害宿主")
 	check(mark.effect._glint_age == 0.0, "反射触发原有镜片闪光，复用反馈")
 	prism.cancel_current()
 	var capped := stats.duplicate()
@@ -61,6 +75,11 @@ func path_checks() -> void:
 	shot = prism._shots[-1]
 	prism._advance_shot(shot, 0.35)
 	check(shot.bounces == 0 and prism._shots.is_empty(), "棱光无反弹预算时在镜片结束，不能免费反射")
+	mark.effect._surface.global_transform = saved_surface_transform
+	mark.effect._surface._follow.remote_path = saved_remote_path
+	mark.effect._surface._follow.force_update_cache()
+	mark.effect._surface.force_update_transform()
+	await settle()
 	before = actor.health
 	mirror.launch(Vector3.ZERO, Vector3.RIGHT, mirror.get_attack_stats())
 	shot = mirror._shots[-1]

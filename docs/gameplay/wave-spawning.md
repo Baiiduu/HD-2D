@@ -6,7 +6,7 @@
 
 最新已改为[无尽波次](endless-waves.md)：保留前三波开场，第三波后继续生成递增波次，不再自动胜利；每波清完仍休整并按 F 继续。后续数量、刷新间隔及上限可调。
 
-打开 `scenes/world/world.tscn` 后按 F6，在战区入口 `(0, 0, 25.6)` 按 **F** 开始。清波后 F 主动继续；战斗或休整时 ESC 撤退结算，结算后 **T** 重试或 ESC 返回入口。R 用于 [Style 切换](../technical/parameters-and-styles.md)。已打开的界面先处理自己的按键。顶部中央显示透明背景的小字波次提示；原灰盒面板仍隐藏，可在 `WavePrototype.show_ui` 开启状态调试。
+打开 `scenes/world/world.tscn` 后按 F6，在战区内任意位置按 **F** 开始，不要求回到入口，也不传送人物。清波后 F 主动继续；战斗或休整时 ESC 撤退结算，结算后 **T** 重试或 ESC 返回入口。R 用于 [Style 切换](../technical/parameters-and-styles.md)。已打开的界面先处理自己的按键。开战与续波提示统一在屏幕底部，战斗波数位于顶部；原灰盒面板仍隐藏，可在 `WavePrototype.show_ui` 开启状态调试。
 
 ## 当前波次配置
 
@@ -126,9 +126,9 @@
 
 组件 `scenes/ui/wave_hud.tscn` 位于 `WavePrototype/WaveHUD`，独立于灰盒 `show_ui`。没有底板、边框或按钮，文字与容器均忽略鼠标输入。
 
-- 靠近入口：准备第 1 / 3 波，下方小字提示 F 开始；在小院内隐藏。
+- 准备阶段：World 在屏幕底部中央显示米白像素键帽与「F 开始挑战」，模拟模式改为「开始模拟」。战区内任意位置均可开战，提示不锚定入口或跟随相机投影，不重复显示顶部准备文字；其它地图沿用自身入口距离与准备提示。按键读取实际绑定，保持开局选卡。
 - 战斗：只显示当前波数，例如“第 2 / 3 波”。
-- 清波后：显示“第 1 / 3 波已完成”，下方提示“休整 · 按 F 开始第 2 波”，休整没有倒计时。
+- 清波后：World 无尽模式沿用独立清波标题，底部显示「休整中　F 开始第 02 波」，与开战共用 28 像素的米白像素键帽和 14 像素字母；有限挑战与其它地图保留原提示，休整没有倒计时。
 - 结算：显示成功或结束原因，下方提示 T 重试、ESC 返回。
 - 背包等管理界面及升级选择期间隐藏，关闭后自动恢复。
 
@@ -137,12 +137,15 @@ Godot 选中 `WavePrototype/WaveHUD`，或在“参数总览 → UI”搜索“�
 | 参数 | 默认 | 用途 |
 | --- | --- | --- |
 | `enabled` | 开启 | 单独开关波次小字 |
+| `start_hint_enabled` | World 开启，其它地图关闭 | 复用像素键帽显示开战提示 |
 | `top_margin` | 24 | 上缘距离，逻辑像素，始终水平居中 |
 | `font_size` | 18 | 主波数文字字号 |
 | `hint_font_size` | 14 | 操作提示字号 |
 | `text_color` | 暖白，透明度 0.94 | 主文字颜色与透明度 |
 | `hint_opacity` | 0.72 | 提示相对于主文字的透明度 |
 | `outline_size` | 2 | 细暗描边宽度，保证亮草地上的可读性 |
+
+入口圆台由 `WavePrototype.show_start_marker` 控制，World 为关闭。`WavePrototype.start_requires_proximity` 在 World 为关闭，其它地图默认开启并沿用 `interaction_radius`。开战仍检查导航就绪、战区内合法位置、战斗冻结和界面输入占用。主菜单和入场统一管理整个 WaveHUD 的显隐；开战和休整提示共用地图波次演出资源的 `rest_hint_bottom_margin`，默认距底部 112 像素。所有提示节点忽略鼠标输入。
 
 在 `WavePrototype.waves → entries` 调 `count`、`batch_size`、`interval` 和 `start_delay`；正式同场容量由 `population_rules` 控制，优先于控制器的回退上限。参数总览可搜索“怪潮每批数量”。
 

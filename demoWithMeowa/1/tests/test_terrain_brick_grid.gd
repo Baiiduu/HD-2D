@@ -57,7 +57,7 @@ func _run() -> void:
 		check(prepared.get_size()==Vector2i(128,128), "Irregular ornaments have a whole-brick transparent canvas")
 		check(prepared.get_region(Rect2i(Vector2i(atlas.margin.position),raw.get_size())).get_data()==raw.get_data(),
 			"Transparent canvas keeps every original ornament pixel unchanged")
-	var current := load("res://data/world/world_surface.tres") as TerrainSurfaceData
+	var current := load("res://data/world/world_surface.res") as TerrainSurfaceData
 	var staged := REPAINT.build(current,palette)
 	check(staged.brush_snap_enabled and staged.stamps.size()>=127, "Map uses persisted snap and independent native-sized stamps")
 	var origin := Vector2i((staged.texture_origin*40).round())

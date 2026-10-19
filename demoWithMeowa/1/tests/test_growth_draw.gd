@@ -136,6 +136,7 @@ func run() -> void:
 	await ui_checks()
 	AudioServer.set_bus_mute(0, true)
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
+	world.get_node("WorldEntry").preview_on_direct_run = false
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("MapEffects/BGM").music_enabled = false
 	var wave: WavePrototype = world.get_node("WavePrototype")

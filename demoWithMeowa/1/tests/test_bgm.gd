@@ -72,7 +72,7 @@ func run() -> void:
 	check(bgm.get_playback_state().context == &"exploration" and bgm.get_playback_state().track == &"exploration", "准备阶段播放探索曲")
 	check(bgm._players.size() == 2 and bgm._players[bgm._active].bus == &"Music", "固定两路播放器独立走 Music 总线")
 	check(bgm._players[bgm._active].stream != exploration.tracks[0].stream and not bgm._players[bgm._active].stream.loop, "复制播放资源，不改写共享导入音源的循环设置")
-	check(is_equal_approx(bgm._players[bgm._active].volume_db, -18.0), "探索曲保持独立音量增益")
+	check(is_equal_approx(bgm._players[bgm._active].volume_db, -19.5), "探索曲使用与战斗曲响度对齐后的独立增益")
 	phase(WavePrototype.Phase.BATTLE)
 	check(bgm.get_playback_state().transitioning and bgm.get_playback_state().voices == 2 and bgm.get_playback_state().requested == &"garden_battle", "开战触发两曲交叉淡化")
 	tick(1.25)

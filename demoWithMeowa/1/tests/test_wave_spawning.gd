@@ -88,12 +88,16 @@ func reset() -> void:
 func run() -> void:
 	var protected := FileAccess.get_sha256("res://data/world/world_terrain.tres")
 	world = load("res://scenes/world/world.tscn").instantiate()
+	world.get_node("WorldEntry").preview_on_direct_run = false
+	world.get_node("WavePresentation").enabled = false
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("WavePrototype/RunGrowth").enabled = false
 	root.add_child(world)
 	current_scene = world
 	await frames(12)
 	wave = world.get_node("WavePrototype")
+	# 旧排期／容量回归沿用即时生成，预告机制由 test_spawn_shadows 覆盖。
+	wave.spawn_shadow_settings = null
 	# 旧预警配置不应让普通怪、怪潮或分裂幼体在生成后额外等待。
 	wave.spawn_warning = 0.8
 	wave.enemy_spawned.connect(func(enemy: WaveEnemy): immediate_spawns = immediate_spawns and enemy.spawn_delay == 0.0)

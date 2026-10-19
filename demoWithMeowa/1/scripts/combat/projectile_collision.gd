@@ -52,6 +52,26 @@ func wall_contact(space: PhysicsDirectSpaceState3D, start: Vector3, end: Vector3
 		"normal": rest.get("normal", Vector3.ZERO), "point": rest.get("point", _query.transform.origin),
 		"collider": instance_from_id(rest.collider_id) if rest.has("collider_id") else null}
 
+## Reflecting projectiles need only the first eligible real body and its contact normal.
+## Keep the multi-target query below unchanged for piercing attacks.
+func first_enemy_contact(space: PhysicsDirectSpaceState3D, start: Vector3, end: Vector3, radius: float, eligible: Callable) -> Dictionary:
+	var excluded: Array[RID] = []
+	while true:
+		var contact := wall_contact(space, start, end, radius, excluded, 2)
+		if contact.is_empty(): return {}
+		var collider: Object = contact.get("collider")
+		if not collider is CollisionObject3D: return {}
+		var enemy := collider as WaveEnemy
+		if enemy and eligible.call(enemy):
+			contact.enemy = enemy
+			if contact.overlap:
+				var rest := space.get_rest_info(_query)
+				contact.normal = rest.get("normal", Vector3.ZERO)
+				contact.point = rest.get("point", start)
+			return contact
+		excluded.append(collider.get_rid())
+	return {}
+
 func enemy_contacts(space: PhysicsDirectSpaceState3D, start: Vector3, end: Vector3, radius: float, eligible: Callable) -> Array[Dictionary]:
 	var motion := end - start
 	var length := motion.length()

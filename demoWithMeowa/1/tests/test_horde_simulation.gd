@@ -111,6 +111,8 @@ func run() -> void:
 	check(rules.validation_error().is_empty(), "模拟数量上界可配置，不代表保证帧率或地图承载量")
 	rules.simulation_enemy_count = 37
 	world = load("res://scenes/world/world.tscn").instantiate()
+	world.get_node("WorldEntry").preview_on_direct_run = false
+	world.get_node("WavePresentation").enabled = false
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("MapEffects/BGM").music_enabled = false
 	world.get_node("MapEffects/Weather").rain_audio_enabled = false
@@ -120,6 +122,8 @@ func run() -> void:
 	current_scene = world
 	await settle(16)
 	wave = world.get_node("WavePrototype")
+	# 数量与免死规则使用原刷新时序，剪影预告由独立逻辑测试覆盖。
+	wave.spawn_shadow_settings = null
 	player = world.get_node("Player")
 	wave.set_physics_process(false)
 	player.set_physics_process(false)

@@ -192,9 +192,6 @@ func _build_hint() -> HBoxContainer:
 	hint.name = "InteractionHint"
 	hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hint.add_theme_constant_override("separation",8)
-	var font := SystemFont.new()
-	font.font_names = PackedStringArray(["Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC"])
-	font.antialiasing = TextServer.FONT_ANTIALIASING_NONE
 	var key := Control.new()
 	key.custom_minimum_size = Vector2.ONE*hint_icon_size
 	key.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -203,7 +200,6 @@ func _build_hint() -> HBoxContainer:
 	key_art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	key.add_child(key_art)
 	var key_label := loadout._label(OS.get_keycode_string(interact_key),hint_font_size+2,Color("243449"))
-	key_label.add_theme_font_override("font",font)
 	key_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	key_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	key_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -218,7 +214,6 @@ func _build_hint() -> HBoxContainer:
 	hint.add_child(text)
 	for item in [{"text":"训练", "size":hint_font_size, "color":LoadoutUI.CREAM}, {"text":"生命 · 攻击 · 防御", "size":maxi(12,hint_font_size-4), "color":LoadoutUI.GOLD}]:
 		var label := loadout._label(item.text,item.size,item.color)
-		label.add_theme_font_override("font",font)
 		label.add_theme_color_override("font_outline_color",Color("101923"))
 		label.add_theme_constant_override("outline_size",2)
 		text.add_child(label)

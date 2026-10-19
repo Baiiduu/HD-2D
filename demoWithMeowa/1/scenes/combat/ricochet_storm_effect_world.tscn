@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/combat/ricochet_storm_effect.tscn" id="base"]
+
+[node name="RicochetStormEffect" instance=ExtResource("base")]
+patch_enabled = false

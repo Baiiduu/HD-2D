@@ -2,6 +2,10 @@ class_name GameSettingsUI
 extends CanvasLayer
 
 const GRAPHICS_PAGE = preload("res://scripts/ui/graphics_settings_page.gd")
+const CAMERA_PAGE = preload("res://scripts/ui/camera_settings_page.gd")
+const CONTROLS_PAGE = preload("res://scripts/ui/controls_settings_page.gd")
+const ENTRY_REQUEST = preload("res://scripts/world/world_entry_request.gd")
+const MAIN_MENU_SCENE := "res://scenes/ui/main_menu.tscn"
 
 signal menu_changed(open: bool)
 @export var audio_page: AudioMixUI
@@ -20,8 +24,15 @@ var _fps_label: Label
 var _fps_toggle: CheckBox
 var _fps_timer: Timer
 var _graphics_page
+var _camera_page
+var _controls_page
+var _controls: Node
+var _return_button: Button
+var _returning_to_menu := false
 
 func _ready() -> void:
+	_controls = get_node("/root/GameControls")
+	_controls.configure_world(get_parent())
 	layer = 40
 	_build()
 	_embed.call_deferred()
@@ -47,9 +58,6 @@ func _button(text: String, callback: Callable) -> Button:
 
 func _build() -> void:
 	_theme = Theme.new()
-	var font := SystemFont.new()
-	font.font_names = PackedStringArray(["Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC"])
-	_theme.default_font = font
 	_theme.default_font_size = 17
 	for type in ["Label", "Button", "CheckBox", "OptionButton", "SpinBox"]:
 		for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
@@ -96,9 +104,13 @@ func _build() -> void:
 	var navigation := VBoxContainer.new()
 	navigation.custom_minimum_size.x = 160
 	navigation.add_theme_constant_override("separation", 10)
-	body.add_child(navigation)
-	for index in 3:
-		var button := _button(["声音", "环绕调试", "画质与显示"][index], select_page.bind(index))
+	var navigation_scroll := ScrollContainer.new()
+	navigation_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	navigation_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body.add_child(navigation_scroll)
+	navigation_scroll.add_child(navigation)
+	for index in 5:
+		var button := _button(["声音", "环绕调试", "画质与显示", "镜头", "按键"][index], select_page.bind(index))
 		button.toggle_mode = true
 		navigation.add_child(button)
 		_tabs.append(button)
@@ -117,6 +129,10 @@ func _build() -> void:
 	pages.add_child(_orbit_host)
 	_graphics_page = GRAPHICS_PAGE.new()
 	pages.add_child(_graphics_page)
+	_camera_page = CAMERA_PAGE.new()
+	pages.add_child(_camera_page)
+	_controls_page = CONTROLS_PAGE.new()
+	pages.add_child(_controls_page)
 	var enabled := CheckBox.new()
 	enabled.text = "开启环绕调试"
 	enabled.toggled.connect(func(value: bool):
@@ -128,10 +144,16 @@ func _build() -> void:
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.add_theme_color_override("font_color", Color("a6b2bd"))
 	_orbit_host.add_child(hint)
-	var footer := Label.new()
-	footer.text = "修改即时生效 · 世界继续运行"
-	footer.add_theme_color_override("font_color", Color("a6b2bd"))
+	var footer := HBoxContainer.new()
 	layout.add_child(footer)
+	var footer_hint := Label.new()
+	footer_hint.text = "修改即时生效 · 世界继续运行"
+	footer_hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	footer_hint.add_theme_color_override("font_color", Color("a6b2bd"))
+	footer.add_child(footer_hint)
+	_return_button = _button("返回主菜单", return_to_main_menu)
+	_return_button.tooltip_text = "结束当前一局并返回主菜单，可再次查看入场镜头。"
+	footer.add_child(_return_button)
 	_root.hide()
 	_fps_label = Label.new()
 	_fps_label.name = "LiveFPS"
@@ -164,6 +186,10 @@ func _embed() -> void:
 	# Headless test suites must not load or write the player's display preferences.
 	_graphics_page.save_enabled = save_graphics_settings and DisplayServer.get_name() != "headless"
 	_graphics_page.configure(get_parent(), _theme)
+	_camera_page.save_enabled = DisplayServer.get_name() != "headless"
+	_camera_page.configure(get_parent(), _theme)
+	_controls.changed.connect(_camera_page.sync_controls)
+	_controls_page.configure(_theme)
 	audio_page.settings_requested.connect(func(): open_menu(); select_page(0))
 	select_page(0)
 
@@ -177,11 +203,16 @@ func _fit() -> void:
 	_panel.position = (viewport - _panel.size) * 0.5
 
 func select_page(index: int) -> void:
-	_selected = clampi(index, 0, 2)
+	_selected = clampi(index, 0, 4)
+	if _selected != 4: _controls_page.cancel_capture()
 	for item in _tabs.size(): _tabs[item].set_pressed_no_signal(item == _selected)
 	_audio_host.visible = _selected == 0
 	_orbit_host.visible = _selected == 1
 	_graphics_page.visible = _selected == 2
+	_camera_page.visible = _selected == 3
+	_controls_page.visible = _selected == 4
+	if _selected == 4: _controls_page.sync_controls()
+	if _selected == 3: _camera_page.sync_controls()
 	if audio_page._embedded: audio_page.set_embedded_visible(menu_open and _selected == 0)
 	if orbit_page._embedded: orbit_page.set_embedded_visible(menu_open and _selected == 1)
 
@@ -196,8 +227,9 @@ func open_menu() -> void:
 	menu_changed.emit(true)
 
 func close_menu() -> void:
-	if not menu_open: return
+	if not menu_open or _returning_to_menu: return
 	menu_open = false
+	_controls_page.cancel_capture()
 	audio_page.set_embedded_visible(false)
 	orbit_page.set_embedded_visible(false)
 	_root.hide()
@@ -205,10 +237,56 @@ func close_menu() -> void:
 	remove_from_group(&"gameplay_input_blockers")
 	menu_changed.emit(false)
 
+func return_to_main_menu() -> void:
+	if not menu_open or _returning_to_menu: return
+	_returning_to_menu = true
+	_return_button.disabled = true
+	_return_button.text = "正在返回…"
+	_change_to_main_menu.call_deferred()
+
+func _change_to_main_menu() -> void:
+	ENTRY_REQUEST.clear()
+	var startup := get_parent().get_node_or_null("WorldMainMenu")
+	var result := ERR_BUSY
+	if startup:
+		if startup.return_to_menu():
+			_returning_to_menu = false
+			close_menu()
+			_return_button.disabled = false
+			_return_button.text = "返回主菜单"
+			return
+	else:
+		# Other maps without an embedded menu still use the standalone entry.
+		result = get_tree().change_scene_to_file(MAIN_MENU_SCENE)
+	if result == OK: return
+	_returning_to_menu = false
+	_return_button.disabled = false
+	_return_button.text = "返回主菜单"
+	_return_button.tooltip_text = "返回失败：%s。点击重试。" % error_string(result)
+
 func _input(event: InputEvent) -> void:
-	if menu_open and event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+	if _controls_page and _controls_page.is_capturing(): return
+	var focus := get_viewport().gui_get_focus_owner()
+	if _controls.pressed(event, &"settings") and not (focus is LineEdit or focus is TextEdit):
+		if menu_open: close_menu()
+		else: open_menu()
+		if menu_open or get_tree().get_first_node_in_group(&"gameplay_input_blockers") == null: get_viewport().set_input_as_handled()
+		return
+	if menu_open and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 		close_menu()
 		get_viewport().set_input_as_handled()
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if menu_open or not _controls.pressed(event, &"toggle_rain") or not _graphics_page or not _graphics_page.configured: return
+	var focus := get_viewport().gui_get_focus_owner()
+	if focus is LineEdit or focus is TextEdit: return
+	for blocker in get_tree().get_nodes_in_group(&"gameplay_input_blockers"):
+		if not (blocker is WavePrototype and blocker.phase == WavePrototype.Phase.RESULT): return
+	var weather := get_parent().get_node_or_null("MapEffects/Weather")
+	if weather and _graphics_page.set_option("rain", not weather.raining): get_viewport().set_input_as_handled()
+
+func _exit_tree() -> void:
+	if is_instance_valid(_controls): _controls.release_world(get_parent())
 
 func _unhandled_input(_event: InputEvent) -> void:
 	if menu_open: get_viewport().set_input_as_handled()

@@ -10,7 +10,7 @@ region = Rect2(14, 5, 31, 22)
 
 [sub_resource type="Resource" id="Resource_ten5s"]
 script = ExtResource("2_vrxif")
-description = "单枚棱晶，最多两次撞墙反射。"
+description = "单枚棱晶，命中怪物或反射面后弹射，最多两次。"
 
 [sub_resource type="Resource" id="Resource_vpy7v"]
 script = ExtResource("2_vrxif")
@@ -101,6 +101,6 @@ parameters = Dictionary[String, float]({
 script = ExtResource("3_dsfwv")
 id = &"prism_ricochet"
 display_name = "棱光弹射"
-description = "棱晶穿过敌群，在真实墙面之间连续反射。"
+description = "棱晶命中怪物、墙体或镜印时，按真实接触面连续反射。"
 icon = SubResource("icon")
 levels = Array[ExtResource("2_vrxif")]([SubResource("Resource_ten5s"), SubResource("Resource_vpy7v"), SubResource("Resource_laqop"), SubResource("Resource_4voxo"), SubResource("Resource_5ggrm"), SubResource("Resource_kxx2f"), SubResource("Resource_flneh"), SubResource("Resource_lgtod")])

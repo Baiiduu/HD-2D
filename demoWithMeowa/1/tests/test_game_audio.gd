@@ -110,7 +110,11 @@ func run() -> void:
 	check(is_equal_approx(following.volume_db, -18.0), "Cue gain changes are applied immediately")
 	check(not audio.set_cue_volume(owners[1], &"following", -30.0) and is_equal_approx(following.volume_db, -18.0), "Gain updates cannot affect a different source")
 	check(not audio.set_cue_volume(player, &"following", NAN), "Invalid gains do not enter an existing voice")
+	check(audio.set_cue_pitch(player, &"following", 1.15) and is_equal_approx(following.pitch_scale, 1.15), "Continuous cues change pitch on their existing voice")
+	check(not audio.set_cue_pitch(owners[1], &"following", 0.5) and is_equal_approx(following.pitch_scale, 1.15), "Pitch updates cannot affect a different source")
+	check(not audio.set_cue_pitch(player, &"following", NAN) and not audio.set_cue_pitch(player, &"following", 0.0), "Invalid pitches do not enter an existing voice")
 	audio.stop_cue(player, &"following")
+	check(not audio.set_cue_pitch(player, &"following", 0.8) and second.playing, "A finished cue cannot change unrelated pooled voices")
 	check(not audio.set_cue_volume(player, &"following", -30.0) and second.playing, "Updating a finished cue does not touch unrelated pooled voices")
 	player.position.x -= 1.0
 	audio.set_frozen(true)

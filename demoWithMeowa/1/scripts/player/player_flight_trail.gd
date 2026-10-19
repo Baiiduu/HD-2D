@@ -22,6 +22,8 @@ var _spacing_left := 0.0
 var _emitting := false
 var _mask_sync_queued := false
 var _body_layouts: Dictionary = {}
+var _bounce_generation := 0
+var _rhythm_events: Array[Dictionary] = []
 
 func _ready() -> void:
 	_player = get_parent() as Player
@@ -48,6 +50,7 @@ func _ready() -> void:
 		_echoes.append({"sprite": echo, "material": material, "active": false, "born": 0.0, "distance": 0.0})
 	_body.launched.connect(_on_launched)
 	_body.flight_segment_travelled.connect(_on_segment)
+	_body.impact_recorded.connect(_on_impact)
 	_body.finished.connect(_on_finished)
 	if is_instance_valid(_body._session):
 		_body._session.phase_changed.connect(_on_phase)
@@ -57,6 +60,8 @@ func _ready() -> void:
 func clear() -> void:
 	_pending.clear()
 	_motion.clear()
+	_rhythm_events.clear()
+	_bounce_generation = 0
 	_piece_seconds = 0.0
 	_emitting = false
 	for echo in _echoes:
@@ -82,7 +87,12 @@ func _on_launched(_heading: Vector3, _speed: float, _charge: float) -> void:
 	set_physics_process(true)
 	set_process(true)
 
-func _on_segment(start: Vector3, end: Vector3, _heading: Vector3, seconds: float) -> void:
+func _on_impact(impact: RicochetImpact) -> void:
+	if not _emitting or not _settings.bounce_rhythm_enabled: return
+	_bounce_generation += 1
+	_rhythm_events.append({"time": _clock + _piece_seconds, "generation": _bounce_generation, "strength": impact.strength()})
+
+func _on_segment(start: Vector3, end: Vector3, heading: Vector3, seconds: float) -> void:
 	if not _emitting: return
 	if not _settings.enabled:
 		clear()
@@ -95,8 +105,16 @@ func _on_segment(start: Vector3, end: Vector3, _heading: Vector3, seconds: float
 			var weight := _spacing_left / length
 			if _pending.size() == MAX_PENDING: _pending.pop_front()
 			var sample_time := PlayerRicochetRules.segment_time(weight, seconds, timing.x, timing.y)
-			_pending.append({"point": start.lerp(end, weight), "time": _clock + _piece_seconds + sample_time,
-				"distance": _distance + _spacing_left})
+			var sample := {"point": start.lerp(end, weight), "time": _clock + _piece_seconds + sample_time,
+				"distance": _distance + _spacing_left, "generation": _bounce_generation}
+			if _settings.bounce_rhythm_enabled and _player.sprite.texture:
+				var source := _player.sprite
+				var properties: Array = []
+				for property in SPRITE_PROPERTIES: properties.append(source.get(property))
+				var pose := _player.motion_feedback.pose_for_segment(heading, _body.flight_elapsed - seconds + sample_time) if _player.motion_feedback else Vector3.ZERO
+				sample.snapshot = {"texture": source.texture, "tint": source.modulate, "properties": properties,
+					"lean": pose, "pivot": _player.motion_feedback.foot_pivot(sample.point) if _player.motion_feedback else sample.point}
+			_pending.append(sample)
 			_spacing_left += _settings.flight_echo_spacing
 		_spacing_left -= length
 		_distance += length
@@ -181,6 +199,8 @@ func _sync_body_mask() -> void:
 		if not enabled: continue
 		material.set_shader_parameter("body_texture", source.texture)
 		material.set_shader_parameter("body_transform", source.get_global_transform_interpolated())
+		material.set_shader_parameter("body_motion_lean", source.get_meta("motion_lean", Vector3.ZERO))
+		material.set_shader_parameter("body_motion_pivot", source.get_meta("motion_pivot", Vector3.ZERO))
 		material.set_shader_parameter("body_billboard_mode", source.billboard)
 		material.set_shader_parameter("body_origin", layout[0])
 		material.set_shader_parameter("body_edge_u", layout[1])
@@ -191,6 +211,11 @@ func _sync_body_mask() -> void:
 
 func _display_at(time: float) -> void:
 	var travelled := _render_distance(time)
+	var rhythm: Dictionary = {}
+	if _settings.bounce_rhythm_enabled:
+		while _rhythm_events.size() > 2 and _rhythm_events[1].time < time - _settings.flight_trail_lifetime: _rhythm_events.pop_front()
+		for event in _rhythm_events:
+			if event.time <= time: rhythm = event
 	if not _body.is_frozen():
 		while not _pending.is_empty() and _pending[0].time <= time:
 			var sample: Dictionary = _pending.pop_front()
@@ -207,6 +232,13 @@ func _display_at(time: float) -> void:
 			echo.sprite.hide()
 			continue
 		var fade := clampf(minf(1.0 - age / _settings.flight_trail_lifetime, 1.0 - behind / _settings.flight_trail_max_length), 0.0, 1.0)
+		if not rhythm.is_empty():
+			if echo.generation < rhythm.generation:
+				var fade_seconds := lerpf(_settings.flight_trail_lifetime, _settings.bounce_echo_fade_seconds, rhythm.strength)
+				fade *= 1.0 - smoothstep(rhythm.time, rhythm.time + fade_seconds, time)
+			else:
+				var rebuild := lerpf(0.35, 1.0, smoothstep(0.0, _settings.bounce_echo_rebuild_seconds, maxf(0.0, echo.born - rhythm.time)))
+				fade *= lerpf(1.0, rebuild, rhythm.strength)
 		echo.material.set_shader_parameter("opacity", _settings.flight_trail_opacity * pow(fade, 1.25))
 		echo.material.set_shader_parameter("echo_color", _settings.flight_trail_color)
 		echo.material.set_shader_parameter("saturation", _settings.flight_echo_saturation)
@@ -225,13 +257,20 @@ func _spawn_echo(sample: Dictionary) -> void:
 	# Sprite3D 沿用引擎原生 UV：图集、分帧、裁切、翻转和透明留白保持一致。
 	sprite.texture = source.texture
 	for property in SPRITE_PROPERTIES: sprite.set(property, source.get(property))
+	var snapshot: Dictionary = sample.get("snapshot", {})
+	if not snapshot.is_empty():
+		sprite.texture = snapshot.texture
+		for index in SPRITE_PROPERTIES.size(): sprite.set(SPRITE_PROPERTIES[index], snapshot.properties[index])
 	var transform := source.get_global_transform_interpolated()
 	transform.origin += sample.point - _player.get_global_transform_interpolated().origin
 	sprite.global_transform = transform
-	echo.material.set_shader_parameter("sprite_texture", source.texture)
-	echo.material.set_shader_parameter("source_tint", source.modulate)
-	echo.material.set_shader_parameter("billboard_mode", source.billboard)
+	echo.material.set_shader_parameter("sprite_texture", sprite.texture)
+	echo.material.set_shader_parameter("source_tint", snapshot.get("tint", source.modulate))
+	echo.material.set_shader_parameter("billboard_mode", sprite.billboard)
+	echo.material.set_shader_parameter("echo_lean", snapshot.get("lean", source.get_meta("motion_lean", Vector3.ZERO)))
+	echo.material.set_shader_parameter("echo_pivot", snapshot.get("pivot", source.get_meta("motion_pivot", Vector3.ZERO) + sample.point - _player.get_global_transform_interpolated().origin))
 	echo.born = sample.time
 	echo.distance = sample.distance
+	echo.generation = sample.get("generation", 0)
 	echo.active = true
 	sprite.show()

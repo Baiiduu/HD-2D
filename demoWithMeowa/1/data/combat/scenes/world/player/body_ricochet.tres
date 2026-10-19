@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="PlayerRicochetRules" format=3]
+[gd_resource type="Resource" script_class="PlayerRicochetRules" format=3 uid="uid://c3rwpsl2c4b4s"]
 
-[ext_resource type="Script" path="res://scripts/player/player_ricochet_rules.gd" id="1_kpo3n"]
+[ext_resource type="Script" uid="uid://crla0x5jycpc8" path="res://scripts/player/player_ricochet_rules.gd" id="1_kpo3n"]
 
 [resource]
 script = ExtResource("1_kpo3n")
@@ -20,6 +20,7 @@ crowd_arc_distance = 2.4
 crowd_exit_outward = 0.6
 crowd_release_clearance = 0.7
 eccentric_enabled = true
+eccentric_minimum_members = 1
 eccentric_capture_margin = 0.25
 enemy_push_enabled = false
 push_initial_speed = 24.0

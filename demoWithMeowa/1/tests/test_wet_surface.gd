@@ -29,11 +29,13 @@ func light_state(world: Node3D) -> Array:
 
 func run() -> void:
 	AudioServer.set_bus_mute(0, true)
-	var protected := ["res://data/world/world_terrain.tres", "res://data/world/world_surface.tres",
+	var protected := ["res://data/world/world_terrain.tres", "res://data/world/world_surface.res",
 		"res://data/world/spawn_paint_palette.tres", "res://shaders/water/water.gdshader"]
 	var hashes := {}
 	for path in protected: hashes[path] = FileAccess.get_sha256(path)
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
+	world.get_node("WorldEntry").preview_on_direct_run = false
+	world.get_node("WorldMainMenu").show_on_world_start = false
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("VisualSample").follow_weather = false
 	root.add_child(world)

@@ -63,15 +63,19 @@ func physical_bounces() -> void:
 func run() -> void:
 	AudioServer.set_bus_mute(0, true)
 	var bank := load("res://data/audio/core_sound_bank.tres") as CoreSoundBank
-	check(bank != null and bank.cues.size() == 28, "完整音效包登记二十八种真实事件")
+	check(bank != null and bank.cues.size() == 39, "核心、聚力风、击杀、通用命中、怪物招式与停用对照事件完整登记")
 	var count := 0
 	for cue in bank.cues:
 		check(not bank.clips_for(cue).is_empty(), "事件具有成品音源：" + cue)
 		for clip in bank.clips_for(cue):
 			count += 1
-			check(clip is AudioStreamWAV and clip.mix_rate == 48000 and not clip.stereo and clip.get_length() > 0.05, "单声道四十八千赫 WAV 可播放：" + cue)
-	check(count == 41, "成品和变体合计四十一条，不包含制作源文件")
+			var valid: bool = clip is AudioStreamWAV and clip.mix_rate == 48000 and not clip.stereo
+			if cue in [&"leaf_windup", &"lantern_shot", &"frog_pulse", &"pot_shatter"]: valid = clip is AudioStreamMP3
+			check(valid and clip.get_length() > 0.05, "既有单声道 WAV 或原始怪物 MP3 可播放：" + cue)
+	check(count == 54, "五十三条实战音源与一条停用对照登记，不包含额外制作源文件")
 	world = load("res://scenes/world/world.tscn").instantiate()
+	# 镜头入场由人工验收；声音用例不接受编辑器的直接运行预览开关。
+	world.get_node("WorldEntry").preview_on_direct_run = false
 	FIXTURE.clear_placed_obstacles(world)
 	var profile := FIXTURE.isolate_profile(world)
 	profile.population_rules = profile.population_rules.duplicate()
@@ -121,7 +125,7 @@ func run() -> void:
 	audio.mix.set_clip_gain(bank.clips_for(&"charge_loop")[0].resource_path, -6.0)
 	audio._process(0.0)
 	var loops := audio._voices.filter(func(slot): return slot.active and slot.cue == &"core:charge_loop")
-	check(loops.size() == 1 and is_equal_approx(loops[0].voice.volume_db, feedback.action_volume_db - 3.0 - 6.0), "实际蓄力循环副本使用本机单条增益")
+	check(loops.size() == 1 and is_equal_approx(loops[0].voice.volume_db, feedback._charge_volume(0.0) - 6.0 + audio.cue_gain_db(&"core:charge_loop")), "实际蓄力循环副本使用地图平衡与本机单条增益")
 	audio.mix.reset_all()
 	wave.set_combat_frozen(true)
 	await settle(2)
@@ -138,7 +142,7 @@ func run() -> void:
 	var flight_loops := audio._voices.filter(func(slot): return slot.active and slot.cue == &"core:flight_loop")
 	check(flight_loops.size() == 1 and flight_loops[0].follow_source, "飞行只保留一个跟随人物的气流循环")
 	var fast_volume: float = flight_loops[0].voice.volume_db
-	check(absf(fast_volume - feedback.action_volume_db - feedback.flight_gain_db) < 0.1, "达到参考速度时接近配置的气流音量")
+	check(absf(fast_volume - feedback.action_volume_db - feedback.flight_gain_db - audio.cue_gain_db(&"core:flight_loop")) < 0.1, "达到参考速度时接近配置的气流音量")
 	player.body_ricochet.flight_speed = feedback.flight_reference_speed * 0.25
 	feedback._physics_process(0.5)
 	check(flight_loops[0].voice.volume_db < fast_volume - 8.0, "实际余速降低会平滑减小气流音量")
@@ -203,7 +207,25 @@ func run() -> void:
 	reset_audio()
 	enemy.take_damage(1000)
 	check(playing(&"core:slime_death"), "真实史莱姆死亡发出消散音")
+	var corpse := WaveEnemy.new()
+	corpse.definition = wave.default_enemy
+	world.add_child(corpse)
+	corpse.global_position = player.global_position
+	for source in [&"basic_sword", &"flight_sword", &"ricochet_storm"]:
+		reset_audio()
+		corpse.fatal_hit_context = {"source": source}
+		for index in 12: feedback._enemy_defeated(corpse)
+		var deaths := audio._voices.filter(func(slot): return slot.active and slot.cue == &"core:slime_death")
+		check(deaths.size() == 1 and deaths[0].priority == 35, "近身／奔雷击杀的死亡声更突出，密集事件仍合并：" + String(source))
+		check(is_equal_approx((world.get_node("AudioMixUI") as AudioMixUI)._event_volume(&"slime_death"), feedback.enemy_volume_db + feedback.death_impact_gain_db + audio.cue_gain_db(&"core:slime_death")), "声音页死亡试听同步近身击杀增益")
+	reset_audio()
+	corpse.fatal_hit_context = {"source": &"A02"}
+	feedback._enemy_defeated(corpse)
+	check(audio._voices.any(func(slot): return slot.active and slot.cue == &"core:slime_death" and slot.priority == 5), "其它远程死亡声音保留原优先级")
+	corpse.free()
 	await settle()
+	# 最后一击特写归位后才进入选卡；音效测试不等待真实镜头时长。
+	world.get_node("WavePresentation").advance(3.1)
 	reset_audio()
 	growth._grant_experience(10)
 	check(wave.combat_frozen and ui_cues.has(&"level_up") and ui_cues.has(&"experience"), "拾取引发升级时经验和升级提示在战斗冻结中可播放")
@@ -248,7 +270,7 @@ func run() -> void:
 	storm._play_patch_sound(player.global_position, 0)
 	check(playing(&"ricochet_storm_start"), "首片落雷能够独立于普通命中合并播放")
 	var strikes := audio._voices.filter(func(slot): return slot.active and slot.cue == &"ricochet_storm_start")
-	check(strikes.size() == 1 and is_equal_approx(strikes[0].voice.volume_db, storm.hit_volume_db - 9.0), "实际奔雷触发沿用当前单条增益")
+	check(strikes.size() == 1 and is_equal_approx(strikes[0].voice.volume_db, storm.hit_volume_db - 9.0 + audio.cue_gain_db(&"ricochet_storm_start")), "实际奔雷触发沿用当前单条增益与地图平衡")
 	storm._play_patch_sound(player.global_position, 1)
 	var chains := audio._voices.filter(func(slot): return slot.active and slot.cue == &"ricochet_storm_chain")
 	check(chains.size() == 1 and is_equal_approx(chains[0].gain_db, storm.hit_volume_db - 3.0), "后续层按片播放并减弱三分贝")

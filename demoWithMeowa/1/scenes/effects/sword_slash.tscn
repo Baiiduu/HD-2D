@@ -1,0 +1,29 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/previews/sword_slash_preview.gd" id="preview"]
+[ext_resource type="Resource" path="res://data/visual/sword_slash_world.tres" id="visual"]
+
+[sub_resource type="Animation" id="reset"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:preview_age")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [0.065]}
+
+[sub_resource type="Animation" id="slash"]
+resource_name = "slash"
+length = 0.9
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:preview_age")
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.38, 0.9), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [0.0, 0.38, 0.38]}
+
+[sub_resource type="AnimationLibrary" id="library"]
+_data = {&"RESET": SubResource("reset"), &"slash": SubResource("slash")}
+
+[node name="SwordSlash" type="MeshInstance3D"]
+script = ExtResource("preview")
+visual = ExtResource("visual")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {&"": SubResource("library")}
+autoplay = "slash"

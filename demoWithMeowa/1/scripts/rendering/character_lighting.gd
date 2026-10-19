@@ -4,6 +4,7 @@ extends Sprite3D
 const SHADER := preload("res://shaders/character/character_lighting.gdshader")
 const OCCLUSION_SHADER := preload("res://shaders/character/character_occlusion.gdshader")
 const EFFECT_MASK_SHADER := preload("res://shaders/character/combat_effect_mask.gdshader")
+const HIT_SILHOUETTE := preload("res://scripts/rendering/hit_silhouette.gd")
 static var _shared_bodies: Dictionary = {}
 static var _shared_outlines: Dictionary = {}
 static var _shared_quads: Dictionary = {}
@@ -26,6 +27,10 @@ static var _shared_users := 0
 ## 真实背光照到轮廓时的窄亮边；遮挡或移出光照范围时消失，0 关闭。
 @export_range(0.0, 0.5, 0.01) var back_rim_strength := 0.12:
 	set(value): back_rim_strength = value; _queue_apply()
+## 只缩放当前人物接收的真实全向灯与聚光灯；1 为原强度，0 关闭。
+## 仍遵守光源颜色、范围、距离衰减和阴影；方向光与环境光保持原值。
+@export_range(0.0, 3.0, 0.05) var local_light_response := 1.0:
+	set(value): local_light_response = value; _queue_apply()
 
 @export_group("人物逐帧法线")
 ## 独立法线提供轻微身体和衣物受光；源图及动画保持原样。
@@ -71,6 +76,59 @@ var _bound_texture: Texture2D
 var _occlusion_outline_allowed := true
 var _effect_receiver := false
 var _effect_mask_state: Array = []
+var _motion_lean := Vector3.ZERO
+var _motion_pivot := Vector3.ZERO
+var _hit_silhouette: RefCounted
+var _hit_silhouette_amount := 0.0
+var _speed_rim_amount := 0.0
+
+## 仅主体实例持有；共享材质、遮挡轮廓、怪物及残影不会被一起染亮。
+func set_speed_rim(data: Vector4, direction: Vector3, color: Color) -> void:
+	_speed_rim_amount = data.x
+	set_instance_shader_parameter(&"speed_rim_data", data)
+	set_instance_shader_parameter(&"speed_rim_direction", direction)
+	set_instance_shader_parameter(&"speed_rim_color", color)
+	if _material: material_override = _material if _uses_custom_material() else _original_material
+
+func show_hit_silhouette(settings: PlayerActionVisuals, source: StringName) -> void:
+	if not HIT_SILHOUETTE.accepts(settings, source): return
+	if not _hit_silhouette: _hit_silhouette = HIT_SILHOUETTE.new()
+	if not _hit_silhouette.strike(settings, source): return
+	set_instance_shader_parameter(&"hit_silhouette_rim_color", _hit_silhouette.rim_color)
+	_apply_hit_silhouette()
+
+func clear_hit_silhouette() -> void:
+	if _hit_silhouette: _hit_silhouette.clear()
+	_apply_hit_silhouette()
+
+func _advance_hit_silhouette(delta: float) -> void:
+	if not _hit_silhouette or not can_process() or (_hit_silhouette.remaining <= 0.0 and _hit_silhouette.cooldown <= 0.0): return
+	_hit_silhouette.advance(delta / maxf(Engine.time_scale, 0.001))
+	_apply_hit_silhouette()
+
+func _apply_hit_silhouette() -> void:
+	var value: float = _hit_silhouette.amount if _hit_silhouette else 0.0
+	if is_equal_approx(value, _hit_silhouette_amount): return
+	_hit_silhouette_amount = value
+	set_instance_shader_parameter(&"hit_silhouette_amount", value)
+	if _material: material_override = _material if _uses_custom_material() else _original_material
+
+func _uses_custom_material() -> bool:
+	return lighting_enabled or not _motion_lean.is_zero_approx() or _hit_silhouette_amount > 0.0 or _speed_rim_amount > 0.0
+
+## 与原贴图/受光解耦，实例参数避免影响共享同帧材质的怪物。
+func set_motion_pose(lean: Vector3, pivot: Vector3) -> void:
+	_motion_lean = lean
+	_motion_pivot = pivot
+	set_meta("motion_lean", lean)
+	set_meta("motion_pivot", pivot)
+	apply_motion_to(self)
+	if is_instance_valid(_outline): apply_motion_to(_outline)
+	if _material: material_override = _material if _uses_custom_material() else _original_material
+
+func apply_motion_to(instance: GeometryInstance3D) -> void:
+	instance.set_instance_shader_parameter("motion_lean", _motion_lean)
+	instance.set_instance_shader_parameter("motion_pivot", _motion_pivot)
 
 ## 波次统一开关只作许可门，不覆盖 Sprite 自己保存的轮廓开关。
 func set_occlusion_outline_allowed(value: bool) -> void:
@@ -97,10 +155,11 @@ func _exit_tree() -> void:
 			_shared_effect_masks.clear()
 
 func _process(_delta: float) -> void:
+	_advance_hit_silhouette(_delta)
 	# An already-open @tool scene may not receive _ready after a script reload.
 	if not _material:
 		apply_lighting()
-	if lighting_enabled:
+	if _uses_custom_material():
 		if shared_materials:
 			if flip_h != _last_flip_h or flip_v != _last_flip_v or modulate != _last_tint: _select_shared_body()
 		elif flip_h != _last_flip_h:
@@ -170,7 +229,7 @@ func _select_shared_body() -> void:
 		_shared_registered = true
 		_shared_users += 1
 	var key: Array = [texture, modulate, billboard, flip_h, flip_v, lighting_enabled, light_wrap,
-		top_light_response, back_rim_strength, normal_mapping_enabled, normal_mapping_strength, normal_texture_override]
+		top_light_response, back_rim_strength, local_light_response, normal_mapping_enabled, normal_mapping_strength, normal_texture_override]
 	if texture is AtlasTexture:
 		var atlas := texture as AtlasTexture
 		key.append(atlas.region)
@@ -181,7 +240,7 @@ func _select_shared_body() -> void:
 		apply_lighting_to(material)
 		_shared_bodies[key] = material
 	_material = _shared_bodies[key]
-	material_override = _material if lighting_enabled else _original_material
+	material_override = _material if _uses_custom_material() else _original_material
 	_last_flip_h = flip_h
 	_last_flip_v = flip_v
 	_last_tint = modulate
@@ -193,7 +252,7 @@ func apply_lighting() -> void:
 	_bind_texture_changes()
 	if not _material: _original_material = material_override
 	var defaults := {"lighting_enabled": true, "light_wrap": 0.3,
-		"top_light_response": 0.4, "back_rim_strength": 0.12,
+		"top_light_response": 0.4, "back_rim_strength": 0.12, "local_light_response": 1.0,
 		"normal_mapping_enabled": false, "normal_mapping_strength": 0.4,
 		"occlusion_outline_enabled": true, "occlusion_outline_color": Color(1.0, 0.89, 0.55),
 		"occlusion_outline_width": 1.0, "occlusion_outline_opacity": 0.85, "occlusion_depth_bias": 0.03}
@@ -211,7 +270,7 @@ func apply_lighting() -> void:
 	_last_flip_v = flip_v
 	_last_tint = modulate
 	_outline_state.clear()
-	material_override = _material if lighting_enabled else _original_material
+	material_override = _material if _uses_custom_material() else _original_material
 	_sync_outline()
 	notify_property_list_changed()
 
@@ -313,6 +372,7 @@ func apply_lighting_to(material: ShaderMaterial, reflection := false) -> void:
 	material.set_shader_parameter("light_wrap", light_wrap)
 	material.set_shader_parameter("top_light_response", top_light_response)
 	material.set_shader_parameter("back_rim_strength", back_rim_strength)
+	material.set_shader_parameter("local_light_response", local_light_response)
 	_bind_normal(material)
 
 func _bind_normal(material: ShaderMaterial) -> void:

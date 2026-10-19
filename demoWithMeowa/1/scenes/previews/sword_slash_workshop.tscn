@@ -1,0 +1,101 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/effects/sword_slash.tscn" id="slash"]
+[ext_resource type="Script" path="res://scripts/previews/sword_slash_workshop.gd" id="workshop"]
+
+[sub_resource type="Environment" id="environment"]
+background_mode = 1
+background_color = Color(0.015, 0.025, 0.055, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.35, 0.45, 0.65, 1)
+ambient_light_energy = 0.6
+tonemap_mode = 2
+glow_enabled = true
+glow_intensity = 0.45
+
+[sub_resource type="StandardMaterial3D" id="floor_material"]
+albedo_color = Color(0.075, 0.105, 0.16, 1)
+roughness = 1.0
+
+[sub_resource type="PlaneMesh" id="floor"]
+material = SubResource("floor_material")
+size = Vector2(32, 32)
+
+[sub_resource type="StandardMaterial3D" id="marker_material"]
+albedo_color = Color(0.22, 0.28, 0.36, 1)
+roughness = 1.0
+
+[sub_resource type="CylinderMesh" id="marker"]
+material = SubResource("marker_material")
+top_radius = 0.16
+bottom_radius = 0.19
+height = 1.1
+
+[sub_resource type="Theme" id="theme"]
+default_font_size = 18
+
+[node name="SwordSlashWorkshop" type="Node3D"]
+script = ExtResource("workshop")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("environment")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(15.211671, 13.486174, -15.211671)
+rotation_degrees = Vector3(-30.627, 135, 0)
+current = true
+fov = 28.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-55, -25, 0)
+light_energy = 1.1
+shadow_enabled = true
+
+[node name="Floor" type="MeshInstance3D" parent="."]
+mesh = SubResource("floor")
+
+[node name="BodyMarker" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.55, 0)
+mesh = SubResource("marker")
+
+[node name="SwordSlash" parent="." instance=ExtResource("slash")]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Panel" type="VBoxContainer" parent="CanvasLayer"]
+offset_left = 24.0
+offset_top = 20.0
+offset_right = 900.0
+theme = SubResource("theme")
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="CanvasLayer/Panel"]
+text = "原生剑光工作台"
+theme_override_font_sizes/font_size = 26
+
+[node name="Help" type="Label" parent="CanvasLayer/Panel"]
+text = "正式镜头标尺：FOV 28°／距离 25 米／俯角 30.627°。中央灰柱标记人物位置。\n暂停并拖动进度；编辑器选 SwordSlash → Visual 调整笔触。"
+
+[node name="Controls" type="HBoxContainer" parent="CanvasLayer/Panel"]
+theme_override_constants/separation = 12
+
+[node name="Play" type="Button" parent="CanvasLayer/Panel/Controls"]
+text = "暂停"
+
+[node name="Replay" type="Button" parent="CanvasLayer/Panel/Controls"]
+text = "重播"
+
+[node name="Reverse" type="CheckButton" parent="CanvasLayer/Panel/Controls"]
+text = "反向挥砍"
+
+[node name="Compare" type="CheckButton" parent="CanvasLayer/Panel/Controls"]
+text = "旧版对照"
+
+[node name="Timeline" type="HSlider" parent="CanvasLayer/Panel/Controls"]
+custom_minimum_size = Vector2(350, 0)
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.001
+
+[node name="Phase" type="Label" parent="CanvasLayer/Panel"]
+text = "挥出"

@@ -1,5 +1,5 @@
 extends RefCounted
-## One synchronous prediction only. Native overlap collects conservative obstacle
+## One synchronous prediction/outline query. Native overlap collects conservative obstacle
 ## bounds; contained rays missing all bounds can omit their individual ray query.
 ## Never retain this across a trace, frame, await or gameplay callback.
 var _terrain: Terrain

@@ -7,6 +7,9 @@ var detached := false
 var outgoing := Vector3.ZERO
 var _spin := 0.0
 var _outline := PackedVector2Array()
+var presentation_center := Vector3.ZERO
+var _expansion_radius := NAN
+var _expansion_offsets := PackedVector2Array()
 
 func _init(settings: PlayerRicochetRules) -> void:
 	rules = settings
@@ -78,6 +81,9 @@ func build(point: Vector3, incoming: Vector3, surface: Dictionary) -> PackedVect
 		first_leg = false
 		outgoing = tangent
 	turning = true
+	presentation_center = Vector3.ZERO
+	for position: Vector3 in surface.positions: presentation_center += position
+	presentation_center /= maxf(1.0, surface.positions.size())
 	return points
 
 func interrupt() -> void:
@@ -94,11 +100,16 @@ func _expanded_outline(positions: PackedVector3Array, radius: float) -> PackedVe
 	var hull := Geometry2D.convex_hull(flat)
 	var expanded := PackedVector2Array()
 	# 外接十六边形包住圆形体型；不以中心点连线当作怪物的实际边缘。
-	var reach := radius / cos(PI / 16.0)
-	for point in hull:
+	# 仅复用局部体型偏移，不缓存怪物位置或已生成的外包轮廓。
+	if _expansion_radius != radius:
+		_expansion_offsets.clear()
+		var reach := radius / cos(PI / 16.0)
 		for index in 16:
 			var angle := TAU * index / 16.0
-			expanded.append(point + Vector2(cos(angle), sin(angle)) * reach)
+			_expansion_offsets.append(Vector2(cos(angle), sin(angle)) * reach)
+		_expansion_radius = radius
+	for point in hull:
+		for offset in _expansion_offsets: expanded.append(point + offset)
 	var result := Geometry2D.convex_hull(expanded)
 	if result[0].is_equal_approx(result[-1]): result.remove_at(result.size() - 1)
 	var area := 0.0

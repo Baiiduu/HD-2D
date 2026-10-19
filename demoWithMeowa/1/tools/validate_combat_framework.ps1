@@ -18,6 +18,7 @@ $previousTmp = $env:TMP
 $checks = @(
     @{ Name = 'test_combat_extension_framework'; Marker = 'COMBAT_EXTENSION_FRAMEWORK.*"failures":\[\]' },
     @{ Name = 'test_land_water_support'; Marker = 'LAND_WATER_SUPPORT.*"failures":\[\]' },
+    @{ Name = 'test_pursuit_query_batch'; Marker = 'PURSUIT_QUERY_BATCH.*"failures":\[\]' },
     @{ Name = 'test_spawn_sync_gate'; Marker = 'Spawn synchronization gate: \d+ checks, 0 failures' },
     @{ Name = 'test_local_spawn_safety'; Marker = 'Local spawn safety: \d+ checks, 0 failures' },
     @{ Name = 'test_attack_ray_clearance'; Marker = 'Player basic sword: \d+ checks, 0 failures' },

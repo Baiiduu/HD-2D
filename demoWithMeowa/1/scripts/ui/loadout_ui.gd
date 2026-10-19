@@ -211,7 +211,7 @@ func open_menu(page := 0) -> void:
 	if not menu_open and get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null:
 		return
 	if wave_session and not wave_session.management_allowed():
-		wave_session.show_notice("战斗期间不打开管理页；休整时按 Tab。")
+		wave_session.show_notice("战斗期间不打开管理页；休整时按 %s。" % OS.get_keycode_string(toggle_key))
 		return
 	if not menu_open or _motion.closing: _audio.play(&"journal_open")
 	if not menu_open:
@@ -307,9 +307,6 @@ func _button(words: String, callback: Callable) -> Button:
 
 func _build_theme() -> void:
 	_theme = Theme.new()
-	var font := SystemFont.new()
-	font.font_names = PackedStringArray(["KaiTi", "STKaiti", "SimSun", "Microsoft YaHei"])
-	_theme.default_font = font
 	_theme.default_font_size = _font_size(28)
 	_normal = _skin("controls/slot.png")
 	_active = _skin("controls/slot-active.png")
@@ -937,11 +934,11 @@ func _refresh_session_skills() -> void:
 	content.add_theme_constant_override("separation", 24)
 	_left_scroll.add_child(content)
 	var slots: Array[Dictionary] = wave_session.get_run_skill_slots()
-	if slots.is_empty(): content.add_child(_journal_label("尚未选择技能，按 F 开始挑战时选择。", 28))
+	if slots.is_empty(): content.add_child(_journal_label("尚未选择技能，按 %s 开始挑战时选择。" % OS.get_keycode_string(wave_session.interact_key), 28))
 	for slot in slots:
 		content.add_child(_journal_label("%s · Lv.%d / %d\n%s" % [slot.name, slot.level, slot.max_level, slot.description], 28))
 	content.add_child(_journal_label("当前第 %d 波\n已完成 %d 波 · 击败 %d 个敌人" % [wave_session.wave, wave_session.completed_waves, wave_session.kills], 28))
-	content.add_child(_journal_label("清波后直接休整，准备好后按 F 继续。", 25, FADED))
+	content.add_child(_journal_label("清波后直接休整，准备好后按 %s 继续。" % OS.get_keycode_string(wave_session.interact_key), 25, FADED))
 	_text("本局技能与等级", Rect2(293, 906, 591, 44), 31, _left)
 	_text("升级选择立即生效，无需重复学习或装配。", Rect2(300, 991, 630, 34), 23, _left, FADED)
 	_count.text = "%d 种技能" % slots.size()

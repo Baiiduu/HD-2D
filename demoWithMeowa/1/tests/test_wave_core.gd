@@ -43,6 +43,10 @@ func start() -> bool:
 
 func run() -> void:
 	scene = load("res://scenes/world/world.tscn").instantiate()
+	scene.get_node("WavePresentation").enabled = false
+	# 无界面规则夹具跳过用户当前开启的入场预览，不改写正式地图配置。
+	scene.get_node("WorldEntry").preview_on_direct_run = false
+	scene.get_node("WorldEntry").preview_on_direct_run = false
 	scene.get_node("WavePrototype/RunGrowth").enabled = false
 	scene.get_node("LoadoutUI").save_enabled = false
 	scene.get_node("MapEffects/BGM").music_enabled = false
@@ -53,6 +57,8 @@ func run() -> void:
 	current_scene = scene
 	await settle(12)
 	wave = scene.get_node("WavePrototype")
+	# 本夹具验证原有即时生成时序；生成前剪影由 test_spawn_shadows 单独覆盖。
+	wave.spawn_shadow_settings = null
 	wave.endless_mode = false
 	# 固定旧接口夹具，不继承正式地图的模拟数量、零伤害、成长或目录怪潮。
 	wave.population_rules = null

@@ -21,6 +21,27 @@ extends Camera3D
 @export var smoothing: float = 6.0
 ## 死区半径（米）：人物在焦点附近这个范围内移动时相机不动
 @export var dead_zone: float = 0.6
+## 常态跟随的舒适速度；0 沿用不限速。接近安全距离时允许加速追赶。
+@export_range(0.0, 80.0, 1.0, "suffix:m/s") var follow_max_speed := 0.0
+## 最多允许人物落后多少米；按当前实际视野进一步收紧，避免推近或旋转后出屏。
+@export_range(0.5, 8.0, 0.1, "suffix:m") var follow_max_lag := 3.0
+## 关闭后停留在当前取景，改由鼠标靠近屏幕边缘移动焦点。
+@export var follow_toggle_key: Key = KEY_Y
+@export var follow_enabled := true:
+	set(value):
+		if follow_enabled == value: return
+		follow_enabled = value
+		if not is_inside_tree(): return
+		if _ricochet_camera:
+			_ricochet_camera.dispose()
+			_ricochet_camera = null
+		_impact_offset = Vector3.ZERO
+		anchor = _clamp_to_bounds(focus)
+		_follow_reacquiring = value
+@export_subgroup("鼠标边缘滚动")
+@export_range(2.0, 40.0, 1.0, "suffix:m/s") var edge_pan_speed := 12.0
+## 按当前视口坐标计算，接近窗口边缘时逐渐加速。
+@export_range(8.0, 80.0, 1.0, "suffix:px") var edge_pan_margin := 28.0
 @export_subgroup("地图边缘保护")
 ## 焦点距离地图东西两侧、南侧、北侧边缘的最小距离（米），避免画面露出太多地图外区域
 @export var bounds_margin_side: float = 5.0
@@ -87,6 +108,24 @@ var _yaw_settle_duration: float = 0.0
 var _post_material: ShaderMaterial
 var _ricochet_camera: RicochetCameraFeedback
 var _impact_offset := Vector3.ZERO
+var _follow_reacquiring := false
+## 蓄力与环绕慢动作共用的真实时间请求；镜头和 Q/E 不随世界一起迟缓。
+var charge_unscaled_time := false
+## 击杀特写与曲线震动叠加在既有跟随之后，按真实时间推进。
+var hit_stop_active := false
+var hit_shot_active := false
+var hit_shot_focus := Vector3.ZERO
+var hit_shot_weight := 0.0
+var hit_shot_distance_scale := 1.0
+var hit_shake_offset := Vector3.ZERO
+var hit_shake_roll := 0.0
+## 波次镜头叠加在跟随／Q/E 之后，不改写地图保存的构图参数。
+var wave_shot_active := false
+var wave_shot_focus := Vector3.ZERO
+var wave_shot_weight := 0.0
+var wave_shot_distance_scale := 1.0
+var wave_shot_roll := 0.0
+var wave_shot_yaw := 0.0
 
 func _ready() -> void:
 	# 在 _process 中按插值后的人物位置移动，相机自身不参与物理插值
@@ -111,6 +150,7 @@ func snap_to_target() -> void:
 		return
 	if _ricochet_camera: _ricochet_camera.reset()
 	_impact_offset = Vector3.ZERO
+	_follow_reacquiring = false
 	anchor = _clamp_to_bounds(_target_point())
 	focus = anchor
 	_apply_transform()
@@ -119,7 +159,23 @@ func snap_to_target() -> void:
 func _process(delta: float) -> void:
 	if not target:
 		return
+	# 冻结保留完整已渲染取景，避免用上一帧反弹偏航重新投影局部构图。
+	if target is Player and is_instance_valid(target.body_ricochet) and target.body_ricochet.is_frozen(): return
+	# 命中定格只播放叠加冲击；不推进基础跟随或按新倍率放大切入帧的旧 delta。
+	if target is Player and target.hit_stop_active:
+		_apply_transform()
+		return
+	var real_delta := maxf(delta, 0.0) / maxf(Engine.time_scale, 0.001)
+	if not follow_enabled or charge_unscaled_time or wave_shot_active or hit_stop_active or hit_shot_active: delta /= maxf(Engine.time_scale, 0.001)
+	var previous_focus := focus
 	_update_horizontal_rotation(delta)
+	if not follow_enabled:
+		if _can_edge_pan(): _advance_edge_pan(delta, get_viewport().get_mouse_position(), get_viewport().get_visible_rect())
+		anchor = _clamp_to_bounds(anchor)
+		focus = _clamp_to_bounds(focus.lerp(anchor, 1.0 - exp(-smoothing * delta)))
+		_apply_transform()
+		_update_dof()
+		return
 	var point := _target_point()
 	_bind_ricochet_camera()
 	_impact_offset = Vector3.ZERO
@@ -129,14 +185,18 @@ func _process(delta: float) -> void:
 		var short_side := minf(viewport_size.x, viewport_size.y)
 		var span := _short_side_span()
 		_ricochet_camera.advance(delta, point, view, span, short_side)
+		span = _short_side_span()
 		if _ricochet_camera.active:
 			anchor = _clamp_to_bounds(point)
 			var framing := _ricochet_camera.framing * span
-			focus = _clamp_to_bounds(point + view.x * framing.x + view.y * framing.y + _ricochet_camera.carry)
+			var addition := view.x * framing.x + view.y * framing.y + _ricochet_camera.collision_offset
+			if ricochet_camera_settings.impact_shot_enabled: addition = addition.limit_length(span * 0.085)
+			focus = _follow_step(_clamp_to_bounds(point + addition + _ricochet_camera.carry), point, real_delta)
 			var impact := _ricochet_camera.shake * span
 			_impact_offset = view.x * impact.x + view.y * impact.y
 			_apply_transform()
 			_update_dof()
+			if delta > 0.0: _ricochet_camera.focus_velocity = (focus - previous_focus) / delta
 			return
 	var offset := Vector2(point.x - anchor.x, point.z - anchor.z)
 	if offset.length() > dead_zone:
@@ -145,11 +205,42 @@ func _process(delta: float) -> void:
 		anchor.z += push.y
 	anchor.y = point.y
 	anchor = _clamp_to_bounds(anchor)
-	focus = focus.lerp(anchor, 1.0 - exp(-smoothing * delta))
+	focus = _follow_step(focus.lerp(anchor, 1.0 - exp(-smoothing * delta)), point, real_delta)
 	_apply_transform()
 	_update_dof()
+	if _ricochet_camera and delta > 0.0: _ricochet_camera.focus_velocity = (focus - previous_focus) / delta
+
+func _follow_step(desired: Vector3, player_point: Vector3, delta: float) -> Vector3:
+	if follow_max_speed <= 0.0: return desired
+	if delta <= 0.0: return focus
+	var point := _clamp_to_bounds(player_point)
+	# 使用当前推近后的视野，保持人物在画面内；不改变地图边界或角色速度。
+	var leash := minf(follow_max_lag, _short_side_span() * 0.22)
+	var lag := focus.distance_to(point)
+	var catchup := smoothstep(leash * 0.55, leash, lag)
+	var offset := desired - focus
+	var step := offset.limit_length(follow_max_speed * delta).lerp(offset, catchup)
+	var next := focus + step
+	if _follow_reacquiring:
+		# 远处解锁后按 Y：先沿原有平滑追上，避免安全绳第一帧把画面拉回。
+		_follow_reacquiring = next.distance_to(point) > leash
+	else:
+		next = point + (next - point).limit_length(leash)
+	return _clamp_to_bounds(next)
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if not event is InputEventKey or not event.pressed or event.echo: return
+	if event.physical_keycode != follow_toggle_key and not (event.physical_keycode == 0 and event.keycode == follow_toggle_key): return
+	if event.ctrl_pressed or event.alt_pressed or event.meta_pressed or event.shift_pressed: return
+	if not is_current() or not is_processing() or wave_shot_active or get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null: return
+	var control := get_viewport().gui_get_focus_owner()
+	if control is LineEdit or control is TextEdit: return
+	if target is Player and is_instance_valid(target.body_ricochet) and target.body_ricochet.is_frozen(): return
+	follow_enabled = not follow_enabled
+	get_viewport().set_input_as_handled()
 
 func _bind_ricochet_camera() -> void:
+	if not follow_enabled: return
 	if _ricochet_camera and (not ricochet_camera_settings or not _ricochet_camera.follows(target)):
 		_ricochet_camera.dispose()
 		_ricochet_camera = null
@@ -157,11 +248,32 @@ func _bind_ricochet_camera() -> void:
 		_ricochet_camera = RicochetCameraFeedback.new()
 		_ricochet_camera.bind(self, target)
 
+func edge_pan_input(cursor: Vector2, viewport: Rect2) -> Vector2:
+	if not viewport.has_area() or not viewport.has_point(cursor): return Vector2.ZERO
+	var margin := minf(edge_pan_margin, minf(viewport.size.x, viewport.size.y) * 0.25)
+	var direction := Vector2(
+		maxf(0.0, 1.0 - (viewport.end.x - cursor.x) / margin) - maxf(0.0, 1.0 - (cursor.x - viewport.position.x) / margin),
+		maxf(0.0, 1.0 - (viewport.end.y - cursor.y) / margin) - maxf(0.0, 1.0 - (cursor.y - viewport.position.y) / margin))
+	return direction.limit_length(1.0)
+
+func _advance_edge_pan(delta: float, cursor: Vector2, viewport: Rect2) -> void:
+	var input := edge_pan_input(cursor, viewport)
+	if input.is_zero_approx(): return
+	var view := Basis.looking_at(-_orbit_offset(true), Vector3.UP)
+	var backward := Vector3(view.z.x, 0.0, view.z.z).normalized()
+	anchor = _clamp_to_bounds(anchor + (view.x * input.x + backward * input.y) * edge_pan_speed * maxf(delta, 0.0))
+
+func _can_edge_pan() -> bool:
+	return get_window().has_focus() and Input.mouse_mode == Input.MOUSE_MODE_VISIBLE and not wave_shot_active and get_tree().get_first_node_in_group(&"gameplay_input_blockers") == null
+
 func _short_side_span() -> float:
 	var viewport_size := get_viewport().get_visible_rect().size
 	var span := 2.0 / get_camera_projection().y.y
-	if projection == Camera3D.PROJECTION_PERSPECTIVE: span *= distance
+	if projection == Camera3D.PROJECTION_PERSPECTIVE: span *= distance * (_ricochet_camera.distance_scale + _ricochet_camera.collision_distance_scale if _ricochet_camera else 1.0)
 	return span * minf(viewport_size.x, viewport_size.y) / maxf(viewport_size.y, 1.0)
+
+func get_flight_focus_weight() -> float:
+	return _ricochet_camera.get_flight_focus_weight() if _ricochet_camera else 0.0
 
 func _exit_tree() -> void:
 	if _ricochet_camera: _ricochet_camera.dispose()
@@ -170,8 +282,8 @@ func _update_horizontal_rotation(delta: float) -> void:
 	if not horizontal_rotation_enabled or get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null:
 		_clear_yaw_motion()
 		return
-	var left := Input.is_physical_key_pressed(KEY_Q)
-	var right := Input.is_physical_key_pressed(KEY_E)
+	var left := Input.is_action_pressed(&"camera_left")
+	var right := Input.is_action_pressed(&"camera_right")
 	var input_active := left or right
 	var turn := float(right) - float(left)
 	if input_active:
@@ -267,17 +379,42 @@ func _clamp_to_bounds(point: Vector3) -> Vector3:
 	point.z = clampf(point.z, bounds_min.y, bounds_max.y)
 	return point
 
-func _orbit_offset() -> Vector3:
+func _orbit_offset(base_only := false) -> Vector3:
 	# 绕焦点水平旋转，保持距离和俯角。
-	var pitch := deg_to_rad(pitch_degrees)
+	var pitch := deg_to_rad(pitch_degrees + (_ricochet_camera.pitch_offset if _ricochet_camera and not base_only else 0.0))
 	# 运镜与收尾保留连续角度，只有计算空间朝向时折回一圈。
-	var yaw := deg_to_rad(wrapf(yaw_degrees + _yaw_offset_degrees, -180.0, 180.0))
-	return Vector3(0.0, sin(pitch), cos(pitch)).rotated(Vector3.UP, yaw) * distance
+	var impact_yaw := _ricochet_camera.yaw_offset if _ricochet_camera and not base_only else 0.0
+	var yaw := deg_to_rad(wrapf(yaw_degrees + _yaw_offset_degrees + impact_yaw, -180.0, 180.0))
+	var distance_multiplier := _ricochet_camera.distance_scale + _ricochet_camera.collision_distance_scale if _ricochet_camera and not base_only else 1.0
+	return Vector3(0.0, sin(pitch), cos(pitch)).rotated(Vector3.UP, yaw) * distance * distance_multiplier
+
+## 分段镜头只改变观看方式；鼠标使用同一基础取景投地，保留 Q/E 与人物走位。
+func project_charge_aim(cursor: Vector2, ground_height: float) -> Variant:
+	var origin := project_ray_origin(cursor)
+	var ray := project_ray_normal(cursor)
+	if follow_enabled and target is Player and target.body_ricochet.charging and ricochet_camera_settings and ricochet_camera_settings.enabled and ricochet_camera_settings.charge_focus_enabled and (ricochet_camera_settings.charge_staging_enabled or ricochet_camera_settings.charge_tremor_enabled):
+		var offset := _orbit_offset(true)
+		var entry := _ricochet_camera.aim_focus_offset if _ricochet_camera else Vector3.ZERO
+		var neutral := Transform3D(Basis.looking_at(-offset, Vector3.UP), _clamp_to_bounds(_target_point() + entry) + offset)
+		ray = neutral.basis * (global_basis.inverse() * ray)
+		origin = neutral * (global_transform.affine_inverse() * origin)
+	return Plane(Vector3.UP, ground_height).intersects_ray(origin, ray)
 
 func _apply_transform() -> void:
 	var view_focus := focus if _impact_offset.is_zero_approx() else _clamp_to_bounds(focus + _impact_offset)
-	global_position = view_focus + _orbit_offset()
+	view_focus = view_focus.lerp(hit_shot_focus, hit_shot_weight)
+	view_focus = view_focus.lerp(wave_shot_focus, wave_shot_weight)
+	view_focus += hit_shake_offset
+	var orbit := _orbit_offset(not follow_enabled)
+	var kill_scale := hit_shot_distance_scale
+	if kill_scale < 1.0:
+		kill_scale = maxf(kill_scale, minf(1.0, distance * 0.65 / maxf(orbit.length(), 0.001)))
+	global_position = view_focus + orbit.rotated(Vector3.UP, deg_to_rad(wave_shot_yaw)) * wave_shot_distance_scale * kill_scale
 	look_at(view_focus, Vector3.UP)
+	if not is_zero_approx(hit_shake_roll): rotate_object_local(Vector3.BACK, deg_to_rad(hit_shake_roll))
+	if not is_zero_approx(wave_shot_roll): rotate_object_local(Vector3.BACK, deg_to_rad(wave_shot_roll))
+	if follow_enabled and _ricochet_camera and not is_zero_approx(_ricochet_camera.roll_offset):
+		rotate_object_local(Vector3.BACK, deg_to_rad(_ricochet_camera.roll_offset))
 
 ## 只恢复 Q/E 旋转偏移，保留初始朝向、俯角、距离与景深设置。
 func reset_horizontal_rotation() -> void:
@@ -291,7 +428,7 @@ func _update_dof() -> void:
 	var practical := attributes as CameraAttributesPractical
 	if not practical:
 		return
-	var focus_distance := global_position.distance_to(_target_point())
+	var focus_distance := global_position.distance_to(_target_point() if follow_enabled else focus)
 	practical.dof_blur_far_enabled = dof_enabled and dof_mode == 0
 	practical.dof_blur_near_enabled = dof_enabled and dof_mode == 0
 	practical.dof_blur_far_distance = focus_distance + dof_far_margin
@@ -306,7 +443,7 @@ func _update_dof() -> void:
 			screen.material = _post_material
 	if _post_material:
 		var viewport_size := get_viewport().get_visible_rect().size
-		var center := unproject_position(_target_point()) / viewport_size + ellipse_center_offset
+		var center := unproject_position(_target_point() if follow_enabled else focus) / viewport_size + ellipse_center_offset
 		_post_material.set_shader_parameter("ellipse_enabled", dof_enabled and dof_mode == 1)
 		_post_material.set_shader_parameter("ellipse_center", center)
 		_post_material.set_shader_parameter("ellipse_radius", Vector2(maxf(ellipse_radius.x, 0.01), maxf(ellipse_radius.y, 0.01)))

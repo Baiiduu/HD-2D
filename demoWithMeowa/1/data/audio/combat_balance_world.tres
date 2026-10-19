@@ -1,0 +1,58 @@
+[gd_resource type="Resource" script_class="CombatAudioBalance" format=3]
+
+[ext_resource type="Script" path="res://scripts/audio/combat_audio_balance.gd" id="balance"]
+
+[resource]
+script = ExtResource("balance")
+gains_db = Dictionary[StringName, float]({
+&"core:charge_start": 12.0,
+&"core:charge_loop": 10.0,
+&"core:charge_ready": 9.0,
+&"core:launch": 11.0,
+&"core:flight_end": 8.0,
+&"core:flight_loop": -2.0,
+&"core:bounce_stone": 10.0,
+&"core:bounce_wood": 10.0,
+&"core:bounce_metal": 10.0,
+&"core:push_stun": 7.0,
+&"core:player_hurt": 9.0,
+&"core:enemy_hit_common": 6.0,
+&"core:enemy_hit_soft": 11.0,
+&"core:enemy_hit_hard": 9.0,
+&"core:slime_death": 13.0,
+&"core:creature_death": 15.0,
+&"core:split_spawn": 8.0,
+&"core:kill_slime": 5.0,
+&"core:kill_group": 4.0,
+&"core:kill_air": 3.0,
+&"core:kill_land": 6.0,
+&"ricochet_storm_start": 17.0,
+&"ricochet_storm_chain": 16.0,
+&"leaf_windup": 2.0,
+&"lantern_shot": 0.0,
+&"frog_pulse": -6.0,
+&"pot_shatter": 9.0
+})
+priorities = Dictionary[StringName, int]({
+&"core:enemy_hit_common": 55,
+&"core:kill_slime": 60,
+&"core:creature_death": 60,
+&"core:kill_group": 65,
+&"ricochet_storm_start": 50,
+&"ricochet_storm_chain": 45,
+&"frog_pulse": 25,
+&"lantern_shot": 30,
+&"pot_shatter": 55
+})
+intervals = Dictionary[StringName, float]({
+&"leaf_windup": 0.14,
+&"lantern_shot": 0.10,
+&"frog_pulse": 0.25,
+&"pot_shatter": 0.08
+})
+voice_limits = Dictionary[StringName, int]({
+&"leaf_windup": 2,
+&"lantern_shot": 2,
+&"frog_pulse": 1,
+&"pot_shatter": 2
+})

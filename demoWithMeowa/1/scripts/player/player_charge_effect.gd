@@ -21,6 +21,7 @@ var _ring: MeshInstance3D
 var _aim: AimPathPreview
 var _motes: MultiMeshInstance3D
 var _light: OmniLight3D
+var _wind: PlayerChargeWind
 var _ring_material: ShaderMaterial
 var _prediction := BodyPathPrediction.new()
 var _route := AimPathData.new()
@@ -28,6 +29,7 @@ var _target_enemy: WaveEnemy
 var _pixel := 0.016
 var _radius := 0.672
 var _age := 0.0
+var _mote_phase := 0.0
 var _full_at := -1.0
 var _foot_texture: Texture2D
 var _foot_pixel := 0.0
@@ -89,6 +91,8 @@ func display(player: Player, body: PlayerRicochet, visuals: PlayerActionVisuals)
 	_visuals = visuals
 	_pixel = player.sprite.pixel_size * player.sprite.global_basis.x.length()
 	_radius = visuals.charge_radius_pixels * _pixel
+	var count := visuals.charge_mote_count if visuals.charge_dynamic_enabled else MOTE_COUNT
+	if _motes.multimesh.instance_count != count: _motes.multimesh.instance_count = count
 	# 待机母帧的透明脚边只在素材更换时读取，避免把留白当脚底或逐帧抖动。
 	var reference := player.animations.get_frame_texture(&"idle", 0) if player.animations and player.animations.has_animation(&"idle") else player.sprite.texture
 	if reference != _foot_texture:
@@ -98,6 +102,7 @@ func display(player: Player, body: PlayerRicochet, visuals: PlayerActionVisuals)
 	_foot_height = maxf(0.015, player.sprite.position.y + (_foot_pixel + player.sprite.offset.y) * player.sprite.pixel_size * player.sprite.global_basis.y.length())
 	if not visible:
 		_age = 0.0
+		_mote_phase = 0.0
 		_full_at = -1.0
 		show()
 		set_process(true)
@@ -116,6 +121,7 @@ func stop() -> void:
 	hide()
 	set_process(false)
 	if is_instance_valid(_aim): _aim.stop()
+	if is_instance_valid(_wind): _wind.stop()
 	_target_enemy = null
 	_route.clear()
 
@@ -134,8 +140,12 @@ func _sync_visuals(delta: float) -> void:
 		stop()
 		return
 	var frozen := _body.is_frozen()
-	if not frozen: _age += delta
 	var fraction := _body.charge_fraction
+	if not frozen:
+		_age += delta
+		if _visuals.charge_dynamic_enabled:
+			var settling := fraction >= 1.0 and _full_at >= 0.0 and _age - _full_at < _visuals.charge_full_settle_seconds
+			if not settling: _mote_phase += delta / 0.7 * lerpf(1.0, _visuals.charge_mote_speed_gain, fraction)
 	if fraction >= 1.0 and _full_at < 0.0: _full_at = _age
 	var flash := maxf(0.0, 1.0 - (_age - _full_at) / 0.18) if _full_at >= 0.0 else 0.0
 	global_position = _player.get_global_transform_interpolated().origin + Vector3.UP * _foot_height
@@ -149,12 +159,23 @@ func _sync_visuals(delta: float) -> void:
 	var diameter := (_visuals.charge_radius_pixels + 3.0) * 2.0 * _pixel
 	_ring.basis = Basis(right * diameter, toward * diameter, Vector3.UP)
 	_ring_material.set_shader_parameter("size_pixels", Vector2.ONE * diameter / _pixel)
-	_ring_material.set_shader_parameter("radius_pixels", _visuals.charge_radius_pixels)
+	var radius := _visuals.charge_radius_pixels
+	var energy := _visuals.charge_effect_energy
+	if _visuals.charge_dynamic_enabled:
+		radius *= 1.0 - _visuals.charge_ring_contraction * fraction
+		energy *= lerpf(0.6, 1.6, fraction)
+	_ring_material.set_shader_parameter("radius_pixels", radius)
 	_ring_material.set_shader_parameter("charge", fraction)
 	_ring_material.set_shader_parameter("full_flash", flash)
 	_ring_material.set_shader_parameter("opacity", _visuals.charge_effect_opacity)
-	_ring_material.set_shader_parameter("energy", _visuals.charge_effect_energy)
+	_ring_material.set_shader_parameter("energy", energy)
 	_update_motes(camera_basis, fraction)
+	if _visuals.charge_wind_enabled and not _wind:
+		_wind = PlayerChargeWind.new()
+		add_child(_wind)
+	if _wind:
+		_wind.synchronize(_visuals, _pixel, fraction, 0.0 if frozen else delta)
+		_wind.sync_body_mask(_player.sprite, _visuals.charge_wind_body_clearance_pixels if _visuals.charge_wind_funnel_enabled else 0.0)
 	_light.light_energy = (0.06 + fraction * 0.12 + flash * 0.12) * _visuals.charge_effect_opacity
 	_light.omni_range = _radius * 2.1
 	if not is_instance_valid(_target_enemy) or _target_enemy.dead or _target_enemy.spawn_delay > 0.0:
@@ -179,11 +200,15 @@ func _update_aim() -> void:
 	_aim.mark_target(_target_enemy.get_node_or_null("Sprite") as Sprite3D if is_instance_valid(_target_enemy) else null)
 
 func _update_motes(camera_basis: Basis, fraction: float) -> void:
-	for index in MOTE_COUNT:
-		var life := fposmod(_age / 0.7 + float(index) / MOTE_COUNT, 1.0)
-		var angle := index * 2.39996 + floorf(_age / 0.7 + float(index) / MOTE_COUNT) * 0.7
+	var count := _motes.multimesh.instance_count
+	var phase := _mote_phase if _visuals.charge_dynamic_enabled else _age / 0.7
+	for index in count:
+		var life := fposmod(phase + float(index) / count, 1.0)
+		var angle := index * 2.39996 + floorf(phase + float(index) / count) * 0.7
 		var radius := lerpf(_radius * 1.65, _radius * 0.18, life)
 		var offset := Vector3(cos(angle) * radius, sin(life * PI) * 0.18, sin(angle) * radius)
+		if _visuals.charge_dynamic_enabled:
+			offset.y = lerpf(0.04, 0.4, life) + sin(life * PI) * 0.12
 		offset = offset.snapped(Vector3.ONE * _pixel)
 		var size := _pixel * (2.0 if index % 3 else 3.0)
 		var basis := camera_basis.scaled_local(Vector3(size, size, size))

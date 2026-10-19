@@ -61,7 +61,9 @@ func wall(offset: Vector3) -> StaticBody3D:
 
 func run() -> void:
 	world = load("res://scenes/world/world.tscn").instantiate()
+	world.get_node("WorldEntry").preview_on_direct_run = false
 	world.get_node("LoadoutUI").save_enabled = false
+	world.get_node("GameSettingsUI").save_graphics_settings = false
 	world.get_node("MapEffects/BGM").music_enabled = false
 	world.get_node("MapEffects/Weather").rain_audio_enabled = false
 	world.get_node("MapEffects/Weather").wind_audio_enabled = false
@@ -70,6 +72,7 @@ func run() -> void:
 	var fixture := preload("res://tests/fixtures/combat_scene_fixture.gd")
 	fixture.clear_placed_obstacles(world)
 	fixture.enable_legacy_skills(world)
+	fixture.isolate_profile(world).spawn_shadow_settings = null
 	root.add_child(world)
 	current_scene = world
 	await settle(12)
@@ -245,7 +248,9 @@ func run() -> void:
 	shot = attack._shots[0]
 	attack._advance_shot(shot, 0.15)
 	check(wave.kills == kills_before + 1 and wave.enemies.is_empty() and shot.bounces == 1, "真实死亡回调记录一次击杀，移除怪物后仍完成致死反射")
-	wave._pending = 0
+	var finish_deadline := Time.get_ticks_msec() + 3000
+	while wave.is_wave_finish_pending() and Time.get_ticks_msec() < finish_deadline:
+		await create_timer(0.01).timeout
 	wave._clear_wave()
 	check(wave.phase == WavePrototype.Phase.REST and attack._shots.is_empty() and attack._marks.is_empty(), "最后一只敌人死后进入现有波间休整并清理特效")
 	skills.reset()

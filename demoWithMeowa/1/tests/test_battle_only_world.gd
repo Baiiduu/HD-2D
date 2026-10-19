@@ -19,6 +19,10 @@ func settle() -> void:
 func run() -> void:
 	AudioServer.set_bus_mute(0, true)
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
+	# 本用例验证战区与开战；独立入场用例覆盖用户开启的人工镜头预览。
+	world.get_node("WorldEntry").preview_on_direct_run = false
+	world.get_node("WorldMainMenu").show_on_world_start = false
+	world.get_node("WavePresentation").enabled = false
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("WavePrototype/RunGrowth").enabled = false
 	world.get_node("MapEffects/BGM").music_enabled = false
@@ -32,7 +36,7 @@ func run() -> void:
 	var authored_kinds := {}
 	for prop in world.get_node("WorldDetails/BattleCourts").get_children():
 		if prop is TownDetailProp: authored_kinds[prop.detail_kind] = true
-	var surface_hash := FileAccess.get_sha256("res://data/world/world_surface.tres")
+	var surface_hash := FileAccess.get_sha256("res://data/world/world_surface.res")
 	var terrain_hash := FileAccess.get_sha256("res://data/world/world_terrain.tres")
 	root.add_child(world)
 	current_scene = world
@@ -67,6 +71,25 @@ func run() -> void:
 	check(wave._path_ready and wave._spawn_points.size() > 100, "Navigation and real spawn candidates are ready")
 	for point in [Vector3(-10, 0, 35.2), Vector3(0, 0, 40), Vector3(10, 0, 40), Vector3(-12, 0, 60), Vector3(0, 0, 60), Vector3(12, 0, 60)]:
 		check(not wave._path.route(wave._ground_target(), point).is_empty(), "Spawn reaches retained battle ground: " + str(point))
+	for point in [Vector3(-10, 0, 35.2), Vector3(0, 0, 40), Vector3(12, 0, 60)]:
+		player.global_position = wave._path.ground_position(point) + Vector3.UP * 0.03
+		check(wave.can_start_run(), "World can start away from the old entrance: " + str(point))
+	var chosen_start := player.global_position
+	var blocker := Node.new()
+	world.add_child(blocker)
+	blocker.add_to_group(&"gameplay_input_blockers")
+	check(not wave.can_start_run() and not wave.start_run(), "Starting anywhere still respects management and menu input ownership")
+	blocker.free()
+	wave.set_combat_frozen(true)
+	check(not wave.can_start_run(), "Starting anywhere still respects combat freeze")
+	wave.set_combat_frozen(false)
+	var navigation_ready := wave._path_ready
+	wave._path_ready = false
+	check(not wave.can_start_run(), "Starting anywhere still waits for real navigation")
+	wave._path_ready = navigation_ready
+	player.global_position.x = wave.battle_area.end.x + 1.0
+	check(not wave.can_start_run(), "Invalid positions outside the combat map remain rejected")
+	player.global_position = chosen_start
 	var court := world.get_node("WorldDetails/BattleCourts")
 	check(court.get_child_count() > 0, "Battle layout retains its existing detail objects")
 	var kinds := {}
@@ -105,12 +128,18 @@ func run() -> void:
 		return
 	check(initial.select_option(initial._options[0].id), "Battle entrance offers the actual initial skill draw")
 	initial.confirm_selection()
-	wave._physics_process(1.0)
+	check(player.global_position.is_equal_approx(chosen_start), "Starting from a chosen location does not teleport the player to the old entrance")
+	# 正式出怪队列包含分帧创建与出生影子，等待真实进程而非强求同帧建怪。
+	wave.set_physics_process(true)
+	var spawn_deadline := Time.get_ticks_msec() + 2500
+	while wave.enemies.is_empty() and Time.get_ticks_msec() < spawn_deadline:
+		await create_timer(0.05).timeout
+	wave.set_physics_process(false)
 	check(wave.phase == WavePrototype.Phase.BATTLE and not wave.enemies.is_empty(), "Configured wave spawns real enemies")
 	wave.retreat()
 	wave.return_home()
 	check(TerrainPath.horizontal_distance(player.global_position, area.get_entry_position()) < 0.01, "Retreat returns inside the battle area")
-	check(FileAccess.get_sha256("res://data/world/world_surface.tres") == surface_hash, "Runtime leaves hand-painted surface file unchanged")
+	check(FileAccess.get_sha256("res://data/world/world_surface.res") == surface_hash, "Runtime leaves hand-painted surface file unchanged")
 	check(FileAccess.get_sha256("res://data/world/world_terrain.tres") == terrain_hash, "Runtime leaves saved terrain unchanged")
 	world.queue_free()
 	await settle()

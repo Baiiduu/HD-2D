@@ -19,9 +19,13 @@ run/main_scene="res://scenes/world/world.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+GameControls="*res://scripts/input/game_controls.gd"
+
 [audio]
 
-buses/default_bus_layout="uid://dmvtsqo2otny2"
+buses/default_bus_layout="res://default_bus_layout.tres"
 
 [display]
 
@@ -41,6 +45,10 @@ enabled=PackedStringArray("res://addons/game_manager/plugin.cfg", "res://addons/
 systems/upgrades=true
 systems/draft=true
 systems/run_skills=true
+
+[gui]
+
+theme/custom_font="res://assets/fonts/fusion_pixel/fusion-pixel-12px-monospaced-zh_hans.ttf"
 
 [input]
 

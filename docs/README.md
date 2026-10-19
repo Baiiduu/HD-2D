@@ -57,6 +57,7 @@
 
 | 文档 | 内容 |
 | --- | --- |
+| [动态主菜单](ui/main-menu.md) | 回弹标题、分层弹射与近景击飞、按钮反馈、设置及入场交接 |
 | [人物跳跃与下落](gameplay/player-jump.md) | 动画、跳跃物理与台阶通行 |
 | [人物瞬移闪身](gameplay/player-dodge.md) | 位移、碰撞、残影、音效与环境反馈 |
 | [人物受光](visuals/character-lighting.md) | 侧光、背光与亮边参数 |

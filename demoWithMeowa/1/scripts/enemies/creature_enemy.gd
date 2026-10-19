@@ -6,7 +6,6 @@ extends SlimeEnemy
 @export var death_shards := false
 var _visual_action: StringName = &""
 var _visual_progress := -1.0
-var _feedback: EnemyFeedbackPool
 var _surface_collision := ProjectileCollision.new()
 
 func _ready() -> void:
@@ -15,12 +14,7 @@ func _ready() -> void:
 	sprite.scale = _sprite_scale
 	if wave_target and is_instance_valid(wave_target.sprite):
 		sprite.pixel_size = wave_target.sprite.pixel_size * wave_target.sprite.global_basis.x.length()
-	if attack_root:
-		_feedback = attack_root.get_node_or_null("EnemyFeedbackPool")
-		if not _feedback:
-			_feedback = EnemyFeedbackPool.new()
-			_feedback.name = "EnemyFeedbackPool"
-			attack_root.add_child(_feedback)
+	_feedback_pool()
 
 func _on_stun_started() -> void:
 	_release_warning()
@@ -113,8 +107,8 @@ func _sound(clip: AudioStream, cue: StringName, kind: GameAudio.Kind) -> void:
 
 func _on_defeated() -> void:
 	_release_warning()
-	if is_instance_valid(_feedback): _feedback.death(sprite, death_shards)
-	_sound(death_sound, &"creature_death", GameAudio.Kind.DEATH)
+	if not _melee_death_feedback() and is_instance_valid(_feedback): _feedback.death(sprite, death_shards)
+	_sound(death_sound, &"pot_shatter" if death_shards else &"creature_death", GameAudio.Kind.DEATH)
 
 func cancel() -> void:
 	_release_warning()
@@ -125,6 +119,7 @@ func _exit_tree() -> void:
 	super._exit_tree()
 
 func _process(delta: float) -> void:
+	_advance_hit_reaction(delta)
 	_hit_flash = maxf(0.0, _hit_flash - delta)
 	var tint := _sprite_color * (1.8 if _hit_flash > 0.0 else 1.0)
 	tint.a = _sprite_color.a

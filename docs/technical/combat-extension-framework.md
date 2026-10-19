@@ -22,6 +22,7 @@ F5 启动 World，采用普通战斗：Game Manager 的升级、抽卡和局内�
 | 高频找怪 | `WavePrototype.get_nearby_enemies_into(point, radius, excluded_ids, result)` | 清空并填充调用方缓冲，顺序与前者一致；排除 ID 在读取实时位置前过滤 |
 | 挡墙／视线 | `Terrain.ray_clear(from, to, mask, excluded_rids)` | 普通攻击使用掩码 1，含真实镜片的环绕查询使用 `ProjectileCollision.REFLECTION_MASK`；身体射线默认规则，不查询 Area |
 | 地面资格 | `TerrainPath.flat_ground_height()`、`flat_center_ground_height()` | `NAN` 表示不能证明；前者保留身体宽度，后者仅代替原中心采样；它们不证明没有墙 |
+| 普通追击通路 | `TerrainPath.can_walk_direct()`、`first_walkable_ground(from, targets)` | 共用本步数值输入；后者按顺序返回首个可走候选索引或 -1，并可原地填写候选高度。`targets` 使用调用方独占、复用的 PackedVector3Array |
 | 连续碰撞与反射 | `ProjectileCollision.wall_contact()`、`BodyPathPrediction` | 需要接触点、法线和碰撞顺序时沿用真实扫掠；布尔视线不能替代接触结果 |
 | 外部位置／聚群参数修改 | `WaveEnemy.commit_spatial_state()` | 修改后、下一次空间查询前调用；普通物理步和出生已自动提交 |
 | 在途攻击的生命周期 | `WavePrototype.get_combat_generation()` | 回调／恢复后核对本局攻击代际，并重新检查 `combat_active()`；代际不代表几何或位置没变 |
@@ -31,6 +32,10 @@ F5 启动 World，采用普通战斗：Game Manager 的升级、抽卡和局内�
 
 障碍通知只操作已存在的缓存，冷地图不为通知而建表。资源变更、变换与节点增删仍沿用观察与实时守卫。撤销的身体暂时保持实时检查，不自动重新烘焙。使用当前地图的 Terrain；跨世界对象和裸 PhysicsServer RID 的登记不在这些 Node 接口的范围内。
 
+普通追击的 `PursuitQueryBatch` 只计算数值数组，不访问场景或物理服务器。TerrainPath 在主线程每物理步准备一次各通行尺寸的查询配置及障碍资格，地面支撑表仅在地形／变换变更后重建。空地直接返回；地面已确认、障碍未确认时只保留实时扫掠／初始接触，避免再查地面。身体的 `flat_ground_height()` 同样复用支撑表，仍按自身半径加留白检查，实际移动和碰撞继续在主线程实时处理。水域、坡地、边界、自定义路径、超大或稀疏地图及未排除的实时身体沿用原流程。固定障碍撤销、增删与地形信号即时使本步输入失效；原生修改仍必须先走上表通知接口。
+
+这只批量处理普通追击的路径前视／让行通路查询，没有把招式状态机、接触伤害或身体求解搬到新内核；不新增线程，也不返回上一物理步的候选结果。内部前缀表是同步只读复用数据，不能直接交给后台长期持有；未来并行还需冻结输入、独立输出和版本核验。`chase_batch_enabled=false` 可在 TerrainPath 上恢复原查询与让行流程，用于同条件对照。
+
 如果修改的是生成地面的身体或共享形状，还会同步撤销平地支撑资格；地面数据与原生碰撞重新由 Terrain 生成器建立一致关系后才能恢复。这样后续功能直接改地面原生碰撞时，不会继续依赖旧的平地证明。
 
 生成地形的 `Generated/Body` 只包含原有地表、河床与崖壁三角面，未架桥水格的阻挡盒独立在 `Generated/WaterBlockers`。所有旱地同高、无桥／坡道且河床不高于旱地时，可取得陆地支撑资格；水池的存在本身不再撤销整张图的资格。局部身体留宽仍由 `TerrainPath` 证明，导航只排除地形面，不排除挡水体；水域反弹通过 `Terrain.is_reflective_water_shape()` 识别，不依赖某个身体固定的 shape 序号。
@@ -38,6 +43,8 @@ F5 启动 World，采用普通战斗：Game Manager 的升级、抽卡和局内�
 Terrain 完整重建后，仅向已有障碍缓存登记本次新生成的两个身体，不重新扫描世界，也不重新烘焙外部修改过的旧身体。旧身体退出时释放其 Shape 订阅与拥有者记录；共享 Shape 仍保留其他身体的订阅。水域原生修改只撤销水域的固定证明，修改地形面仍撤销陆地资格；上述修改前通知约定保持。
 
 ## 怪物接入
+
+`SlimeEnemy`／`CreatureEnemy` 的存活受击姿态消费既有 `damaged(CombatDamageEvent)`，不增加伤害入口。攻击继续通过 `take_damage(amount, {"direction": horizontal_direction, ...})` 提供世界来向；零方向的旧调用回退人物至怪物的方向。World 在 `PlayerActionVisuals` 独立开启 `enemy_hit_reaction_enabled`，倾斜幅度和回正时间可在参数总览「人物」调整。刚体贴图旋转复用受光、遮挡轮廓、技能补画与倒影的实例参数；不移动根节点、不暂停动画或招式，连续命中接续当前姿态并限幅，致死／取消清理。子类覆写 `_process()` 时也须调用 `_advance_hit_reaction(delta)`；无反应时立即返回，不创建额外逐帧节点。专项无界面回归为 `test_enemy_hit_reaction`，观感在正式地图人工验收。
 
 [`shared_chase_enemy.gd`](../../demoWithMeowa/1/examples/combat/shared_chase_enemy.gd) 是可执行的最小追击范例：继承 `CreatureEnemy`，只覆写 `_combat_tick()`，复用普通追击、真实接触伤害及反馈池。以已有 Creature 场景的副本作为素材与身体结构，保留其 Sprite 和 Collision，再替换副本的脚本。
 
@@ -120,6 +127,8 @@ body.shape_owner_add_shape(owner_id, extra_shape)
 
 怪物反馈复用 `EnemyFeedbackPool`；战斗声音走 `MapEffects/GameAudio.request()` 的预算、优先级与混音；伤害数字来自真实扣血事件并使用 `DamageNumbers` 的节点池。新增技能特效可沿用已有 LightPierce／Prism／Storm 的共享材质和节点池方式，保持原生像素、遮挡和完整动画，结束后停处理。按需要复用现有池，不额外创建一个通用池管理器。
 
+近身短闪调用 `WaveEnemy.get_contact_feedback_position(origin)` 获取身体接触锚点，头顶伤害数字继续用 `get_damage_feedback_position()`；异形怪可分别覆写，避免把接触特效放到数字位置。持续攻击镜头消费剑术真实命中和 `RicochetStorm.presentation_landed(point, hits, kills, flight_id)`，后者按实际同片落雷合并且冻结中途保留计数，不负责伤害或目标查询。启用持续视觉层次的地图在正常清波后只保留纯视觉反馈短收尾，危险和种子弹丸即时停用；退役视觉仍登记战斗冻结，完成后释放，退出／重试强制清理。
+
 ```gdscript
 terrain.reset_query_metrics()
 terrain.query_diagnostics_enabled = true
@@ -138,6 +147,6 @@ terrain.query_diagnostics_enabled = false
 pwsh -File .\tools\validate_combat_framework.ps1 -GodotPath 'D:\Project\godot\Godot_v4.7.2\Godot_v4.7.2-stable_win64_console.exe'
 ```
 
-默认日志在 `D:\.codexfile\work\combat-framework-checks`，可用 `-LogDirectory` 改动；子进程临时文件使用 `D:\.codexfile\tmp`。入口串行运行接口／两个范例、陆地与挡水分离、出怪同步、剑术与共享射线、持续绕群／预览、只读预测视图检查，不启动压力或 FPS 采样。非零退出、脚本错误、引擎错误或缺少成功标记均判失败；警告单独显示并保留日志。
+默认日志在 `D:\.codexfile\work\combat-framework-checks`，可用 `-LogDirectory` 改动；子进程临时文件使用 `D:\.codexfile\tmp`。入口串行运行接口／两个范例、陆地与挡水分离、普通追击数值批处理、出怪同步、剑术与共享射线、持续绕群／预览、只读预测视图检查，不启动压力或 FPS 采样。非零退出、脚本错误、引擎错误或缺少成功标记均判失败；警告单独显示并保留日志。
 
 新增功能再补充与自身行为有关的用例：同一步出生／移动／死亡、动态薄墙和镜片、冻结／恢复、结束／重试、回调重入，以及资源或查询配置修改。示例验证和公共检查不能代替新功能自己的伤害、轨迹、素材与玩法验收。

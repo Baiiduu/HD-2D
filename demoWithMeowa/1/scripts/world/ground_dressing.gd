@@ -365,6 +365,9 @@ func _queue_rebuild() -> void:
 func _rebuild_after_updates() -> void:
 	# Finish palette/style/data updates first instead of scattering the same
 	# plants repeatedly while the scene is entering the tree.
+	if not is_inside_tree():
+		_rebuild_queued = false
+		return
 	await get_tree().process_frame
 	if is_inside_tree(): _rebuild()
 	else: _rebuild_queued = false

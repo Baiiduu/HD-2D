@@ -83,10 +83,7 @@ var _can_reroll := false
 @onready var _hint: Label = $Root/Content/Hint
 
 func _ready() -> void:
-	var font := SystemFont.new()
-	font.font_names = PackedStringArray(["KaiTi", "STKaiti", "SimSun", "Microsoft YaHei"])
 	var ui_theme := Theme.new()
-	ui_theme.default_font = font
 	_root.theme = ui_theme
 	get_viewport().size_changed.connect(_update_presentation)
 	_confirm.pressed.connect(confirm_selection)

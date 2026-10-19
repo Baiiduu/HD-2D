@@ -3,6 +3,11 @@ extends EditorPlugin
 
 const MAPS: Array[Dictionary] = [
 	{
+		"name": "回弹 · 动态主菜单",
+		"path": "res://scenes/ui/main_menu.tscn",
+		"description": "分层夜景、人物弹射、火带与近景怪物击飞。\n开始按钮进入正式地图；F5 默认仍保留正式地图。",
+	},
+	{
 		"name": "City 城市战斗场景",
 		"path": "res://scenes/city/city.tscn",
 		"description": "城市布局与夜景，独立战斗配置。\n共用正式战斗代码；在参数总览选择 City 调参。",

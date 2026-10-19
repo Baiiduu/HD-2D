@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="SwordRibbonVisual" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/sword_ribbon_visual.gd" id="style"]
+[ext_resource type="Texture2D" path="res://assets/meowa/combat/sword_flow/brush.png" id="brush"]
+
+[sub_resource type="FastNoiseLite" id="noise"]
+seed = 7133
+noise_type = 1
+frequency = 0.035
+fractal_octaves = 3
+
+[sub_resource type="NoiseTexture2D" id="texture"]
+width = 256
+height = 256
+seamless = true
+generate_mipmaps = true
+noise = SubResource("noise")
+
+[resource]
+script = ExtResource("style")
+ribbon_width = 0.64
+ribbon_degrees = 96.0
+ribbon_inner_ratio = 0.25
+ribbon_emission = 1.15
+ribbon_tail_seconds = 0.28
+ribbon_layered_enabled = true
+ribbon_brush = ExtResource("brush")
+ribbon_noise = SubResource("texture")
+ribbon_middle_color = Color(1, 0.50, 0.22, 0.9)
+ribbon_tail_color = Color(0.82, 0.10, 0.23, 0.78)

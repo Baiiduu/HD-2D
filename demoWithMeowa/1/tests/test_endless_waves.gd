@@ -34,6 +34,9 @@ func key(code: Key) -> void:
 
 func run() -> void:
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
+	world.get_node("WorldEntry").preview_on_direct_run = false
+	# 编排逻辑单独于按真实时间播放的镜头；演出生命周期由专门用例验证。
+	world.get_node("WavePresentation").enabled = false
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("WavePrototype/FanAutoAttack").enabled = true
 	root.add_child(world)

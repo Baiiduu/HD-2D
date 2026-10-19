@@ -18,6 +18,9 @@ func check(value: bool, message: String) -> void:
 func run() -> void:
 	AudioServer.set_bus_mute(0, true)
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
+	# 隔离用户开启的人工演出；此用例只检查界面与即时计分，演出另有独立覆盖。
+	world.get_node("WorldEntry").preview_on_direct_run = false
+	world.get_node("WavePresentation").enabled = false
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("GameSettingsUI").save_graphics_settings = false
 	world.get_node("MapEffects/BGM").music_enabled = false

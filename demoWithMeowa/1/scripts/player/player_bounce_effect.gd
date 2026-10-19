@@ -3,6 +3,7 @@ extends Node3D
 
 ## 只消费已完成的真实反弹事件；Meowa 原生帧留在世界碰点，不结算运动或伤害。
 const SHADER := preload("res://shaders/combat/player_bounce.gdshader")
+const DEBRIS := preload("res://scripts/enemies/hit_debris.gd")
 static var _quad: QuadMesh
 var _player: Player
 var _body: PlayerRicochet
@@ -11,6 +12,8 @@ var _pool: Array[Dictionary] = []
 var _source: SpriteFrames
 var _frames: Array[Dictionary] = []
 var _materials: Dictionary = {}
+var sparks: MultiMeshInstance3D
+var _particle_serial := -1
 
 func _ready() -> void:
 	_player = get_parent() as Player
@@ -20,6 +23,8 @@ func _ready() -> void:
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	process_priority = 3
 	_body.wall_bounced.connect(_bounced)
+	_body.impact_recorded.connect(_impact_recorded)
+	if _player.action_visuals and _player.action_visuals.bounce_particles_enabled: _prepare_sparks()
 	if is_instance_valid(_body._session): _body._session.phase_changed.connect(_phase_changed)
 	set_process(false)
 
@@ -63,6 +68,24 @@ func _bounced(point: Vector3, normal: Vector3) -> void:
 	var maximum := _body._settings.maximum_launch_speed if _body._settings else _body.flight_speed
 	play(point, normal, _body.direction, clampf(_body.flight_speed / maxf(maximum, 0.001), 0.0, 1.0))
 
+func _prepare_sparks() -> void:
+	if is_instance_valid(sparks): return
+	sparks = DEBRIS.new()
+	sparks.set("capacity", 256)
+	add_child(sparks)
+
+func _impact_recorded(impact: RicochetImpact) -> void:
+	var settings := _player.action_visuals
+	if impact.serial <= _particle_serial or not settings or not settings.bounce_particles_enabled: return
+	_particle_serial = impact.serial
+	_prepare_sparks()
+	var point := impact.point
+	point.y = _player.global_position.y + settings.bounce_height
+	sparks.rebound(point, impact, _player.sprite.pixel_size * _player.sprite.global_basis.x.length(), settings)
+	if sparks.active:
+		show()
+		set_process(true)
+
 func play(contact: Vector3, normal: Vector3, outgoing: Vector3, strength := 1.0) -> bool:
 	var settings := _player.action_visuals
 	if not settings or not settings.show_bounce_effect or not is_finite(settings.bounce_duration) or settings.bounce_duration <= 0.0: return false
@@ -99,23 +122,26 @@ func _create() -> Dictionary:
 	return {"mesh": mesh}
 
 func _process(delta: float) -> void:
-	if not _player.action_visuals or not _player.action_visuals.show_bounce_effect:
+	if not _player.action_visuals:
 		clear()
 		return
 	if _body.is_frozen(): return
+	if is_instance_valid(sparks):
+		if _player.action_visuals.bounce_particles_enabled: sparks.advance(maxf(0.0, delta))
+		else: sparks.clear()
 	var camera := get_viewport().get_camera_3d()
 	for index in range(_active.size() - 1, -1, -1):
 		var item := _active[index]
 		# 新碰撞至少显示一次首帧，低帧率时也不直接跳过整次短闪。
 		if item.presented: item.age += maxf(0.0, delta)
 		item.presented = true
-		if item.age >= item.duration:
+		if item.age >= item.duration or not _player.action_visuals.show_bounce_effect:
 			item.mesh.hide()
 			_pool.append(item)
 			_active.remove_at(index)
 			continue
 		_update(item, camera)
-	if _active.is_empty():
+	if _active.is_empty() and (not is_instance_valid(sparks) or not sparks.active):
 		hide()
 		set_process(false)
 
@@ -140,6 +166,7 @@ func _update(item: Dictionary, camera: Camera3D) -> void:
 	mesh.show()
 
 func clear() -> void:
+	if is_instance_valid(sparks): sparks.clear()
 	for item in _active:
 		item.mesh.hide()
 		_pool.append(item)

@@ -1,6 +1,9 @@
 shader_type spatial;
 render_mode unshaded, cull_disabled, depth_draw_never, depth_test_disabled, shadows_disabled;
 stencil_mode write, 1;
+#include "res://shaders/includes/character_motion.gdshaderinc"
+instance uniform vec3 motion_lean = vec3(0.0);
+instance uniform vec3 motion_pivot = vec3(0.0);
 
 uniform sampler2D sprite_texture : source_color, filter_nearest, repeat_disable;
 uniform sampler2D scene_depth : hint_depth_texture, filter_nearest, repeat_disable;
@@ -20,7 +23,7 @@ void vertex() {
 	mat4 billboard = mat4(vec4(right * length(MODEL_MATRIX[0].xyz), 0.0),
 		vec4(up * length(MODEL_MATRIX[1].xyz), 0.0),
 		vec4(facing * length(MODEL_MATRIX[2].xyz), 0.0), MODEL_MATRIX[3]);
-	MODELVIEW_MATRIX = VIEW_MATRIX * billboard;
+	MODELVIEW_MATRIX = VIEW_MATRIX * character_motion_card(billboard, motion_pivot, motion_lean);
 }
 
 void fragment() {

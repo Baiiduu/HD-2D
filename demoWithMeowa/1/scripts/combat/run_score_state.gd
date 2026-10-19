@@ -21,6 +21,24 @@ var _flight_reward := 0
 var _defeated := {}
 var _waves := {}
 
+func reset() -> void:
+	rules = null
+	run_id = 0
+	active = false
+	simulation = false
+	eligible_for_submission = false
+	total = 0
+	kill_score = 0
+	wave_score = 0
+	performance_score = 0
+	kills = 0
+	flight_id = 0
+	flight_kills = 0
+	_flight_reward = 0
+	_defeated.clear()
+	_waves.clear()
+	changed.emit()
+
 func begin(id: int, configuration: RunScoreRules, simulated := false) -> void:
 	rules = configuration.duplicate(true)
 	run_id = id

@@ -167,6 +167,8 @@ func _process(_delta: float) -> void:
 		material.set_shader_parameter("flip_v", source.flip_v)
 		if source.has_method("apply_lighting_to"):
 			source.apply_lighting_to(material, true)
+		if source.has_method("apply_motion_to"):
+			source.apply_motion_to(proxy)
 
 func _sync_environment(env: Environment) -> void:
 	var original := world_environment.environment

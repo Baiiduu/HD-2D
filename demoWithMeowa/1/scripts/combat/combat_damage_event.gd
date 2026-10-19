@@ -7,6 +7,8 @@ var requested_amount := 0.0
 var target_id := 0
 var world_position := Vector3.ZERO
 var direction := Vector3.ZERO
+## 刀锋实际扫过方向，仅供表现；为空时沿用命中方向，不参与伤害或外力。
+var slash_direction := Vector3.ZERO
 var source: StringName = &""
 ## 本次发射的稳定编号；0 为普通攻击或飞行结束后的延迟技能伤害。
 var flight_id := 0
@@ -28,6 +30,8 @@ static func from_hit(enemy: WaveEnemy, dealt: float, requested: float, context: 
 	event.world_position = enemy.get_damage_feedback_position()
 	event.direction = context.get("direction", Vector3.ZERO)
 	if not event.direction.is_finite(): event.direction = Vector3.ZERO
+	event.slash_direction = context.get("slash_direction", Vector3.ZERO)
+	if not event.slash_direction.is_finite(): event.slash_direction = Vector3.ZERO
 	event.source = context.get("source", &"")
 	event.flight_id = maxi(0, int(context.get("flight_id", 0)))
 	event.style = context.get("style", &"normal")

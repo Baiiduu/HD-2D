@@ -11,6 +11,7 @@ uniform float blink_rain_offset = 0.9;
 uniform float blink_rain_strength = 0.22;
 uniform float blink_rain_tilt = 0.8;
 uniform float blink_rain_duration = 0.45;
+#include "res://shaders/includes/charge_airflow.gdshaderinc"
 
 void vertex() {
 	vec3 right = normalize(cross(vec3(0.0, 1.0, 0.0), MAIN_CAM_INV_VIEW_MATRIX[2].xyz));
@@ -27,6 +28,9 @@ void vertex() {
 	airflow /= max(1.0, length(airflow));
 	vec3 rain_slant = vec3(slant.x, 0.0, slant.y) + airflow * blink_rain_tilt;
 	vec3 displacement = airflow * blink_rain_strength;
+	vec3 gathering = charge_airflow(MODEL_MATRIX[3].xyz);
+	displacement += gathering;
+	rain_slant += gathering * 2.0;
 	VERTEX.x += dot(displacement, right) - VERTEX.y * dot(rain_slant, right);
 	VERTEX.z += dot(displacement, forward) - VERTEX.y * dot(rain_slant, forward);
 }

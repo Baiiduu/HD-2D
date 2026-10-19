@@ -3,6 +3,7 @@ extends Node3D
 
 ## 天气总控。花草、雨丝与地表反馈可在编辑器预览，镜头水滴在游戏画面中生效。
 const RAIN_SHADER := preload("res://shaders/environment/rain_streak.gdshader")
+const LENS_TILES := preload("res://scripts/rendering/lens_drop_tiles.gd")
 const MAX_DROPS := 12
 const MAX_BLINK_PATHS := 8
 
@@ -11,6 +12,10 @@ const MAX_BLINK_PATHS := 8
 	set(v): enabled = v; _queue_apply()
 @export_enum("晴天", "细雨") var weather_mode := 1:
 	set(v): weather_mode = v; _queue_apply()
+## 游戏内晴雨开关复用原天气模式，不另存一份可能不同步的降雨状态。
+var raining: bool:
+	get: return weather_mode == 1
+	set(value): weather_mode = 1 if value else 0
 ## 不运行也预览雨丝、花草风摆和水面/地表反馈；不影响游戏中的天气开关。
 @export var editor_preview := true:
 	set(v): editor_preview = v; _queue_apply()
@@ -210,6 +215,7 @@ var _rain_mesh: QuadMesh
 var _post: ShaderMaterial
 var _vegetation: Array[ShaderMaterial] = []
 var _drops: Array[Dictionary] = []
+var _lens_tiles := LENS_TILES.new()
 var _random := RandomNumberGenerator.new()
 var _last_seed := -1
 var _until_drop := 0.0
@@ -226,6 +232,9 @@ var _ground: ShaderMaterial
 var _wetness := 0.0
 var _blink_paths: Array[Dictionary] = []
 var _bound_blink_player: Node3D
+var _charge_field := Vector4.ZERO
+var _charge_plant_pull := 0.0
+var _charge_rain_pull := 0.0
 
 func _ready() -> void:
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
@@ -442,6 +451,22 @@ func _refresh_vegetation() -> void:
 		material.set_shader_parameter("wind_time", _clock)
 		material.set_shader_parameter("blink_plant_response", 1.0 if String(batch.name).begins_with("grass_") else 0.7)
 	_write_blink_airflow()
+	_write_charge_airflow()
+
+## 当前地图的短时视觉风场；材质缓存重建或切换天气后重新提交，不扫描地编实例。
+func set_charge_airflow(center: Vector3, radius: float, plants: float, rain: float) -> void:
+	_charge_field = Vector4(center.x, center.y, center.z, maxf(0.0, radius))
+	_charge_plant_pull = maxf(0.0, plants)
+	_charge_rain_pull = maxf(0.0, rain)
+	_write_charge_airflow()
+
+func _write_charge_airflow() -> void:
+	if _rain_material:
+		_rain_material.set_shader_parameter("charge_field", _charge_field)
+		_rain_material.set_shader_parameter("charge_pull", _charge_rain_pull)
+	for material in _vegetation:
+		material.set_shader_parameter("charge_field", _charge_field)
+		material.set_shader_parameter("charge_pull", _charge_plant_pull)
 
 func _bind_blink_player() -> void:
 	if Engine.is_editor_hint() or _bound_blink_player == player:
@@ -586,7 +611,15 @@ func _write_drops() -> void:
 		var radius: float = drop["radius"] * lerpf(0.7, 1.0, smoothstep(0.0, 0.2, float(drop["age"])))
 		values[index] = Vector4(drop["uv"].x, drop["uv"].y, radius, fade)
 		shapes[index] = drop.get("shape", Vector4(0.0, 1.2, 0.0, 0.0))
-	_post.set_shader_parameter("lens_enabled", _active() and lens_drops_enabled and not _drops.is_empty())
+	var lens_active := _active() and lens_drops_enabled and not _drops.is_empty()
+	_post.set_shader_parameter("lens_enabled", lens_active)
 	_post.set_shader_parameter("lens_drop_count", mini(_drops.size(), MAX_DROPS))
 	_post.set_shader_parameter("lens_drops", values)
 	_post.set_shader_parameter("lens_drop_shapes", shapes)
+	var screen_size := Vector2.ZERO
+	if lens_active and post_process and post_process.is_inside_tree():
+		# 使用实际 Canvas 输出纹理；3D 缩放与 UI 拉伸不共用同一像素尺寸。
+		screen_size = post_process.get_viewport().get_texture().get_size()
+		_post.set_shader_parameter("lens_drop_tiles", _lens_tiles.build(values, screen_size))
+	# 未绑定视口、关闭效果或窗口刚改变尺寸时，shader 安全回退原遍历。
+	_post.set_shader_parameter("lens_tile_screen_size", screen_size)

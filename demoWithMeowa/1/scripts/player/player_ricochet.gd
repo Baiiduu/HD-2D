@@ -7,6 +7,7 @@ const PreviewObstacleBatch = preload("res://scripts/combat/preview_obstacle_batc
 signal state_changed(state: State)
 signal launched(direction: Vector3, speed: float, charge: float)
 signal wall_bounced(point: Vector3, normal: Vector3)
+signal impact_recorded(impact: RicochetImpact)
 ## 已完成真实反弹的碰撞信息，供材质声音使用，不额外查询世界。
 signal surface_bounced(collision: KinematicCollision3D)
 signal enemy_pushed(enemy: WaveEnemy, tangent: Vector3)
@@ -22,6 +23,9 @@ var enabled: bool:
 var direction := Vector3.RIGHT
 var flight_speed := 0.0
 var bounce_count := 0
+var last_impact: RicochetImpact
+var impact_serial := 0
+var flight_elapsed := 0.0
 ## 成功发射时递增，反弹与持续环绕不建立新的发射编号。
 var flight_serial := 0
 var crowd_deflection_count := 0
@@ -31,12 +35,16 @@ var flying: bool:
 	get: return state == State.FLYING
 var orbiting: bool:
 	get: return flying and _crowd != null and _crowd.orbiting
+var orbit_presentation_center: Vector3:
+	get: return _crowd.presentation_center if orbiting else _player.global_position
 var charge_fraction: float:
 	get: return clampf(_charge_age / _settings.full_charge_seconds, 0.0, 1.0) if _settings else 0.0
 var _player: Player
 var _session: WavePrototype
 var _settings: PlayerRicochetRules
 var _charge_age := 0.0
+## 仅由本次蓄力场景慢放的时间所有者开启；松手、接管和清理时恢复。
+var charge_time_scale := 1.0
 ## 兼容诊断读数：按当前速度估算的无碰撞余时，不再是独立倒计时。
 var _flight_remaining: float:
 	get: return _settings.coast_seconds(flight_speed) if flying and _settings else 0.0
@@ -151,6 +159,8 @@ func release_charge() -> bool:
 		flight_speed = 0.0
 		return false
 	bounce_count = 0
+	last_impact = null
+	flight_elapsed = 0.0
 	crowd_deflection_count = 0
 	if _settings.crowd_deflection_enabled and is_instance_valid(_session):
 		_push_wave = EnemyPushWave.new(_settings)
@@ -200,7 +210,7 @@ func advance(delta: float, movement: Vector3, input_blocked: bool, movement_keys
 	if charging:
 		if not _player.is_on_floor(): cancel()
 		else:
-			_charge_age += delta
+			_charge_age += delta / maxf(charge_time_scale, 0.001)
 			if _aim_pending: aim(cursor_direction())
 			if _release_pending: release_charge()
 			elif _mouse_charge and not Input.is_action_pressed(&"body_charge"): cancel()
@@ -247,7 +257,7 @@ func cursor_direction() -> Vector3:
 	if not is_instance_valid(camera): return _player.facing_direction()
 	var cursor := _player.get_viewport().get_mouse_position()
 	var plane := Plane(Vector3.UP, _player.global_position.y)
-	var point: Variant = plane.intersects_ray(camera.project_ray_origin(cursor), camera.project_ray_normal(cursor))
+	var point: Variant = camera.project_charge_aim(cursor, _player.global_position.y) if camera is FollowCamera else plane.intersects_ray(camera.project_ray_origin(cursor), camera.project_ray_normal(cursor))
 	if point == null: return _player.facing_direction()
 	var heading: Vector3 = point - _player.global_position
 	heading.y = 0.0
@@ -293,6 +303,7 @@ func _advance_flight(delta: float) -> void:
 		var seconds := minf(step_seconds, _settings.coast_time_for_distance(flight_speed, travelled))
 		var initial_speed := flight_speed
 		flight_speed = _settings.speed_after_coast(flight_speed, seconds)
+		flight_elapsed += seconds
 		if travelled > 0.00001:
 			if _player.sword and _player.sword.enabled:
 				_travel_segments.append({"start":start, "end":end, "heading":direction, "time":elapsed, "seconds":seconds, "speed":initial_speed, "deceleration":_settings.flight_deceleration})
@@ -330,9 +341,13 @@ func _advance_flight(delta: float) -> void:
 		if not _settings.can_rebound(flight_speed, _settings.bounce_speed_retention):
 			_end_flight(&"speed_depleted")
 			break
+		var incoming_velocity := direction * flight_speed
 		direction = direction.bounce(normal).normalized()
 		bounce_count += 1
 		flight_speed = _settings.rebound_speed(flight_speed, _settings.bounce_speed_retention)
+		impact_serial += 1
+		last_impact = RicochetImpact.new(hit.get_position(), normal, incoming_velocity, direction * flight_speed, impact_serial, flight_serial, flight_elapsed)
+		impact_recorded.emit(last_impact)
 		ProjectileCollision.show_reflection(hit.get_collider())
 		wall_bounced.emit(hit.get_position(), normal)
 		surface_bounced.emit(hit)

@@ -161,6 +161,7 @@ func attack_speed_checks() -> void:
 		check(strikes.size() == 9 and damage_events.size() == 9 and is_equal_approx(mob.health, 9910.0), "粗步长与高帧率均为九次独立完整挥剑，不重复伤害也不丢刀")
 		check(sword._settings.duration() <= stats.interval and is_equal_approx(sword._settings.windup_seconds / sword._settings.sweep_seconds, 0.5), "加速仍保留起手、扫刃、收尾的时长比例")
 		check(is_equal_approx(sword.rules.duration(), 0.25), "攻速不累计改写基础动作资源")
+		check(is_equal_approx(player.action_animator._attack_duration, sword._settings.duration()), "攻速成长后的真实动作时长同步人物显示，不受素材原始帧率限制")
 	await reset()
 	var mob := enemy(Vector3(1, 0, 0))
 	sword.request_manual(Vector3.RIGHT)

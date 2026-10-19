@@ -44,6 +44,13 @@ var _grass_cell_size := 0.0
 var _connected_stamps: Array[TerrainSurfaceStamp] = []
 var _stamp_rects: Dictionary[TerrainSurfaceStamp, Rect2] = {}
 
+## 笔刷继续直接编辑同一份数据；原生二进制资源保存时保留无损压缩与 UID。
+func save_to_file(path: String) -> Error:
+	var uid := ResourceLoader.get_resource_uid(path) if FileAccess.file_exists(path) else ResourceUID.INVALID_ID
+	var error := ResourceSaver.save(self, path, ResourceSaver.FLAG_COMPRESS)
+	if error == OK and uid != ResourceUID.INVALID_ID: error = ResourceSaver.set_uid(path, uid)
+	return error
+
 func chunk_meters() -> float:
 	return float(CHUNK_PIXELS) / PIXELS_PER_METER
 

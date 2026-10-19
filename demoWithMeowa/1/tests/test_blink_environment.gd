@@ -94,6 +94,7 @@ func verify_scene(scene_path: String, weather_path: String, dressing_path: Strin
 	check(anchored, "Vegetation provides its actual root height to the shader")
 	world.queue_free()
 	await frames(2)
+	await create_timer(0.15).timeout
 
 func _run() -> void:
 	await verify_scene("res://scenes/world/world.tscn", "MapEffects/Weather", "GroundDressing")

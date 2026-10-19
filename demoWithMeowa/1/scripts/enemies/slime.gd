@@ -4,6 +4,7 @@ extends WaveEnemy
 enum State { IDLE, PATROL, CHASE, RETURN }
 const DIRECTIONS := ["front","front_right","right","back_right","back","back_left","left","front_left"]
 const MIRRORED_FACINGS := [0, 1, 2, 3, 4, 3, 2, 1]
+const HIT_REACTION := preload("res://scripts/enemies/enemy_hit_reaction.gd")
 # Only value data is shared: no cameras, SpriteFrames or textures are retained.
 static var _projection_valid := false
 static var _projection_basis := Basis.IDENTITY
@@ -82,6 +83,7 @@ var separation_strength := 1.5
 var pursuit_lookahead := 4.0
 var pursuit_flank_strength := 0.35
 var _yield_side := 0.0
+var _yield_targets := PackedVector3Array()
 var knockback_multiplier := 1.0
 var _push_direction := Vector3.ZERO
 var _push_speed := 0.0
@@ -90,9 +92,12 @@ var _push_total := 0.0
 var _push_collision: ProjectileCollision
 var _orbit: EnemyOrbitPath
 var _stun_effect: EnemyStunEffect
+var _feedback: EnemyFeedbackPool
+var _hit_reaction: HIT_REACTION
 var _ground_moved := false
 var _ground_real_velocity := Vector3.ZERO
 var _flat_motion: FlatGroundMotion
+var _sight_ray: PhysicsRayQueryParameters3D
 @onready var sprite: Sprite3D = $Sprite
 
 func supports_central_update() -> bool:
@@ -243,6 +248,14 @@ func _pursuit_crowd_direction(desired: Vector3, origin := Vector3.INF, target_di
 	if _yield_side == 0.0:
 		var lateral := direction.dot(side)
 		_yield_side = signf(lateral) if absf(lateral) > 0.08 else (1.0 if hash(get_instance_id()) % 2 == 0 else -1.0)
+	if navigation.data and navigation.chase_batch_enabled:
+		_yield_targets.resize(2)
+		_yield_targets[0] = origin + (direction + side * _yield_side * amount).limit_length(1.0) * maxf(0.35, body_radius)
+		_yield_targets[1] = origin + (direction - side * _yield_side * amount).limit_length(1.0) * maxf(0.35, body_radius)
+		var selected := navigation.first_walkable_ground(origin, _yield_targets)
+		if selected < 0: return direction
+		if selected == 1: _yield_side = -_yield_side
+		return (direction + side * _yield_side * amount).limit_length(1.0)
 	for choice in [_yield_side, -_yield_side]:
 		var candidate: Vector3 = (direction + side * choice * amount).limit_length(1.0)
 		var next := origin + candidate * maxf(0.35, body_radius)
@@ -257,6 +270,12 @@ func get_damage_feedback_position() -> Vector3:
 		var pixel := sprite.pixel_size * sprite.global_basis.y.length()
 		return sprite.global_position + Vector3.UP * (sprite.texture.get_height() * pixel * 0.5 + pixel * 3.0)
 	return global_position + Vector3.UP * body_height
+
+func get_contact_feedback_position(origin: Vector3) -> Vector3:
+	var point := sprite.global_position if is_instance_valid(sprite) and sprite.texture else global_position + Vector3.UP * body_height * 0.5
+	var toward := origin - point
+	toward.y = 0.0
+	return point + toward.normalized() * minf(0.18, get_crowd_body_radius() * 0.5)
 
 func _enter_tree() -> void:
 	if wave_mode: $Sprite.set("shared_materials", true)
@@ -287,6 +306,7 @@ func configure_wave(context: Dictionary, definition: WaveEnemyDefinition, warnin
 func _ready() -> void:
 	super._ready()
 	add_to_group(&"enemies")
+	damaged.connect(_react_to_hit)
 	_random.seed = random_seed
 	var shape := $Collision.shape.duplicate() as CapsuleShape3D
 	$Collision.shape = shape
@@ -351,10 +371,15 @@ func _set_state(value: State) -> void:
 func _can_see_target() -> bool:
 	if not is_instance_valid(target): return false
 	if absf(target.global_position.y-global_position.y) > 1.6: return false
+	if not _sight_ray: _sight_ray = PhysicsRayQueryParameters3D.new()
 	var exclude: Array[RID] = [get_rid()]
 	if target is CollisionObject3D: exclude.append(target.get_rid())
-	var query := PhysicsRayQueryParameters3D.create(global_position+Vector3.UP*0.5,target.global_position+Vector3.UP*0.7,1,exclude)
-	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
+	# 每只怪物只复用参数对象；目标、排除 RID 和真实遮挡每次重新读取。
+	_sight_ray.from = global_position+Vector3.UP*0.5
+	_sight_ray.to = target.global_position+Vector3.UP*0.7
+	_sight_ray.collision_mask = 1
+	_sight_ray.exclude = exclude
+	return get_world_3d().direct_space_state.intersect_ray(_sight_ray).is_empty()
 
 func _pick_patrol() -> void:
 	for attempt in 12:
@@ -527,6 +552,67 @@ func _move_combat_body(delta: float) -> void:
 func _damage_feedback() -> void:
 	_hit_flash = hit_flash_seconds
 
+func _hit_reaction_settings() -> PlayerActionVisuals:
+	return wave_target.action_visuals if is_instance_valid(wave_target) else null
+
+func _react_to_hit(event: CombatDamageEvent) -> void:
+	if event.lethal:
+		_clear_hit_reaction()
+		return
+	var settings := _hit_reaction_settings()
+	if settings and sprite.has_method("show_hit_silhouette"): sprite.show_hit_silhouette(settings, event.source)
+	if not settings or not settings.enemy_hit_reaction_enabled or not sprite.has_method("set_motion_pose"): return
+	var heading := event.direction
+	heading.y = 0.0
+	if heading.is_zero_approx(): heading = global_position - wave_target.global_position
+	if not _hit_reaction: _hit_reaction = HIT_REACTION.new()
+	_hit_reaction.strike(heading, settings.enemy_hit_lean_degrees, settings.enemy_hit_recovery_seconds)
+
+func _advance_hit_reaction(delta: float) -> void:
+	if not _hit_reaction or not _hit_reaction.active or not can_process(): return
+	var settings := _hit_reaction_settings()
+	if dead or not settings or not settings.enemy_hit_reaction_enabled:
+		_clear_hit_reaction()
+		return
+	_hit_reaction.advance(delta)
+	var pivot := get_global_transform_interpolated().origin + Vector3.UP * 0.015
+	sprite.set_motion_pose(_hit_reaction.lean, pivot)
+
+func _clear_hit_reaction() -> void:
+	if not _hit_reaction: return
+	_hit_reaction.clear()
+	if is_instance_valid(sprite): sprite.set_motion_pose(Vector3.ZERO, Vector3.ZERO)
+
+func cancel() -> void:
+	if is_instance_valid(sprite) and sprite.has_method("clear_hit_silhouette"): sprite.clear_hit_silhouette()
+	_clear_hit_reaction()
+	super.cancel()
+
+func _feedback_pool() -> EnemyFeedbackPool:
+	if not is_instance_valid(_feedback) and is_instance_valid(attack_root):
+		_feedback = attack_root.get_node_or_null("EnemyFeedbackPool") as EnemyFeedbackPool
+		if not _feedback:
+			_feedback = EnemyFeedbackPool.new()
+			_feedback.name = "EnemyFeedbackPool"
+			attack_root.add_child(_feedback)
+	return _feedback
+
+func _on_defeated() -> void:
+	_melee_death_feedback()
+
+func _melee_death_feedback() -> bool:
+	if not is_instance_valid(wave_target) or not wave_target.action_visuals or not wave_target.action_visuals.melee_death_enabled: return false
+	if fatal_hit_context.get("source", &"") not in [&"basic_sword", &"flight_sword", &"ricochet_storm"]: return false
+	if fatal_hit_context.get("source", &"") != &"ricochet_storm":
+		var distance := float(fatal_hit_context.get("contact_distance", TerrainPath.horizontal_distance(wave_target.global_position, global_position)))
+		if not is_finite(distance) or distance > wave_target.action_visuals.melee_death_near_distance: return false
+	if not sprite.texture or not _feedback_pool(): return false
+	var hit := fatal_hit_context.duplicate()
+	hit.visual_excluded = [wave_target.get_rid()]
+	if not hit.has("motion_velocity"): hit.motion_velocity = wave_target.velocity
+	_feedback.death(sprite, false, wave_target.action_visuals, hit)
+	return true
+
 func apply_push_impulse(heading: Vector3, initial_speed: float, seconds: float) -> bool:
 	if not wave_mode or dead or spawn_delay > 0.0 or not navigation or not heading.is_finite() or not is_finite(initial_speed) or not is_finite(seconds) or initial_speed <= 0.0 or seconds <= 0.0 or knockback_multiplier <= 0.0: return false
 	if combat_active.is_valid() and not combat_active.call(): return false
@@ -620,6 +706,7 @@ func apply_knockback(push: Vector3, distance: float) -> void:
 	_route_clock = 0.0
 
 func _process(delta: float) -> void:
+	_advance_hit_reaction(delta)
 	if wave_mode:
 		_hit_flash = maxf(_hit_flash - delta, 0.0)
 		var target_scale := _sprite_scale

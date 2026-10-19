@@ -720,9 +720,7 @@ func _save_external_data() -> void:
 
 func _save_free_surface(data: TerrainSurfaceData) -> bool:
 	if data.resource_path.is_empty() or "::" in data.resource_path: return true
-	var uid := ResourceLoader.get_resource_uid(data.resource_path)
-	var error := ResourceSaver.save(data, data.resource_path)
-	if error == OK and uid != ResourceUID.INVALID_ID: error = ResourceSaver.set_uid(data.resource_path, uid)
+	var error := data.save_to_file(data.resource_path)
 	if error != OK:
 		_status.text = "自由地表保存失败：" + error_string(error)
 		return false

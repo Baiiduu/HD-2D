@@ -15,6 +15,10 @@ extends Resource
 @export_range(0.0, 1.0, 0.01) var flight_trail_opacity := 0.16
 ## 不产生额外光源，默认不额外发光。
 @export_range(0.0, 1.0, 0.01) var flight_trail_energy := 0.0
+@export_group("反弹残影节奏")
+@export var bounce_rhythm_enabled := false
+@export_range(0.06, 0.3, 0.01, "suffix:s") var bounce_echo_rebuild_seconds := 0.12
+@export_range(0.03, 0.2, 0.01, "suffix:s") var bounce_echo_fade_seconds := 0.09
 
 func validation_error() -> String:
 	if flight_echo_count < 1 or flight_echo_count > 8: return "人物残影数量须为 1～8"

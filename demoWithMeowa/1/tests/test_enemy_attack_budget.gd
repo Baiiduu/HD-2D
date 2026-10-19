@@ -15,6 +15,8 @@ func check(condition: bool, message: String) -> void:
 
 func run() -> void:
 	var scene: Node3D = load("res://scenes/world/world.tscn").instantiate()
+	# 接触逻辑夹具不继承编辑器当前开启的人工入场预览。
+	scene.get_node("WorldEntry").preview_on_direct_run = false
 	scene.get_node("LoadoutUI").save_enabled = false
 	scene.get_node("WavePrototype/RunGrowth").enabled = false
 	scene.get_node("WavePrototype/FanAutoAttack").enabled = false

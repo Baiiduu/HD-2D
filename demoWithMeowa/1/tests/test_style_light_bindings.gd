@@ -21,6 +21,9 @@ func run() -> void:
 	AudioServer.set_bus_mute(0, true)
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
 	world.get_node("LoadoutUI").save_enabled = false
+	world.get_node("WorldEntry").preview_on_direct_run = false
+	world.get_node("WorldMainMenu").show_on_world_start = false
+	world.get_node("GameSettingsUI").save_graphics_settings = false
 	world.get_node("VisualSample").follow_weather = false
 	world.get_node("VisualSample").original_light_refinement_enabled = false
 	root.add_child(world)

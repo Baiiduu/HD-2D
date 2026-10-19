@@ -38,7 +38,9 @@ extends Resource
 @export_group("偏心回旋（试玩）")
 ## 接群一次后自动沿外围持续绕行，自动朝沿途怪物出剑；右键主动脱离。
 @export var eccentric_enabled := false
-## 仅可形成持续环绕的怪群提前捕获；单怪与普通短弧仍使用原接群距离。
+## 首次接入所需的相连成员数；设为 1 时单怪也可形成持续绕行。
+@export_range(1, 3, 1) var eccentric_minimum_members := 3
+## 仅可形成持续环绕的目标提前捕获；回退普通短弧仍使用原接群距离。
 @export_range(0.0, 0.6, 0.01, "suffix:m") var eccentric_capture_margin := 0.0
 ## 路径走完这段距离后重读存活怪群轮廓，不是绕行长度或次数上限。
 @export_range(0.6, 3.0, 0.05, "suffix:m") var eccentric_step_distance := 1.8
@@ -139,6 +141,7 @@ func validation_error() -> String:
 		if not is_finite(crowd_speed_retention) or crowd_speed_retention <= 0.0 or crowd_speed_retention > 1.0: return "接群保速须在 0～1 之间"
 	if eccentric_enabled:
 		if not crowd_deflection_enabled: return "偏心回旋需要开启人物接群偏转"
+		if eccentric_minimum_members < 1 or eccentric_minimum_members > 3: return "首次环绕所需成员数须在 1～3 之间"
 		if not is_finite(eccentric_capture_margin) or eccentric_capture_margin < 0.0: return "环绕提前捕获余量须为有限非负数"
 		for value in [eccentric_step_distance, eccentric_edge_clearance, eccentric_search_radius]:
 			if not is_finite(value) or value <= 0.0: return "环绕轮廓更新路程、外沿间隔和搜索距离须为有限正数"

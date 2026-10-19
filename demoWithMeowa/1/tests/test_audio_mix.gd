@@ -22,14 +22,18 @@ func run() -> void:
 	AudioServer.set_bus_mute(0, true)
 	var bank := load("res://data/audio/core_sound_bank.tres") as CoreSoundBank
 	var entries := bank.audition_entries()
-	check(entries.size() == 41, "完整索引四十一条实际运行音源")
+	check(entries.size() == 54, "完整索引五十三条实战音源与一条停用候选")
 	var paths := {}
 	for entry in entries:
 		check(entry.clip is AudioStream and not entry.clip.resource_path.is_empty(), "试听音源具有稳定的资源路径：" + entry.id)
 		paths[entry.clip.resource_path] = true
-	check(paths.size() == 41, "每个变体独立调节")
+	check(paths.size() == 54, "每个变体独立调节")
 	check(entries[37].cue == &"storm_strike" and entries[39].cue == &"storm_chain", "试听编号与原网页一致")
 	check(entries[40].cue == &"flight_loop" and entries[40].id == "S41", "新增动能气流追加在末尾，旧试听编号保持")
+	check(entries[41].cue == &"kill_slime_retired" and entries[42].cue == &"kill_slime" and entries[45].cue == &"kill_land", "停用候选保留 S42，原击杀反馈编号不变")
+	check(entries[46].id == "S47" and entries[48].cue == &"enemy_hit_common", "三条通用命中追加 S47–S49")
+	check(entries[49].id == "S50" and entries[49].cue == &"leaf_windup" and entries[52].cue == &"pot_shatter", "怪物原有招式音源追加 S50–S53，不改变原编号")
+	check(entries[53].id == "S54" and entries[53].cue == &"charge_wind", "聚力风追加 S54，原试听编号保持")
 	var settings := AudioMixSettings.new()
 	var first := entries[0].clip as AudioStream
 	var path := first.resource_path
@@ -80,6 +84,16 @@ func run() -> void:
 	world.add_child(panel)
 	await process_frame
 	near(panel._event_volume(&"flight_loop"), feedback.action_volume_db + feedback.flight_gain_db, "气流试听与实际参考速度共用基础音量")
+	near(panel._event_volume(&"enemy_hit_common"), feedback.enemy_volume_db, "通用命中试听与实战共用音量基准")
+	feedback.charge_progress_audio_enabled = true
+	feedback.charge_full_gain_db = -4.0
+	near(panel._event_volume(&"charge_loop"), feedback._charge_volume(1.0), "渐强蓄力试听与实际满蓄音量一致")
+	near(panel._event_volume(&"charge_wind"), feedback._charge_wind_volume(1.0), "聚力风试听使用实际满蓄音量")
+	near(panel._event_volume(&"charge_ready"), feedback.action_volume_db + feedback.charge_ready_gain_db, "满蓄提示试听与真实提示增益一致")
+	feedback.launch_release_audio_enabled = true
+	near(panel._event_volume(&"launch"), feedback.action_volume_db + feedback.launch_full_gain_db, "发射试听沿用满蓄发射增益与本机混音入口")
+	feedback.launch_release_audio_enabled = false
+	near(panel._event_volume(&"launch"), feedback.action_volume_db, "关闭释放编排保留原发射试听音量")
 	var event := {"source": listener, "cue": &"mix_test", "kind": GameAudio.Kind.HURT,
 		"clips": [first], "position": Vector3.ZERO, "volume_db": -11.0}
 	audio.mix.set_clip_gain(path, -6.0)
@@ -162,5 +176,7 @@ func run() -> void:
 	check(get_first_node_in_group(&"gameplay_input_blockers") == null, "界面卸载不残留输入占用")
 	world.queue_free()
 	await process_frame
+	# 等音频线程完成最后一块混音及停止请求，避免在播放资源仍被持有时退出。
+	await create_timer(0.15).timeout
 	print("Audio mix: %d checks, %d failures" % [checks, failures])
 	quit(1 if failures else 0)

@@ -1,57 +1,55 @@
-[gd_resource type="Resource" script_class="SceneCombatConfiguration" format=3]
+[gd_resource type="Resource" script_class="SceneCombatConfiguration" format=3 uid="uid://ds6biif7vb0p3"]
 
 [ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/wave_slime.tres" id="1_f4f21"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/enemy_catalog.tres" id="2_t1aap"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/growth/experience_rules.tres" id="3_0s6kd"]
-[ext_resource type="Script" path="res://scripts/growth/growth_buff_definition.gd" id="4_g1065"]
+[ext_resource type="Script" uid="uid://6cmgrb0pgn4m" path="res://scripts/growth/growth_buff_definition.gd" id="4_g1065"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/growth/damage.tres" id="5_60sod"]
-[ext_resource type="Resource" path="res://data/combat/scenes/world/growth/cooldown.tres" id="6_7je1c"]
+[ext_resource type="Resource" uid="uid://cps0blcw3e3lt" path="res://data/combat/scenes/world/growth/cooldown.tres" id="6_7je1c"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/growth/range.tres" id="7_dh7xf"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/growth/ricochet/launch_speed.tres" id="8_xdffn"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/growth/ricochet/flight_duration.tres" id="9_sl6nf"]
-[ext_resource type="Resource" path="res://data/combat/scenes/world/growth/ricochet/charge_efficiency.tres" id="10_dbngj"]
+[ext_resource type="Resource" uid="uid://d21vu77chknp5" path="res://data/combat/scenes/world/growth/ricochet/charge_efficiency.tres" id="10_dbngj"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/waves/endless_health_growth.tres" id="11_tuslj"]
-[ext_resource type="Script" path="res://scripts/combat/damage_number_style.gd" id="12_y75ug"]
+[ext_resource type="Script" uid="uid://bfqun1m8bf8a6" path="res://scripts/combat/damage_number_style.gd" id="12_y75ug"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/combat/damage_numbers/normal.tres" id="13_ysycs"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/combat/damage_numbers/heavy.tres" id="14_qevsi"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/combat/damage_numbers/critical.tres" id="15_6mle7"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/combat/damage_numbers/lightning.tres" id="16_ltva0"]
-[ext_resource type="Resource" path="res://data/combat/scenes/world/waves/population/horde_128.tres" id="17_vryv6"]
-[ext_resource type="Resource" path="res://data/combat/scenes/world/player/body_ricochet.tres" id="18_2ssx0"]
-[ext_resource type="Script" path="res://scripts/combat/scene_combat_configuration.gd" id="19_ow8ov"]
-[ext_resource type="Script" path="res://scripts/combat/combat_skill_definition.gd" id="20_i3d7y"]
-[ext_resource type="Resource" path="res://data/combat/scenes/world/skills/fan_slash.tres" id="21_t2ujw"]
-[ext_resource type="Resource" path="res://data/combat/scenes/world/skills/light_pierce.tres" id="22_788ih"]
-[ext_resource type="Resource" path="res://data/combat/scenes/world/skills/prism_ricochet.tres" id="23_5megx"]
-[ext_resource type="Resource" path="res://data/combat/scenes/world/skills/mirror_mark.tres" id="24_2rwn7"]
-[ext_resource type="Resource" path="res://data/combat/scenes/world/skills/ricochet_storm.tres" id="25_ieqm8"]
-[ext_resource type="Resource" path="res://data/combat/scenes/world/player/basic_sword.tres" id="26_mqf1j"]
-[ext_resource type="Script" path="res://scripts/combat/wave_definition.gd" id="27_yidwm"]
-[ext_resource type="Resource" path="res://data/combat/scenes/world/waves/wave_01.tres" id="28_gfhx2"]
-[ext_resource type="Resource" path="res://data/combat/scenes/world/waves/wave_02.tres" id="29_s6xoj"]
-[ext_resource type="Resource" path="res://data/combat/scenes/world/waves/wave_03.tres" id="30_au3ot"]
-
-[ext_resource type="Resource" path="res://data/combat/scenes/world/player/action_visuals.tres" id="scene_action_visuals"]
-[ext_resource type="Resource" path="res://data/combat/scenes/world/player/flight_trail.tres" id="scene_flight_trail_settings"]
-[ext_resource type="Resource" path="res://data/combat/scenes/world/player/ricochet_camera.tres" id="scene_ricochet_camera_settings"]
+[ext_resource type="Resource" uid="uid://5mfq1idr18w2" path="res://data/combat/scenes/world/waves/population/horde_128.tres" id="17_vryv6"]
+[ext_resource type="Resource" uid="uid://c3rwpsl2c4b4s" path="res://data/combat/scenes/world/player/body_ricochet.tres" id="18_2ssx0"]
+[ext_resource type="Script" uid="uid://d1ft0cxqvqfsv" path="res://scripts/combat/scene_combat_configuration.gd" id="19_ow8ov"]
+[ext_resource type="Script" uid="uid://bys5inomsbf0o" path="res://scripts/combat/combat_skill_definition.gd" id="20_i3d7y"]
+[ext_resource type="Resource" uid="uid://cqt144cx74o3y" path="res://data/combat/scenes/world/skills/fan_slash.tres" id="21_t2ujw"]
+[ext_resource type="Resource" uid="uid://di2g07fdmnx0n" path="res://data/combat/scenes/world/skills/light_pierce.tres" id="22_788ih"]
+[ext_resource type="Resource" uid="uid://tg8cvgfls63r" path="res://data/combat/scenes/world/skills/prism_ricochet.tres" id="23_5megx"]
+[ext_resource type="Resource" uid="uid://b1hb4oymdx5ov" path="res://data/combat/scenes/world/skills/mirror_mark.tres" id="24_2rwn7"]
+[ext_resource type="Resource" uid="uid://d1dfnlhxpeurk" path="res://data/combat/scenes/world/skills/ricochet_storm.tres" id="25_ieqm8"]
+[ext_resource type="Resource" uid="uid://cl5ltfw0q27th" path="res://data/combat/scenes/world/player/basic_sword.tres" id="26_mqf1j"]
+[ext_resource type="Script" uid="uid://caklrlj8ospwr" path="res://scripts/combat/wave_definition.gd" id="27_yidwm"]
+[ext_resource type="Resource" uid="uid://boi8ap1ij4nki" path="res://data/combat/scenes/world/waves/wave_01.tres" id="28_gfhx2"]
+[ext_resource type="Resource" uid="uid://b28j0idc3ekxs" path="res://data/combat/scenes/world/waves/wave_02.tres" id="29_s6xoj"]
+[ext_resource type="Resource" uid="uid://c3x7wqqdg3n6h" path="res://data/combat/scenes/world/waves/wave_03.tres" id="30_au3ot"]
+[ext_resource type="Resource" uid="uid://bd8sa76co577a" path="res://data/combat/scenes/world/player/action_visuals.tres" id="scene_action_visuals"]
+[ext_resource type="Resource" uid="uid://cp56vpgfvqd8h" path="res://data/combat/scenes/world/player/flight_trail.tres" id="scene_flight_trail_settings"]
+[ext_resource type="Resource" uid="uid://b05nj64putm5m" path="res://data/combat/scenes/world/player/ricochet_camera.tres" id="scene_ricochet_camera_settings"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/waves/spawn_shadows.tres" id="spawn_shadows"]
 
 [resource]
 resource_name = "正式战斗配置"
 script = ExtResource("19_ow8ov")
 ricochet_rules = ExtResource("18_2ssx0")
 sword_rules = ExtResource("26_mqf1j")
+action_visuals = ExtResource("scene_action_visuals")
+flight_trail_settings = ExtResource("scene_flight_trail_settings")
+ricochet_camera_settings = ExtResource("scene_ricochet_camera_settings")
 enemy_catalog = ExtResource("2_t1aap")
 default_enemy = ExtResource("1_f4f21")
 population_rules = ExtResource("17_vryv6")
+spawn_shadow_settings = ExtResource("spawn_shadows")
 health_growth_rules = ExtResource("11_tuslj")
 waves = Array[ExtResource("27_yidwm")]([ExtResource("28_gfhx2"), ExtResource("29_s6xoj"), ExtResource("30_au3ot")])
 experience_rules = ExtResource("3_0s6kd")
 growth_definitions = Array[ExtResource("4_g1065")]([ExtResource("5_60sod"), ExtResource("6_7je1c"), ExtResource("7_dh7xf"), ExtResource("8_xdffn"), ExtResource("9_sl6nf"), ExtResource("10_dbngj")])
 skill_definitions = Array[ExtResource("20_i3d7y")]([ExtResource("21_t2ujw"), ExtResource("22_788ih"), ExtResource("23_5megx"), ExtResource("24_2rwn7"), ExtResource("25_ieqm8")])
 number_styles = Array[ExtResource("12_y75ug")]([ExtResource("13_ysycs"), ExtResource("14_qevsi"), ExtResource("15_6mle7"), ExtResource("16_ltva0")])
-
-action_visuals = ExtResource("scene_action_visuals")
-
-flight_trail_settings = ExtResource("scene_flight_trail_settings")
-
-ricochet_camera_settings = ExtResource("scene_ricochet_camera_settings")

@@ -12,6 +12,7 @@ func _ready() -> void:
 	set_process(false)
 	session.run_started.connect(_begin)
 	session.run_ended.connect(_finish)
+	session.phase_changed.connect(_phase_changed)
 	session.wave_cleared.connect(state.record_wave)
 	session.enemy_spawned.connect(_watch)
 	_bind_body.call_deferred()
@@ -24,6 +25,11 @@ func _bind_body() -> void:
 func _begin() -> void:
 	_lethal.clear()
 	state.begin(int(session.get_run_state().run_id), rules, session.is_horde_simulation())
+
+func _phase_changed(phase: WavePrototype.Phase) -> void:
+	if phase != WavePrototype.Phase.READY: return
+	_lethal.clear()
+	state.reset()
 
 func _launched(_direction: Vector3, _speed: float, _charge: float) -> void:
 	state.begin_flight(_body.flight_serial)

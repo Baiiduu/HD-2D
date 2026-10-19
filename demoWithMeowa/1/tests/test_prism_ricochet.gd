@@ -117,7 +117,9 @@ func run() -> void:
 
 func integration() -> void:
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
+	world.get_node("WorldEntry").preview_on_direct_run = false
 	world.get_node("LoadoutUI").save_enabled = false
+	world.get_node("GameSettingsUI").save_graphics_settings = false
 	world.get_node("MapEffects/BGM").music_enabled = false
 	world.get_node("MapEffects/Weather").rain_audio_enabled = false
 	world.get_node("MapEffects/Weather").wind_audio_enabled = false
@@ -127,6 +129,7 @@ func integration() -> void:
 	var fixture := preload("res://tests/fixtures/combat_scene_fixture.gd")
 	fixture.clear_placed_obstacles(world)
 	fixture.enable_legacy_skills(world)
+	fixture.isolate_profile(world).spawn_shadow_settings = null
 	root.add_child(world)
 	current_scene = world
 	await settle(12)
@@ -176,12 +179,15 @@ func integration() -> void:
 	attack.launch(origin, Vector3.RIGHT, stats)
 	var shot: Dictionary = attack._shots[0]
 	attack._advance_shot(shot, 0.15)
-	check(is_equal_approx(mob.health, 10000 - stats.damage), "穿过敌人后继续飞行")
+	check(is_equal_approx(mob.health, 10000 - stats.damage), "首次接触怪物结算一次伤害")
+	check(shot.bounces == 1 and shot.direction.x < -0.99, "命中怪物实体后立即反射并消耗一次预算")
 	attack._advance_shot(shot, 0.01)
 	check(is_equal_approx(mob.health, 10000 - stats.damage), "同一弹道段不会逐帧重复扣血")
 	attack._advance_shot(shot, 0.25)
-	check(shot.bounces == 1 and shot.direction.x < -0.99 and is_equal_approx(mob.health, 10000 - stats.damage * 2), "同一帧使用反射后的剩余路程，并允许回程命中")
+	check(shot.bounces == 1 and shot.direction.x < -0.99 and is_equal_approx(mob.health, 10000 - stats.damage), "反射后的剩余行程向外推进，不穿怪或重复扣血")
 	attack.cancel_current()
+	mob.dead = true
+	mob.collision_layer = 0
 	var behind := enemy(origin + Vector3(3.8, 0, 0), world)
 	wave.enemies.append(behind)
 	attack.launch(origin, Vector3.RIGHT, stats)
@@ -232,7 +238,11 @@ func integration() -> void:
 	# 用正式怪物注册与死亡回调验证清波，不能只验证不死靶的扣血。
 	for mob_to_remove in wave.enemies.duplicate(): mob_to_remove.free()
 	wave.enemies.clear()
-	check(wave._spawn_enemy(), "弹射技能可以命中正式波次注册的怪物")
+	check(wave._spawn_enemy(null, player.global_position + Vector3.RIGHT * 2.5), "弹射技能可以命中正式波次注册的怪物")
+	if wave.enemies.is_empty():
+		world.free()
+		await settle()
+		return
 	var real_enemy := wave.enemies[-1]
 	real_enemy.set_physics_process(false)
 	real_enemy.spawn_delay = 0.0
@@ -248,7 +258,9 @@ func integration() -> void:
 	check(attack.fire(), "自动寻敌按正式碰撞发射")
 	attack._advance_shot(attack._shots[0], 0.12)
 	check(wave.kills == kills_before + 1 and wave.enemies.is_empty(), "实际死亡只记录一次击杀，并移除场上引用")
-	wave._pending = 0
+	var finish_deadline := Time.get_ticks_msec() + 3000
+	while wave.is_wave_finish_pending() and Time.get_ticks_msec() < finish_deadline:
+		await create_timer(0.01).timeout
 	wave._clear_wave()
 	check(wave.phase == WavePrototype.Phase.REST and attack._shots.is_empty(), "最后敌人死亡后进入休整，弹丸与特效清理")
 	world.free()

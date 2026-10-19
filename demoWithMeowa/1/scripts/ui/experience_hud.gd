@@ -100,6 +100,7 @@ func clear_feedback() -> void:
 	_flow_elapsed = 0.0
 
 func _process(delta: float) -> void:
+	delta /= maxf(Engine.time_scale, 0.001)
 	_feedback_left = maxf(0.0, _feedback_left - delta)
 	_root.visible = (Engine.is_editor_hint() or state != null) and (not is_instance_valid(attribute_hud) or attribute_hud.is_visible_in_tree()) and (not is_instance_valid(hud_host) or hud_host.visible)
 	if visible and _root.visible and progress_ratio > 0.0: _flow_elapsed += delta

@@ -18,19 +18,31 @@ $groups = @{
     native = @('test_native_swarm_kernel', 'test_native_swarm_movement', 'test_native_low_obstacles')
     core = @('test_run_skill_manager_standalone', 'test_run_skill_manager_contract', 'test_character_skill_ownership', 'test_game_system_switches', 'test_projectile_geometry', 'test_wave_schedule', 'test_spawn_queue_contract', 'test_enemy_roster_contract')
     regression = @(
+        'test_control_bindings',
+        'test_controls_settings',
+        'test_rain_toggle',
+        'test_player_scene_lighting',
+        'test_lens_drop_tiles', 'test_lens_drop_tiles_weather', 'test_hit_debris_lifecycle',
+        'test_wave_clear_presentation',
+        'test_charge_camera_tremor', 'test_camera_edge_pan', 'test_camera_follow_limit',
+        'test_charge_wind',
+        'test_hit_silhouette', 'test_hit_impact', 'test_kill_camera_balance', 'test_sword_hit_impact', 'test_hitstop_continuity', 'test_walking_sword_hitstop', 'test_damage_numbers_hitstop',
+        'test_orbit_geometry_reuse', 'test_enemy_sight_reuse',
+        'test_combat_audio_balance',
+        'test_kill_feedback_world', 'test_wave_presentation', 'test_wave_finish_shot',
         'test_run_skill_manager_standalone', 'test_run_skill_manager_contract', 'test_character_skill_ownership', 'test_game_system_switches', 'test_game_system_scene', 'test_scene_configuration_contract', 'test_world_startup',
         'test_run_skills', 'test_growth_draw', 'test_combat_buffs',
-        'test_battle_only_world', 'test_ricochet_growth',
+        'test_battle_only_world', 'test_world_visual_resources', 'test_battle_corner_water', 'test_ricochet_growth',
         'test_ricochet_storm', 'test_horde_simulation',
-        'test_parameter_catalog', 'test_graphics_settings', 'test_ui_live_world', 'test_projectile_geometry',
-        'test_core_feedback_audio', 'test_enemy_quartet', 'test_enemy_stun',
-        'test_light_pierce_attack', 'test_mirror_mark', 'test_prism_ricochet',
+        'test_parameter_catalog', 'test_graphics_settings', 'test_ui_live_world', 'test_main_menu', 'test_main_menu_fire', 'test_world_main_menu', 'test_return_to_menu', 'test_world_entry', 'test_building_occlusion', 'test_surface_storage', 'test_projectile_geometry',
+        'test_core_feedback_audio', 'test_common_hit_audio', 'test_kill_feedback_audio', 'test_death_audio_stages', 'test_charge_feedback_layers', 'test_charge_drama', 'test_charge_staging', 'test_ricochet_impact_feedback', 'test_player_surface_feedback', 'test_ricochet_impact_curve', 'test_charge_release', 'test_ricochet_speed_camera', 'test_enemy_quartet', 'test_enemy_stun', 'test_melee_death_feedback', 'test_enemy_feedback_pool', 'test_enemy_hit_reaction', 'test_orbit_presentation', 'test_orbit_slow', 'test_live_orbit_queries',
+        'test_light_pierce_attack', 'test_mirror_mark', 'test_prism_ricochet', 'test_prism_enemy_bounce',
         'test_rooftop_pursuit', 'test_wave_health_growth', 'test_wave_hordes', 'test_wave_schedule',
-        'test_spawn_queue_contract', 'test_enemy_roster_contract', 'test_combat_configuration_validation',
+        'test_spawn_queue_contract', 'test_spawn_shadow_queue', 'test_spawn_shadows', 'test_enemy_roster_contract', 'test_combat_configuration_validation',
         'test_wave_core', 'test_wave_spawning', 'test_crowd_batch_lifecycle'
         'test_spawn_sync_gate', 'test_surround_spawning', 'test_local_spawn_safety',
         'test_run_score', 'test_score_settings', 'test_combat_extension_framework',
-        'test_player_sword', 'test_crowd_deflection', 'test_native_query_policy',
+        'test_world_character_animations', 'test_player_sword', 'test_sword_query_reuse', 'test_sword_stretch', 'test_sword_ribbon', 'test_sword_flow', 'test_crowd_deflection', 'test_sparse_orbit_capture', 'test_native_query_policy',
         'test_enemy_update_batch', 'test_preview_query_deduplication', 'test_ground_low_obstacles'
     )
     render = @(
@@ -100,7 +112,7 @@ func _initialize() -> void:
     $start.RedirectStandardOutput = $true
     $start.RedirectStandardError = $true
     $start.ArgumentList.Add('--headless')
-    foreach ($arg in @('--path', $projectDirectory, '--audio-driver', 'Dummy', '--script', $testScript)) {
+    foreach ($arg in @('--path', $projectDirectory, '--audio-driver', 'Dummy', '--log-file', (Join-Path $runDirectory "$name.engine.log"), '--script', $testScript)) {
         $start.ArgumentList.Add($arg)
     }
     $process = [System.Diagnostics.Process]::new()

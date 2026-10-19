@@ -54,6 +54,13 @@ func run() -> void:
 	state.record_kill(1, 10, false, &"basic_sword", 0)
 	state.finish(0, false)
 	check(state.total == 10 and not state.eligible_for_submission, "Error preserves earned points but excludes the result")
+	var saved_rules := state.rules
+	state.reset()
+	check(state.total == 0 and state.run_id == 0 and state.rules == null and not state.active and not state.eligible_for_submission, "Returning to preparation clears score without starting a run")
+	state.record_kill(120, 20, true, &"flight_sword", 1)
+	state.record_wave(1)
+	check(state.total == 0, "Late combat events cannot restore a discarded run's score")
+	state.begin(4, saved_rules)
 	var definition := WaveEnemyDefinition.new()
 	definition.enemy_id = &"mini_slime"
 	check(state.rules.points_for(definition) == 2, "Infant override is independent of experience")

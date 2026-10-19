@@ -13,7 +13,7 @@ func _enter_tree() -> void:
 	_bind_player(configuration, player)
 	_bind_skills(configuration, wave.run_skill_manager)
 	player.crowd_clearance_distance = configuration.crowd_clearance_distance
-	for property in ["enemy_catalog", "default_enemy", "population_rules", "health_growth_rules", "waves", "endless_mode", "max_active_enemies", "centralized_enemy_updates", "native_swarm_enabled", "batch_crowd_enabled", "native_chase_enabled", "slime_ground_movement_enabled"]:
+	for property in ["enemy_catalog", "default_enemy", "population_rules", "health_growth_rules", "spawn_shadow_settings", "waves", "endless_mode", "max_active_enemies", "centralized_enemy_updates", "native_swarm_enabled", "batch_crowd_enabled", "native_chase_enabled", "slime_ground_movement_enabled"]:
 		wave.set(property, configuration.get(property))
 	var growth := wave.get_node("RunGrowth") as RunGrowth
 	growth.rules = configuration.experience_rules

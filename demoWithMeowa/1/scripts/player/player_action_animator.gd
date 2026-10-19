@@ -35,6 +35,18 @@ func cancel_attack() -> void:
 	_attack = &""
 	_attack_age = 0.0
 
+## 消费真实出剑事件与本刀快照时长；显示不能反过来限制出手。
+func play_attack(action: StringName, heading: Vector3, duration: float) -> void:
+	cancel_attack()
+	request_attack(action, heading)
+	_attack_duration = maxf(duration, 0.00001)
+
+## 空槽保持当前动画。以后填入素材即可由真实反弹播放一次。
+func request_bounce(heading: Vector3) -> bool:
+	if _resolve(&"bounce", heading).is_empty(): return false
+	cancel_attack()
+	return request_attack(&"bounce", heading)
+
 func render(delta: float) -> bool:
 	_context_age += delta
 	if not _attack.is_empty():
@@ -44,6 +56,9 @@ func render(delta: float) -> bool:
 	var action: StringName = _attack if attack_active else _context
 	var heading := _attack_heading if attack_active else _heading
 	var clip := _resolve(action, heading)
+	if clip.is_empty() and attack_active:
+		attack_active = false
+		clip = _resolve(_context, _heading)
 	if clip.is_empty(): return false
 	var frames: SpriteFrames = clip.frames
 	var name: StringName = clip.name
@@ -52,9 +67,9 @@ func render(delta: float) -> bool:
 	if not attack_active and _progress >= 0.0:
 		frame = clampi(roundi(clampf(_progress, 0.0, 1.0) * (count - 1)), 0, count - 1)
 	else:
-		var elapsed := (_attack_age if attack_active else _context_age) * frames.get_animation_speed(name)
 		var total := 0.0
 		for index in count: total += frames.get_frame_duration(name, index)
+		var elapsed := _attack_age / _attack_duration * total if attack_active else _context_age * frames.get_animation_speed(name)
 		if not attack_active and frames.get_animation_loop_mode(name) != SpriteFrames.LOOP_NONE: elapsed = fmod(elapsed, total)
 		while frame < count - 1 and elapsed >= frames.get_frame_duration(name, frame):
 			elapsed -= frames.get_frame_duration(name, frame)

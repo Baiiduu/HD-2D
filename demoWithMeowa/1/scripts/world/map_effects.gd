@@ -117,7 +117,7 @@ func _update_bounds() -> void:
 			movement_bounds = movement_bounds.intersection(battle.get_activity_rect())
 		(player as Player).bounds = movement_bounds
 		_update_boundary_collision(movement_bounds, terrain.global_position.y)
-	if not Engine.is_editor_hint() and get_map_camera().is_node_ready():
+	if not Engine.is_editor_hint() and get_map_camera().is_node_ready() and get_map_camera().follow_enabled:
 		get_map_camera().snap_to_target()
 
 ## 活动边缘提供真实墙面，人物与弹丸复用原有扫掠、反弹和反馈。

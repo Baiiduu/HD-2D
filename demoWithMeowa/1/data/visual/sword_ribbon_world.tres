@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="SwordRibbonVisual" format=3 uid="uid://dmdymdatlavpk"]
+
+[ext_resource type="Script" uid="uid://bknh5qwnlwbf7" path="res://scripts/combat/sword_ribbon_visual.gd" id="style"]
+
+[resource]
+script = ExtResource("style")
+ribbon_width = 0.34
+ribbon_degrees = 106.0
+ribbon_inner_ratio = 0.38
+ribbon_tail_seconds = 0.5

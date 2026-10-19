@@ -6,6 +6,7 @@ const SPAWN_QUEUE = preload("res://scripts/combat/wave_spawn_queue.gd")
 const ENEMY_ROSTER = preload("res://scripts/combat/wave_enemy_roster.gd")
 const ENEMY_UPDATE_BATCH = preload("res://scripts/combat/enemy_update_batch.gd")
 const NATIVE_SWARM = preload("res://scripts/combat/native_swarm_loader.gd")
+const SPAWN_SHADOWS = preload("res://scripts/combat/wave_spawn_shadows.gd")
 var _spawn_state := SPAWN_QUEUE.new()
 var _spawn_services := SPAWN_QUEUE.Services.new()
 var _enemy_roster := ENEMY_ROSTER.new()
@@ -16,6 +17,7 @@ signal combat_frozen_changed(frozen: bool)
 signal run_started
 signal run_ended(reason: String)
 signal enemy_defeated_at(position: Vector3, experience: int)
+signal enemy_defeated(enemy: WaveEnemy)
 signal wave_clearing
 signal enemy_spawned(enemy: WaveEnemy)
 signal batch_spawned(count: int, point: Vector3)
@@ -47,6 +49,8 @@ var skill_draft: RunSkillDraft:
 		battle_area = value
 		_queue_path_rebuild()
 @export_range(1.0, 5.0, 0.1) var interaction_radius := 2.5
+## World 在战区内任意位置开战；其它地图默认保留入口距离要求。
+@export var start_requires_proximity := true
 @export var interact_key: Key = KEY_F
 ## 挑战界面隐藏时仍可重试。
 @export var retry_key: Key = KEY_T
@@ -56,11 +60,15 @@ var skill_draft: RunSkillDraft:
 	set(value):
 		show_ui = value
 		if is_instance_valid(_ui): _ui.visible = value
+## 旧灰盒入口圆台；正式地图用像素按键提示替代，其它地图保留自身显示。
+@export var show_start_marker := true
 @export_group("波次配置")
 @export var default_enemy: WaveEnemyDefinition
 @export var enemy_catalog: WaveEnemyCatalog
 ## 数量档位为空时沿用现有参数；正式地图用 horde_128，更大档位须单独压测，下一轮开始时生效。
 @export var population_rules: WavePopulationRules
+## 地图独立的生成前剪影；空资源保留原有立即生成规则。
+@export var spawn_shadow_settings: WaveSpawnShadowSettings
 ## One ordered driver for known wave actors; disable for the original callbacks.
 @export var centralized_enemy_updates := false:
 	set(value):
@@ -203,6 +211,7 @@ var _wave_queued_total: int:
 	set(value): _spawn_state.queued_total = value
 var _spawned_this_wave := 0
 var _spawned_run := 0
+var _spawn_shadows: WaveSpawnShadows
 var _preparing_wave := false
 var _starting_run := false
 var _bound_data: TerrainData
@@ -219,6 +228,7 @@ var _path_ready := false
 var _path_rebuild_pending := false
 var _generation := 0
 var _attack_root: Node3D
+var _retired_presentations: Array[Node3D] = []
 var _enemy_update_batch: Node
 var _enemy_update_revision := 0
 var _native_kernel: RefCounted
@@ -234,12 +244,17 @@ var combat_modifiers := RunCombatModifiers.new()
 var _combat_nodes: Array[Node] = []
 var _frozen_modes: Dictionary = {}
 var _clearing_wave := false
+var _wave_finish_deadline := 0
+var _prepared_feedback: EnemyFeedbackPool
 
 func _init() -> void:
 	_enemy_roster.spatial_index = CROWD_BATCH_INDEX.new()
 	_spawn_services.alive_count = _spawn_alive_count
 	_spawn_services.has_capacity = _spawn_has_capacity
 	_spawn_services.spawn = _spawn_job
+	_spawn_services.prepare = _prepare_spawn_warning
+	_spawn_state.warning_started.connect(_spawn_warning_started)
+	_spawn_state.warning_finished.connect(_spawn_warning_finished)
 	_spawn_services.synchronize = _synchronize_spawn_index
 	_spawn_services.current = _spawn_generation_current
 	_spawn_services.frozen = _spawn_frozen
@@ -255,22 +270,41 @@ func _ready() -> void:
 	_ui.controller = self
 	_ui.visible = show_ui
 	add_child(_ui)
-	var marker := MeshInstance3D.new()
-	var mesh := CylinderMesh.new()
-	mesh.top_radius = 0.6
-	mesh.bottom_radius = 0.6
-	mesh.height = 0.04
-	marker.mesh = mesh
-	var material := StandardMaterial3D.new()
-	material.albedo_color = Color(0.6, 0.64, 0.7)
-	marker.material_override = material
-	marker.position.y = 0.03
-	add_child(marker)
+	if show_start_marker:
+		var marker := MeshInstance3D.new()
+		var mesh := CylinderMesh.new()
+		mesh.top_radius = 0.6
+		mesh.bottom_radius = 0.6
+		mesh.height = 0.04
+		marker.mesh = mesh
+		var material := StandardMaterial3D.new()
+		material.albedo_color = Color(0.6, 0.64, 0.7)
+		marker.material_override = material
+		marker.position.y = 0.03
+		add_child(marker)
 	if loadout:
 		loadout.wave_session = self
 		changed.connect(loadout._queue_refresh)
 		loadout._queue_refresh()
 	_queue_path_rebuild()
+	_prepare_spawn_shadows()
+	_prepare_feedback_pool()
+
+func _prepare_feedback_pool() -> void:
+	if phase not in [Phase.READY, Phase.REST]: return
+	if is_instance_valid(_prepared_feedback) or not is_instance_valid(player) or not player.action_visuals: return
+	var visuals := player.action_visuals
+	if visuals.feedback_prewarm_deaths <= 0 and visuals.feedback_prewarm_contacts <= 0: return
+	var reserve := Node3D.new()
+	reserve.name = "EnemyFeedbackReserve"
+	add_child(reserve)
+	_prepared_feedback = EnemyFeedbackPool.new()
+	_prepared_feedback.name = "EnemyFeedbackPool"
+	reserve.add_child(_prepared_feedback)
+	_prepared_feedback.start_prewarm(visuals, visuals.feedback_prewarm_deaths, visuals.feedback_prewarm_contacts)
+
+func feedback_prewarm_ready() -> bool:
+	return not is_instance_valid(_prepared_feedback) or _prepared_feedback.prewarm_ready()
 
 func _sync_batch_crowd_index() -> void:
 	if _spatial_index is CROWD_BATCH_INDEX:
@@ -344,6 +378,7 @@ func _exit_tree() -> void:
 	set_combat_frozen(false)
 	_generation += 1
 	_spawn_state.clear()
+	if is_instance_valid(_spawn_shadows): _spawn_shadows.clear()
 	if _bound_data and _bound_data.changed.is_connected(_queue_path_rebuild): _bound_data.changed.disconnect(_queue_path_rebuild)
 	remove_from_group(&"gameplay_input_blockers")
 	if is_instance_valid(loadout) and loadout.wave_session == self:
@@ -410,8 +445,10 @@ func set_combat_frozen(value: bool) -> void:
 	combat_frozen_changed.emit(value)
 
 func _set_phase(value: Phase) -> void:
+	if value != Phase.BATTLE: _wave_finish_deadline = 0
 	_enemy_update_revision += 1
 	phase = value
+	if phase in [Phase.READY, Phase.REST]: _prepare_feedback_pool()
 	if phase == Phase.RESULT:
 		add_to_group(&"gameplay_input_blockers")
 	else:
@@ -438,11 +475,16 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 
 func can_start_run() -> bool:
-	return _path_ready and not _starting_run and not combat_frozen and is_instance_valid(player) and phase == Phase.READY and _inside_area(player.global_position) and TerrainPath.horizontal_distance(global_position, player.global_position) <= interaction_radius and get_tree().get_first_node_in_group(&"gameplay_input_blockers") == null
+	if not _path_ready or _starting_run or combat_frozen or not is_instance_valid(player) or phase != Phase.READY: return false
+	if not _inside_area(player.global_position) or get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null: return false
+	return not start_requires_proximity or TerrainPath.horizontal_distance(global_position, player.global_position) <= interaction_radius
 
 func start_run() -> bool:
 	if not can_start_run(): return false
 	if not _configuration_valid(): return false
+	if spawn_shadow_settings and not spawn_shadow_settings.validation_error().is_empty():
+		_finish("挑战配置错误 · " + spawn_shadow_settings.validation_error())
+		return false
 	var skills := get_node_or_null("RunSkillManager") as RunSkillManager
 	if not is_horde_simulation() and skill_draft and skill_draft.should_offer_initial_choice():
 		return skill_draft.present_initial_choice()
@@ -637,6 +679,7 @@ func _prepare_run() -> bool:
 	# 按通行尺寸预热共享导航，出怪帧不临时烘焙大型怪物路径。
 	for definition: WaveEnemyDefinition in _definition_snapshots.values():
 		_navigation_for(definition)
+	_prepare_spawn_shadows()
 	return true
 
 func _configuration_valid() -> bool:
@@ -803,12 +846,19 @@ func _begin_wave() -> void:
 	_generation += 1
 	_wave_clock = 0.0
 	_spawn_state.clear()
+	if is_instance_valid(_spawn_shadows): _spawn_shadows.clear()
 	_wave_queued_total = 0
 	_spawned_this_wave = 0
 	_reset_reachability()
-	_attack_root = Node3D.new()
+	if is_instance_valid(_prepared_feedback):
+		# 整个预热根节点直接成为攻击根；不重入树，保留材质和附属节点生命周期。
+		_attack_root = _prepared_feedback.get_parent() as Node3D
+		_prepared_feedback.finish_prewarm()
+		_prepared_feedback = null
+	else:
+		_attack_root = Node3D.new()
+		add_child(_attack_root)
 	_attack_root.name = "EnemyAttacks"
-	add_child(_attack_root)
 	# Keep the same object/ID layout for both A/B arms, after projectile handlers.
 	_ensure_enemy_update_batch()
 	_hurt_clock = 0.5
@@ -889,7 +939,10 @@ func _physics_process(delta: float) -> void:
 		_finish("本轮结束 · 离开战斗区域", Outcome.RETREAT)
 		return
 	if not _path_ready: return
+	# 最后一击已完成；收尾镜头不延长有效战斗时间或影响计时得分。
+	if is_wave_finish_pending(): return
 	_wave_clock += delta
+	if is_instance_valid(_spawn_shadows): _spawn_shadows.advance(_wave_clock)
 	_process_spawns()
 	if phase != Phase.BATTLE or combat_frozen: return
 	_hurt_clock = maxf(_hurt_clock - delta, 0.0)
@@ -907,16 +960,51 @@ func _process_spawns() -> void:
 	_spawn_services.spawn_budget = _run_population.spawns_per_tick if _run_population else max_spawns_per_tick
 	_spawn_services.retry_interval = spawn_retry_interval
 	_spawn_services.block_timeout = spawn_block_timeout
+	_spawn_services.warning_seconds = spawn_shadow_settings.warning_seconds if spawn_shadow_settings and spawn_shadow_settings.enabled else 0.0
 	_spawn_state.process_due(_wave_clock, _generation, _spawn_services)
 
 func _spawn_alive_count() -> int:
 	return enemies.size()
 
 func _spawn_has_capacity(job: Dictionary) -> bool:
+	if _spawn_services.warning_seconds > 0.0 or not _spawn_state.prepared_jobs.is_empty():
+		return _enemy_roster.can_fit_batch(_spawn_state.capacity_reservation(job), get_active_enemy_limit(), _run_population)
 	return _has_batch_capacity(job.batch) if not job.batch.is_empty() else _has_enemy_capacity(job.enemy)
 
 func _spawn_job(job: Dictionary) -> bool:
+	if job.has("spawn_point"):
+		var point: Vector3 = job.spawn_point
+		if not terrain.data.has_cell(terrain.data.world_to_cell(terrain.to_local(point))): return false
+		if not _path.ground_position(point).is_equal_approx(point): return false
+		if not _valid_spawn(point, job.enemy, _ground_target(), job.position.is_finite(), int(job.id)): return false
+		return _materialize_enemy(job.enemy, point, job.batch)
 	return _spawn_enemy(job.enemy, job.position, job.zones, job.warning, job.batch)
+
+func _prepare_spawn_warning(job: Dictionary) -> bool:
+	var point := _find_spawn(job.enemy, job.position, job.zones, job.batch)
+	if not point.is_finite(): return false
+	job.spawn_point = point
+	return true
+
+func _prepare_spawn_shadows() -> void:
+	if not spawn_shadow_settings or not spawn_shadow_settings.enabled: return
+	if not is_instance_valid(_spawn_shadows):
+		_spawn_shadows = SPAWN_SHADOWS.new()
+		_spawn_shadows.name = "SpawnShadows"
+		add_child(_spawn_shadows)
+	var scenes: Array[PackedScene] = []
+	if default_enemy: scenes.append(default_enemy.scene)
+	if enemy_catalog:
+		for definition in enemy_catalog.enemies: scenes.append(definition.scene)
+	for definition: WaveEnemyDefinition in _definition_snapshots.values(): scenes.append(definition.scene)
+	_spawn_shadows.configure(spawn_shadow_settings, scenes, battle_area)
+
+func _spawn_warning_started(job: Dictionary, seconds: float) -> void:
+	if not is_instance_valid(_spawn_shadows) or not _spawn_shadows.atlas.records.has(job.enemy.scene): _prepare_spawn_shadows()
+	if is_instance_valid(_spawn_shadows): _spawn_shadows.begin(int(job.id), job.enemy.scene, job.spawn_point, seconds, _wave_clock)
+
+func _spawn_warning_finished(id: int, spawned: bool) -> void:
+	if is_instance_valid(_spawn_shadows): _spawn_shadows.end(id, spawned)
 
 func _synchronize_spawn_index() -> void:
 	_spatial_index.synchronize(enemies)
@@ -989,7 +1077,7 @@ func _pick_zone(zones: Array[WaveSpawnZone]) -> WaveSpawnZone:
 		if value <= 0: return zone
 	return zones.back()
 
-func _valid_spawn(point: Vector3, definition: WaveEnemyDefinition, goal: Vector3, local_spawn := false) -> bool:
+func _valid_spawn(point: Vector3, definition: WaveEnemyDefinition, goal: Vector3, local_spawn := false, reservation_id := -1) -> bool:
 	var xz := Vector2(point.x, point.z)
 	if not battle_area.grow(-maxf(0.6, definition.spawn_clearance)).has_point(xz): return false
 	# 分裂／召唤来自已进入战区的母体，保留近身留空；普通外围刷新使用完整安全距离。
@@ -1001,6 +1089,9 @@ func _valid_spawn(point: Vector3, definition: WaveEnemyDefinition, goal: Vector3
 		for excluded in spawn_excluded_areas:
 			if excluded.grow(definition.spawn_clearance).has_point(xz): return false
 	var spacing := _run_population.spawn_spacing if _run_population else spawn_spacing
+	for job: Dictionary in _spawn_state.prepared_jobs.values():
+		if int(job.id) == reservation_id: continue
+		if TerrainPath.horizontal_distance(point, job.spawn_point) < maxf(spacing, definition.spawn_clearance + job.enemy.spawn_clearance): return false
 	for enemy in _spatial_index.nearby(point, maxf(spacing, definition.spawn_clearance + _largest_spawn_clearance)):
 		if TerrainPath.horizontal_distance(point, enemy.global_position) < maxf(spacing, definition.spawn_clearance + enemy.spawn_clearance): return false
 	_spawn_shape.radius = definition.spawn_clearance
@@ -1133,6 +1224,9 @@ func _spawn_enemy(definition: WaveEnemyDefinition = null, requested_position := 
 	if not _has_enemy_capacity(definition, 1, batch): return false
 	var spawn := _find_spawn(definition, requested_position, zone_ids, batch)
 	if not spawn.is_finite(): return false
+	return _materialize_enemy(definition, spawn, batch)
+
+func _materialize_enemy(definition: WaveEnemyDefinition, spawn: Vector3, batch: Dictionary) -> bool:
 	var generation := _generation
 	var instance := definition.scene.instantiate()
 	if not instance is WaveEnemy:
@@ -1183,6 +1277,7 @@ func _enemy_defeated(enemy: WaveEnemy) -> void:
 	_unreachable.erase(enemy.get_instance_id())
 	_reachability_last.erase(enemy.get_instance_id())
 	kills += 1
+	enemy_defeated.emit(enemy)
 	enemy_defeated_at.emit(enemy.global_position, enemy.experience_reward)
 	changed.emit()
 
@@ -1247,11 +1342,24 @@ func _check_enemy_reachability(enemy: WaveEnemy, goal: Vector3, elapsed: float) 
 		push_warning("Wave unreachable timeout: wave=%d enemy=%s position=%s target=%s on_map=%s ground_y=%.3f" % [wave, enemy.definition.enemy_id if enemy.definition else enemy.name, enemy.global_position, goal, on_map, _path.ground_position(enemy.global_position).y])
 		_finish("挑战中断 · 残余怪物无法到达，请重试")
 
+## 仅延后清波／选卡，死亡与计分即时结算；真实时间上限防止视觉对象退出后卡局。
+func hold_wave_finish(seconds: float) -> bool:
+	if seconds <= 0.0:
+		_wave_finish_deadline = 0
+		return true
+	if phase != Phase.BATTLE or _pending > 0 or not enemies.is_empty(): return false
+	_wave_finish_deadline = Time.get_ticks_usec() + int(clampf(seconds, 0.0, 5.0) * 1000000.0)
+	return true
+
+func is_wave_finish_pending() -> bool:
+	return phase == Phase.BATTLE and Time.get_ticks_usec() < _wave_finish_deadline
+
 func _clear_wave() -> void:
 	if _preparing_wave or phase != Phase.BATTLE or _pending > 0 or not enemies.is_empty(): return
+	if is_wave_finish_pending(): return
 	if not _clearing_wave:
 		_clearing_wave = true
-		_cleanup_attacks()
+		_cleanup_attacks(true)
 		var generation := _generation
 		wave_clearing.emit()
 		if phase != Phase.BATTLE or generation != _generation: return
@@ -1260,7 +1368,7 @@ func _clear_wave() -> void:
 	var serial := _run_serial
 	completed_waves = wave
 	if not _run_endless and completed_waves >= wave_count():
-		_finish("挑战完成", Outcome.VICTORY)
+		_finish("挑战完成", Outcome.VICTORY, true)
 	else:
 		_set_phase(Phase.REST)
 	if serial == _run_serial: wave_cleared.emit(cleared)
@@ -1268,14 +1376,14 @@ func _clear_wave() -> void:
 func retreat() -> void:
 	if phase in [Phase.BATTLE, Phase.REST]: _finish("本轮结束 · 主动撤退", Outcome.RETREAT)
 
-func _finish(reason: String, result := Outcome.ERROR) -> void:
+func _finish(reason: String, result := Outcome.ERROR, keep_presentations := false) -> void:
 	if phase == Phase.RESULT: return
 	combat_modifiers.reset()
 	_preparing_wave = false
 	_starting_run = false
 	set_combat_frozen(false)
 	_spawn_state.clear()
-	_cleanup_attacks()
+	_cleanup_attacks(keep_presentations)
 	var remaining := _enemy_roster.take_all()
 	_reset_reachability()
 	for enemy in remaining: enemy.cancel()
@@ -1285,7 +1393,29 @@ func _finish(reason: String, result := Outcome.ERROR) -> void:
 	_set_phase(Phase.RESULT)
 	if phase == Phase.RESULT and generation == _generation: run_ended.emit(reason)
 
-func _cleanup_attacks() -> void:
+func _cleanup_attacks(keep_presentations := false) -> void:
+	if is_instance_valid(_spawn_shadows): _spawn_shadows.clear()
+	if not keep_presentations:
+		for retired in _retired_presentations:
+			if is_instance_valid(retired):
+				retired.process_mode = Node.PROCESS_MODE_DISABLED
+				retired.queue_free()
+		_retired_presentations.clear()
+	else:
+		_retired_presentations = _retired_presentations.filter(is_instance_valid)
+		var feedback := _attack_root.get_node_or_null("EnemyFeedbackPool") as EnemyFeedbackPool if is_instance_valid(_attack_root) else null
+		if feedback and feedback.preserve_on_clear:
+			# 留住原父节点，避免节点重入树重置共享材质生命周期；危险对象先全部停用。
+			for child in _attack_root.get_children():
+				if child != feedback:
+					child.process_mode = Node.PROCESS_MODE_DISABLED
+					child.queue_free()
+			_attack_root.name = "RetiredPresentations"
+			register_combat_node(_attack_root)
+			_retired_presentations.append(_attack_root)
+			feedback.presentations_finished.connect(_attack_root.queue_free, CONNECT_ONE_SHOT)
+			feedback.retire_presentations()
+			_attack_root = null
 	_enemy_update_revision += 1
 	_generation += 1
 	if is_instance_valid(_enemy_update_batch):
@@ -1324,13 +1454,41 @@ func retry() -> void:
 
 func return_home() -> void:
 	if phase != Phase.RESULT: return
+	_restore_player_home()
+	_set_phase(Phase.READY)
+
+## End only run-owned work; keep map geometry and navigation ready for another visit.
+func reset_for_menu() -> void:
+	if phase in [Phase.BATTLE, Phase.REST]: retreat()
+	elif phase == Phase.READY:
+		set_combat_frozen(false)
+		_cleanup_attacks()
+		combat_modifiers.reset()
+	_spawn_state.clear()
+	wave = 0
+	completed_waves = 0
+	kills = 0
+	_spawned_this_wave = 0
+	_spawned_run = 0
+	_wave_queued_total = 0
+	_queue_sequence = 0
+	_wave_clock = 0.0
+	_hurt_clock = 0.0
+	_notice = ""
+	_notice_clock = 0.0
+	_clearing_wave = false
+	result_reason = ""
+	outcome = Outcome.NONE
+	_restore_player_home()
+	_set_phase(Phase.READY)
+
+func _restore_player_home() -> void:
 	player.heal(player.max_health)
 	player.global_position = return_point.global_position if return_point else global_position + Vector3.UP * 0.1
 	player.velocity = Vector3.ZERO
 	player.reset_physics_interpolation()
 	if player.movement_camera is FollowCamera: (player.movement_camera as FollowCamera).snap_to_target()
 	_restore_preview()
-	_set_phase(Phase.READY)
 
 func show_notice(words: String) -> void:
 	_notice = words
@@ -1359,7 +1517,7 @@ func status_text() -> String:
 	match phase:
 		Phase.BATTLE: return "%s   ·   待出现 %d   ·   场上 %d   ·   击败 %d\n%s" % [wave_label(wave), _pending, enemies.size(), kills, _notice if _notice_clock > 0.0 else "基础自动攻击 · 走位生存 · 离开南侧区域结束本轮"]
 		Phase.REST: return "%s已完成 · 安全休整，无倒计时\nTab 查看背包 · 准备好后主动继续%s" % [wave_label(wave), "\n下一波：" + next_wave_description() if not next_wave_description().is_empty() else ""]
-		Phase.READY: return "南侧%s挑战 · 到小圆台附近按 F 开始\n自动攻击 · 经验升级 · 清波休整" % ("无尽" if is_endless() else "波次")
+		Phase.READY: return "%s挑战 · %s按 %s 开始\n自动攻击 · 经验升级 · 清波休整" % ["无尽" if is_endless() else "波次", "到入口附近" if start_requires_proximity else "", OS.get_keycode_string(interact_key)]
 		_: return "波次循环灰盒 · 天气与世界继续运行"
 
 func get_skill_slots() -> Array[String]:

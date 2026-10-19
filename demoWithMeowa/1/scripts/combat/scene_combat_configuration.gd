@@ -14,6 +14,7 @@ extends Resource
 @export var enemy_catalog: WaveEnemyCatalog
 @export var default_enemy: WaveEnemyDefinition
 @export var population_rules: WavePopulationRules
+@export var spawn_shadow_settings: WaveSpawnShadowSettings
 @export var health_growth_rules: WaveHealthGrowthRules
 @export var waves: Array[WaveDefinition] = []
 @export var endless_mode := true
@@ -53,7 +54,7 @@ func validation_errors() -> PackedStringArray:
 		if int(get(property)) < 1: errors.append(property + ": 须至少为 1")
 	for property in ["rerolls_per_run", "storm_spread_layers"]:
 		if int(get(property)) < 0: errors.append(property + ": 不能为负数")
-	for property in ["ricochet_rules", "sword_rules", "flight_trail_settings", "enemy_catalog", "default_enemy", "population_rules", "health_growth_rules"]:
+	for property in ["ricochet_rules", "sword_rules", "flight_trail_settings", "enemy_catalog", "default_enemy", "population_rules", "health_growth_rules", "spawn_shadow_settings"]:
 		var resource: Resource = get(property)
 		if resource:
 			var error: String = resource.validation_error()

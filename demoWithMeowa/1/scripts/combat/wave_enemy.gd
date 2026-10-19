@@ -18,6 +18,8 @@ var spawn_clearance := 0.35
 var experience_reward := 0
 var spawn_delay := 0.0
 var dead := false
+## 只保存真实致死命中的值快照，供死亡表现读取，不延长怪物生命周期。
+var fatal_hit_context: Dictionary = {}
 ## 模拟怪物不扣血、不死亡，仍按真实命中发出反馈事件。
 var health_loss_disabled := false
 var stun_remaining := 0.0
@@ -191,6 +193,7 @@ func take_damage(amount: float, feedback: Dictionary = {}) -> void:
 	if (health < before or health_loss_disabled) and damaged.has_connections():
 		damaged.emit(CombatDamageEvent.from_hit(self, before - health, amount, feedback))
 	if health <= 0.0:
+		fatal_hit_context = feedback.duplicate()
 		dead = true
 		if spatial_index: spatial_index.remove(self)
 		# 子类可在此登记待生成幼体；控制器不会提前清波。
@@ -201,6 +204,10 @@ func take_damage(amount: float, feedback: Dictionary = {}) -> void:
 ## 未来异形怪物可重写，显示层不识别怪物类型。
 func get_damage_feedback_position() -> Vector3:
 	return global_position + Vector3.UP * 0.8
+
+## 近身接触点与头顶伤害数字各用自己的锚点；具体怪物可按当前显示体型适配。
+func get_contact_feedback_position(_origin: Vector3) -> Vector3:
+	return global_position + Vector3.UP * 0.45
 
 func _damage_feedback() -> void:
 	pass

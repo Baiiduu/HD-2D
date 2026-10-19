@@ -1,6 +1,6 @@
 extends SceneTree
 
-const SURFACE := "res://data/world/world_surface.tres"
+const SURFACE := "res://data/world/world_surface.res"
 const PALETTE := "res://data/world/spawn_paint_palette.tres"
 const RECT := Rect2(-15.2, 29.6, 30.4, 30.4)
 const OUTPUT := "D:/.codexfile/work/battle-grid-repaint/world_surface.tres"

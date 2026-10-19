@@ -18,8 +18,8 @@ const AUDITION := [
 	[&"player_hurt", "人物状态", "人物受伤", "人物实际扣血时触发。"],
 	[&"low_health", "人物状态", "濒危提醒", "首次进入濒危区时提示，不连续重复。"],
 	[&"defeat", "人物状态", "战败", "人物生命耗尽、进入失败结算时触发。"],
-	[&"enemy_hit_soft", "怪物反馈", "软质怪物受击", "普通生物受到常规攻击时触发。"],
-	[&"enemy_hit_hard", "怪物反馈", "硬壳怪物受击", "裂瓷壶兽受到常规攻击时触发。"],
+	[&"enemy_hit_soft", "怪物反馈", "软质怪物受击", "其它攻击沿用的软质受击；World 可选混合模式中额外减弱作材质层。"],
+	[&"enemy_hit_hard", "怪物反馈", "硬壳怪物受击", "其它攻击沿用的硬壳受击；World 可选混合模式中额外减弱作材质层。"],
 	[&"slime_death", "怪物反馈", "史莱姆死亡", "史莱姆或小史莱姆死亡时触发。"],
 	[&"creature_death", "怪物反馈", "普通生物死亡", "冲锋虫、花兽、苔蛙等死亡时触发。"],
 	[&"split_spawn", "怪物反馈", "分裂幼体出现", "壶兽分裂的幼体实际生成时触发。"],
@@ -34,10 +34,28 @@ const AUDITION := [
 	[&"storm_strike", "奔雷涌潮", "首片引雷", "按雷片发声，不按每只怪物叠加。"],
 	[&"storm_chain", "奔雷涌潮", "后续链式传播", "传播逐层减弱；这里按第一层试听。"],
 	[&"flight_loop", "蓄力与弹射", "弹射动能气流", "飞行与绕群时循环，随实际速度变化；这里按参考速度试听。"],
+	[&"kill_slime_retired", "停用候选", "旧史莱姆击杀候选 · 变体 1（停用）", "停用，仅供对照试听，不参与实战随机池。"],
+	[&"kill_slime", "击杀反馈", "史莱姆击杀确认 · 变体 2", "真实致死瞬间的弹性爆破与厚实冲击；普通命中不播放。"],
+	[&"kill_group", "击杀反馈", "附近群杀强调", "附近短时间多次击杀合并一次；这里按普通群杀档试听。"],
+	[&"kill_air", "击杀反馈", "尸体抛飞气流", "死亡短顿结束、实际抛飞开始时触发，密集尸体合并。"],
+	[&"kill_land", "击杀反馈", "尸体落地与碰墙", "已有死亡演出确实落地或碰墙时触发；碰墙略轻。"],
+	[&"enemy_hit_common", "通用命中", "人物攻击命中", "同一 Meowa 母版的轻微音高变化；World 普攻与弹射攻击真实命中后随机一条，击杀优先确认声。"],
+	[&"leaf_windup", "怪物招式", "冲锋虫蓄势", "实际锁线冲锋预告；密集预告合并声音，视觉提示保留。"],
+	[&"lantern_shot", "怪物招式", "花兽吐籽", "花兽实际出手的吐籽声。"],
+	[&"frog_pulse", "怪物招式", "苔蛙鼓舞", "苔蛙实际发出移速脉冲；作为轻伴随声，不压过人物命中。"],
+	[&"pot_shatter", "怪物招式", "壶兽碎裂", "壶兽真实死亡碎裂；幼体出现另有提示。"],
+	[&"charge_wind", "蓄力与弹射", "蓄力聚力风", "风向人物盘旋汇聚，随真实蓄力渐强；松手短淡出，这里按满蓄试听。"],
 ]
 
 func clips_for(cue: StringName) -> Array:
 	return cues.get(cue, [])
+
+static func playback_cue(cue: StringName) -> StringName:
+	if cue == &"storm_strike": return &"ricochet_storm_start"
+	if cue == &"storm_chain": return &"ricochet_storm_chain"
+	if cue == &"kill_slime_retired": return &"core:kill_slime"
+	if cue in [&"leaf_windup", &"lantern_shot", &"frog_pulse", &"pot_shatter"]: return cue
+	return StringName("core:" + cue)
 
 func audition_entries() -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []

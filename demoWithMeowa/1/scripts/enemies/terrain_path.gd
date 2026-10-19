@@ -65,6 +65,18 @@ var _nearest_cell_size := 1.0
 ## 普通追击可用原生点到点寻路；共享路线、连通资格与特殊移动仍保留原流程。
 var native_chase_enabled := false
 var _native_standard_costs := false
+## Single-thread data backend for ordinary direct-walk planning only.
+var chase_batch_enabled := true
+var _chase_batch := PursuitQueryBatch.new()
+var _chase_field: StaticObstacleField
+var _chase_status := PackedByteArray()
+var _chase_frame := -1
+var _chase_revision := -1
+var _chase_surface_ready := false
+var _chase_transform := Transform3D.IDENTITY
+var _chase_origin := Vector2i.ZERO
+var _chase_size := Vector2i.ZERO
+var _chase_layer_height := -1.0
 
 # Prediction only. A missing or unfinished exact result never delays gameplay.
 var prefetch_enabled := true
@@ -267,6 +279,9 @@ func _clear_surface_cache() -> void:
 	_height_frame = -1
 
 func _surface_changed() -> void:
+	_chase_frame = -1
+	_chase_surface_ready = false
+	_chase_batch.valid = false
 	_clear_surface_cache()
 	_flat_chunks.clear()
 	_flat_rect = Rect2()
@@ -569,6 +584,8 @@ func _segment_clear(from: Vector3,to: Vector3) -> bool:
 ## an already queried physics step. build() and Shape resource edits do this too.
 func invalidate_query_certificate() -> void:
 	_query_config_frame = -1
+	_chase_frame = -1
+	_chase_batch.valid = false
 
 func _prepare_query_config() -> bool:
 	var frame := Engine.get_physics_frames()
@@ -921,6 +938,91 @@ func _lookahead_route(from: Vector3, route: PackedVector3Array, lookahead: float
 ## 静态通路可前视，身体扫掠仍检查当前墙体；地表沿中心和身体两侧逐段检查。
 ## origin_checks may only be reused inside one synchronous search at this origin.
 func can_walk_direct(from: Vector3, to: Vector3, origin_checks: Array = []) -> bool:
+	if _prepare_chase_batch():
+		var status := _chase_batch.classify(from, to)
+		if status == PursuitQueryBatch.CLEAR:
+			_segment_certified = true
+			return true
+		# Near walls retain the original live overlap/sweep. The numeric terrain
+		# qualification still applies, so do not repeat the same surface query.
+		if status == 1: return _pursuit_start_clear_local(from, to, origin_checks)
+	return _legacy_can_walk_direct(from, to, origin_checks)
+
+## Numeric candidates share configuration, terrain and obstacle inputs. Native
+## fallbacks remain ordered: the second candidate is not swept if the first wins.
+func first_walkable_ground(from: Vector3, targets: PackedVector3Array) -> int:
+	if not from.is_finite(): return -1
+	var prepared := _prepare_chase_batch()
+	if prepared: _chase_batch.plan_ground_candidates(from, targets, _chase_status)
+	var origin_checks: Array = []
+	for index in targets.size():
+		if prepared and _chase_status[index] == PursuitQueryBatch.CLEAR: return index
+		var to := targets[index]
+		if not to.is_finite(): continue
+		if prepared and _chase_status[index] == 1:
+			if _pursuit_start_clear_local(from, to, origin_checks): return index
+			continue
+		if not prepared or _chase_status[index] == 0: to = ground_position(to)
+		if _legacy_can_walk_direct(from, to, origin_checks): return index
+	return -1
+
+func _prepare_chase_batch() -> bool:
+	if not chase_batch_enabled: return false
+	var frame := Engine.get_physics_frames()
+	if frame == _chase_frame and is_instance_valid(_chase_field) and _chase_revision == _chase_field.pursuit_revision and terrain.global_transform == _chase_transform and terrain.data == data:
+		return _chase_batch.valid and _chase_field.enabled and terrain.obstacle_certificates_enabled
+	if _building_graph or get_script() != TerrainPath or not is_instance_valid(terrain) or not data or terrain.data != data or not terrain.obstacle_certificates_enabled: return false
+	var field := terrain.obstacle_field()
+	if not field.enabled: return false
+	_chase_field = field
+	var transform := terrain.global_transform
+	if transform != _chase_transform or data.origin != _chase_origin or data.size != _chase_size or data.cell_size != _chase_batch.cell_size or data.layer_height != _chase_layer_height:
+		_chase_surface_ready = false
+		_chase_frame = -1
+	if frame == _chase_frame and _chase_revision == field.pursuit_revision: return _chase_batch.valid
+	_chase_frame = frame
+	_chase_revision = field.pursuit_revision
+	_chase_batch.valid = false
+	if transform.basis != Basis.IDENTITY or data.size.x <= 0 or data.size.y <= 0 or data.size.x * data.size.y > StaticObstacleField.MAX_DENSE_CELLS or not _prepare_query_config() or not _query.shape is SphereShape3D: return false
+	_bind_surface_data()
+	if not field.prepare_pursuit_batch(_chase_batch, _query_mask, _query_excluded):
+		_chase_revision = field.pursuit_revision
+		return false
+	if not _chase_surface_ready:
+		_chase_transform = transform
+		_chase_origin = data.origin
+		_chase_size = data.size
+		_chase_layer_height = data.layer_height
+		_chase_batch.origin = transform.origin
+		_chase_batch.cell_size = data.cell_size
+		_chase_batch.cells = Rect2i(data.origin, data.size)
+		# Per-cell coplanar support, independent of the old eight-cell chunks.
+		# A pond must not force every dry cell in its chunk through sampled walks.
+		var stride := data.size.x + 1
+		_chase_batch.terrain_prefix.resize(stride * (data.size.y + 1))
+		_chase_batch.terrain_prefix.fill(0)
+		_chase_batch.terrain_height = NAN
+		for z in data.size.y:
+			var row := 0
+			for x in data.size.x:
+				var cell := data.origin + Vector2i(x,z)
+				var clear := not data.has_overlay(cell, TerrainData.OVERLAY_WATER | TerrainData.OVERLAY_BRIDGE | TerrainData.OVERLAY_RAMP)
+				if clear:
+					var heights := _surface_heights(cell)
+					if is_nan(_chase_batch.terrain_height): _chase_batch.terrain_height = heights[0]
+					for height in heights:
+						if height != _chase_batch.terrain_height: clear = false
+				if not clear: row += 1
+				_chase_batch.terrain_prefix[(z + 1) * stride + x + 1] = _chase_batch.terrain_prefix[z * stride + x + 1] + row
+		_chase_surface_ready = true
+	_chase_batch.radius = _query.shape.radius
+	_chase_batch.query_bounds = AABB(_query_local_bounds.position + Vector3.UP * _clearance, _query_local_bounds.size)
+	_chase_batch.valid = true
+	_chase_revision = field.pursuit_revision
+	_chase_frame = frame
+	return _chase_batch.valid
+
+func _legacy_can_walk_direct(from: Vector3, to: Vector3, origin_checks: Array = []) -> bool:
 	if not data or not from.is_finite() or not to.is_finite(): return false
 	if not _pursuit_start_clear_local(from, to, origin_checks): return false
 	if _flat_surface_between(from, to): return true
@@ -974,6 +1076,9 @@ func _flat_surface_between(from: Vector3, to: Vector3) -> bool:
 func flat_ground_height(from: Vector3, to: Vector3, body_radius := 0.0) -> float:
 	# Existing navigation/body callers retain their conservative body width.
 	if not _query.shape: return NAN
+	if from.is_finite() and to.is_finite() and _prepare_chase_batch():
+		var height := _chase_batch.ground_height(from, to, body_radius)
+		if not is_nan(height): return height
 	return _certified_ground_height(from, to, maxf(_query.shape.radius, body_radius))
 
 ## Terrain-only centerline certificate for flight's original center samples.

@@ -55,11 +55,13 @@ func bounce_at_water(point: Vector3, heading: Vector3, label: String) -> void:
 
 func run() -> void:
 	AudioServer.set_bus_mute(0, true)
-	var surface_hash := FileAccess.get_sha256("res://data/world/world_surface.tres")
+	var surface_hash := FileAccess.get_sha256("res://data/world/world_surface.res")
 	var data_hash := FileAccess.get_sha256("res://data/world/world_terrain.tres")
 	var saved_paints := (load("res://data/world/world_terrain.tres") as TerrainData).paints.duplicate()
 	world = load("res://scenes/world/world.tscn").instantiate()
+	world.get_node("WorldEntry").preview_on_direct_run = false
 	world.get_node("LoadoutUI").save_enabled = false
+	world.get_node("GameSettingsUI").save_graphics_settings = false
 	world.get_node("MapEffects/GameAudio").load_local_mix = false
 	world.get_node("MapEffects/BGM").music_enabled = false
 	world.get_node("MapEffects/Weather").rain_audio_enabled = false
@@ -174,7 +176,7 @@ func run() -> void:
 		await process_frame
 		check(data.to_image().get_data() == snapshot and lamp.light_enabled and mirror.water == terrain.water_material and terrain.water_boundary_reflection_enabled, "Style 保留水域、直接反弹与路灯：%d" % style)
 	check(camera_values == [camera.fov, camera.distance, camera.pitch_degrees, camera.yaw_degrees], "水景及 Style 不改正式相机")
-	check(surface_hash == FileAccess.get_sha256("res://data/world/world_surface.tres") and data_hash == FileAccess.get_sha256("res://data/world/world_terrain.tres"), "运行和风格切换不改写手绘存档或地形资源")
+	check(surface_hash == FileAccess.get_sha256("res://data/world/world_surface.res") and data_hash == FileAccess.get_sha256("res://data/world/world_terrain.tres"), "运行和风格切换不改写手绘存档或地形资源")
 	world.queue_free()
 	await settle()
 	print("Battle corner water: %d checks, %d failures" % [checks, failures])

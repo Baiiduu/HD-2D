@@ -1,3 +1,4 @@
+@tool
 class_name GroundSlashEffect
 extends MeshInstance3D
 
@@ -10,11 +11,16 @@ var _material: ShaderMaterial
 var _frame_material: ShaderMaterial
 var _arc_material: ShaderMaterial
 var _meowa_material: ShaderMaterial
+var _ribbon_material: ShaderMaterial
+var _flow_material: ShaderMaterial
 var _indices := PackedInt32Array()
 var _flat_meshes: Dictionary[Vector3, ArrayMesh] = {}
 var _clipped: ArrayMesh
 var _collision := ProjectileCollision.new()
 var _layout := Vector4(-1, -1, -1, -1)
+var _radials := PackedVector3Array()
+var _radial_angle := NAN
+var _wall_ray := PhysicsRayQueryParameters3D.create(Vector3.ZERO, Vector3.ZERO, 1)
 
 func _ready() -> void:
 	cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -30,25 +36,55 @@ func _ready() -> void:
 
 func display(origin: Vector3, heading: Vector3, radius: float, angle: float, reverse: bool,
 		frames: SpriteFrames, age: float, rules: PlayerSwordRules, path: TerrainPath,
-		surface: RefCounted, excluded: Array[RID]) -> void:
+		surface: RefCounted, excluded: Array[RID], presentation_opacity := 1.0) -> void:
 	var meowa_arc := rules.effect_mode == PlayerSwordRules.SlashVisual.MEOWA_ARC
+	var ribbon := rules.effect_mode == PlayerSwordRules.SlashVisual.NATIVE_RIBBON
 	var arc_mode := rules.effect_mode != PlayerSwordRules.SlashVisual.FRAME_ANIMATION
-	var uses_frames := rules.effect_mode != PlayerSwordRules.SlashVisual.THIN_ARC
+	var uses_frames := not ribbon and rules.effect_mode != PlayerSwordRules.SlashVisual.THIN_ARC
+	if ribbon and not rules.ribbon_visual:
+		hide()
+		return
 	if uses_frames and (not frames or not frames.has_animation(&"slash") or frames.get_frame_count(&"slash") == 0):
 		hide()
 		return
 	var progress := clampf(age / rules.sweep_seconds, 0.0, 1.0)
-	var fade_seconds := rules.meowa_tail_seconds if meowa_arc else rules.fade_seconds
+	var fade_seconds := rules.tail_seconds() if rules.has_world_tail() else rules.fade_seconds
 	var fade_progress := clampf((age - rules.sweep_seconds) / fade_seconds, 0.0, 1.0)
 	var canvas := Vector2(2, 2)
 	var art_radius := 1.0
+	var stretch := Vector3.ONE
 	if meowa_arc:
 		if not _meowa_material:
 			_meowa_material = EFFECT_LAYER.material(preload("res://shaders/combat/player_sword_meowa_arc.gdshader"))
 		_material = _meowa_material
-		EFFECT_LAYER.set_parameter(_material, "body_opacity", rules.meowa_body_opacity)
+		stretch = rules.meowa_stretch_profile(progress, fade_progress)
+		EFFECT_LAYER.set_parameter(_material, "body_opacity", rules.meowa_body_opacity * stretch.z)
+		EFFECT_LAYER.set_parameter(_material, "tail_width_scale", stretch.y)
+		EFFECT_LAYER.set_parameter(_material, "visibility_strength", rules.meowa_visibility_strength)
 		EFFECT_LAYER.set_parameter(_material, "tail_spread", rules.meowa_tail_spread)
 		EFFECT_LAYER.set_parameter(_material, "tail_inner_ratio", rules.meowa_tail_inner_ratio)
+	elif ribbon:
+		if rules.ribbon_visual.ribbon_layered_enabled:
+			if not _flow_material:
+				_flow_material = EFFECT_LAYER.material(preload("res://shaders/combat/player_sword_flow_slash.gdshader"))
+			_material = _flow_material
+			EFFECT_LAYER.set_parameter(_material, "stroke_texture", rules.ribbon_visual.ribbon_brush)
+			EFFECT_LAYER.set_parameter(_material, "flow_noise", rules.ribbon_visual.ribbon_noise)
+			EFFECT_LAYER.set_parameter(_material, "visual_age", age)
+			EFFECT_LAYER.set_parameter(_material, "sweep_seconds", rules.sweep_seconds)
+			EFFECT_LAYER.set_parameter(_material, "attack_angle", deg_to_rad(angle))
+			for property in ["flow_speed", "distortion", "wake_strength", "spark_strength"]:
+				EFFECT_LAYER.set_parameter(_material, property, rules.ribbon_visual.get("ribbon_" + property))
+		else:
+			if not _ribbon_material:
+				_ribbon_material = EFFECT_LAYER.material(preload("res://shaders/combat/player_sword_ribbon.gdshader"))
+			_material = _ribbon_material
+		stretch = rules.ribbon_visual.profile(progress, fade_progress)
+		var style := rules.ribbon_visual
+		for property in ["inner_ratio", "pixel_size", "blade_color", "middle_color", "tail_color", "blade_enabled", "trail_enabled"]:
+			EFFECT_LAYER.set_parameter(_material, property, style.get("ribbon_" + property))
+		EFFECT_LAYER.set_parameter(_material, "release", fade_progress)
+		EFFECT_LAYER.set_parameter(_material, "blade_presence", stretch.z)
 	elif arc_mode:
 		if not _arc_material:
 			_arc_material = EFFECT_LAYER.material(preload("res://shaders/combat/player_sword_arc.gdshader"))
@@ -57,9 +93,14 @@ func display(origin: Vector3, heading: Vector3, radius: float, angle: float, rev
 		_material = _frame_material
 	if arc_mode:
 		EFFECT_LAYER.set_parameter(_material, "attack_radius", radius)
-		EFFECT_LAYER.set_parameter(_material, "band_width", rules.arc_width * clampf(pow(radius / rules.normal_range, 0.25), 1.0, 1.6))
-		EFFECT_LAYER.set_parameter(_material, "trail_angle", deg_to_rad(rules.arc_trail_degrees))
-		if not meowa_arc:
+		var width := rules.arc_width * clampf(pow(radius / rules.normal_range, 0.25), 1.0, 1.6)
+		if meowa_arc: width *= 1.0 + 0.35 * rules.meowa_visibility_strength
+		if ribbon: width = rules.ribbon_visual.ribbon_width * clampf(pow(radius / rules.normal_range, 0.25), 1.0, 1.6) * stretch.y
+		EFFECT_LAYER.set_parameter(_material, "band_width", width)
+		var trail_angle := deg_to_rad(rules.ribbon_visual.ribbon_degrees if ribbon else rules.arc_trail_degrees) * stretch.x
+		if ribbon: trail_angle = minf(trail_angle, deg_to_rad(angle) * maxf(progress, 0.001))
+		EFFECT_LAYER.set_parameter(_material, "trail_angle", trail_angle)
+		if not meowa_arc and not ribbon:
 			EFFECT_LAYER.set_parameter(_material, "pixel_size", rules.arc_pixel_size)
 			EFFECT_LAYER.set_parameter(_material, "blade_color", rules.arc_blade_color)
 			EFFECT_LAYER.set_parameter(_material, "tail_color", rules.arc_tail_color)
@@ -73,10 +114,10 @@ func display(origin: Vector3, heading: Vector3, radius: float, angle: float, rev
 			art_radius = rules.art_radius_pixels
 			EFFECT_LAYER.set_parameter(_material, "art_scale", canvas / art_radius)
 	if material_override != _material: material_override = _material
-	EFFECT_LAYER.set_parameter(_material, "opacity", rules.effect_opacity)
-	EFFECT_LAYER.set_parameter(_material, "energy", rules.effect_energy)
+	EFFECT_LAYER.set_parameter(_material, "opacity", rules.effect_opacity * presentation_opacity)
+	EFFECT_LAYER.set_parameter(_material, "energy", rules.ribbon_visual.ribbon_emission if ribbon else rules.effect_energy)
 	EFFECT_LAYER.set_parameter(_material, "leading_angle", lerpf(-deg_to_rad(angle * 0.5), deg_to_rad(angle * 0.5), progress))
-	if not meowa_arc: EFFECT_LAYER.set_parameter(_material, "fade", 1.0 - fade_progress)
+	if not meowa_arc and not ribbon: EFFECT_LAYER.set_parameter(_material, "fade", 1.0 - fade_progress)
 	global_position = origin
 	global_basis = Basis(Vector3.UP, atan2(-heading.x, -heading.z))
 	var camera := get_viewport().get_camera_3d()
@@ -86,8 +127,9 @@ func display(origin: Vector3, heading: Vector3, radius: float, angle: float, rev
 	var toward := Vector2(view.x, view.z)
 	var sideways := Vector2(-toward.y, toward.x)
 	# 朝镜头抬起，避免浅俯视下某些出剑方向变成一条线；左右刀附加小幅斜切。
-	var slope := -toward * tan(deg_to_rad(rules.effect_tilt_degrees))
-	slope += sideways * tan(deg_to_rad(rules.effect_tilt_degrees * 0.35)) * (-1.0 if reverse else 1.0)
+	var tilt := rules.ribbon_visual.ribbon_view_tilt if ribbon and rules.ribbon_visual.ribbon_layered_enabled else rules.effect_tilt_degrees
+	var slope := -toward * tan(deg_to_rad(tilt))
+	slope += sideways * tan(deg_to_rad(tilt * 0.35)) * (-1.0 if reverse else 1.0)
 	slope = slope.limit_length(maxf(0.0, rules.effect_height - 0.08) / radius)
 	EFFECT_LAYER.set_parameter(_material, "plane_slope", slope)
 	var layout := Vector4(rules.effect_height, art_radius, canvas.x, canvas.y)
@@ -102,15 +144,24 @@ func display(origin: Vector3, heading: Vector3, radius: float, angle: float, rev
 		var uvs := PackedVector2Array()
 		var flat_ground: bool = flat or surface.flat_ground(origin, radius)
 		var half := deg_to_rad(angle * 0.5)
-		for angular in ANGLES + 1:
-			var theta := lerpf(-half, half, float(angular) / ANGLES)
-			var radial := Vector3(sin(theta), 0.0, -cos(theta))
+		# 仅复用局部角度模板，不缓存当前墙体命中或地面裁切结果。
+		if _radial_angle != angle:
+			_radial_angle = angle
+			_radials.clear()
+			for angular in ANGLES + 1:
+				var theta := lerpf(-half, half, float(angular) / ANGLES)
+				_radials.append(Vector3(sin(theta), 0.0, -cos(theta)))
+		var space := get_world_3d().direct_space_state if not flat else null
+		if not flat:
+			_wall_ray.from = origin + Vector3.UP * 0.45
+			_wall_ray.exclude = excluded
+		for radial in _radials:
 			var direction := global_basis * radial
 			var limit := radius
 			if not flat:
 				if not flat_ground: limit = _collision.ground_limit(path, origin, direction, limit, origin.y, rules.height_tolerance)
-				var query := PhysicsRayQueryParameters3D.create(origin + Vector3.UP * 0.45, origin + Vector3.UP * 0.45 + direction * limit, 1, excluded)
-				var hit := get_world_3d().direct_space_state.intersect_ray(query)
+				_wall_ray.to = origin + Vector3.UP * 0.45 + direction * limit
+				var hit := space.intersect_ray(_wall_ray)
 				if not hit.is_empty(): limit = maxf(0.0, origin.distance_to(hit.position - Vector3.UP * 0.45) - 0.02)
 			for ring in RINGS + 1:
 				var distance := limit * float(ring) / RINGS

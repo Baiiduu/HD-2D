@@ -1,7 +1,7 @@
 extends RefCounted
 
-## One synchronous prediction owns this read-only query view.
-## Never retain it in actual flight/attack state or across an await/callback.
+## One synchronous prediction or crowd-outline query owns this read-only view.
+## Never retain it in flight/attack state or across an await/callback.
 ## Packed buffers remain the authoritative post-move index; no Node scan/copy.
 const EMPTY_CELL: Array = []
 const BASE_INDEX = preload("res://scripts/combat/wave_enemy_spatial_index.gd")

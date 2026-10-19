@@ -27,6 +27,8 @@ var _support_bounds := AABB(Vector3.INF, Vector3.ZERO)
 var _support_margin := 0.0
 var _baking := false
 var enabled := true
+## Changes revoke pursuit packets immediately; no per-actor world rescan.
+var pursuit_revision := 0
 
 func _ready() -> void:
 	var tree := get_tree()
@@ -124,6 +126,7 @@ func invalidate_shape(shape: Shape3D) -> void:
 
 func make_dynamic(body: Node) -> void:
 	if _baking: return
+	pursuit_revision += 1
 	if is_instance_valid(_support) and body == _support:
 		_support = null
 		_support_entry.clear()
@@ -148,10 +151,12 @@ func _node_added(node: Node) -> void:
 		if node.get_world_3d() != get_world_3d(): return
 		if node.collision_layer == 2 and node.get("wave_mode") == true: return
 		_dynamic[node] = true
+		pursuit_revision += 1
 	elif node is CollisionShape3D or node is CollisionPolygon3D:
 		make_dynamic(node.get_parent())
 
 func _node_removed(node: Node) -> void:
+	if node is PhysicsBody3D: pursuit_revision += 1
 	if node == _support:
 		_support = null
 		_support_entry.clear()
@@ -230,6 +235,7 @@ func _key(point: Vector3) -> Vector2i:
 	return Vector2i(floori(point.x / CELL), floori(point.z / CELL))
 
 func _rebuild() -> void:
+	pursuit_revision += 1
 	_occupied.clear()
 	for body in _static.keys():
 		var entry: Dictionary = _static[body]
@@ -316,6 +322,24 @@ func clear_motion(body: CharacterBody3D, support: StaticBody3D, motion: Vector3)
 	if owners.size() != 1 or body.shape_owner_get_shape_count(owners[0]) != 1: return false
 	if body.shape_owner_get_owner(owners[0]) != collider or body.shape_owner_get_shape(owners[0], 0) != collider.shape or body.shape_owner_get_transform(owners[0]) != collider.transform: return false
 	return _dynamic_clear(swept, mask, NO_EXCLUSIONS, body, support)
+
+## Main-thread packet preparation, once per physics step and navigation size.
+## A relevant live blocker rejects this backend, so its transform is never
+## cached. Existing live queries and actual body movement remain authoritative.
+func prepare_pursuit_batch(batch: PursuitQueryBatch, mask: int, excluded: Array[RID]) -> bool:
+	if not enabled or mask & 2: return false
+	_validate_bindings()
+	if _dirty: _rebuild()
+	var support: StaticBody3D = source.call("ground_collision_body")
+	if not is_instance_valid(support) or support != _support or not excluded.has(support.get_rid()): return false
+	if not _occupied.is_empty() and _prefix.is_empty(): return false
+	for other in _dynamic:
+		if not is_instance_valid(other): continue
+		# Even a currently masked-out live body can change layers mid-step.
+		if not excluded.has(other.get_rid()): return false
+	batch.obstacle_cells = _grid_bounds
+	batch.obstacle_prefix = _prefix
+	return true
 
 ## Navigation uses its own shape, margin, height, mask and exclusions. A body
 ## certificate is never reused as proof for a differently sized query sphere.

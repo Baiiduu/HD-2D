@@ -1,6 +1,9 @@
 class_name GameAudio
 extends Node3D
 
+## 已发生的尸体演出阶段；不由音效层推算或施加物理动作。
+signal death_presentation(stage: StringName, point: Vector3)
+
 enum Kind { ATTACK, HIT, DEATH, DANGER, HURT }
 const PRIORITIES := [40, 10, 5, 80, 100]
 const BUSES := [&"Combat", &"Music", &"Ambience", &"UI", &"Movement"]
@@ -9,6 +12,7 @@ const BUSES := [&"Combat", &"Music", &"Ambience", &"UI", &"Movement"]
 @export var player: Node3D
 @export var camera: Camera3D
 @export var session: Node
+@export var balance: CombatAudioBalance
 @export_group("全局战斗音效")
 @export var enabled := true:
 	set(value):
@@ -54,8 +58,13 @@ var _clock := 0.0
 var _frozen := false
 var _recent: Array[Dictionary] = []
 var _last_request: Dictionary = {}
+var _cue_clock: Dictionary = {}
 var _last_clip: Dictionary = {}
 var _mix_values: Array = []
+var _charge_music_duck := 0.0
+var _charge_ambience_duck := 0.0
+var _kill_music_duck := 0.0
+var _kill_ambience_duck := 0.0
 var mix := AudioMixSettings.new()
 var _stats := {"played": 0, "merged": 0, "budget_dropped": 0, "distance_dropped": 0, "preempted": 0}
 
@@ -120,6 +129,8 @@ func _process(delta: float) -> void:
 	_recent = _recent.filter(func(item): return _clock - item.time < merge_window)
 	for key in _last_request.keys():
 		if _clock - _last_request[key] > 1.0: _last_request.erase(key)
+	for cue in _cue_clock.keys():
+		if _clock - _cue_clock[cue] > 1.0: _cue_clock.erase(cue)
 	for slot in _voices:
 		if not slot.active: continue
 		if not is_instance_valid(slot.source) or not slot.source.is_inside_tree():
@@ -156,7 +167,7 @@ func _update_spatial(slot: Dictionary, follow := true) -> void:
 	var gain := _spatial_gain(slot.position, slot.priority)
 	slot.voice.global_position = slot.position
 	slot.voice.panning_strength = panning_strength
-	slot.voice.volume_db = slot.gain_db + mix.clip_gain_db(slot.voice.stream) + linear_to_db(maxf(gain, 0.00001))
+	slot.voice.volume_db = slot.gain_db + cue_gain_db(slot.cue) + mix.clip_gain_db(slot.voice.stream) + linear_to_db(maxf(gain, 0.00001))
 	slot["score"] = slot.priority * 1000.0 + slot.voice.volume_db
 
 ## 统一声音事件：source 为生命周期拥有者，position 为实际出声位置。
@@ -171,6 +182,7 @@ func request(event: Dictionary) -> AudioStreamPlayer3D:
 	var cue: StringName = event.get("cue", &"")
 	var kind: int = clampi(event.get("kind", Kind.ATTACK), Kind.ATTACK, Kind.HURT)
 	var priority: int = clampi(event.get("priority", PRIORITIES[kind]), 0, 100)
+	if balance: priority = balance.priority_for(cue, priority)
 	var gain_db: float = event.get("volume_db", -10.0)
 	var pitch: float = event.get("pitch", 1.0)
 	if not is_instance_valid(source) or not source.is_inside_tree() or clips.is_empty() or cue == &"": return null
@@ -180,12 +192,16 @@ func request(event: Dictionary) -> AudioStreamPlayer3D:
 		_stats.distance_dropped += 1
 		return null
 	var key := "%d:%s" % [source.get_instance_id(), cue]
+	var interval := balance.interval_for(cue) if balance else 0.0
+	if interval > 0.0 and _clock - float(_cue_clock.get(cue, -10.0)) < interval:
+		_stats.merged += 1
+		return null
 	if priority < 70 and _clock - float(_last_request.get(key, -10.0)) < minimum_interval: return null
 	if priority < 70 and kind in [Kind.HIT, Kind.DEATH]:
 		for recent in _recent:
 			var offset: Vector3 = position - recent.position
 			offset.y = 0.0
-			if recent.kind == kind and _clock - recent.time < merge_window and offset.length() <= merge_radius:
+			if recent.kind == kind and recent.get("merge_group", &"") == event.get("merge_group", &"") and _clock - recent.time < merge_window and offset.length() <= merge_radius:
 				_stats.merged += 1
 				return null
 	var active := 0
@@ -204,11 +220,12 @@ func request(event: Dictionary) -> AudioStreamPlayer3D:
 			if worst.is_empty() or slot.score < worst.score: worst = slot
 	var normal_limit := _voices.size() - clampi(important_reserve, 0, _voices.size() - 1)
 	var full := active >= _voices.size() or (priority < 70 and normal >= normal_limit)
-	if priority < 70 and cue_count >= per_cue_limit:
+	var limit := clampi(int(balance.voice_limits[cue]), 1, max_voices) if balance and balance.voice_limits.has(cue) else (per_cue_limit if priority < 70 else max_voices)
+	if cue_count >= limit:
 		_stats.budget_dropped += 1
 		return null
 	if full:
-		var score := priority * 1000.0 + gain_db + linear_to_db(gain)
+		var score := priority * 1000.0 + gain_db + cue_gain_db(cue) + linear_to_db(gain)
 		if worst.is_empty() or score <= float(worst.score) + 0.1:
 			_stats.budget_dropped += 1
 			return null
@@ -231,9 +248,13 @@ func request(event: Dictionary) -> AudioStreamPlayer3D:
 	voice.play()
 	_last_clip[cue] = valid[index]
 	_last_request[key] = _clock
-	_recent.append({"kind": kind, "position": position, "time": _clock, "source_id": source.get_instance_id()})
+	if interval > 0.0: _cue_clock[cue] = _clock
+	_recent.append({"kind": kind, "position": position, "time": _clock, "source_id": source.get_instance_id(), "merge_group": event.get("merge_group", &"")})
 	_stats.played += 1
 	return voice
+
+func cue_gain_db(cue: StringName) -> float:
+	return balance.gain_db(cue) if balance else 0.0
 
 func stop_source(source: Node) -> void:
 	for slot in _voices:
@@ -262,6 +283,16 @@ func stop_all() -> void:
 	for slot in _voices: _release(slot)
 	_recent.clear()
 	_last_request.clear()
+	_cue_clock.clear()
+
+## 持续动作升调时同样核对来源与事件，不能修改已复用的受伤等声音。
+func set_cue_pitch(source: Node, cue: StringName, pitch: float) -> bool:
+	if not is_finite(pitch) or pitch <= 0.0: return false
+	for slot in _voices:
+		if slot.active and slot.source == source and slot.cue == cue:
+			slot.voice.pitch_scale = clampf(pitch, 0.25, 4.0)
+			return true
+	return false
 
 func set_frozen(value: bool) -> void:
 	_frozen = value
@@ -278,10 +309,25 @@ func get_debug_state() -> Dictionary:
 	result["frozen"] = _frozen
 	return result
 
+## 表现层临时退让；不写入资源或本机混音，局内反馈继续使用原有预算。
+func set_charge_duck(music_db: float, ambience_db: float) -> void:
+	if not is_finite(music_db) or not is_finite(ambience_db): return
+	_charge_music_duck = clampf(music_db, -12.0, 0.0)
+	_charge_ambience_duck = clampf(ambience_db, -12.0, 0.0)
+	_apply_mix()
+
+func set_kill_duck(music_db: float, ambience_db: float) -> void:
+	if not is_finite(music_db) or not is_finite(ambience_db): return
+	_kill_music_duck = clampf(music_db, -6.0, 0.0)
+	_kill_ambience_duck = clampf(ambience_db, -6.0, 0.0)
+	_apply_mix()
+
 func _apply_mix() -> void:
 	var values: Array = [combat_volume_db, music_volume_db, ambience_volume_db, ui_volume_db, movement_volume_db,
 		compression_enabled, compression_threshold_db, compression_ratio, limiter_enabled, limiter_ceiling_db]
 	for index in BUSES.size(): values[index] += float(mix.bus_gains.get(String(BUSES[index]), 0.0))
+	values[1] += minf(_charge_music_duck, _kill_music_duck)
+	values[2] += minf(_charge_ambience_duck, _kill_ambience_duck)
 	if values == _mix_values: return
 	_mix_values = values
 	for index in BUSES.size():

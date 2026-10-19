@@ -177,12 +177,16 @@ func defeat(enemy: WaveEnemy) -> void:
 func run() -> void:
 	var terrain_hash := FileAccess.get_sha256("res://data/world/world_terrain.tres")
 	world = load("res://scenes/world/world.tscn").instantiate()
+	world.get_node("WorldEntry").preview_on_direct_run = false
+	world.get_node("WavePresentation").enabled = false
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("WavePrototype/RunGrowth").enabled = false
 	root.add_child(world)
 	current_scene = world
 	await settle(16)
 	wave = world.get_node("WavePrototype")
+	# 批次规则使用即时生成夹具；新预告的容量与时序有独立回归。
+	wave.spawn_shadow_settings = null
 	wave.set_physics_process(false)
 	wave.player.set_physics_process(false)
 	source_waves.assign(wave.waves)

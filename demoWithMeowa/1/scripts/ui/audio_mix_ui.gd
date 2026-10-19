@@ -283,6 +283,17 @@ func _refresh() -> void:
 		_preview.volume_db = _event_volume(entry.cue) + audio.mix.clip_gain_db(_preview.stream)
 
 func _event_volume(cue: StringName) -> float:
+	return _event_base_volume(cue) + audio.cue_gain_db(CoreSoundBank.playback_cue(cue))
+
+func _event_base_volume(cue: StringName) -> float:
+	if cue in [&"leaf_windup", &"lantern_shot", &"frog_pulse", &"pot_shatter"]: return -12.0
+	if cue in [&"kill_slime", &"kill_slime_retired", &"kill_group", &"kill_air", &"kill_land"]:
+		var gain := feedback.kill_audio_rules.gain_for(cue) if feedback.kill_audio_rules else 0.0
+		return feedback.enemy_volume_db + feedback.death_impact_gain_db + gain
+	if cue == &"launch": return feedback.action_volume_db + (feedback.launch_full_gain_db if feedback.launch_release_audio_enabled else 0.0)
+	if cue == &"charge_loop": return feedback._charge_volume(1.0)
+	if cue == &"charge_wind": return feedback._charge_wind_volume(1.0)
+	if cue == &"charge_ready": return feedback.action_volume_db + (feedback.charge_ready_gain_db if feedback.charge_progress_audio_enabled else -2.0)
 	if cue == &"flight_loop": return feedback.action_volume_db + feedback.flight_gain_db
 	if cue in [&"bounce_stone", &"bounce_wood", &"bounce_metal"]:
 		return feedback.action_volume_db + feedback.bounce_gain_db
@@ -290,14 +301,16 @@ func _event_volume(cue: StringName) -> float:
 		var storm := feedback.session.get_node_or_null("RicochetStorm") as RicochetStorm if feedback.session else null
 		if storm: return storm.hit_volume_db + (storm.propagation_layer_gain_db if cue == &"storm_chain" else 0.0)
 		return -19.0 if cue == &"storm_strike" else -22.0
-	if cue in [&"enemy_hit_soft", &"enemy_hit_hard", &"slime_death", &"creature_death", &"split_spawn"]:
+	if cue in [&"enemy_hit_common", &"enemy_hit_soft", &"enemy_hit_hard", &"slime_death", &"creature_death", &"split_spawn"]:
+		if cue in [&"slime_death", &"creature_death"] and feedback.player and feedback.player.action_visuals and feedback.player.action_visuals.melee_death_enabled:
+			return feedback.enemy_volume_db + feedback.death_impact_gain_db
 		return feedback.enemy_volume_db
 	if cue == &"growth_apply" and feedback.session:
 		var draft := feedback.session.skill_draft
 		if draft and draft.initial_choice:
 			var ui := draft.initial_choice._audio
 			return ui.volume_db + float(ui.sounds.gains_db.get(&"confirm", 0.0))
-	var offsets := {&"charge_start": -2.0, &"charge_loop": -3.0, &"charge_ready": -2.0,
+	var offsets := {&"charge_start": -2.0,
 		&"flight_end": -5.0, &"push_stun": -3.0, &"player_hurt": 1.0,
 		&"experience": -5.0, &"low_health": -2.0, &"card_reveal": -4.0,
 		&"reroll": -2.0, &"wave_start": -3.0, &"horde_arrival": -4.0}
@@ -315,6 +328,7 @@ func play_selected() -> void:
 	_preview.stream = entry.clip
 	_preview.bus = _event_bus(entry.cue)
 	_preview.volume_db = _event_volume(entry.cue) + audio.mix.clip_gain_db(entry.clip)
+	_preview.pitch_scale = feedback._charge_pitch(1.0) if entry.cue == &"charge_loop" else 1.0
 	_preview.play()
 	_status.text = "试听 %s · %s%s" % [entry.id, entry.label, "（当前已静音）" if _mute.button_pressed else ""]
 

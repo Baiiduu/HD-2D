@@ -99,7 +99,9 @@ func apply_pose() -> void:
 			frame = 3
 		else:
 			frame = 7
-		_player.sprite.texture = POSES.get_frame_texture(&"dodge", frame)
+		var poses := _player.animations if _player.animations and _player.animations.has_animation(&"dash") else POSES
+		var action: StringName = &"dash" if poses == _player.animations else &"dodge"
+		_player.sprite.texture = poses.get_frame_texture(action, mini(frame, poses.get_frame_count(action) - 1))
 	else:
 		# 当前只有侧面闪避美术；背向保留背向贴图，避免突然转身。
 		var name := StringName("idle_" + str(_facing))
@@ -178,7 +180,7 @@ func _frozen() -> bool:
 	return is_instance_valid(_player.skill_manager) and _player.skill_manager.combat_frozen
 
 func _enabled() -> bool:
-	return _player.skill_manager.is_skill_enabled(CharacterSkillManager.DASH) if is_instance_valid(_player.skill_manager) else _player.blink_enabled
+	return _player.blink_enabled and (_player.skill_manager.is_skill_enabled(CharacterSkillManager.DASH) if is_instance_valid(_player.skill_manager) else true)
 
 func cancel() -> void:
 	discard_buffered_input()

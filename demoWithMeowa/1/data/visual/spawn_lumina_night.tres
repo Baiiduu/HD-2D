@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="SpawnVisualPreset" format=3]
+[gd_resource type="Resource" script_class="SpawnVisualPreset" format=3 uid="uid://bwmftycxfcjyb"]
 
-[ext_resource type="Script" path="res://scripts/world/spawn_visual_preset.gd" id="1_karq0"]
+[ext_resource type="Script" uid="uid://c8qywwip337bn" path="res://scripts/world/spawn_visual_preset.gd" id="1_karq0"]
 
 [resource]
 script = ExtResource("1_karq0")

@@ -107,6 +107,8 @@ func growth_and_summon_checks() -> void:
 
 func run() -> void:
 	world = load("res://scenes/world/world.tscn").instantiate()
+	world.get_node("WorldEntry").preview_on_direct_run = false
+	world.get_node("WavePresentation").enabled = false # 清波运镜由人工验收，不占用本规则夹具的结束时序。
 	world.get_node("LoadoutUI").save_enabled = false
 	wave = world.get_node("WavePrototype")
 	wave.native_chase_enabled = false
@@ -122,6 +124,8 @@ func run() -> void:
 	root.add_child(world)
 	current_scene = world
 	await settle(12)
+	# 场景配置在进入树时绑定，规则夹具随后关闭预告以比较原有后端时序。
+	wave.spawn_shadow_settings = null
 	player = wave.player
 	player.set_physics_process(false)
 	wave.set_physics_process(false)

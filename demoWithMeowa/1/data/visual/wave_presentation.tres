@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="WavePresentationSettings" format=3 uid="uid://bnsbyli1nncth"]
+
+[ext_resource type="Texture2D" uid="uid://b6b0jt5nlmy3f" path="res://assets/meowa/ui/waves/wave_atlas.png" id="atlas"]
+[ext_resource type="Script" uid="uid://c43koqgvd8067" path="res://scripts/world/wave_presentation_settings.gd" id="settings"]
+
+[sub_resource type="AtlasTexture" id="BattleFrame"]
+atlas = ExtResource("atlas")
+region = Rect2(31, 94, 962, 136)
+
+[sub_resource type="AtlasTexture" id="ClearFrame"]
+atlas = ExtResource("atlas")
+region = Rect2(30, 321, 964, 147)
+
+[sub_resource type="AtlasTexture" id="GroundPulse"]
+atlas = ExtResource("atlas")
+region = Rect2(297, 510, 431, 419)
+
+[resource]
+resource_name = "正式地图 · 无尽波次演出"
+script = ExtResource("settings")
+clear_seconds = 1.4
+animated_opening_enabled = true
+compact_clear_enabled = true
+battle_frame = SubResource("BattleFrame")
+clear_frame = SubResource("ClearFrame")
+pulse_texture = SubResource("GroundPulse")

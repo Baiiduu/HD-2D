@@ -12,7 +12,6 @@ signal normal_attack_requested(direction: Vector3)
 signal vitals_changed
 
 const ANIMATION_REFERENCE_SPEED := 4.0
-const MOVEMENT_KEYS := [KEY_W, KEY_A, KEY_S, KEY_D, KEY_UP, KEY_LEFT, KEY_DOWN, KEY_RIGHT]
 @export_group("移动与动画")
 @export var speed: float = 4.0
 @export var animations: SpriteFrames
@@ -120,7 +119,10 @@ var _animation: StringName = &"idle"
 var _animation_frame := 0
 var _animation_elapsed := 0.0
 var _movement_speed := 0.0
+## 命中定格的明确持有状态；防止切入帧仍携带变速前的 delta。
+var hit_stop_active := false
 var _run_session: WavePrototype
+var _controls: Node
 var skill_manager: CharacterSkillManager
 var _facing: StringName = &"side"
 var _side_flip_h := false
@@ -129,6 +131,8 @@ var _has_landed_once := false
 var _blink: PlayerBlink
 var body_ricochet: PlayerRicochet
 var flight_trail: PlayerFlightTrail
+var motion_feedback: PlayerMotionFeedback
+var surface_feedback: PlayerSurfaceFeedback
 var bounce_effect: PlayerBounceEffect
 var fire_trail: PlayerFireTrail
 var action_animator: PlayerActionAnimator
@@ -192,6 +196,7 @@ func restore_mana(amount: float) -> float:
 	return current_mana - before
 
 func _ready() -> void:
+	_controls = get_node("/root/GameControls")
 	_run_session = get_parent().get_node_or_null("WavePrototype") as WavePrototype
 	_sync_vitals()
 	if animations:
@@ -205,6 +210,7 @@ func _ready() -> void:
 		add_child(skill_manager)
 	_blink = skill_manager.dash
 	body_ricochet = skill_manager.body_ricochet
+	body_ricochet.impact_recorded.connect(func(impact: RicochetImpact): action_animator.request_bounce(impact.outgoing_velocity.normalized()))
 	if flight_trail_settings:
 		flight_trail = PlayerFlightTrail.new()
 		flight_trail.name = "FlightTrail"
@@ -220,6 +226,12 @@ func _ready() -> void:
 		skill_manager.set_combat_frozen(_run_session.combat_frozen)
 
 	if action_visuals:
+		motion_feedback = PlayerMotionFeedback.new()
+		motion_feedback.name = "MotionFeedback"
+		add_child(motion_feedback)
+		surface_feedback = PlayerSurfaceFeedback.new()
+		surface_feedback.name = "SurfaceFeedback"
+		add_child(surface_feedback)
 		bounce_effect = PlayerBounceEffect.new()
 		bounce_effect.name = "BounceEffect"
 		add_child(bounce_effect)
@@ -232,6 +244,7 @@ func _on_skill_phase_changed(phase: WavePrototype.Phase) -> void:
 	elif phase == WavePrototype.Phase.RESULT: skill_manager.cancel_actions()
 
 func _process(delta: float) -> void:
+	if hit_stop_active: return
 	if _blink.active and _blink.movement_locked:
 		_blink.apply_pose()
 		return
@@ -257,12 +270,11 @@ func _process(delta: float) -> void:
 	sprite.flip_h = _side_flip_h if _facing == &"side" else false
 
 func _physics_process(delta: float) -> void:
+	if hit_stop_active: return
 	# 面板只占用控制输入，人物物理、动画与整个世界继续更新。
 	var input_blocked := get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null
-	var movement_keys := 0
-	for index in MOVEMENT_KEYS.size():
-		if Input.is_physical_key_pressed(MOVEMENT_KEYS[index]): movement_keys |= 1 << index
-	# 每四位依次为 W/A/S/D 与 ↑/←/↓/→，兼用键不叠加移动速度。
+	var movement_keys: int = _controls.movement_mask()
+	# 每四位依次为四个方向的主键与备选键，分别跟踪新按下，兼用键不叠加速度。
 	var direction := Vector2(
 		float(bool(movement_keys & 0x88)) - float(bool(movement_keys & 0x22)),
 		float(bool(movement_keys & 0x44)) - float(bool(movement_keys & 0x11))

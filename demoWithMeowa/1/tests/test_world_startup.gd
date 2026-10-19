@@ -24,9 +24,11 @@ func run() -> void:
 		check(saved.get_value("game_manager", "systems/" + String(id), true) == true, "Normal project startup enables " + String(id))
 	var profile := load("res://data/combat/scenes/world/configuration.tres") as SceneCombatConfiguration
 	check(not profile.population_rules.simulation_mode, "World starts normal combat instead of bypassing growth in stress simulation")
-	check(profile.sword_rules.effect_mode == PlayerSwordRules.SlashVisual.MEOWA_ARC and profile.sword_rules.frames != null, "World retains the authored animated sword trail")
+	check(profile.sword_rules.effect_mode == PlayerSwordRules.SlashVisual.NATIVE_RIBBON and profile.sword_rules.ribbon_visual != null and profile.sword_rules.ribbon_visual.resource_path == "res://data/visual/sword_slash_world.tres", "World retains the authored flowing native sword trail")
 	check(is_equal_approx(profile.default_enemy.separation_radius, 0.65) and is_equal_approx(profile.default_enemy.separation_strength, 0.8) and is_equal_approx(profile.default_enemy.pursuit_flank_strength, 0.15), "World preserves the independently tuned crowd avoidance")
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
+	# 入场由独立用例覆盖；隔离用户临时开启的人工预览，不回写场景。
+	if world.has_node("WorldEntry"): world.get_node("WorldEntry").preview_on_direct_run = false
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("MapEffects/BGM").music_enabled = false
 	world.get_node("MapEffects/Weather").rain_audio_enabled = false

@@ -9,7 +9,7 @@ size = Vector3(4.16, 2.2, 2.76)
 [sub_resource type="BoxShape3D" id="residential"]
 size = Vector3(5.8, 3.985, 3.8)
 
-[node name="ConvenienceStore2" type="Node3D"]
+[node name="ConvenienceStore2" type="Node3D" groups=["occlusion_buildings"]]
 script = ExtResource("script")
 
 [node name="Model" parent="." instance=ExtResource("model")]

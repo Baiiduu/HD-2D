@@ -76,7 +76,7 @@ func describe_skill_upgrade(from_level: int, to_level: int) -> String:
 	var after := get_attack_stats(to_level)
 	var detail := skill_definition.level_data(to_level).description
 	if from_level == 0:
-		return "穿透敌人，撞墙或镜印反射\n伤害 %s\n每次 %d 枚 · 弹射 %d 次\n飞行距离 %.1f 米" % [str(snappedf(after.damage, 0.1)), after.count, after.bounces, after.distance]
+		return "命中怪物、墙体或镜印时反射\n伤害 %s\n每次 %d 枚 · 共用弹射 %d 次\n飞行距离 %.1f 米" % [str(snappedf(after.damage, 0.1)), after.count, after.bounces, after.distance]
 	return "伤害 %s → %s · 弹射 %d → %d 次\n齐射 %d → %d 枚 · 飞行 %.1f → %.1f 米\n%s" % [str(snappedf(before.damage, 0.1)), str(snappedf(after.damage, 0.1)), before.bounces, after.bounces, before.count, after.count, before.distance, after.distance, detail]
 
 func _active() -> bool:
@@ -141,29 +141,47 @@ func _eligible(enemy: WaveEnemy, shot: Dictionary) -> bool:
 	return enemy in session.enemies and not enemy.dead and enemy.spawn_delay <= 0.0 and not shot.hits.has(enemy.get_instance_id()) and absf(enemy.global_position.y - shot.plane) <= shot.tolerance
 
 func _advance_shot(shot: Dictionary, delta: float) -> void:
-	if shot.generation != session._generation: return
+	if shot.generation != session._generation or shot not in _shots: return
 	var remaining: float = minf(shot.stats.speed * delta, shot.stats.distance - shot.travelled)
 	var space := get_world_3d().direct_space_state
 	while remaining > 0.00001:
+		if not _active() or shot not in _shots or shot.generation != session._generation: return
 		var start: Vector3 = shot.position
 		var distance := _collision.ground_limit(session._path, start, shot.direction, remaining, shot.plane, shot.tolerance)
 		var stopped := distance < remaining - 0.00001
+		if stopped and distance <= 0.00001:
+			_finish_shot(shot)
+			return
 		var wall := _collision.wall_contact(space, start, start + shot.direction * distance, shot.stats.radius, [session.player.get_rid()], ProjectileCollision.REFLECTION_MASK)
 		if not wall.is_empty(): distance = minf(distance, wall.distance)
-		var end: Vector3 = start + shot.direction * distance
-		for contact in _collision.enemy_contacts(space, start, end, shot.stats.radius, _eligible.bind(shot)):
-			if not _active() or shot not in _shots or shot.generation != session._generation: return
+		var contact := _collision.first_enemy_contact(space, start, start + shot.direction * distance, shot.stats.radius, _eligible.bind(shot))
+		if not contact.is_empty() and (wall.is_empty() or contact.distance < distance - 0.00001):
 			var enemy: WaveEnemy = contact.enemy
-			if not is_instance_valid(enemy) or enemy.dead: continue
-			shot.hits[enemy.get_instance_id()] = true
+			var enemy_id := enemy.get_instance_id()
+			var incoming: Vector3 = shot.direction
+			shot.position = start + incoming * contact.distance
+			shot.travelled += contact.distance
+			remaining -= contact.distance
+			shot.effect.move_to(shot.position, incoming)
+			shot.effect.show_contact(contact.point, true)
+			var normal: Vector3 = contact.normal
+			normal.y = 0.0
+			normal = normal.normalized() if not normal.is_zero_approx() else -incoming
+			# Commit the reflection before damage callbacks may freeze/end the battle.
+			remaining = maxf(0.0, remaining - _reflect_shot(shot, normal))
+			shot.hits[enemy_id] = true
 			var before := enemy.health
-			shot.effect.show_contact(start + shot.direction * contact.distance)
-			enemy.take_damage(shot.stats.damage, {"source": &"A03", "direction": shot.direction})
+			var hit_position := enemy.global_position
+			enemy.take_damage(shot.stats.damage, {"source": &"A03", "direction": incoming})
+			if not is_instance_valid(enemy): return
 			var dealt := before - enemy.health
 			if dealt > 0.0 or session.combat_modifiers.damage_disabled:
-				_play_sound(hit_sounds, &"prism_hit", enemy.global_position, GameAudio.Kind.HIT)
+				_play_sound(hit_sounds, &"prism_hit", hit_position, GameAudio.Kind.HIT)
 				hit_landed.emit(enemy, dealt)
 			if not _active() or shot not in _shots or shot.generation != session._generation: return
+			_play_sound(bounce_sounds, &"prism_bounce", contact.point, GameAudio.Kind.ATTACK)
+			continue
+		var end: Vector3 = start + shot.direction * distance
 		shot.position = end
 		shot.travelled += distance
 		remaining -= distance
@@ -176,12 +194,11 @@ func _advance_shot(shot: Dictionary, delta: float) -> void:
 		normal = normal.normalized()
 		shot.effect.show_contact(wall.point, true)
 		var terrain_contact: bool = wall.get("collider") != null and session.terrain.is_ancestor_of(wall.collider)
-		if wall.overlap or terrain_contact or normal.is_zero_approx() or shot.direction.dot(normal) >= -0.00001 or shot.bounces >= shot.stats.bounces:
+		if wall.overlap or terrain_contact:
 			_finish_shot(shot)
 			return
-		shot.direction = shot.direction.bounce(normal).normalized()
-		shot.bounces += 1
-		shot.hits.clear()
+		remaining = maxf(0.0, remaining - _reflect_shot(shot, normal))
+		if shot not in _shots: return
 		# 本次接触的宿主只按入射段命中一次，不在镜片内的零距离回程再扣血。
 		if wall.get("collider") is ProjectileCollision.MIRROR_SURFACE:
 			var source: WaveEnemy = wall.collider.enemy
@@ -189,16 +206,22 @@ func _advance_shot(shot: Dictionary, delta: float) -> void:
 		ProjectileCollision.show_reflection(wall.get("collider"))
 		_play_sound(bounce_sounds, &"prism_bounce", wall.point, GameAudio.Kind.ATTACK)
 		wall_bounced.emit(wall.point, normal)
-		if not _active() or shot not in _shots: return
-		# 极小法线偏移只用于脱离接触面，也计入飞行预算，防止贴墙零距离循环。
-		var separation := minf(0.003, shot.stats.distance - shot.travelled)
-		shot.position += normal * separation
-		shot.travelled += separation
-		remaining = maxf(0.0, remaining - separation)
-		shot.effect.move_to(shot.position, shot.direction)
-		if shot.travelled >= shot.stats.distance - 0.00001:
-			_finish_shot(shot)
-			return
+		if not _active() or shot not in _shots or shot.generation != session._generation: return
+
+func _reflect_shot(shot: Dictionary, normal: Vector3) -> float:
+	if normal.is_zero_approx() or shot.direction.dot(normal) >= -0.00001 or shot.bounces >= shot.stats.bounces:
+		_finish_shot(shot)
+		return 0.0
+	shot.direction = shot.direction.bounce(normal).normalized()
+	shot.bounces += 1
+	shot.hits.clear()
+	# Separation is real travelled distance, including for monster contacts.
+	var separation := minf(0.003, shot.stats.distance - shot.travelled)
+	shot.position += normal * separation
+	shot.travelled += separation
+	shot.effect.move_to(shot.position, shot.direction)
+	if shot.travelled >= shot.stats.distance - 0.00001: _finish_shot(shot)
+	return separation
 
 func _finish_shot(shot: Dictionary) -> void:
 	shot.effect.end_flight()

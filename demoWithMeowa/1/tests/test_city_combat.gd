@@ -29,7 +29,7 @@ func run() -> void:
 	check(world_profile.ricochet_rules.maximum_launch_speed == world_speed, "Changing city balance does not alter world balance")
 	city_profile.ricochet_rules.maximum_launch_speed = city_speed
 	var hashes := {}
-	for path in ["res://data/world/world_terrain.tres", "res://data/world/world_surface.tres", world_profile.resource_path]: hashes[path] = FileAccess.get_sha256(path)
+	for path in ["res://data/world/world_terrain.tres", "res://data/world/world_surface.res", world_profile.resource_path]: hashes[path] = FileAccess.get_sha256(path)
 	var city: Node3D = load("res://scenes/city/city.tscn").instantiate()
 	city.get_node("LoadoutUI").save_enabled = false
 	root.add_child(city)
