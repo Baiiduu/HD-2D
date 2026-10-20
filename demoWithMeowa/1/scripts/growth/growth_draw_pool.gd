@@ -6,6 +6,7 @@ extends RefCounted
 var _random := RandomNumberGenerator.new()
 var _preferred_ricochet: StringName = &""
 var _followup_misses := 0
+var free_selection := false
 
 func reset(seed_value := 0) -> void:
 	clear_followup()
@@ -17,6 +18,7 @@ func clear_followup() -> void:
 	_followup_misses = 0
 
 func record_choice(id: StringName, shown: Array[GrowthChoiceOption]) -> void:
+	if free_selection: return
 	var chosen: GrowthChoiceOption
 	for option in shown:
 		if option.id == id and option.enabled: chosen = option; break
@@ -38,6 +40,7 @@ func can_redraw(pool: Array[GrowthChoiceOption], shown: Array[GrowthChoiceOption
 	var ids := {}
 	for option in shown: ids[option.id] = true
 	var remaining := _available(pool)
+	if free_selection: return remaining.any(func(option: GrowthChoiceOption): return not ids.has(option.id))
 	var eligible: Array[GrowthChoiceOption] = []
 	var slots := shown.size()
 	var skills: Array[GrowthChoiceOption] = remaining.filter(_is_skill)
@@ -59,12 +62,12 @@ func draw(pool: Array[GrowthChoiceOption], count: int, previous: Array[GrowthCho
 	for option in previous: avoid[option.id] = true
 	var result: Array[GrowthChoiceOption] = []
 	var skills: Array[GrowthChoiceOption] = remaining.filter(_is_skill)
-	if count > 0 and not skills.is_empty():
+	if not free_selection and count > 0 and not skills.is_empty():
 		var skill := _pick(skills, avoid)
 		result.append(skill)
 		remaining.erase(skill)
 	var ricochets: Array[GrowthChoiceOption] = remaining.filter(func(option: GrowthChoiceOption): return option.ricochet_growth and not _is_skill(option))
-	if result.size() < count and not ricochets.is_empty():
+	if not free_selection and result.size() < count and not ricochets.is_empty():
 		var preferred := _followup(ricochets)
 		var ricochet := preferred if preferred else _pick(ricochets, avoid)
 		result.append(ricochet)

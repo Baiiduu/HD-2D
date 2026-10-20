@@ -33,6 +33,41 @@ func volume_checks() -> void:
 	batch.cover(points)
 	check(not batch.proves(Vector3(0, 0.6, 0), Vector3(4, 0.6, 0)), "Thin wall bounds cannot prove a blocked ray clear")
 	check(batch.proves(Vector3(0, 0.6, 1.5), Vector3(4, 0.6, 1.5)), "One live obstacle candidate list also proves rays that miss the obstacle")
+	var collider: CollisionShape3D = wall.get_child(0)
+	var original_shape := collider.shape
+	var convex := ConvexPolygonShape3D.new()
+	var vertices := PackedVector3Array()
+	for corner in 8: vertices.append(AABB(Vector3(-0.02, -0.5, -0.2), Vector3(0.04, 1.0, 0.4)).get_endpoint(corner))
+	convex.points = vertices
+	collider.shape = convex
+	await settle()
+	batch.cover(points)
+	check(batch._bounded, "A live convex prop keeps the synchronous preview bounds proof available")
+	check(not batch.proves(Vector3(0, 0.6, 0), Vector3(4, 0.6, 0)), "Convex prop bounds never certify a ray through its wall")
+	check(batch.proves(Vector3(0, 0.6, 1.5), Vector3(4, 0.6, 1.5)), "Convex prop bounds allow rays missing the prop without another native ray")
+	var native_shape := PhysicsServer3D.body_get_shape(wall.get_rid(), 0)
+	var expanded := PackedVector3Array()
+	for corner in 8: expanded.append(AABB(Vector3(-0.02, -0.5, -1.8), Vector3(0.04, 1.0, 3.6)).get_endpoint(corner))
+	PhysicsServer3D.shape_set_data(native_shape, expanded)
+	batch.cover(points)
+	check(batch._bounded and not batch.proves(Vector3(0, 0.6, 1.5), Vector3(4, 0.6, 1.5)), "Same-step native convex edits are read live before accepting an empty ray")
+	PhysicsServer3D.shape_set_data(native_shape, vertices)
+	var pose := Transform3D(Basis(Vector3.UP, 0.57).scaled(Vector3(1.2, 0.8, 1.6)), Vector3(0.1, 0, 0.1))
+	PhysicsServer3D.body_set_shape_transform(wall.get_rid(), 0, pose)
+	batch.cover(points)
+	var proved := 0
+	for index in 33:
+		var z := lerpf(-1.7, 1.7, float(index) / 32.0)
+		var from := Vector3(0, 0.6, z)
+		var to := Vector3(4, 0.6, z)
+		if not batch.proves(from, to): continue
+		proved += 1
+		var ray := PhysicsRayQueryParameters3D.create(from, to, 1, [player.get_rid()])
+		check(terrain.get_world_3d().direct_space_state.intersect_ray(ray).is_empty(), "Rotated and nonuniform convex bounds never omit an actual native ray hit")
+	check(proved > 0, "Rotated convex props still prove genuinely clear rays")
+	PhysicsServer3D.body_set_shape_transform(wall.get_rid(), 0, collider.transform)
+	collider.shape = original_shape
+	await settle()
 	wall.collision_layer = ProjectileCollision.MIRROR_SURFACE.COLLISION_LAYER
 	await settle()
 	batch.cover(points)

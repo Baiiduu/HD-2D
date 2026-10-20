@@ -84,7 +84,7 @@ func run() -> void:
 			var growth := battle.get_node("RunGrowth") as RunGrowth
 			growth.state.add_experience(3)
 			var score := battle.get_node("RunScore") as RunScore
-			score.state.record_kill(1234, 10, false, &"basic_sword", 0)
+			score.state.record_kill(1234, 10, false)
 			var available := battle.run_skill_manager.get_registered_ids().filter(battle.run_skill_manager.is_skill_available)
 			check(not available.is_empty() and battle.run_skill_manager.set_skill_level(available[0], 1), "The returning run has a learned skill")
 			check(battle.combat_modifiers.apply_buff(battle.get_node("RunBuffs").definitions[0]), "The returning run has shared growth")

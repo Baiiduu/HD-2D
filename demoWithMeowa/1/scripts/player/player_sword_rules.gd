@@ -10,13 +10,23 @@ enum SlashVisual { FRAME_ANIMATION, THIN_ARC, MEOWA_ARC, NATIVE_RIBBON }
 @export_range(0.0, 1000.0, 1.0) var damage := 10.0
 @export_range(0.05, 1.0, 0.05, "suffix:m") var height_tolerance := 0.55
 @export_group("普通攻击")
+## 起手和真实扫刃期间限制水平行走，收刀即可继续；弹射挥剑不受影响。
+@export var normal_stationary_enabled := false
+## 站定普攻独立起手；未启用时沿用完整动作节奏中的共用起手。
+@export_range(0.0, 0.3, 0.005, "suffix:s") var normal_windup_seconds := 0.10
+## 仅普通攻击按人物镜像选择固定扫向，并以真实剑术时钟分段播放现有动作。
+@export var normal_slash_alignment_enabled := false
+## 动画总帧进度中的起手结束、主斩击结束位置；World 十二帧为第 7～9 帧主斩击。
+@export var normal_attack_frame_breaks := Vector2(0.5, 0.75)
 @export_range(0.1, 3.0, 0.01, "suffix:s") var normal_interval := 0.55
 @export_range(0.3, 5.0, 0.01, "suffix:m") var normal_range := 1.52
 @export_range(30.0, 180.0, 5.0, "suffix:°") var normal_angle := 120.0
 @export_group("弹射挥剑")
 @export_range(0.1, 3.0, 0.01, "suffix:s") var flight_interval := 0.30
 @export_range(0.3, 5.0, 0.01, "suffix:m") var flight_range := 1.52
-@export_range(30.0, 180.0, 5.0, "suffix:°") var flight_angle := 180.0
+@export_range(30.0, 360.0, 5.0, "suffix:°") var flight_angle := 180.0
+## 仅替换弹射出刀的原生剑光；留空沿用普通攻击外观。
+@export var flight_ribbon_visual: SwordRibbonVisual
 @export_group("完整动作节奏")
 ## 攻速同步缩放完整起手、扫刃与收尾；达到此间隔后不再增加剑术出手频率。
 @export_range(0.08, 0.3, 0.01, "suffix:s") var minimum_attack_interval := 0.12
@@ -82,6 +92,9 @@ func meowa_stretch_profile(progress: float, release: float) -> Vector3:
 func duration() -> float:
 	return windup_seconds + sweep_seconds + fade_seconds
 
+func windup_for(flying: bool) -> float:
+	return normal_windup_seconds if normal_stationary_enabled and not flying else windup_seconds
+
 func has_world_tail() -> bool:
 	return effect_mode == SlashVisual.MEOWA_ARC or effect_mode == SlashVisual.NATIVE_RIBBON
 
@@ -89,6 +102,9 @@ func tail_seconds() -> float:
 	return ribbon_visual.ribbon_tail_seconds if effect_mode == SlashVisual.NATIVE_RIBBON and ribbon_visual else meowa_tail_seconds
 
 func validation_error() -> String:
+	if flight_ribbon_visual:
+		var error := flight_ribbon_visual.validation_error()
+		if not error.is_empty(): return "弹射剑光：" + error
 	if effect_mode == SlashVisual.NATIVE_RIBBON:
 		if not ribbon_visual: return "原生剑光需要独立外观资源"
 		var error := ribbon_visual.validation_error()
@@ -96,8 +112,10 @@ func validation_error() -> String:
 	for value in [normal_interval, flight_interval, minimum_attack_interval, normal_range, flight_range, sweep_seconds, fade_seconds, height_tolerance, art_radius_pixels]:
 		if not is_finite(value) or value <= 0.0: return "基础剑术的间隔、范围和动作时长须为有限正数"
 	if not is_finite(damage) or damage < 0.0 or not is_finite(windup_seconds) or windup_seconds < 0.0: return "基础伤害和起手时间不能为负数"
-	for angle in [normal_angle, flight_angle]:
-		if not is_finite(angle) or angle < 1.0 or angle > 180.0: return "基础剑术扇角须在 1～180 度之间"
+	if not is_finite(normal_windup_seconds) or normal_windup_seconds < 0.0: return "普通攻击前摇须为有限非负数"
+	if normal_slash_alignment_enabled and (not normal_attack_frame_breaks.is_finite() or normal_attack_frame_breaks.x <= 0.0 or normal_attack_frame_breaks.x >= normal_attack_frame_breaks.y or normal_attack_frame_breaks.y >= 1.0): return "普攻动作分段须满足 0 < 起手结束 < 斩击结束 < 1"
+	if not is_finite(normal_angle) or normal_angle < 1.0 or normal_angle > 180.0: return "普通剑术扇角须在 1～180 度之间"
+	if not is_finite(flight_angle) or flight_angle < 1.0 or flight_angle > 360.0: return "弹射剑术扇角须在 1～360 度之间"
 	if effect_mode in [SlashVisual.THIN_ARC, SlashVisual.MEOWA_ARC]:
 		for value in [arc_width, arc_trail_degrees, arc_pixel_size]:
 			if not is_finite(value) or value <= 0.0: return "窄弧刀痕的厚度、尾长和像素尺寸须为有限正数"

@@ -162,7 +162,7 @@ func integration() -> void:
 	wave.combat_modifiers.apply_buff(load("res://data/growth/range.tres"))
 	var after_stats := attack.get_attack_stats()
 	check(after_stats.damage > before_stats.damage and after_stats.interval < before_stats.interval, "本局伤害与冷却增益同时生效")
-	check(after_stats.distance == before_stats.distance and not attack.get_combat_stats().has("range"), "纯弹丸不虚报通用覆盖范围收益")
+	check(after_stats.distance > before_stats.distance and attack.get_combat_stats().has("range"), "正式全局范围成长增加弹丸真实射程，并向成长池报告收益")
 	var last_damage := 0.0
 	var last_distance := 0.0
 	for level in range(1, 9):

@@ -7,7 +7,7 @@ signal settings_requested
 @export var feedback: CoreFeedbackAudio
 @export var loadout: LoadoutUI
 
-const BUS_NAMES := ["战斗音效", "背景音乐", "雨声与风声", "界面与成长", "脚步与闪身"]
+const BUS_NAMES := ["战斗音效", "背景音乐", "雨声与风声", "界面音效", "动作音效"]
 var menu_open := false
 var _entries: Array[Dictionary] = []
 var _index := 0
@@ -28,6 +28,10 @@ var _save_timer: Timer
 var _dirty := false
 var _embedded := false
 var _close_button: Button
+var _header: HBoxContainer
+var _description: Label
+var _details: VBoxContainer
+var _bus_panels: Array[PanelContainer] = []
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -107,6 +111,7 @@ func _build_ui() -> void:
 	content.add_theme_constant_override("separation", 9)
 	scroll.add_child(content)
 	var header := HBoxContainer.new()
+	_header = header
 	content.add_child(header)
 	var title := _label("声音设置")
 	title.add_theme_font_size_override("font_size", 25)
@@ -114,37 +119,51 @@ func _build_ui() -> void:
 	header.add_child(title)
 	_close_button = _button("关闭 · ESC", close_menu)
 	header.add_child(_close_button)
-	content.add_child(_label("实时生效 · 本机自动保存 · 0 dB 为游戏默认音量"))
+	_description = _label("分组音量")
+	content.add_child(_description)
 	content.add_child(HSeparator.new())
 	for index in AudioMixSettings.BUSES.size():
+		var surface := PanelContainer.new()
+		surface.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+		content.add_child(surface)
+		_bus_panels.append(surface)
 		var row := HBoxContainer.new()
-		content.add_child(row)
+		surface.add_child(row)
 		var label := _label(BUS_NAMES[index])
 		label.custom_minimum_size.x = 126
 		row.add_child(label)
 		var slider := _slider()
+		slider.min_value = 0
+		slider.max_value = 100
+		slider.step = 1
 		row.add_child(slider)
 		_bus_sliders.append(slider)
-		var value := _label("0.0 dB")
+		var value := _label(str(roundi(AudioMixSettings.DEFAULT_BUS_VOLUME_PERCENT)))
 		value.custom_minimum_size.x = 78
 		value.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		row.add_child(value)
 		_bus_labels.append(value)
-		slider.value_changed.connect(func(db: float): audio.mix.set_bus_gain(AudioMixSettings.BUSES[index], db))
-	content.add_child(HSeparator.new())
-	content.add_child(_label("%d 条核心音效 · 单独调整每个变体" % _entries.size()))
+		slider.value_changed.connect(func(percent: float):
+			audio.mix.set_bus_volume_percent(AudioMixSettings.BUSES[index], percent)
+			# Editor Stop may end the process before a timer or exit callback runs.
+			save_mix())
+	_details = VBoxContainer.new()
+	_details.add_theme_constant_override("separation", 9)
+	content.add_child(_details)
+	_details.add_child(HSeparator.new())
+	_details.add_child(_label("%d 条核心音效 · 单独调整每个变体" % _entries.size()))
 	_select = OptionButton.new()
 	_select.fit_to_longest_item = false
 	_select.custom_minimum_size.y = 40
 	for entry in _entries: _select.add_item("%s · %s / %s" % [entry.id, entry.group, entry.label])
 	_select.item_selected.connect(select_entry)
-	content.add_child(_select)
+	_details.add_child(_select)
 	_purpose = _label("")
 	_purpose.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_purpose.custom_minimum_size.y = 46
-	content.add_child(_purpose)
+	_details.add_child(_purpose)
 	var clip_row := HBoxContainer.new()
-	content.add_child(clip_row)
+	_details.add_child(clip_row)
 	clip_row.add_child(_label("本条增益"))
 	_clip_slider = _slider()
 	_clip_slider.value_changed.connect(_set_clip_gain)
@@ -161,9 +180,9 @@ func _build_ui() -> void:
 	_mute.custom_minimum_size.y = 36
 	_mute.text = "静音本条（战斗中也生效）"
 	_mute.toggled.connect(func(value: bool): audio.mix.set_clip_muted(_clip_path(), value))
-	content.add_child(_mute)
+	_details.add_child(_mute)
 	var playback := HBoxContainer.new()
-	content.add_child(playback)
+	_details.add_child(playback)
 	playback.add_child(_button("试听当前", play_selected))
 	playback.add_child(_button("停止", stop_preview))
 	_loop = CheckBox.new()
@@ -171,13 +190,13 @@ func _build_ui() -> void:
 	_loop.text = "循环试听"
 	playback.add_child(_loop)
 	var footer := HBoxContainer.new()
-	content.add_child(footer)
+	_details.add_child(footer)
 	footer.add_child(_button("恢复本条", func(): audio.mix.reset_clip(_clip_path())))
 	footer.add_child(_button("全部默认", audio.mix.reset_all))
 	footer.add_child(_button("保存到本机", save_mix))
 	_status = _label("已读取本机音量；调整不会改写项目默认资源。")
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	content.add_child(_status)
+	_details.add_child(_status)
 	_preview = AudioStreamPlayer.new()
 	_preview.name = "SingleAuditionVoice"
 	_preview.finished.connect(func():
@@ -186,6 +205,7 @@ func _build_ui() -> void:
 	_save_timer = Timer.new()
 	_save_timer.one_shot = true
 	_save_timer.wait_time = 0.4
+	_save_timer.ignore_time_scale = true
 	_save_timer.timeout.connect(save_mix)
 	add_child(_save_timer)
 
@@ -235,6 +255,27 @@ func embed_in(host: Control, settings_theme: Theme) -> void:
 	_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	# The game menu exposes bus volumes only. Per-clip audition remains a
+	# separate tool until its next design pass, with playback routing unchanged.
+	_header.hide()
+	_details.hide()
+	_description.hide()
+	var kinetic = preload("res://scripts/ui/settings_kinetic_theme.gd")
+	for index in _bus_panels.size():
+		var surface := _bus_panels[index]
+		surface.custom_minimum_size.y = 67
+		var skin: StyleBoxTexture = kinetic.brush(kinetic.DARK, Color(1, 1, 1, 0.8))
+		skin.content_margin_left = 28
+		skin.content_margin_right = 22
+		surface.add_theme_stylebox_override("panel", skin)
+		var row := surface.get_child(0) as HBoxContainer
+		row.add_theme_constant_override("separation", 14)
+		var label := row.get_child(0) as Label
+		label.custom_minimum_size.x = 157
+		label.add_theme_font_size_override("font_size", 23)
+		_bus_labels[index].custom_minimum_size.x = 42
+		_bus_labels[index].add_theme_font_size_override("font_size", 18)
+		kinetic.decorate_slider(_bus_sliders[index])
 	set_embedded_visible(false)
 
 func set_embedded_visible(value: bool) -> void:
@@ -269,9 +310,9 @@ func _mix_changed() -> void:
 
 func _refresh() -> void:
 	for index in AudioMixSettings.BUSES.size():
-		var gain := float(audio.mix.bus_gains.get(String(AudioMixSettings.BUSES[index]), 0.0))
-		_bus_sliders[index].set_value_no_signal(gain)
-		_bus_labels[index].text = "%+.1f dB" % gain
+		var percent := audio.mix.bus_volume_percent(AudioMixSettings.BUSES[index])
+		_bus_sliders[index].set_value_no_signal(percent)
+		_bus_labels[index].text = "%d" % roundi(percent)
 	var entry := _entries[_index]
 	_select.select(_index)
 	_purpose.text = entry.purpose

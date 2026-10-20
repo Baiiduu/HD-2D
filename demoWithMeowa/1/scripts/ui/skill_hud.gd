@@ -7,6 +7,9 @@ signal slot_pressed(skill_id: String)
 const SLOT_SHADER := preload("res://shaders/ui/skill_hud.gdshader")
 
 @export_group("技能栏")
+## 关闭管理入口时仍可只读查看技能名称、等级和说明。
+@export var management_enabled := true:
+	set(value): management_enabled = value; _queue_rebuild()
 ## Meowa 提取的透明空槽组件，包含细光边、角部辉光与暗底。
 @export var slot_texture: Texture2D:
 	set(value): slot_texture = value; _queue_rebuild()
@@ -77,7 +80,8 @@ func _rebuild() -> void:
 		button.custom_minimum_size = Vector2.ONE * slot_size
 		for state_name in ["normal", "hover", "pressed", "focus", "disabled"]:
 			button.add_theme_stylebox_override(state_name, StyleBoxEmpty.new())
-		button.tooltip_text = "技能槽（Tab 打开管理界面）"
+		button.disabled = not management_enabled
+		button.tooltip_text = "技能槽（Tab 打开管理界面）" if management_enabled else "技能槽"
 		button.pressed.connect(func(): slot_pressed.emit(id))
 		add_child(button)
 		var frame := TextureRect.new()

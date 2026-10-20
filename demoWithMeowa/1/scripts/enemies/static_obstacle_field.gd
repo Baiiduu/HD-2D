@@ -366,8 +366,18 @@ func clear_query_bounds(swept: AABB, mask: int, excluded: Array[RID]) -> bool:
 ## native rays. No endpoint, visibility or dynamic result survives a call.
 func clear_ray(from: Vector3, to: Vector3, mask: int, excluded: Array[RID]) -> bool:
 	if not enabled or not from.is_finite() or not to.is_finite(): return false
-	if not is_instance_valid(_support) or not _support_bounds.position.is_finite(): return false
 	var swept := AABB(from, Vector3.ZERO).expand(to).grow(PADDING)
+	return _clear_body_volume(swept, mask, excluded)
+
+## 尸体自己的球体与查询边距由调用方计入；只证明当前完整扫掠包围盒为空。
+func clear_sphere_sweep(from: Vector3, to: Vector3, radius: float, mask: int, excluded: Array[RID]) -> bool:
+	if not enabled or not from.is_finite() or not to.is_finite() or not is_finite(radius) or radius < 0.0: return false
+	var swept := AABB(from, Vector3.ZERO).expand(to).grow(radius + PADDING)
+	if not swept.position.is_finite() or not swept.size.is_finite(): return false
+	return _clear_body_volume(swept, mask, excluded)
+
+func _clear_body_volume(swept: AABB, mask: int, excluded: Array[RID]) -> bool:
+	if not is_instance_valid(_support) or not _support_bounds.position.is_finite(): return false
 	if not _fixed_clear(swept, mask): return false
 	var support: StaticBody3D = source.call("ground_collision_body")
 	if not is_instance_valid(support) or support != _support: return false

@@ -1,6 +1,6 @@
 class_name ChargePresentation
 extends Node
-## 地图独立的蓄力场景反馈与环绕慢动作；不查询怪物或改写战斗数值。
+## 地图独立的蓄力场景反馈、蹬墙与环绕慢动作；不查询怪物或改写战斗数值。
 
 const TIME_SCALE := preload("res://scripts/player/ricochet_time_scale.gd")
 
@@ -61,6 +61,15 @@ const TIME_SCALE := preload("res://scripts/player/ricochet_time_scale.gd")
 @export_range(0.5, 1.0, 0.01) var orbit_slow_scale := 0.82
 @export_range(0.02, 0.4, 0.01, "suffix:s") var orbit_slow_enter_seconds := 0.12
 @export_range(0.02, 0.2, 0.01, "suffix:s") var orbit_slow_exit_seconds := 0.06
+@export_group("建筑蹬墙短慢动作")
+## 仅随已有建筑／实体道具蹬墙动画触发；人物、怪物与战斗时钟一起连续慢放。
+@export var bounce_slow_enabled := false
+@export_range(0.5, 1.0, 0.05) var bounce_slow_scale := 0.5
+## 以下时长均使用真实时间；动画和离墙运动仍使用同一个缩放后的战斗时间。
+@export_range(0.0, 0.08, 0.005, "suffix:s") var bounce_slow_enter_seconds := 0.02
+@export_range(0.0, 0.2, 0.01, "suffix:s") var bounce_slow_hold_seconds := 0.10
+@export_range(0.02, 0.3, 0.01, "suffix:s") var bounce_slow_exit_seconds := 0.16
+@export_range(0.2, 1.0, 0.01, "suffix:s") var bounce_slow_interval := 0.40
 
 var level := 0.0
 var direction_level := 0.0
@@ -86,6 +95,11 @@ var _wave_finish_override := false
 var _drama_age := 0.0
 var _drama_ratio := 1.0
 var _drama_level := 0.0
+var bounce_slow_active: bool:
+	get: return _bounce_age < bounce_slow_enter_seconds + bounce_slow_hold_seconds + bounce_slow_exit_seconds
+var _bounce_age := INF
+var _bounce_ratio := 1.0
+var _bounce_cooldown := 0.0
 
 ## 清波特写临时接管时间；先释放本段基准，避免结束后残留环绕时间比例。
 func set_wave_finish_override(value: bool) -> void:
@@ -107,6 +121,7 @@ func _bind() -> void:
 	_session = _body._session
 	_body.state_changed.connect(_state_changed)
 	_body.launched.connect(_launched)
+	player.action_animator.bounce_started.connect(_bounce_started)
 	if is_instance_valid(_session):
 		_session.phase_changed.connect(_phase_changed)
 		_session.combat_frozen_changed.connect(_combat_frozen_changed)
@@ -144,15 +159,39 @@ func _full_charge() -> void:
 	_slow_remaining = full_slow_seconds
 	_advance_time(0.0)
 
+func _bounce_started() -> void:
+	if not bounce_slow_enabled or not _body.flying or _body.is_frozen() or _wave_finish_override or _bounce_cooldown > 0.0: return
+	if get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null: return
+	# 已有命中定格先归还原时间基准，不能让蹬墙借用近零倍率。
+	for feedback in get_tree().get_nodes_in_group(&"hit_impact_presentations"):
+		if feedback.session.player == player: feedback.cancel_beat()
+	if not _time_scale.active: _time_scale.reset()
+	_bounce_age = 0.0
+	_bounce_ratio = 1.0
+	_bounce_cooldown = maxf(bounce_slow_interval, bounce_slow_enter_seconds + bounce_slow_hold_seconds + bounce_slow_exit_seconds)
+	set_process(true)
+	_advance_time(0.0)
+
+func _advance_bounce(real_delta: float) -> void:
+	_bounce_cooldown = maxf(0.0, _bounce_cooldown - maxf(real_delta, 0.0))
+	if not bounce_slow_enabled or not _body.flying or not player.action_animator.bouncing or get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null:
+		_bounce_age = INF
+	_bounce_ratio = 1.0
+	if not bounce_slow_active: return
+	_bounce_age += maxf(real_delta, 0.0)
+	var enter := smoothstep(0.0, maxf(bounce_slow_enter_seconds, 0.001), _bounce_age)
+	var leave := 1.0 - smoothstep(bounce_slow_enter_seconds + bounce_slow_hold_seconds, bounce_slow_enter_seconds + bounce_slow_hold_seconds + maxf(bounce_slow_exit_seconds, 0.001), _bounce_age)
+	_bounce_ratio = lerpf(1.0, bounce_slow_scale, enter * leave)
+
 func _advance_time(real_delta: float) -> void:
 	if is_instance_valid(_body): _body.charge_time_scale = 1.0
 	if _wave_finish_override: return
 	var movement_camera := player.movement_camera as FollowCamera
 	if movement_camera and movement_camera.hit_stop_active: return
-	if not orbit_slow_enabled and _slow_remaining <= 0.0 and _drama_ratio >= 1.0 and not _time_scale.active: return
+	if not orbit_slow_enabled and _slow_remaining <= 0.0 and _drama_ratio >= 1.0 and _bounce_ratio >= 1.0 and not _time_scale.active: return
 	if _slow_remaining > 0.0: _slow_remaining = maxf(0.0, _slow_remaining - real_delta)
 	var full_ratio := full_slow_scale if enabled and full_slow_enabled and _slow_remaining > 0.0 else 1.0
-	full_ratio = minf(full_ratio, _drama_ratio)
+	full_ratio = minf(full_ratio, minf(_drama_ratio, _bounce_ratio))
 	_time_scale.advance(real_delta, orbit_slow_enabled and _body.orbiting, orbit_slow_scale, orbit_slow_enter_seconds, orbit_slow_exit_seconds, full_ratio)
 	_body.charge_time_scale = _time_scale.ratio if _body.charging and charge_drama_enabled and _time_scale.active else 1.0
 	var camera := player.movement_camera as FollowCamera
@@ -164,6 +203,9 @@ func _restore_time() -> void:
 	if is_instance_valid(_body): _body.charge_time_scale = 1.0
 	_time_scale.reset()
 	_slow_remaining = 0.0
+	_bounce_age = INF
+	_bounce_ratio = 1.0
+	_bounce_cooldown = 0.0
 	if is_instance_valid(_slow_camera): _slow_camera.charge_unscaled_time = false
 	_slow_camera = null
 
@@ -188,9 +230,10 @@ func advance(delta: float, real_delta: float) -> void:
 		return
 	if enabled and _body.charging and _body.charge_fraction >= 1.0: _full_charge()
 	_advance_drama(real_delta)
+	_advance_bounce(real_delta)
 	_advance_time(real_delta)
 	if not enabled:
-		if not _time_scale.active and not (orbit_slow_enabled and _body.flying): set_process(false)
+		if not _time_scale.active and not bounce_slow_active and _bounce_cooldown <= 0.0 and not (orbit_slow_enabled and _body.flying): set_process(false)
 		return
 	var target := lerpf(0.2, 1.0, smoothstep(0.0, 1.0, _body.charge_fraction)) if _body.charging else 0.0
 	var seconds := gather_seconds if target > level else release_seconds
@@ -233,7 +276,7 @@ func advance(delta: float, real_delta: float) -> void:
 	if not _body.charging and _duck_level < 0.001: _duck_level = 0.0
 	if not _body.charging and _airflow_level < 0.001: _airflow_level = 0.0
 	_write_feedback()
-	if level == 0.0 and direction_level == 0.0 and _duck_level == 0.0 and _airflow_level == 0.0 and _drama_level == 0.0 and not _body.charging and not flight_focus and _slow_remaining <= 0.0 and not _time_scale.active and not (orbit_slow_enabled and _body.flying): set_process(false)
+	if level == 0.0 and direction_level == 0.0 and _duck_level == 0.0 and _airflow_level == 0.0 and _drama_level == 0.0 and not _body.charging and not flight_focus and _slow_remaining <= 0.0 and not _time_scale.active and not bounce_slow_active and _bounce_cooldown <= 0.0 and not (orbit_slow_enabled and _body.flying): set_process(false)
 
 func _advance_drama(real_delta: float) -> void:
 	var eligible := enabled and charge_drama_enabled and _body.charging and not _wave_finish_override
@@ -311,6 +354,8 @@ func reset() -> void:
 
 func _exit_tree() -> void:
 	reset()
+	if is_instance_valid(player) and player.action_animator and player.action_animator.bounce_started.is_connected(_bounce_started):
+		player.action_animator.bounce_started.disconnect(_bounce_started)
 	if is_instance_valid(_body):
 		_body.state_changed.disconnect(_state_changed)
 		_body.launched.disconnect(_launched)

@@ -31,6 +31,8 @@ var _created := 0
 var _reused := 0
 var _peak_active := 0
 var _last_tick := 0
+var _holes := 0
+var _clear_revision := 0
 
 func _ready() -> void:
 	layer = 5
@@ -68,7 +70,7 @@ func present(event: CombatDamageEvent) -> void:
 		_reused += 1
 	number.begin(event, profile, slot, number_stack_spacing, get_viewport().get_camera_3d())
 	_active.append(number)
-	_peak_active = maxi(_peak_active, _active.size())
+	_peak_active = maxi(_peak_active, _active.size() - _holes)
 	if not is_processing(): _last_tick = Time.get_ticks_usec()
 	set_process(true)
 
@@ -93,11 +95,25 @@ func _process(delta: float) -> void:
 	var camera := get_viewport().get_camera_3d()
 	# 切入短顿的一帧仍可能带有旧 delta，不能用新倍率反推真实时长。
 	if camera is FollowCamera and camera.hit_stop_active: delta = real_delta
+	var revision := _clear_revision
 	for index in range(_active.size() - 1, -1, -1):
 		var number := _active[index]
-		if not number.advance(delta, camera):
-			_active.remove_at(index)
+		var alive := number.advance(delta, camera)
+		if revision != _clear_revision: return
+		if not alive:
+			# 保留原逆序更新／回收时机；空位在整轮末尾稳定压紧一次。
+			_active[index] = null
+			_holes += 1
 			_recycle(number)
+			if revision != _clear_revision: return
+	if _holes > 0:
+		var write := 0
+		for number in _active:
+			if number == null: continue
+			_active[write] = number
+			write += 1
+		_active.resize(write)
+		_holes = 0
 	if _active.is_empty(): set_process(false)
 
 func _frozen_changed(_frozen: bool) -> void:
@@ -113,11 +129,14 @@ func _recycle(number: DamageNumber) -> void:
 	else: number.queue_free()
 
 func clear() -> void:
-	for number in _active: _recycle(number)
+	_clear_revision += 1
+	for number in _active:
+		if number != null: _recycle(number)
 	_active.clear()
+	_holes = 0
 	_lanes.clear()
 	_last_tick = 0
 	set_process(false)
 
 func get_pool_stats() -> Dictionary:
-	return {"active": _active.size(), "idle": _idle.size(), "created": _created, "reused": _reused, "peak_active": _peak_active, "targets": _lanes.size()}
+	return {"active": _active.size() - _holes, "idle": _idle.size(), "created": _created, "reused": _reused, "peak_active": _peak_active, "targets": _lanes.size()}

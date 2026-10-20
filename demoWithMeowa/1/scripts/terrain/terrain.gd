@@ -2,6 +2,8 @@
 class_name Terrain
 extends Node3D
 
+const COLLISION_SURFACE := preload("res://scripts/core/collision_surface.gd")
+
 signal paint_palette_applied
 signal free_surface_committed
 
@@ -585,6 +587,7 @@ func _build_collision(collision_faces: PackedVector3Array) -> void:
 			if not _water_collision_body:
 				_water_collision_body = StaticBody3D.new()
 				_water_collision_body.name = "WaterBlockers"
+				COLLISION_SURFACE.mark(_water_collision_body, &"water")
 				_water_collision_body.set_meta(&"obstacle_layout_managed", true)
 				_generated.add_child(_water_collision_body)
 			var bottom := _level(cell) * data.layer_height

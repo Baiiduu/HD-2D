@@ -1,5 +1,6 @@
 class_name FollowCamera
 extends Camera3D
+const HURT_FEEDBACK := preload("res://scripts/camera/player_hurt_feedback.gd")
 
 @export_group("场景连接")
 ## 跟随目标（人物）
@@ -106,6 +107,10 @@ var _yaw_settle_speed: float = 0.0
 var _yaw_settle_elapsed: float = 0.0
 var _yaw_settle_duration: float = 0.0
 var _post_material: ShaderMaterial
+var _hurt_feedback := HURT_FEEDBACK.new()
+var _hurt_post: ShaderMaterial
+var _hurt_last_tick := 0
+var _hurt_applied_offset := Vector3.ZERO
 var _ricochet_camera: RicochetCameraFeedback
 var _impact_offset := Vector3.ZERO
 var _follow_reacquiring := false
@@ -114,6 +119,8 @@ var charge_unscaled_time := false
 ## 击杀特写与曲线震动叠加在既有跟随之后，按真实时间推进。
 var hit_stop_active := false
 var hit_shot_active := false
+## 只标识真实群杀的取景接管，普通命中／单杀轻震不占用特写资格。
+var hit_closeup_active := false
 var hit_shot_focus := Vector3.ZERO
 var hit_shot_weight := 0.0
 var hit_shot_distance_scale := 1.0
@@ -149,6 +156,7 @@ func snap_to_target() -> void:
 	if not target:
 		return
 	if _ricochet_camera: _ricochet_camera.reset()
+	clear_hurt_feedback()
 	_impact_offset = Vector3.ZERO
 	_follow_reacquiring = false
 	anchor = _clamp_to_bounds(_target_point())
@@ -157,7 +165,9 @@ func snap_to_target() -> void:
 	_update_dof()
 
 func _process(delta: float) -> void:
+	if _hurt_feedback.active: _tick_hurt_feedback(Time.get_ticks_usec())
 	if not target:
+		clear_hurt_feedback()
 		return
 	# 冻结保留完整已渲染取景，避免用上一帧反弹偏航重新投影局部构图。
 	if target is Player and is_instance_valid(target.body_ricochet) and target.body_ricochet.is_frozen(): return
@@ -269,14 +279,63 @@ func _can_edge_pan() -> bool:
 func _short_side_span() -> float:
 	var viewport_size := get_viewport().get_visible_rect().size
 	var span := 2.0 / get_camera_projection().y.y
-	if projection == Camera3D.PROJECTION_PERSPECTIVE: span *= distance * (_ricochet_camera.distance_scale + _ricochet_camera.collision_distance_scale if _ricochet_camera else 1.0)
+	if projection == Camera3D.PROJECTION_PERSPECTIVE: span *= distance * (_ricochet_camera.distance_scale + _ricochet_camera.collision_distance_scale + _ricochet_camera.orbit_distance_scale if _ricochet_camera else 1.0)
 	return span * minf(viewport_size.x, viewport_size.y) / maxf(viewport_size.y, 1.0)
 
 func get_flight_focus_weight() -> float:
 	return _ricochet_camera.get_flight_focus_weight() if _ricochet_camera else 0.0
 
 func _exit_tree() -> void:
+	clear_hurt_feedback(false)
 	if _ricochet_camera: _ricochet_camera.dispose()
+
+## 受伤仅叠加短促的画面提示，不接入攻击短顿、特写或人物运动时间线。
+func play_hurt_feedback(settings: PlayerActionVisuals, orbiting := false) -> void:
+	_hurt_feedback.begin(settings, orbiting, has_priority_impact_feedback())
+	_hurt_last_tick = Time.get_ticks_usec()
+	_write_hurt_screen()
+
+func has_priority_impact_feedback() -> bool:
+	return not follow_enabled or wave_shot_active or hit_shot_active or not hit_shake_offset.is_zero_approx() or not is_zero_approx(hit_shake_roll) or (_ricochet_camera != null and _ricochet_camera.impact_feedback_active())
+
+func _tick_hurt_feedback(now: int) -> void:
+	var step := maxf(0.0, (now - _hurt_last_tick) * 0.000001) if _hurt_last_tick > 0 else 0.0
+	_hurt_last_tick = now
+	advance_hurt_feedback(step)
+
+func advance_hurt_feedback(real_delta: float) -> void:
+	if not target is Player or not target.action_visuals:
+		clear_hurt_feedback()
+		return
+	if is_instance_valid(target.body_ricochet) and target.body_ricochet.is_frozen(): return
+	_hurt_feedback.advance(real_delta, target.action_visuals, is_instance_valid(target.body_ricochet) and target.body_ricochet.orbiting, has_priority_impact_feedback())
+	_write_hurt_screen()
+	if is_inside_tree() and target.is_inside_tree(): _apply_transform()
+
+func _write_hurt_screen() -> void:
+	var screen := post_process if post_process else get_parent().get_node_or_null("PostProcess/Screen") as CanvasItem
+	var material := screen.material as ShaderMaterial if is_instance_valid(screen) else null
+	if material != _hurt_post:
+		if _hurt_post: _hurt_post.set_shader_parameter("hurt_amount", 0.0)
+		_hurt_post = material
+	if _hurt_post:
+		_hurt_post.set_shader_parameter("hurt_amount", _hurt_feedback.red_amount)
+		_hurt_post.set_shader_parameter("hurt_color", _hurt_feedback.color)
+
+func clear_hurt_feedback(apply_transform := true) -> void:
+	_hurt_feedback.clear()
+	_hurt_last_tick = 0
+	if _hurt_post: _hurt_post.set_shader_parameter("hurt_amount", 0.0)
+	if apply_transform and is_inside_tree() and is_instance_valid(target) and target.is_inside_tree(): _apply_transform()
+
+func _hurt_world_offset() -> Vector3:
+	if _hurt_feedback.shake.is_zero_approx(): return Vector3.ZERO
+	if has_priority_impact_feedback(): _hurt_feedback.cancel_shake()
+	if _hurt_feedback.shake.is_zero_approx(): return Vector3.ZERO
+	var size := get_viewport().get_visible_rect().size
+	var pixel := _short_side_span() / maxf(1.0, minf(size.x, size.y))
+	var view := Basis.looking_at(-_orbit_offset(), Vector3.UP)
+	return (view.x * _hurt_feedback.shake.x + view.y * _hurt_feedback.shake.y) * pixel
 
 func _update_horizontal_rotation(delta: float) -> void:
 	if not horizontal_rotation_enabled or get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null:
@@ -381,11 +440,11 @@ func _clamp_to_bounds(point: Vector3) -> Vector3:
 
 func _orbit_offset(base_only := false) -> Vector3:
 	# 绕焦点水平旋转，保持距离和俯角。
-	var pitch := deg_to_rad(pitch_degrees + (_ricochet_camera.pitch_offset if _ricochet_camera and not base_only else 0.0))
+	var pitch := deg_to_rad(pitch_degrees + (_ricochet_camera.pitch_offset + _ricochet_camera.orbit_pitch_offset if _ricochet_camera and not base_only else 0.0))
 	# 运镜与收尾保留连续角度，只有计算空间朝向时折回一圈。
 	var impact_yaw := _ricochet_camera.yaw_offset if _ricochet_camera and not base_only else 0.0
 	var yaw := deg_to_rad(wrapf(yaw_degrees + _yaw_offset_degrees + impact_yaw, -180.0, 180.0))
-	var distance_multiplier := _ricochet_camera.distance_scale + _ricochet_camera.collision_distance_scale if _ricochet_camera and not base_only else 1.0
+	var distance_multiplier := _ricochet_camera.distance_scale + _ricochet_camera.collision_distance_scale + _ricochet_camera.orbit_distance_scale if _ricochet_camera and not base_only else 1.0
 	return Vector3(0.0, sin(pitch), cos(pitch)).rotated(Vector3.UP, yaw) * distance * distance_multiplier
 
 ## 分段镜头只改变观看方式；鼠标使用同一基础取景投地，保留 Q/E 与人物走位。
@@ -398,13 +457,25 @@ func project_charge_aim(cursor: Vector2, ground_height: float) -> Variant:
 		var neutral := Transform3D(Basis.looking_at(-offset, Vector3.UP), _clamp_to_bounds(_target_point() + entry) + offset)
 		ray = neutral.basis * (global_basis.inverse() * ray)
 		origin = neutral * (global_transform.affine_inverse() * origin)
+	elif target is Player and target.body_ricochet.charging:
+		origin -= _hurt_applied_offset
 	return Plane(Vector3.UP, ground_height).intersects_ray(origin, ray)
 
 func _apply_transform() -> void:
 	var view_focus := focus if _impact_offset.is_zero_approx() else _clamp_to_bounds(focus + _impact_offset)
+	if follow_enabled and _ricochet_camera and not _ricochet_camera.orbit_focus_offset.is_zero_approx():
+		# 特写直接叠在已平滑的跟随上，避免半秒弧线再次被常态跟随滤掉。
+		var view := Basis.looking_at(-_orbit_offset(), Vector3.UP)
+		var span := _short_side_span()
+		var framing := _ricochet_camera.framing + _ricochet_camera.shake
+		var base := (view.x * framing.x + view.y * framing.y) * span
+		var addition := (base + _ricochet_camera.orbit_focus_offset).limit_length(span * ricochet_camera_settings.max_offset_ratio) - base
+		view_focus = _clamp_to_bounds(view_focus + addition)
 	view_focus = view_focus.lerp(hit_shot_focus, hit_shot_weight)
 	view_focus = view_focus.lerp(wave_shot_focus, wave_shot_weight)
 	view_focus += hit_shake_offset
+	_hurt_applied_offset = _hurt_world_offset()
+	view_focus += _hurt_applied_offset
 	var orbit := _orbit_offset(not follow_enabled)
 	var kill_scale := hit_shot_distance_scale
 	if kill_scale < 1.0:

@@ -67,7 +67,7 @@ func run() -> void:
 		if state.get_node_name(index) != &"ChargePresentation": continue
 		for property in state.get_node_property_count(index):
 			if state.get_node_property_name(index, property) == &"orbit_slow_enabled": enabled = state.get_node_property_value(index, property)
-	check(not enabled, "World 停用环绕慢动作，正式绕行保持原速")
+	check(not enabled, "World 停用全局环绕慢动作，人物移速由独立环绕规则控制")
 	var defaults := ChargePresentation.new()
 	check(not defaults.orbit_slow_enabled and is_equal_approx(defaults.orbit_slow_scale, 0.82), "共享默认不开启其它地图慢动作，初始比例为 0.82")
 	var world := Node3D.new()

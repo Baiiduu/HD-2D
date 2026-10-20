@@ -31,7 +31,7 @@ func input_and_art_checks() -> void:
 	rules.ribbon_visual.ribbon_layered_enabled = true
 	sword.rules = rules
 	check(sword.request_manual(Vector3.RIGHT), "分层笔触在无动画图集时正常出手")
-	sword._physics_process(0.10)
+	sword._physics_process(rules.windup_for(false) + rules.sweep_seconds * 0.5)
 	var effect := sword._effect
 	var material := effect._material
 	var mesh := effect.mesh

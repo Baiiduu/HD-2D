@@ -3,6 +3,7 @@ extends Node3D
 
 signal finished
 signal presentation_event(stage: StringName, point: Vector3)
+signal airborne_changed(subject: Node3D, airborne: bool)
 const MATERIALS := preload("res://scripts/enemies/enemy_remains_materials.gd")
 const ACCENTS := preload("res://scripts/enemies/enemy_death_accents.gd")
 const HIT_SILHOUETTE := preload("res://scripts/rendering/hit_silhouette.gd")
@@ -42,6 +43,7 @@ var _slide_distance := 0.0
 var _burst_only := false
 var _impact_radius := 0.0
 var _air_announced := false
+var _airborne := false
 var _landing_announced := false
 var _readability := false
 var _focus_seconds := 0.28
@@ -49,6 +51,7 @@ var _visual_excluded: Array[RID] = []
 var _hit_silhouette := HIT_SILHOUETTE.new()
 var _impact_opacity := 1.0
 var _impact_flash := 0.9
+var terrain: Terrain
 
 func _ready() -> void:
 	MATERIALS.retain()
@@ -65,6 +68,7 @@ func _ready() -> void:
 	stop()
 
 func _exit_tree() -> void:
+	_set_airborne(false)
 	MATERIALS.release()
 
 ## 建立完整的闲置对象，不播放动画、不抽取死亡方向或发出声音。
@@ -169,6 +173,7 @@ func get_focus_subject() -> MeshInstance3D:
 	return _pieces[0] if not _pieces.is_empty() else null
 
 func stop() -> void:
+	_set_airborne(false)
 	_active = false
 	_hit_silhouette.clear()
 	for piece in _pieces:
@@ -181,6 +186,11 @@ func stop() -> void:
 	if is_instance_valid(_accents): _accents.hide()
 	if is_instance_valid(_stars): _stars.stop()
 	set_process(false)
+
+func _set_airborne(value: bool) -> void:
+	if _airborne == value: return
+	_airborne = value
+	airborne_changed.emit(get_focus_subject(), value)
 
 func _process(delta: float) -> void:
 	if not _active: return
@@ -222,7 +232,15 @@ func _display_knockout(facing: Basis, progress: float) -> void:
 	if not _blocked and not next.is_equal_approx(_offset):
 		var start := _position + _offset
 		var end := _position + next
-		var contact := _collision.wall_contact(get_world_3d().direct_space_state, start, end, maxf(_pixel * 2.0, 0.04), _visual_excluded)
+		var space := get_world_3d().direct_space_state
+		var radius := maxf(_pixel * 2.0, 0.04)
+		var contact := _collision.visual_wall_contact(space, start, end, radius, _visual_excluded, terrain)
+		# 空气墙只限制真实战斗对象；尸体继续向外抛飞，后面的实体墙仍需完整扫掠。
+		while not contact.is_empty():
+			var collider := contact.get("collider") as CollisionObject3D
+			if not collider or not collider.is_in_group(&"map_boundaries"): break
+			_visual_excluded.append(collider.get_rid())
+			contact = _collision.visual_wall_contact(space, start, end, radius, _visual_excluded, terrain)
 		if not contact.is_empty():
 			var point := start.move_toward(end, maxf(0.0, float(contact.distance) - 0.005)) - _position
 			_wall_offset = Vector3(point.x, 0.0, point.z)
@@ -243,6 +261,7 @@ func _display_knockout(facing: Basis, progress: float) -> void:
 	opacity *= lerpf(1.0, 0.7, retire)
 	_pieces[0].set_instance_shader_parameter(&"death_energy", lerpf(0.3, 0.08, retire))
 	_pieces[0].global_position = _position + next
+	_set_airborne(_age >= _pause_seconds and flight < 1.0)
 	_pieces[0].global_basis = (facing * Basis(Vector3.BACK, _spin * flight)).scaled_local(Vector3(_size.x, _size.y, 1.0))
 	_pieces[0].set_instance_shader_parameter(&"opacity", opacity)
 	_pieces[0].set_instance_shader_parameter(&"hit_flash", maxf(0.0, 1.0 - _age / 0.1) * _impact_flash)
@@ -307,13 +326,20 @@ func _display_impact(facing: Basis) -> void:
 	var image := _impact_source.get_frame_texture(&"bounce", frame)
 	if not image: return
 	var size := image.get_size() * _pixel
+	# 同一原生帧的图集、UV 和共享材质只准备一次，三路爆点仍分别提交实例状态。
+	var impact_material: ShaderMaterial
+	var uv := Vector4.ZERO
+	if frame != _impact_frame:
+		var texture: Texture2D = image.atlas if image is AtlasTexture else image
+		var rect: Rect2 = image.region if image is AtlasTexture else Rect2(Vector2.ZERO, image.get_size())
+		uv = Vector4(rect.position.x / texture.get_width(), rect.position.y / texture.get_height(), rect.size.x / texture.get_width(), rect.size.y / texture.get_height())
+		impact_material = MATERIALS.material(texture)
+	var anchor := (image.get_size() * 0.5 - Vector2(19, 24)) * _pixel
+	var spread := Vector3(_impact_radius * _age / _impact_seconds, 0, 0)
 	for index in 3:
 		var slot := index + 1
 		if frame != _impact_frame:
-			var texture: Texture2D = image.atlas if image is AtlasTexture else image
-			var rect: Rect2 = image.region if image is AtlasTexture else Rect2(Vector2.ZERO, image.get_size())
-			var uv := Vector4(rect.position.x / texture.get_width(), rect.position.y / texture.get_height(), rect.size.x / texture.get_width(), rect.size.y / texture.get_height())
-			_materials[slot] = MATERIALS.material(texture)
+			_materials[slot] = impact_material
 			_pieces[slot].material_override = _materials[slot]
 			_pieces[slot].set_instance_shader_parameter(&"frame_rect", uv)
 			_pieces[slot].set_instance_shader_parameter(&"tint", Color.WHITE)
@@ -322,8 +348,6 @@ func _display_impact(facing: Basis) -> void:
 			_pieces[slot].set_instance_shader_parameter(&"death_energy", 1.2)
 		var basis := facing * Basis(Vector3.BACK, _impact_angle + index * TAU / 3.0)
 		# 原生 56×48 碰点的 (19,24) 是中心；三份原帧组成紧凑的放射爆点。
-		var anchor := (image.get_size() * 0.5 - Vector2(19, 24)) * _pixel
-		var spread := Vector3(_impact_radius * _age / _impact_seconds, 0, 0)
 		_pieces[slot].global_position = _position + basis * (Vector3(anchor.x, -anchor.y, 0.0) + spread)
 		_pieces[slot].global_basis = basis.scaled_local(Vector3(size.x, size.y, 1.0))
 		_pieces[slot].show()

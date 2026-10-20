@@ -1,6 +1,8 @@
 class_name CoreFeedbackAudio
 extends Node3D
 
+const COLLISION_SURFACE := preload("res://scripts/core/collision_surface.gd")
+
 @export_group("核心音效连接")
 @export var player: Player
 @export var session: WavePrototype
@@ -28,6 +30,12 @@ extends Node3D
 @export_range(-30.0, 6.0, 0.5) var feedback_volume_db := -10.0
 @export_range(0.1, 0.5, 0.05) var low_health_ratio := 0.25
 @export_range(0.03, 0.3, 0.01) var pickup_interval := 0.10
+@export_group("碰撞材质反馈")
+## 材质标记与音库事件分开；新增材质只需在此配置现有音库事件。
+@export var bounce_surface_cues: Dictionary[StringName, StringName] = {
+	&"stone": &"bounce_stone", &"wood": &"bounce_wood", &"metal": &"bounce_metal"}
+## 未标记、特殊边界和未配置材质沿用本体反弹声，不推测建筑类型。
+@export var default_bounce_cue: StringName = &"bounce_stone"
 @export_group("统一命中反馈")
 ## 各地图明确启用；只消费实际普攻／弹射攻击命中，致死确认优先。
 @export var common_hit_enabled := false
@@ -35,6 +43,13 @@ extends Node3D
 @export var hit_material_layer_enabled := false
 @export_range(-24.0, -3.0, 0.5) var hit_material_gain_db := -10.0
 @export_group("蓄力渐强反馈")
+## 仅控制旧起手和能量循环；聚力风及满蓄确认独立保留。
+@export var charge_energy_audio_enabled := true:
+	set(value):
+		charge_energy_audio_enabled = value
+		if not is_node_ready() or value: return
+		_stop_charge(true)
+		if is_instance_valid(_audio): _audio.stop_cue(self, &"core:charge_start")
 @export var charge_progress_audio_enabled := false
 @export_range(-30.0, 6.0, 0.5) var charge_start_gain_db := -10.0
 @export_range(-30.0, 6.0, 0.5) var charge_full_gain_db := -1.0
@@ -202,8 +217,9 @@ func _body_state(state: PlayerRicochet.State) -> void:
 	_refresh_processing()
 	if not enabled or state != PlayerRicochet.State.CHARGING: return
 	_ready_chime = false
-	_play_world(&"charge_start", player.global_position, GameAudio.Kind.ATTACK, -2.0, 50)
-	_request_charge_loop(0.0)
+	if charge_energy_audio_enabled:
+		_play_world(&"charge_start", player.global_position, GameAudio.Kind.ATTACK, -2.0, 50)
+		_request_charge_loop(0.0)
 	_update_charge_wind(0.0)
 
 func _charge_ready() -> void:
@@ -219,13 +235,13 @@ func _charge_pitch(fraction: float) -> float:
 	return lerpf(charge_start_pitch, charge_full_pitch, clampf(fraction, 0.0, 1.0)) if charge_progress_audio_enabled else 1.0
 
 func _request_charge_loop(fraction: float) -> void:
-	if is_instance_valid(_audio) and not _loop_clips.is_empty():
+	if charge_energy_audio_enabled and is_instance_valid(_audio) and not _loop_clips.is_empty():
 		_charge_retry = 0.20
 		_audio.request({"source":player, "cue":&"core:charge_loop", "clips":_loop_clips, "kind":GameAudio.Kind.ATTACK,
 			"position":player.global_position, "volume_db":_charge_volume(fraction), "pitch":_charge_pitch(fraction), "priority":20, "follow_source":true})
 
 func _update_charge_audio(delta: float) -> void:
-	if not charge_progress_audio_enabled or not is_instance_valid(_audio): return
+	if not charge_energy_audio_enabled or not charge_progress_audio_enabled or not is_instance_valid(_audio): return
 	_charge_retry = maxf(0.0, _charge_retry - delta)
 	if _audio.set_cue_volume(player, &"core:charge_loop", _charge_volume(_body.charge_fraction)):
 		_audio.set_cue_pitch(player, &"core:charge_loop", _charge_pitch(_body.charge_fraction))
@@ -287,7 +303,7 @@ func _update_flight(delta: float) -> void:
 		_flight_entry_age += delta
 		_flight_fade_rate = 0.0
 		var weight := 1.0 if flight_volume_smoothing <= 0.0 else 1.0 - exp(-delta / flight_volume_smoothing)
-		_flight_level = lerpf(_flight_level, _flight_speed_level(_body.flight_speed), weight)
+		_flight_level = lerpf(_flight_level, _flight_speed_level(_body.movement_speed), weight)
 	else:
 		_flight_level = move_toward(_flight_level, 0.0, _flight_fade_rate * delta)
 		if _flight_level <= 0.00001:
@@ -339,24 +355,8 @@ func _launched(_heading: Vector3, _speed: float, _charge: float) -> void:
 	_refresh_processing()
 
 func _bounced(collision: KinematicCollision3D) -> void:
-	var node := collision.get_collider() as Node
-	var cue := &"bounce_stone"
-	while node:
-		if node.has_meta("movement_surface"):
-			var surface := int(node.get_meta("movement_surface"))
-			cue = &"bounce_wood" if surface == 4 else (&"bounce_metal" if surface == 5 else &"bounce_stone")
-			break
-		if node is TownDetailProp:
-			var detail := (node as TownDetailProp).detail_kind
-			if detail in [0, 1, 2, 6, 7]: cue = &"bounce_wood"
-			elif detail == 5: cue = &"bounce_metal"
-			break
-		if node is RicochetProp:
-			match (node as RicochetProp).kind:
-				RicochetProp.Kind.IRON_FENCE: cue = &"bounce_metal"
-				RicochetProp.Kind.CRATE_STACK, RicochetProp.Kind.BARREL_CLUSTER: cue = &"bounce_wood"
-			break
-		node = node.get_parent()
+	var surface := COLLISION_SURFACE.resolve(collision.get_collider(), collision.get_collider_shape_index())
+	var cue: StringName = bounce_surface_cues.get(surface, default_bounce_cue)
 	_play_world(cue, collision.get_position(), GameAudio.Kind.ATTACK, bounce_gain_db, 60, 1.0 + minf(3, _body.bounce_count - 1) * 0.025)
 
 func _pushed(enemy: WaveEnemy, _heading: Vector3) -> void:

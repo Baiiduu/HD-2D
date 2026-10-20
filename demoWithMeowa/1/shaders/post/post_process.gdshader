@@ -43,6 +43,9 @@ uniform vec2 charge_route_end = vec2(0.5, 0.25);
 uniform float charge_route_half_width = 0.06;
 uniform float charge_direction_blur_pixels = 0.40;
 uniform float charge_direction_lift = 0.06;
+// 真实扣血的单层边缘红光，保持中央战斗区域与 HUD 原色。
+uniform float hurt_amount = 0.0;
+uniform vec3 hurt_color : source_color = vec3(0.9, 0.04, 0.07);
 // 独立清波镜头调色，在原有天气／Style 之后短暂合成，不影响 HUD。
 uniform float wave_finish_amount = 0.0;
 uniform float wave_finish_impact = 0.0;
@@ -177,6 +180,11 @@ void fragment() {
 		color *= 1.0 - edge * charge_focus_darken;
 		// Lift existing colors very slightly along the outgoing route, preserving pixel detail.
 		color *= 1.0 + direction_reveal * charge_direction_lift * charge_direction_amount;
+	}
+	if (hurt_amount > 0.0) {
+		vec2 edge = abs(SCREEN_UV - vec2(0.5)) * 2.0;
+		float border = smoothstep(0.66, 1.0, max(edge.x, edge.y));
+		color = mix(color, hurt_color, border * clamp(hurt_amount, 0.0, 0.15));
 	}
 	if (wave_finish_amount > 0.0) {
 		vec2 offset = (SCREEN_UV - wave_finish_center) * vec2(SCREEN_PIXEL_SIZE.y / SCREEN_PIXEL_SIZE.x, 1.0);

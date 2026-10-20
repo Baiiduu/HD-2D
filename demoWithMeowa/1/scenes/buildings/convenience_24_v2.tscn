@@ -15,6 +15,7 @@ script = ExtResource("script")
 [node name="Model" parent="." instance=ExtResource("model")]
 
 [node name="BuildingCollision" type="StaticBody3D" parent="."]
+metadata/collision_surface = &"stone"
 
 [node name="Shop" type="CollisionShape3D" parent="BuildingCollision"]
 position = Vector3(0, 1.1, 0)

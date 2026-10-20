@@ -76,6 +76,8 @@
 | 文档 | 内容 |
 | --- | --- |
 | [项目视觉设计](visuals/visual-design.md) | Lumina 原则在当前家园、连续地图与战斗内容中的应用、实际基准和后续视觉优先级 |
+| [城市建筑制作规范](visuals/building-production-guide.md) | 三视图、风格与各面布局先确认，整套贴图一次生成，模型、UV、材质、人工验收与积分说明 |
+| [Meowa 音效制作与接入指南](audio/meowa-sfx-production-guide.md) | 画面特征与提示词审核、即时起声、成套音色、变体一致性、响度、积分控制与实战验收 |
 | [草地与光照明暗层次](visuals/value-lighting-sample.md) | 保留草底中间色、拓宽草花色阶、暖主光与冷色半球补光，以及原版切换与同机位实机 |
 | [雾与后处理细调](visuals/fog-post-sample.md) | 四种 Style 的近处去灰、远雾、泛光、暗部提亮与暗角；独立恢复、参数及小院／战区同机位对照 |
 | [Style 主光与后处理修复](visuals/style-light-repair.md) | 修复三种风格共用暖主光的回归，保留原始实际光影；实机前后对照 |

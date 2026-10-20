@@ -23,18 +23,15 @@ func configure(world: Node, settings_theme: Theme) -> void:
 		_speed = camera.edge_pan_speed
 		_follow_speed = camera.follow_max_speed
 		_follow_lag = camera.follow_max_lag
-	var title := Label.new()
-	title.text = "镜头控制"
-	title.add_theme_font_size_override("font_size", 24)
-	add_child(title)
 	follow_toggle = CheckBox.new()
 	follow_toggle.text = "镜头跟随人物"
 	add_child(follow_toggle)
 	speed_input = _number_row("边缘移动速度", 2.0, 40.0, 1.0, "米/秒")
-	follow_speed_input = _number_row("跟随速度上限", 0.0, 80.0, 1.0, "米/秒")
-	follow_lag_input = _number_row("最大跟随落后", 0.5, 8.0, 0.1, "米")
+	follow_speed_input = _number_row("跟随速度", 0.0, 80.0, 1.0, "米/秒")
+	follow_speed_input.tooltip_text = "0 为不限速。"
+	follow_lag_input = _number_row("最大落后距离", 0.5, 8.0, 0.1, "米")
 	_hint = Label.new()
-	_hint.text = "跟随状态仅在本次运行生效，快捷键在「按键」页调整。关闭后用鼠标靠近屏幕边缘移动，仍可旋转镜头。\n跟随上限为 0 时不限速；落后增大时允许加速追赶，安全距离会按当前视野收紧。远处重新跟随时平滑归位。\n打开管理界面、鼠标移出窗口或窗口失焦时停止边缘移动。"
+	_hint.text = "关闭跟随后，将鼠标移至屏幕边缘移动镜头。"
 	_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_hint.add_theme_color_override("font_color", Color("a6b2bd"))
 	add_child(_hint)
@@ -82,7 +79,7 @@ func sync_controls() -> void:
 	if follow_toggle:
 		var controls := get_node_or_null("/root/GameControls")
 		var key: int = camera.follow_toggle_key if is_instance_valid(camera) else controls.model.bindings.camera_follow[0] if controls else KEY_Y
-		follow_toggle.text = "镜头跟随人物 · %s 切换" % OS.get_keycode_string(key)
+		follow_toggle.text = "跟随人物 · %s" % OS.get_keycode_string(key)
 		follow_toggle.set_pressed_no_signal(_follow)
 	if speed_input:
 		speed_input.set_value_no_signal(_speed)

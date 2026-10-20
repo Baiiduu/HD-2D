@@ -117,7 +117,7 @@ func damage_and_freeze_checks(rules: PlayerSwordRules) -> void:
 	await reset()
 	sword.rules = rules
 	check(sword.request_manual(Vector3.RIGHT), "真实挥剑冻结检查")
-	sword._physics_process(0.08)
+	sword._physics_process(rules.windup_for(false) + rules.sweep_seconds * 0.3)
 	var material := sword._effect._material
 	var angle: float = material.get_shader_parameter("trail_angle")
 	session.set_combat_frozen(true)

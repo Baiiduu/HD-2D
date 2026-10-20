@@ -38,7 +38,7 @@ func run() -> void:
 	wave.waves.clear()
 	wave.total_waves = 1
 	wave.endless_mode = false
-	wave.first_wave_enemies = 4
+	wave.first_wave_enemies = 5
 	wave.spawn_interval = 0.1
 	root.add_child(world)
 	current_scene = world
@@ -98,7 +98,7 @@ func run() -> void:
 		for enemy in wave.enemies:
 			enemy.set_physics_process(false)
 			enemy.experience_reward = 0
-		if wave.enemies.size() == 4: break
+		if wave.enemies.size() == 5: break
 		await physics_frame
 	for enemy in wave.enemies:
 		enemy.set_physics_process(false)
@@ -110,20 +110,24 @@ func run() -> void:
 	body.flight_serial += 1
 	body.launched.emit(Vector3.RIGHT, 10.0, 1.0)
 	var count := wave.enemies.size()
-	check(count == 4, "Controlled wave spawns the complete planned population")
+	check(count == 5, "Controlled wave spawns the complete planned population")
+	var batch = score.begin_attack()
 	for enemy in wave.enemies.duplicate():
 		expected += score.state.rules.points_for(enemy.definition)
-		enemy.take_damage(10000.0, {"source": &"flight_sword", "flight_id": body.flight_serial})
+		enemy.take_damage(10000.0, {"source": &"flight_sword", "flight_id": body.flight_serial, "score_batch": batch})
 	check(score.state.kills == count and score.state.kill_score == expected, "Only real lethal damage pays the registered enemy points")
-	check(score.state.performance_score == 5, "One volley earns the first tier once")
+	check(score.state.burst_score == 25 and score.state.combo_score == 0, "One attack earns its fixed burst tier once with a shared multiplier")
+	wave.player.take_damage(1.0)
+	check(score.state.combo_kills == count, "Player damage does not lower the kill streak")
 	wave._clear_wave()
 	check(wave.outcome == WavePrototype.Outcome.VICTORY and not score.state.active, "Final wave completes through the existing lifecycle")
-	check(score.state.total == expected + 5 + 100 and score.state.wave_score == 100, "Last kills and final wave are both present exactly once")
+	check(score.state.total == expected + 25 + 100 and score.state.wave_score == 100, "Last kills, fixed burst and final wave are present exactly once")
 	var hud: ScoreHUD = wave.get_node("ScoreHUD")
 	for frame in 30: await process_frame
 	hud._process(1.0)
 	check(hud._display == score.state.total and hud._pending == 0, "HUD converges to the real score and flushes final pending points")
 	check(hud._root.visible, "Final score remains visible when the result state blocks character input")
+	check(not hud._hint.text.contains("连杀") and not hud._hint.text.contains("一片倒下"), "New score bonuses do not add combat labels to the HUD")
 	settings.open_menu()
 	check(settings.menu_open, "Settings can also open from the result screen")
 	var original_size := root.size

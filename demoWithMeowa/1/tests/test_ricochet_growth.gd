@@ -189,6 +189,8 @@ func choose(growth: RunGrowth, id: StringName) -> void:
 
 func integration_checks() -> void:
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
+	# 成长用例直接验证玩法，不能由用户的入场人工预览开关占用输入。
+	world.get_node("WorldEntry").preview_on_direct_run = false
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("MapEffects/BGM").music_enabled = false
 	var session: WavePrototype = world.get_node("WavePrototype")
@@ -196,7 +198,11 @@ func integration_checks() -> void:
 	profile.population_rules = profile.population_rules.duplicate(true) as WavePopulationRules
 	profile.population_rules.simulation_mode = false
 	profile.cards_per_draw = 100
-	profile.growth_definitions = profile.growth_definitions.duplicate()
+	# 本用例继续验收旧地图六条成长兼容；正式史诗池由 test_epic_growth 验收。
+	profile.growth_rules = null
+	profile.growth_definitions = []
+	for path in ["damage", "cooldown", "range", "ricochet/launch_speed", "ricochet/flight_duration", "ricochet/charge_efficiency"]:
+		profile.growth_definitions.append(load("res://data/growth/" + path + ".tres"))
 	world.get_node("BattleConfiguration").configuration = profile
 	# 本用例验证兼容技能与弹射成长，显式启用已退出正式池的 A02。
 	session.get_node("LightPierceAutoAttack").enabled = true

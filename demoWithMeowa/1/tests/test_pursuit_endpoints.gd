@@ -55,6 +55,7 @@ func box(point: Vector3) -> StaticBody3D:
 
 func run() -> void:
 	world = load("res://scenes/world/world.tscn").instantiate()
+	world.get_node("WorldEntry").preview_on_direct_run = false
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("WavePrototype/RunGrowth").enabled = false
 	root.add_child(world)

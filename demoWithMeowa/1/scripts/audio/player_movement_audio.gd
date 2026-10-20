@@ -1,6 +1,8 @@
 class_name PlayerMovementAudio
 extends Node
 
+const COLLISION_SURFACE := preload("res://scripts/core/collision_surface.gd")
+
 @export_group("人物动作音效")
 @export var enabled := true
 @export var sounds: MovementSoundBank
@@ -101,16 +103,11 @@ func _ground_weights() -> PackedFloat32Array:
 	if hit.is_empty():
 		return _mix if _initialized else _sampler.one_surface(fallback_surface)
 	var node := hit.collider as Node
-	if node is CollisionObject3D:
-		var collider := node as CollisionObject3D
-		var owner_id := collider.shape_find_owner(hit.shape)
-		var shape_node := collider.shape_owner_get_owner(owner_id) as Node
-		if shape_node and shape_node.has_meta("movement_surface"):
-			return _sampler.one_surface(int(shape_node.get_meta("movement_surface")))
+	var surface := COLLISION_SURFACE.resolve(node, hit.shape)
+	var movement_surface := COLLISION_SURFACE.movement_index(surface)
+	if movement_surface >= 0:
+		return _sampler.one_surface(movement_surface)
 	while node:
-		# 其他碰撞面可设置整数元数据 movement_surface，对应上述六种地表类型。
-		if node.has_meta("movement_surface"):
-			return _sampler.one_surface(int(node.get_meta("movement_surface")))
 		if node is Terrain and (node as Terrain).data:
 			return _sampler.sample(node as Terrain, hit.position, footprint_radius,
 				PackedInt32Array([city_surface, cyber_surface, cultivation_surface, wild_surface]))

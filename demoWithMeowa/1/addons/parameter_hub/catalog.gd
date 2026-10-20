@@ -8,12 +8,27 @@ const SYSTEM_SWITCH_LABELS := {
 }
 const CATEGORIES := ["视觉", "人物", "战斗与成长", "地图与地编", "UI", "声音", "物品与规则"]
 const LABELS := {
-	"occluded_opacity": "遮挡时建筑不透明度", "detection_interval": "建筑遮挡检测间隔",
+	"equipment_bonuses_enabled": "旧装备数值加成",
+	"growth_rules": "成长与基础续航规则", "epic": "史诗解锁成长", "epic_every": "史诗选择等级间隔",
+	"orbit_damage_reduction": "持续环绕减伤", "sword_heal_fraction": "每次剑术命中恢复生命比例", "sword_heal_cap": "剑术每秒恢复上限比例",
+	"speed_damage_low": "动能增伤低速端", "speed_damage_high": "动能增伤高速端", "speed_damage_min_bonus": "低速增伤系数", "speed_damage_max_bonus": "高速增伤系数",
+	"strike_speed_thresholds": "千手加刀速度门槛", "strike_speed_hysteresis": "千手速度切档余量", "maximum_strikes": "单次千手斩击上限", "additional_strike_damage_ratio": "千手追加刀伤害比例", "heavy_interval_multiplier": "重击攻击间隔倍率",
+	"ui_sounds": "UI 音效配置", "actions": "UI 操作音效映射", "action_intervals": "UI 连续操作音效间隔",
+	"player_access_enabled": "人物与背包玩家入口", "management_enabled": "技能栏管理入口",
+	"rules_version": "计分规则版本", "common_points": "普通怪基础分", "special_points": "特殊怪基础分",
+	"enemy_points": "怪物独立基础分", "performance_excluded": "仅给基础分的怪物", "wave_points": "清波基础分",
+	"combo_enabled": "连杀倍率开关", "combo_thresholds": "连杀击杀门槛", "combo_multipliers": "连杀得分倍率",
+	"combo_grace_seconds": "连杀宽限时间", "combo_decay_seconds": "连杀降档间隔",
+	"burst_enabled": "成片奖励开关", "burst_thresholds": "成片击杀门槛", "burst_rewards": "成片固定奖励",
+	"online_demo_enabled": "匿名试玩榜自动提交",
+	"include_scene_props": "花坛与场景道具参与遮挡淡化",
+	"occluded_opacity": "遮挡物保留不透明度", "detection_interval": "人物遮挡检测间隔",
 	"occlusion_fade_seconds": "建筑淡出时间", "restore_seconds": "建筑恢复时间", "restore_delay": "解除遮挡保留时间",
 	"ribbon_layered_enabled": "剑光分层流动笔触", "ribbon_brush": "剑光笔触贴图", "ribbon_noise": "剑光流动噪声",
 	"ribbon_flow_speed": "剑光流动速度", "ribbon_distortion": "剑光笔触扰动", "ribbon_wake_strength": "剑光次级拖丝强度",
 	"ribbon_spark_strength": "剑光飞散亮点强度", "ribbon_view_tilt": "剑光俯视显示倾角",
-	"ribbon_visual": "原生剑光外观", "ribbon_width": "剑光丝带宽度", "ribbon_degrees": "剑光丝带弧长",
+	"ribbon_visual": "原生剑光外观", "flight_ribbon_visual": "弹射环绕剑光外观", "ribbon_width": "剑光丝带宽度", "ribbon_degrees": "剑光丝带弧长",
+	"ribbon_orbit_enabled": "剑光缺口圆环", "ribbon_orbit_secondary_strength": "环绕交错余迹强度", "ribbon_orbit_secondary_offset": "环绕交错余迹角度",
 	"ribbon_inner_ratio": "剑光尾端贴身比例", "ribbon_pixel_size": "剑光笔触像素尺寸",
 	"ribbon_blade_color": "剑光亮刃颜色", "ribbon_middle_color": "剑光过渡颜色", "ribbon_tail_color": "剑光拖尾颜色",
 	"ribbon_emission": "剑光自发光强度", "ribbon_blade_enabled": "剑光亮刃层", "ribbon_trail_enabled": "剑光拖尾层", "ribbon_tail_seconds": "剑光独立消散时间",
@@ -21,6 +36,14 @@ const LABELS := {
 	"meowa_stretch_enabled": "剑光动态拉伸", "meowa_stretch_strength": "剑光拉伸强度",
 	"enemy_hit_reaction_enabled": "怪物受击身体反应", "enemy_hit_lean_degrees": "怪物受击倾斜幅度",
 	"enemy_hit_recovery_seconds": "怪物受击回正时间",
+	"hurt_particles_enabled": "人物受击红色像素粒子", "hurt_particle_count": "人物受击粒子数量",
+	"hurt_particle_seconds": "人物受击粒子消散时间", "hurt_particle_spread_pixels": "人物受击粒子散开距离",
+	"hurt_particle_size_pixels": "人物受击粒子原生像素尺寸", "hurt_particle_color": "人物受击粒子颜色",
+	"hurt_screen_enabled": "人物受伤边缘红光", "hurt_screen_opacity": "受伤红光强度上限",
+	"hurt_screen_seconds": "受伤红光消退时间", "hurt_screen_color": "受伤红光颜色",
+	"hurt_camera_enabled": "人物受伤轻震", "hurt_shake_pixels": "普通受伤轻震幅度",
+	"hurt_shake_seconds": "普通受伤轻震时间", "hurt_orbit_shake_pixels": "绕行受伤轻震幅度",
+	"hurt_orbit_shake_seconds": "绕行受伤轻震时间", "hurt_shake_interval": "受伤轻震最短间隔",
 	"enemy_hit_silhouette_enabled": "弹射命中局部剪影", "enemy_hit_silhouette_seconds": "命中剪影持续时间",
 	"enemy_hit_silhouette_strength": "命中剪影强度", "enemy_hit_silhouette_interval": "同目标剪影最短间隔", "enemy_hit_silhouette_color": "命中剪影亮边颜色",
 	"hit_debris_enabled": "定向命中碎屑开关", "hit_debris_count": "单次命中碎屑数量", "hit_debris_seconds": "命中碎屑存留时间",
@@ -37,6 +60,13 @@ const LABELS := {
 	"orbit_focus_enabled": "持续环绕专属取景", "orbit_lead_retention": "环绕切向前视保留比例",
 	"orbit_focus_weight": "环绕怪群参照权重", "orbit_focus_max_distance": "环绕参照最大采样距离",
 	"orbit_settle_seconds": "环绕取景平滑时间", "orbit_pullback_ratio": "环绕适量展开取景比例",
+	"orbit_shot_enabled": "环绕近景与进出特写开关", "orbit_enter_magnification": "入圈特写放大倍数",
+	"orbit_hold_magnification": "正常环绕保持放大倍数", "orbit_closeup_enter_seconds": "环绕特写推近时间",
+	"orbit_closeup_exit_seconds": "离圈近景恢复时间",
+	"orbit_closeup_exit_hold_seconds": "离圈近景停留时间",
+	"orbit_shot_offset_ratio": "环绕进出弧形运镜幅度", "orbit_shot_pitch_degrees": "环绕进出特写俯角幅度",
+	"orbit_shot_seconds": "入圈特写收稳与曲线总时长",
+	"orbit_shot_interval": "环绕进出特写共用间隔", "orbit_exit_minimum_seconds": "出圈特写最低环绕时长",
 	"combat_beat_enabled": "连续攻击与清群镜头重音", "combat_beat_pixels": "清群定向冲击像素",
 	"combat_beat_seconds": "清群冲击持续时间", "combat_beat_interval": "清群镜头重音最短间隔",
 	"combat_pullback_ratio": "清群瞬间展开取景比例",
@@ -69,8 +99,8 @@ const LABELS := {
 	"speed_rim_color": "速度轮廓颜色",
 	"speed_flow_enabled": "贴身速度气流开关", "speed_flow_texture": "速度气流原生纹理",
 	"speed_flow_texture_region": "速度气流纹理采样区域",
-	"speed_flow_mode": "速度气流表现方式", "speed_air_distortion_pixels": "空气绕流折射幅度",
-	"speed_flow_opacity": "速度气流透明度", "speed_flow_length": "速度气流单条长度",
+	"speed_flow_mode": "速度气流表现方式",
+	"speed_flow_opacity": "速度气流透明度", "speed_flow_length": "气流掠过长度",
 	"speed_flow_lifetime": "速度气流短尾存留时间", "speed_flow_radius": "速度气流身体留白半径",
 	"bounce_rhythm_enabled": "反弹残影节奏开关", "bounce_echo_rebuild_seconds": "出射残影重建时间",
 	"bounce_echo_fade_seconds": "入射残影收尾时间",
@@ -102,11 +132,21 @@ const LABELS := {
 	"full_slow_enabled": "满蓄真实慢动作对照开关", "full_slow_scale": "满蓄慢动作速度比例", "full_slow_seconds": "满蓄慢动作真实时长",
 	"orbit_slow_enabled": "持续环绕慢动作开关", "orbit_slow_scale": "环绕慢动作速度比例",
 	"orbit_slow_enter_seconds": "环绕慢动作进入真实时长", "orbit_slow_exit_seconds": "环绕慢动作脱离真实时长",
+	"bounce_slow_enabled": "建筑蹬墙短慢动作开关", "bounce_slow_scale": "蹬墙慢动作速度比例",
+	"bounce_slow_enter_seconds": "蹬墙慢动作进入真实时长", "bounce_slow_hold_seconds": "蹬墙慢动作保持真实时长",
+	"bounce_slow_exit_seconds": "蹬墙慢动作恢复真实时长", "bounce_slow_interval": "蹬墙慢动作最短触发间隔",
 	"preview_on_direct_run": "直接运行地图预览入场", "sky_extra_distance": "入场远空额外距离",
 	"sky_extra_height": "入场远空额外高度", "sky_lateral_offset": "入场远空侧向偏移", "sky_view_pitch": "入场天空起始视角",
 	"arrival_ratio": "入场运镜时段占比", "camera_sweep_degrees": "入场水平绕转角度", "camera_bank_degrees": "入场左右侧倾幅度",
 	"fog_opacity": "入场雾团整体强度", "fog_flow_speed": "入场云雾流速", "volume_density": "入场体积雾浓度",
 	"fog_retreat_distance": "散雾向外退开距离", "fog_curl_strength": "入场云雾翻卷强度",
+	"cloud_bank_scale": "入场局部体积云尺寸比例", "cloud_bank_density_ratio": "入场局部体积云密度比例",
+	"wisp_opacity": "入场近景薄雾强度", "wisp_depth_bulge": "入场薄雾曲面起伏",
+	"building_atmosphere_enabled": "入场建筑透雾与柔边开关", "building_light_gain": "入场已有灯窗发光增益",
+	"fog_self_emission": "入场云雾中性自发光", "mist_light_response": "入场云片透灯强度", "mist_light_threshold": "入场透灯亮部阈值",
+	"building_edge_softness_pixels": "入场建筑轮廓模糊半径", "building_edge_blur_strength": "入场建筑轮廓虚化强度",
+	"emission_fog_enabled": "入场建筑发光雾散射开关", "emission_fog_strength": "入场材质发光散射强度",
+	"emission_fog_radius": "入场发光散射半径", "emission_fog_max_lights": "入场雾散射源上限", "emission_fog_refresh_seconds": "入场发光控制刷新间隔",
 	"traversal_audio_enabled": "入场穿雾声音开关", "traversal_sound": "入场穿梭音源", "traversal_volume_db": "入场穿梭音量",
 	"opening_seconds": "首波开战演出时长", "next_wave_seconds": "后续开战演出时长", "clear_seconds": "清波演出时长",
 	"animated_opening_enabled": "B 版开战动态大字开关", "opening_title_size": "开战波次数字号",
@@ -135,6 +175,7 @@ const LABELS := {
 	"eccentric_edge_clearance": "偏心外沿额外间隔", "eccentric_outward_sway": "偏心外摆幅度",
 	"eccentric_search_radius": "环绕怪群搜索距离",
 	"eccentric_capture_margin": "环绕提前捕获余量",
+	"orbit_speed_ratio": "环绕实际移速比例", "orbit_enter_seconds": "进入环绕减速时间", "orbit_exit_seconds": "脱离环绕回速时间",
 	"eccentric_minimum_members": "首次环绕最少成员数",
 	"show_bounce_effect": "碰墙反弹特效开关", "bounce_frames": "反弹火花原生帧",
 	"bounce_anchor_pixels": "反弹火花碰点像素锚点", "bounce_duration": "反弹火花持续时间",
@@ -145,6 +186,10 @@ const LABELS := {
 	"fire_trail_fresh_seconds": "火带新生亮火时间", "fire_trail_burn_seconds": "火带持续燃烧时间",
 	"fire_trail_ember_seconds": "火带暗红余烬时间", "fire_trail_energy": "地面火带亮度",
 	"fire_trail_pixels_per_meter": "火带世界像素密度",
+	"fire_trail_flow_enabled": "火带流动笔触开关", "fire_trail_spark_height": "火带火星离地高度",
+	"fire_trail_spark_spacing": "火带火星候选间距", "fire_trail_flow_strength": "火带笔触卷曲强度",
+	"fire_trail_brush": "火带 Meowa 笔触", "fire_trail_brush_region": "火带笔触采样区域", "fire_trail_flow_speed": "火带流动与爆发节奏",
+	"fire_trail_spark_amount": "火带少量飞火密度", "fire_trail_body_clearance_pixels": "火带人物轮廓留白",
 	"melee_death_enabled": "近身与奔雷击杀击飞开关", "melee_death_seconds": "近身击飞消散时长",
 	"melee_death_distance": "近身击飞基础距离", "melee_death_height": "近身击飞腾空高度",
 	"melee_death_spin_degrees": "近身击飞翻转角度",
@@ -163,6 +208,7 @@ const LABELS := {
 	"music_enabled": "背景音乐开关", "music_stream": "旧场景单曲", "music_fade_time": "音乐开关淡化时长",
 	"music_loop_crossfade": "旧单曲循环衔接时长", "music_bus": "音乐输出总线",
 	"crowd_clearance_distance": "人物周身留白距离（额外）",
+	"pursuit_throttle_threshold": "普通追击降频启用数量（0关闭）",
 	"pursuit_lookahead": "追击路线前视距离", "pursuit_flank_strength": "追击侧向让行强度",
 	"patch_enabled": "成片电涌开关", "patch_duration": "成片电涌停留时间", "patch_opacity": "成片电涌强度", "patch_height": "成片电涌高度",
 	"mixed_horde": "自动目录混合怪潮", "horde_weight": "怪潮出场权重（0 排除）",
@@ -170,6 +216,7 @@ const LABELS := {
 	"bounce_gain_db": "人物反弹碰撞音量增益",
 	"water_boundary_reflection_enabled": "人物遇水边界反弹",
 	"flight_audio_enabled": "弹射动能气流开关", "flight_gain_db": "弹射气流音量增益",
+	"charge_energy_audio_enabled": "旧蓄力起手与循环开关",
 	"charge_progress_audio_enabled": "蓄力声音渐强开关", "charge_start_gain_db": "蓄力起始音量增益",
 	"charge_full_gain_db": "蓄满循环音量增益", "charge_start_pitch": "蓄力起始音高",
 	"charge_full_pitch": "蓄满循环音高", "charge_ready_gain_db": "满蓄提示音量增益",
@@ -212,6 +259,10 @@ const LABELS := {
 	"normal_range": "普攻半径", "flight_range": "弹射挥剑半径", "normal_angle": "普攻扇角", "flight_angle": "弹射挥剑扇角",
 	"sweep_seconds": "基础剑术扫击时间", "fade_seconds": "基础剑术收尾时间", "art_radius_pixels": "剑光原生半径像素",
 	"effect_height": "刀光中心高度", "effect_tilt_degrees": "刀光斜切角度",
+	"normal_stationary_enabled": "普攻前摇与扫刃站定", "normal_windup_seconds": "站定普攻前摇时间",
+	"normal_slash_alignment_enabled": "普攻动作与刀光对齐", "normal_attack_frame_breaks": "普攻动画起手与斩击结束进度",
+	"ribbon_hilt_enabled": "刀光腰前起刀", "ribbon_hilt_offset": "刀光内端持剑侧与前后偏移",
+	"ribbon_hilt_width_ratio": "刀光内端宽度比例", "ribbon_height_offset": "刀光腰前高度偏移",
 	"effect_mode": "剑光显示方式", "arc_width": "窄弧刀痕厚度", "arc_trail_degrees": "窄弧尾迹角度",
 	"arc_blade_color": "窄弧刀锋颜色", "arc_tail_color": "窄弧尾迹颜色", "arc_pixel_size": "窄弧原生像素尺寸",
 	"meowa_body_opacity": "Meowa 白刃存在感", "meowa_tail_spread": "Meowa 拖尾展开倍率", "meowa_tail_inner_ratio": "Meowa 拖尾内端半径比例", "meowa_tail_seconds": "Meowa 破碎消散时长",
@@ -349,29 +400,32 @@ const LABELS := {
 	"limiter_ceiling_db": "总输出峰值上限",
 }
 const COMMON := {
-	"building_occlusion.gd": ["enabled", "occluded_opacity", "detection_interval", "occlusion_fade_seconds", "restore_seconds", "restore_delay"],
+	"run_score.gd": ["rules", "online_demo_enabled"],
+	"run_score_rules.gd": ["common_points", "special_points", "enemy_points", "performance_excluded", "wave_points", "combo_enabled", "combo_thresholds", "combo_multipliers", "combo_grace_seconds", "combo_decay_seconds", "burst_enabled", "burst_thresholds", "burst_rewards"],
+	"building_occlusion.gd": ["enabled", "include_scene_props", "occluded_opacity", "detection_interval", "occlusion_fade_seconds", "restore_seconds", "restore_delay"],
 	"character_lighting.gd": ["lighting_enabled", "light_wrap", "top_light_response", "back_rim_strength", "local_light_response", "normal_mapping_enabled", "normal_mapping_strength"],
+	"character_spotlight.gd": ["fill_enabled", "fill_color", "fill_energy", "fill_height", "fill_front_offset", "fill_side_offset", "fill_target_height", "fill_angle"],
 	"kill_audio_rules.gd": ["enabled", "group_window", "group_radius", "group_threshold", "large_group_threshold", "group_cooldown", "group_gain_db", "air_gain_db", "landing_gain_db", "music_duck_db", "ambience_duck_db", "duck_seconds"],
-	"charge_presentation.gd": ["charge_drama_enabled", "charge_drama_start_fraction", "charge_drama_slow_scale", "charge_drama_enter_seconds", "charge_drama_fade_seconds", "orbit_slow_enabled", "orbit_slow_scale", "orbit_slow_enter_seconds", "orbit_slow_exit_seconds", "enabled", "edge_darken", "edge_desaturation", "clear_radius", "gather_seconds", "release_seconds", "direction_focus_enabled", "direction_focus_length", "direction_focus_half_width", "direction_focus_blur_pixels", "direction_focus_release_seconds", "direction_focus_lift", "launch_release_enabled", "launch_audio_hold_seconds", "launch_audio_return_seconds", "airflow_radius", "plant_pull", "rain_pull", "music_duck_db", "ambience_duck_db", "full_slow_enabled", "full_slow_scale", "full_slow_seconds"],
+	"charge_presentation.gd": ["bounce_slow_enabled", "bounce_slow_scale", "bounce_slow_enter_seconds", "bounce_slow_hold_seconds", "bounce_slow_exit_seconds", "bounce_slow_interval", "charge_drama_enabled", "charge_drama_start_fraction", "charge_drama_slow_scale", "charge_drama_enter_seconds", "charge_drama_fade_seconds", "orbit_slow_enabled", "orbit_slow_scale", "orbit_slow_enter_seconds", "orbit_slow_exit_seconds", "enabled", "edge_darken", "edge_desaturation", "clear_radius", "gather_seconds", "release_seconds", "direction_focus_enabled", "direction_focus_length", "direction_focus_half_width", "direction_focus_blur_pixels", "direction_focus_release_seconds", "direction_focus_lift", "launch_release_enabled", "launch_audio_hold_seconds", "launch_audio_return_seconds", "airflow_radius", "plant_pull", "rain_pull", "music_duck_db", "ambience_duck_db", "full_slow_enabled", "full_slow_scale", "full_slow_seconds"],
 	"world_entry.gd": ["settings", "preview_on_direct_run"],
 	"wave_presentation.gd": ["enabled", "settings"],
 	"wave_presentation_settings.gd": ["compact_clear_enabled", "clear_title_size", "clear_title_enter_seconds", "clear_title_exit_seconds", "rest_hint_font_size", "rest_hint_bottom_margin", "animated_opening_enabled", "opening_title_size", "opening_title_top_ratio", "opening_title_enter_seconds", "opening_title_exit_seconds", "opening_title_travel_pixels", "opening_seconds", "next_wave_seconds", "clear_seconds", "finish_shot_enabled", "finish_shot_seconds", "finish_slow_scale", "finish_zoom_scale", "finish_contrast", "banner_width", "top_ratio", "ground_pulse_enabled", "battle_pulse_radius", "clear_pulse_radius", "pulse_opacity", "edge_strength"],
-	"world_entry_settings.gd": ["enabled", "duration_seconds", "arrival_ratio", "camera_sweep_degrees", "camera_bank_degrees", "sky_extra_distance", "sky_extra_height", "sky_view_pitch", "traversal_audio_enabled", "traversal_volume_db", "fog_opacity", "volume_density", "fog_retreat_distance", "fog_curl_strength", "spotlight_energy", "spotlight_fog_energy"],
+	"world_entry_settings.gd": ["enabled", "duration_seconds", "arrival_ratio", "camera_sweep_degrees", "camera_bank_degrees", "sky_extra_distance", "sky_extra_height", "sky_view_pitch", "traversal_audio_enabled", "traversal_volume_db", "fog_opacity", "volume_density", "fog_retreat_distance", "fog_curl_strength", "cloud_bank_scale", "cloud_bank_density_ratio", "wisp_opacity", "wisp_depth_bulge", "building_atmosphere_enabled", "building_light_gain", "fog_self_emission", "mist_light_response", "mist_light_threshold", "building_edge_softness_pixels", "building_edge_blur_strength", "emission_fog_enabled", "emission_fog_strength", "emission_fog_radius", "emission_fog_max_lights", "emission_fog_refresh_seconds", "spotlight_energy", "spotlight_fog_energy"],
 	"environment_lantern.gd": ["fill_shadows_enabled"],
 	"scene_combat_binding.gd": ["configuration"],
-	"scene_combat_configuration.gd": ["ricochet_rules", "sword_rules", "population_rules", "spawn_shadow_settings", "waves", "max_active_enemies", "endless_mode", "storm_damage", "storm_attack_interval", "crowd_clearance_distance"],
+	"scene_combat_configuration.gd": ["equipment_bonuses_enabled", "ricochet_rules", "sword_rules", "population_rules", "pursuit_throttle_threshold", "spawn_shadow_settings", "waves", "max_active_enemies", "endless_mode", "storm_damage", "storm_attack_interval", "crowd_clearance_distance"],
 	"wave_spawn_shadow_settings.gd": ["enabled", "warning_seconds", "fade_seconds", "shadow_opacity", "rim_opacity", "footprint_scale", "footprint_depth_ratio", "contraction"],
 	"aurora_sky.gd": ["enabled", "sky_strength", "reflection_strength", "flow_speed", "green_color", "blue_color", "purple_color", "pink_color", "reflection_regions"],
-	"ricochet_camera_settings.gd": ["orbit_focus_enabled", "orbit_lead_retention", "orbit_focus_weight", "orbit_focus_max_distance", "orbit_settle_seconds", "orbit_pullback_ratio", "combat_beat_enabled", "combat_beat_pixels", "combat_beat_seconds", "combat_beat_interval", "combat_pullback_ratio", "flight_speed_camera_enabled", "flight_charge_focus_enabled", "flight_charge_focus_ratio", "flight_reference_speed", "flight_pullback_ratio", "flight_pitch_drop", "flight_speed_smoothing", "impact_shot_enabled", "impact_split_enabled", "impact_punch_pixels", "impact_punch_seconds", "impact_shot_curve", "impact_shot_seconds", "impact_shot_offset_ratio", "impact_shot_yaw_degrees", "impact_shot_roll_degrees", "impact_shot_pullback_ratio", "impact_reference_speed", "enabled", "charge_tremor_enabled", "charge_tremor_pixels", "charge_tremor_start_hz", "charge_tremor_full_hz", "charge_tremor_release_seconds", "charge_focus_enabled", "charge_zoom_ratio", "charge_onset_ratio", "charge_focus_seconds", "charge_release_seconds", "charge_cancel_seconds", "charge_full_shake_enabled", "charge_full_shake_pixels", "charge_full_shake_seconds", "charge_staging_enabled", "charge_pitch_drop", "charge_arc_ratio", "charge_full_punch_ratio", "charge_release_handoff_enabled", "charge_release_burst", "charge_direction_bias_ratio", "charge_release_pitch_seconds", "charge_release_framing_seconds", "launch_lag_seconds", "lookahead_ratio", "lead_settle_seconds", "bounce_inertia_seconds", "return_seconds", "max_offset_ratio", "impact_shake_pixels"],
+	"ricochet_camera_settings.gd": ["orbit_shot_enabled", "orbit_shot_offset_ratio", "orbit_shot_pitch_degrees", "orbit_enter_magnification", "orbit_hold_magnification", "orbit_closeup_enter_seconds", "orbit_closeup_exit_hold_seconds", "orbit_closeup_exit_seconds", "orbit_shot_seconds", "orbit_shot_interval", "orbit_exit_minimum_seconds", "orbit_focus_enabled", "orbit_lead_retention", "orbit_focus_weight", "orbit_focus_max_distance", "orbit_settle_seconds", "orbit_pullback_ratio", "combat_beat_enabled", "combat_beat_pixels", "combat_beat_seconds", "combat_beat_interval", "combat_pullback_ratio", "flight_speed_camera_enabled", "flight_charge_focus_enabled", "flight_charge_focus_ratio", "flight_reference_speed", "flight_pullback_ratio", "flight_pitch_drop", "flight_speed_smoothing", "impact_shot_enabled", "impact_split_enabled", "impact_punch_pixels", "impact_punch_seconds", "impact_shot_curve", "impact_shot_seconds", "impact_shot_offset_ratio", "impact_shot_yaw_degrees", "impact_shot_roll_degrees", "impact_shot_pullback_ratio", "impact_reference_speed", "enabled", "charge_tremor_enabled", "charge_tremor_pixels", "charge_tremor_start_hz", "charge_tremor_full_hz", "charge_tremor_release_seconds", "charge_focus_enabled", "charge_zoom_ratio", "charge_onset_ratio", "charge_focus_seconds", "charge_release_seconds", "charge_cancel_seconds", "charge_full_shake_enabled", "charge_full_shake_pixels", "charge_full_shake_seconds", "charge_staging_enabled", "charge_pitch_drop", "charge_arc_ratio", "charge_full_punch_ratio", "charge_release_handoff_enabled", "charge_release_burst", "charge_direction_bias_ratio", "charge_release_pitch_seconds", "charge_release_framing_seconds", "launch_lag_seconds", "lookahead_ratio", "lead_settle_seconds", "bounce_inertia_seconds", "return_seconds", "max_offset_ratio", "impact_shake_pixels"],
 	"damage_numbers.gd": ["enabled", "number_styles", "number_stack_columns", "number_stack_spacing", "number_idle_limit"],
 	"damage_number_style.gd": ["number_font", "number_font_size", "number_color", "number_lifetime", "rise_pixels", "drift_pixels", "pop_scale"],
 	"ricochet_storm.gd": ["enabled", "damage", "attack_interval", "trigger_radius", "spread_radius", "max_propagation_radius", "spread_layers", "targets_per_layer", "layer_interval", "skill_definition", "effect_scene"],
 	"ricochet_storm_effect.gd": ["pixel_size", "arc_duration", "reveal_seconds", "sky_height", "effect_energy", "arc_energy_multiplier", "effect_opacity", "impact_frames", "patch_enabled", "patch_duration", "patch_opacity", "patch_height"],
 	"player_flight_trail_settings.gd": ["bounce_rhythm_enabled", "bounce_echo_rebuild_seconds", "bounce_echo_fade_seconds", "enabled", "flight_echo_count", "flight_echo_spacing", "flight_trail_color", "flight_echo_saturation", "flight_echo_brightness", "flight_trail_max_length", "flight_trail_lifetime", "flight_trail_opacity", "flight_trail_energy"],
-	"sword_ribbon_visual.gd": ["ribbon_layered_enabled", "ribbon_brush", "ribbon_noise", "ribbon_flow_speed", "ribbon_distortion", "ribbon_wake_strength", "ribbon_spark_strength", "ribbon_view_tilt", "ribbon_width", "ribbon_degrees", "ribbon_inner_ratio", "ribbon_pixel_size", "ribbon_blade_color", "ribbon_middle_color", "ribbon_tail_color", "ribbon_emission", "ribbon_blade_enabled", "ribbon_trail_enabled", "ribbon_tail_seconds"],
-	"player_sword_rules.gd": ["ribbon_visual", "meowa_visibility_strength", "meowa_stretch_enabled", "meowa_stretch_strength", "enabled", "damage", "normal_interval", "flight_interval", "minimum_attack_interval", "normal_range", "flight_range", "normal_angle", "flight_angle", "effect_mode", "frames", "arc_width", "arc_trail_degrees", "meowa_body_opacity", "meowa_tail_spread", "meowa_tail_inner_ratio", "meowa_tail_seconds", "effect_height", "effect_tilt_degrees", "effect_opacity", "effect_energy"],
-	"player_ricochet_rules.gd": ["eccentric_enabled", "eccentric_minimum_members", "eccentric_capture_margin", "eccentric_step_distance", "eccentric_edge_clearance", "eccentric_outward_sway", "eccentric_search_radius", "crowd_deflection_enabled", "crowd_arc_degrees", "crowd_arc_distance", "enemy_push_enabled", "crowd_contact_radius", "crowd_turn_distance", "crowd_exit_outward", "crowd_speed_retention", "crowd_release_clearance", "full_charge_seconds", "minimum_launch_speed", "maximum_launch_speed", "bounce_speed_retention", "minimum_bounce_speed", "flight_deceleration", "bounce_speed_cost", "push_radius", "push_initial_speed", "push_seconds", "push_stun_seconds", "push_group_link_distance", "push_group_search_radius", "push_group_edge_margin", "push_arrival_arc_degrees", "push_chain_layers", "push_chain_speed_retention", "push_chain_stun_retention", "push_chain_min_speed", "clockwise"],
-	"player_action_visuals.gd": ["speed_flow_mode", "speed_air_distortion_pixels", "speed_flow_texture_region", "surface_wave_texture", "speed_flow_enabled", "speed_flow_texture", "speed_flow_opacity", "speed_flow_length", "speed_flow_lifetime", "speed_flow_radius", "surface_wave_enabled", "surface_wave_radius", "surface_wave_seconds", "surface_wave_energy", "speed_rim_enabled", "speed_rim_strength", "speed_rim_width_pixels", "speed_rim_min_speed", "speed_rim_color", "sword_hit_impact_enabled", "sword_hitstop_seconds", "sword_hit_impact_interval", "sword_hit_shake_seconds", "sword_hit_shake_pixels", "hit_debris_speed_multiplier", "kill_slash_enabled", "kill_slash_texture", "kill_slash_seconds", "kill_slash_interval", "hit_debris_enabled", "hit_debris_count", "hit_debris_seconds", "hit_debris_interval", "kill_impact_enabled", "kill_hitstop_seconds", "kill_hitstop_interval", "kill_slow_tail_seconds", "kill_shake_seconds", "kill_shake_pixels", "kill_shot_enabled", "kill_shot_seconds", "kill_shot_zoom_scale", "kill_shot_minimum_kills", "kill_shot_group_window", "kill_shot_enter_seconds", "kill_shot_interval", "charge_wind_body_clearance_pixels", "charge_wind_layers", "charge_wind_trail_span", "charge_wind_funnel_enabled", "charge_wind_bottom_radius_pixels", "charge_wind_width_pixels", "charge_wind_turns", "charge_wind_full_speed_multiplier", "charge_wind_enabled", "charge_wind_texture", "charge_wind_radius_pixels", "charge_wind_height_pixels", "charge_wind_opacity", "charge_wind_cycle_seconds", "enemy_hit_silhouette_enabled", "enemy_hit_silhouette_seconds", "enemy_hit_silhouette_strength", "enemy_hit_silhouette_interval", "enemy_hit_silhouette_color", "feedback_prewarm_deaths", "feedback_prewarm_contacts", "enemy_hit_reaction_enabled", "enemy_hit_lean_degrees", "enemy_hit_recovery_seconds", "combat_readability_enabled", "combat_contact_frames", "combat_contact_seconds", "combat_sword_body_opacity", "combat_residue_opacity", "combat_death_focus_seconds", "motion_feedback_enabled", "flight_lean_degrees", "motion_reference_speed", "impact_lean_hold", "impact_lean_turn", "lean_return_seconds", "departure_airflow_enabled", "departure_airflow_texture", "departure_airflow_seconds", "departure_airflow_lifetime", "departure_airflow_spacing", "departure_airflow_opacity", "normal_attack", "charge", "flight", "flight_attack", "recovery", "bounce", "show_bounce_effect", "bounce_frames", "bounce_particles_enabled", "bounce_particle_count", "bounce_particle_speed", "bounce_particle_seconds", "bounce_anchor_pixels", "bounce_duration", "bounce_opacity", "bounce_energy", "bounce_height", "show_fire_trail", "fire_trail_width", "fire_trail_fresh_seconds", "fire_trail_burn_seconds", "fire_trail_ember_seconds", "fire_trail_energy", "fire_trail_pixels_per_meter", "melee_death_enabled", "melee_death_seconds", "melee_death_distance", "melee_death_height", "melee_death_spin_degrees", "melee_death_near_distance", "melee_death_reference_speed", "melee_death_min_strength", "melee_death_storm_retention", "melee_death_hit_pause", "melee_death_air_seconds", "melee_death_impact_frames", "melee_death_impact_seconds", "melee_death_trail_enabled", "melee_death_landing_enabled", "melee_death_bounce_height", "melee_death_slide_distance", "melee_death_cluster_enabled", "show_charge_effect", "show_aim_guide", "charge_radius_pixels", "charge_effect_opacity", "charge_effect_energy", "charge_dynamic_enabled", "charge_ring_contraction", "charge_mote_speed_gain", "charge_mote_count", "charge_full_settle_seconds", "preview_show_target", "preview_bounces", "preview_distance", "preview_followup_distance", "preview_color", "preview_opacity", "preview_line_width_pixels"],
+	"sword_ribbon_visual.gd": ["ribbon_hilt_enabled", "ribbon_hilt_offset", "ribbon_hilt_width_ratio", "ribbon_height_offset", "ribbon_orbit_enabled", "ribbon_orbit_secondary_strength", "ribbon_orbit_secondary_offset", "ribbon_layered_enabled", "ribbon_brush", "ribbon_noise", "ribbon_flow_speed", "ribbon_distortion", "ribbon_wake_strength", "ribbon_spark_strength", "ribbon_view_tilt", "ribbon_width", "ribbon_degrees", "ribbon_inner_ratio", "ribbon_pixel_size", "ribbon_blade_color", "ribbon_middle_color", "ribbon_tail_color", "ribbon_emission", "ribbon_blade_enabled", "ribbon_trail_enabled", "ribbon_tail_seconds"],
+	"player_sword_rules.gd": ["normal_slash_alignment_enabled", "normal_attack_frame_breaks", "normal_stationary_enabled", "normal_windup_seconds", "ribbon_visual", "flight_ribbon_visual", "meowa_visibility_strength", "meowa_stretch_enabled", "meowa_stretch_strength", "enabled", "damage", "normal_interval", "flight_interval", "minimum_attack_interval", "normal_range", "flight_range", "normal_angle", "flight_angle", "effect_mode", "frames", "arc_width", "arc_trail_degrees", "meowa_body_opacity", "meowa_tail_spread", "meowa_tail_inner_ratio", "meowa_tail_seconds", "effect_height", "effect_tilt_degrees", "effect_opacity", "effect_energy"],
+	"player_ricochet_rules.gd": ["orbit_speed_ratio", "orbit_enter_seconds", "orbit_exit_seconds", "eccentric_enabled", "eccentric_minimum_members", "eccentric_capture_margin", "eccentric_step_distance", "eccentric_edge_clearance", "eccentric_outward_sway", "eccentric_search_radius", "crowd_deflection_enabled", "crowd_arc_degrees", "crowd_arc_distance", "enemy_push_enabled", "crowd_contact_radius", "crowd_turn_distance", "crowd_exit_outward", "crowd_speed_retention", "crowd_release_clearance", "full_charge_seconds", "minimum_launch_speed", "maximum_launch_speed", "bounce_speed_retention", "minimum_bounce_speed", "flight_deceleration", "bounce_speed_cost", "push_radius", "push_initial_speed", "push_seconds", "push_stun_seconds", "push_group_link_distance", "push_group_search_radius", "push_group_edge_margin", "push_arrival_arc_degrees", "push_chain_layers", "push_chain_speed_retention", "push_chain_stun_retention", "push_chain_min_speed", "clockwise"],
+	"player_action_visuals.gd": ["hurt_screen_enabled", "hurt_screen_opacity", "hurt_screen_seconds", "hurt_screen_color", "hurt_camera_enabled", "hurt_shake_pixels", "hurt_shake_seconds", "hurt_orbit_shake_pixels", "hurt_orbit_shake_seconds", "hurt_shake_interval", "hurt_particles_enabled", "hurt_particle_count", "hurt_particle_seconds", "hurt_particle_spread_pixels", "hurt_particle_size_pixels", "hurt_particle_color", "speed_flow_mode", "speed_flow_texture_region", "surface_wave_texture", "speed_flow_enabled", "speed_flow_texture", "speed_flow_opacity", "speed_flow_length", "speed_flow_lifetime", "speed_flow_radius", "surface_wave_enabled", "surface_wave_radius", "surface_wave_seconds", "surface_wave_energy", "speed_rim_enabled", "speed_rim_strength", "speed_rim_width_pixels", "speed_rim_min_speed", "speed_rim_color", "sword_hit_impact_enabled", "sword_hitstop_seconds", "sword_hit_impact_interval", "sword_hit_shake_seconds", "sword_hit_shake_pixels", "hit_debris_speed_multiplier", "kill_slash_enabled", "kill_slash_texture", "kill_slash_seconds", "kill_slash_interval", "hit_debris_enabled", "hit_debris_count", "hit_debris_seconds", "hit_debris_interval", "kill_impact_enabled", "kill_hitstop_seconds", "kill_hitstop_interval", "kill_slow_tail_seconds", "kill_shake_seconds", "kill_shake_pixels", "kill_shot_enabled", "kill_shot_seconds", "kill_shot_zoom_scale", "kill_shot_minimum_kills", "kill_shot_group_window", "kill_shot_enter_seconds", "kill_shot_interval", "charge_wind_body_clearance_pixels", "charge_wind_layers", "charge_wind_trail_span", "charge_wind_funnel_enabled", "charge_wind_bottom_radius_pixels", "charge_wind_width_pixels", "charge_wind_turns", "charge_wind_full_speed_multiplier", "charge_wind_enabled", "charge_wind_texture", "charge_wind_radius_pixels", "charge_wind_height_pixels", "charge_wind_opacity", "charge_wind_cycle_seconds", "enemy_hit_silhouette_enabled", "enemy_hit_silhouette_seconds", "enemy_hit_silhouette_strength", "enemy_hit_silhouette_interval", "enemy_hit_silhouette_color", "feedback_prewarm_deaths", "feedback_prewarm_contacts", "enemy_hit_reaction_enabled", "enemy_hit_lean_degrees", "enemy_hit_recovery_seconds", "combat_readability_enabled", "combat_contact_frames", "combat_contact_seconds", "combat_sword_body_opacity", "combat_residue_opacity", "combat_death_focus_seconds", "motion_feedback_enabled", "flight_lean_degrees", "motion_reference_speed", "impact_lean_hold", "impact_lean_turn", "lean_return_seconds", "departure_airflow_enabled", "departure_airflow_texture", "departure_airflow_seconds", "departure_airflow_lifetime", "departure_airflow_spacing", "departure_airflow_opacity", "normal_attack", "charge", "flight", "flight_attack", "recovery", "bounce", "show_bounce_effect", "bounce_frames", "bounce_particles_enabled", "bounce_particle_count", "bounce_particle_speed", "bounce_particle_seconds", "bounce_anchor_pixels", "bounce_duration", "bounce_opacity", "bounce_energy", "bounce_height", "fire_trail_flow_enabled", "fire_trail_brush", "fire_trail_brush_region", "fire_trail_flow_speed", "fire_trail_spark_height", "fire_trail_spark_spacing", "fire_trail_flow_strength", "fire_trail_spark_amount", "fire_trail_body_clearance_pixels", "show_fire_trail", "fire_trail_width", "fire_trail_fresh_seconds", "fire_trail_burn_seconds", "fire_trail_ember_seconds", "fire_trail_energy", "fire_trail_pixels_per_meter", "melee_death_enabled", "melee_death_seconds", "melee_death_distance", "melee_death_height", "melee_death_spin_degrees", "melee_death_near_distance", "melee_death_reference_speed", "melee_death_min_strength", "melee_death_storm_retention", "melee_death_hit_pause", "melee_death_air_seconds", "melee_death_impact_frames", "melee_death_impact_seconds", "melee_death_trail_enabled", "melee_death_landing_enabled", "melee_death_bounce_height", "melee_death_slide_distance", "melee_death_cluster_enabled", "show_charge_effect", "show_aim_guide", "charge_radius_pixels", "charge_effect_opacity", "charge_effect_energy", "charge_dynamic_enabled", "charge_ring_contraction", "charge_mote_speed_gain", "charge_mote_count", "charge_full_settle_seconds", "preview_show_target", "preview_bounces", "preview_distance", "preview_followup_distance", "preview_color", "preview_opacity", "preview_line_width_pixels"],
 	"leaf_charger_definition.gd": ["health", "attack_damage", "move_speed", "trigger_distance", "charge_speed", "charge_distance", "windup_seconds", "recovery_seconds", "attack_interval", "max_alive"],
 	"lantern_spitter_definition.gd": ["health", "attack_damage", "shooting_range", "retreat_distance", "projectile_speed", "projectile_distance", "windup_seconds", "attack_interval", "max_alive"],
 	"pot_brood_definition.gd": ["health", "move_speed", "attack_damage", "child_enemy_id", "split_delay", "max_alive"],
@@ -388,7 +442,8 @@ const COMMON := {
 	"fan_auto_attack.gd": ["damage", "attack_range", "attack_interval", "fan_angle", "effect_opacity", "skill_definition", "audio_enabled", "audio_volume_db", "hit_sound_limit"],
 	"mirror_mark_auto_attack.gd": ["damage", "attack_range", "attack_interval", "flight_speed", "mark_duration", "reflection_limit", "match_player_pixel_density", "skill_definition"],
 	"run_buffs.gd": ["definitions"],
-	"growth_buff_definition.gd": ["bonus_per_level", "max_level", "bonus_cap", "diminishing_after", "breakthrough_every", "breakthrough_multiplier", "required_levels", "extra_effects"],
+	"run_growth_rules.gd": ["epic_every", "orbit_damage_reduction", "sword_heal_fraction", "sword_heal_cap", "speed_damage_low", "speed_damage_high", "strike_speed_thresholds", "maximum_strikes"],
+	"growth_buff_definition.gd": ["epic", "bonus_per_level", "max_level", "bonus_cap", "diminishing_after", "breakthrough_every", "breakthrough_multiplier", "required_levels", "extra_effects"],
 	"growth_buff_effect.gd": ["attribute", "bonus_per_level", "bonus_cap"],
 	"combat_skill_definition.gd": ["levels"],
 	"combat_skill_level.gd": ["parameters"],
@@ -398,7 +453,7 @@ const COMMON := {
 	"simulation_skill_entry.gd": ["skill_definition", "skill_level"],
 	"wave_spawn_entry.gd": ["mixed_horde", "enemy", "count", "batch_size", "start_delay", "interval", "spawn_zone_ids"],
 	"wave_health_growth_rules.gd": ["start_wave", "bonus_per_wave", "minimum_multiplier", "maximum_multiplier"],
-	"wave_prototype.gd": ["enemy_catalog", "population_rules", "health_growth_rules", "enemy_occlusion_outline_enabled", "waves", "endless_mode", "endless_enemies_per_wave", "endless_max_enemies", "endless_interval_reduction", "endless_min_spawn_interval", "max_active_enemies", "retry_key", "show_ui"],
+	"wave_prototype.gd": ["enemy_catalog", "population_rules", "health_growth_rules", "pursuit_throttle_threshold", "enemy_occlusion_outline_enabled", "waves", "endless_mode", "endless_enemies_per_wave", "endless_max_enemies", "endless_interval_reduction", "endless_min_spawn_interval", "max_active_enemies", "retry_key", "show_ui"],
 	"wave_hud.gd": ["enabled", "font_size", "hint_font_size", "top_margin", "text_color"],
 	"battle_area.gd": ["core_size", "loop_width", "opening_spawn_offset", "core_density", "edge_density"],
 	"ground_dressing.gd": ["grass_density", "flower_density", "stable_shadows"],
@@ -407,14 +462,16 @@ const COMMON := {
 	"bgm_track.gd": ["track_id", "track_title", "stream", "volume_db", "loop_crossfade"],
 	"bgm_playlist.gd": ["context_id", "tracks", "play_order"],
 	"experience_rules.gd": ["first_level_experience", "per_level_increase", "level_cap"],
-	"loadout_ui.gd": ["ui_scale", "font_size"],
+	"loadout_ui.gd": ["player_access_enabled", "ui_scale", "font_size"],
 	"skill_hud.gd": ["slot_size", "slot_spacing", "screen_margin", "glow_strength"],
 	"attribute_hud.gd": ["bar_width", "screen_margin", "glow_strength"],
 	"experience_hud.gd": ["track_width", "follow_attributes", "attribute_gap", "background_opacity", "show_values", "flow_enabled", "flow_strength", "glint_strength"],
 	"experience_pickup.gd": ["medium_threshold", "large_threshold", "gem_height", "bob_amplitude", "trail_length", "trail_brightness"],
 	"item_quickbar.gd": ["slot_size", "slot_spacing", "background_opacity"],
-	"ui_audio.gd": ["volume_db"],
-	"core_feedback_audio.gd": ["charge_wind_audio_enabled", "charge_wind_gain_db", "charge_wind_energy_duck_db", "charge_wind_fade_out_seconds", "enabled", "action_volume_db", "bounce_gain_db", "death_impact_gain_db", "common_hit_enabled", "hit_material_layer_enabled", "hit_material_gain_db", "charge_progress_audio_enabled", "charge_start_gain_db", "charge_full_gain_db", "charge_start_pitch", "charge_full_pitch", "charge_ready_gain_db", "launch_release_audio_enabled", "launch_full_gain_db", "launch_wind_entry_seconds", "launch_wind_start_gain_db", "flight_audio_enabled", "flight_gain_db", "flight_low_speed_gain_db", "flight_reference_speed", "flight_volume_smoothing", "flight_fade_out_seconds", "enemy_volume_db", "feedback_volume_db", "sounds"],
+	"ui_audio.gd": ["sounds", "volume_db", "action_intervals"],
+	"ui_sound_bank.gd": ["actions", "gains_db", "select", "confirm", "cancel", "page_turn"],
+	"game_settings_ui.gd": ["ui_sounds"],
+	"core_feedback_audio.gd": ["charge_wind_audio_enabled", "charge_wind_gain_db", "charge_wind_energy_duck_db", "charge_wind_fade_out_seconds", "enabled", "action_volume_db", "bounce_gain_db", "death_impact_gain_db", "common_hit_enabled", "hit_material_layer_enabled", "hit_material_gain_db", "charge_energy_audio_enabled", "charge_progress_audio_enabled", "charge_start_gain_db", "charge_full_gain_db", "charge_start_pitch", "charge_full_pitch", "charge_ready_gain_db", "launch_release_audio_enabled", "launch_full_gain_db", "launch_wind_entry_seconds", "launch_wind_start_gain_db", "flight_audio_enabled", "flight_gain_db", "flight_low_speed_gain_db", "flight_reference_speed", "flight_volume_smoothing", "flight_fade_out_seconds", "enemy_volume_db", "feedback_volume_db", "sounds"],
 }
 
 var entries: Array[Dictionary] = []
@@ -435,6 +492,8 @@ func _visit(node: Node, scene: Node) -> void:
 		if child.owner != null: _visit(child, scene)
 
 func category(filename: String, group: String) -> String:
+	if filename == "run_growth_rules.gd": return "战斗与成长"
+	if filename in ["run_score.gd", "run_score_rules.gd"]: return "战斗与成长"
 	if filename == "sword_ribbon_visual.gd": return "人物"
 	if filename == "wave_spawn_shadow_settings.gd": return "视觉"
 	if filename == "world_entry_settings.gd" and group == "穿雾声音": return "声音"
@@ -451,7 +510,7 @@ func category(filename: String, group: String) -> String:
 	if filename in ["leaf_charger_definition.gd", "lantern_spitter_definition.gd", "pot_brood_definition.gd", "bell_frog_definition.gd", "creature_enemy.gd", "leaf_charger.gd", "lantern_spitter.gd", "pot_brood.gd", "bell_frog.gd", "mini_slime.gd"]: return "战斗与成长"
 	if filename in ["environment_dynamics.gd", "environment_lantern.gd"]: return "视觉"
 	if filename in ["game_audio.gd", "bgm.gd", "bgm_track.gd", "bgm_playlist.gd", "player_movement_audio.gd", "movement_sound_bank.gd", "ui_audio.gd", "ui_sound_bank.gd"] or "声音" in group or "音效" in group or "风声" in group: return "声音"
-	if filename in ["character_skill_manager.gd", "player.gd", "player_blink.gd", "player_ricochet_rules.gd", "player_action_visuals.gd", "player_sword_rules.gd", "player_flight_trail_settings.gd", "character_lighting.gd"]: return "人物"
+	if filename in ["character_skill_manager.gd", "player.gd", "player_blink.gd", "player_ricochet_rules.gd", "player_action_visuals.gd", "player_sword_rules.gd", "player_flight_trail_settings.gd", "character_lighting.gd", "character_spotlight.gd"]: return "人物"
 	if filename == "wave_hud.gd": return "UI"
 	if filename.begins_with("wave_") or filename.begins_with("combat_skill_") or filename.begins_with("mirror_") or filename in ["fan_auto_attack.gd", "prism_ricochet_auto_attack.gd", "prism_ricochet_effect.gd", "slime.gd", "run_growth.gd", "run_skill_manager.gd", "run_skill_draft.gd", "run_buffs.gd", "growth_buff_definition.gd", "growth_buff_effect.gd", "experience_rules.gd", "experience_pickup.gd"]: return "战斗与成长"
 	if filename in ["spawn_visual_sample.gd", "spawn_visual_preset.gd", "pixel_color_palette.gd", "value_lighting_profile.gd", "art_direction.gd", "weather.gd", "follow_camera.gd", "atmospheric_light.gd", "daylight_preview.gd", "map_effects.gd", "planar_water_reflection.gd"]: return "视觉"
@@ -506,11 +565,12 @@ func _bound_by_configuration(node: Node, property: String) -> bool:
 	if not _has_combat_configuration(node): return false
 	var filename: String = node.get_script().resource_path.get_file()
 	if filename == "player.gd": return property in ["ricochet_rules", "sword_rules", "action_visuals", "flight_trail_settings", "crowd_clearance_distance"]
-	if filename == "wave_prototype.gd": return property in ["enemy_catalog", "default_enemy", "population_rules", "health_growth_rules", "spawn_shadow_settings", "waves", "endless_mode", "max_active_enemies", "batch_crowd_enabled", "native_chase_enabled", "slime_ground_movement_enabled"]
+	if filename == "wave_prototype.gd": return property in ["enemy_catalog", "default_enemy", "population_rules", "health_growth_rules", "growth_rules", "spawn_shadow_settings", "waves", "endless_mode", "max_active_enemies", "batch_crowd_enabled", "pursuit_throttle_threshold", "native_chase_enabled", "slime_ground_movement_enabled"]
 	if filename == "follow_camera.gd": return property == "ricochet_camera_settings"
-	if filename == "run_growth.gd": return property in ["rules", "cards_per_draw", "rerolls_per_run"]
+	if filename == "run_growth.gd": return property in ["progression_rules", "rules", "cards_per_draw", "rerolls_per_run"]
 	if filename == "run_buffs.gd": return property == "definitions"
 	if filename == "damage_numbers.gd": return property == "number_styles"
+	if filename == "loadout_ui.gd": return property == "equipment_bonuses_enabled"
 	if filename == "ricochet_storm.gd" and property in ["damage", "attack_interval", "trigger_radius", "spread_radius", "max_propagation_radius", "spread_layers", "targets_per_layer", "layer_interval"]: return true
 	return property == "skill_definition" and node.get_parent() is WavePrototype
 
@@ -533,13 +593,17 @@ func _add(object: Object, path: String, node: Node, filename: String, group: Str
 	if filename == "character_lighting.gd":
 		label = {"lighting_enabled": "人物场景受光适配", "light_wrap": "人物侧光柔和度", "top_light_response": "人物顶部受光比例",
 			"back_rim_strength": "人物真实背光亮边", "local_light_response": "人物路灯／点光响应强度", "normal_mapping_enabled": "人物逐帧法线开关", "normal_mapping_strength": "人物法线起伏强度"}.get(property, label)
+	if filename == "character_spotlight.gd":
+		label = {"fill_enabled": "人物重点补光开关", "fill_color": "人物补光颜色", "fill_energy": "人物补光强度",
+			"fill_height": "人物补光高度", "fill_front_offset": "人物补光前侧距离", "fill_side_offset": "人物补光左右偏移",
+			"fill_target_height": "人物补光对准高度", "fill_angle": "人物补光锥角"}.get(property, label)
 	if filename == "wave_spawn_shadow_settings.gd":
 		label = {"enabled":"落点剪影预告开关", "warning_seconds":"出怪前剪影预告时长", "fade_seconds":"出怪后剪影消散时间",
 			"shadow_color":"落点剪影颜色", "rim_color":"落点剪影细边颜色", "shadow_opacity":"落点剪影透明度", "rim_opacity":"落点剪影细边透明度",
 			"footprint_scale":"落点剪影尺寸", "footprint_depth_ratio":"落点剪影贴地纵深比例", "contraction":"落点剪影收束幅度"}.get(property, label)
 	if filename == "kill_audio_rules.gd" and property == "enabled": label = "击杀声音反馈开关"
 	if filename == "charge_presentation.gd" and property == "enabled": label = "蓄力场景反馈开关"
-	if filename == "building_occlusion.gd" and property == "enabled": label = "建筑遮挡淡化开关"
+	if filename == "building_occlusion.gd" and property == "enabled": label = "人物遮挡物淡化开关"
 	if filename == "ricochet_camera_settings.gd" and property == "flight_reference_speed": label = "滑行镜头满效果参考速度"
 	if filename == "kill_audio_rules.gd" and property == "music_duck_db": label = "群杀音乐退让"
 	if filename == "kill_audio_rules.gd" and property == "ambience_duck_db": label = "群杀风雨退让"

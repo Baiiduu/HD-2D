@@ -20,6 +20,9 @@ func run() -> void:
 	profile.max_active_enemies = 0
 	check("max_active_enemies" in String(profile.call("validation_error")), "Invalid capacity reports the exact parameter")
 	profile.max_active_enemies = world_profile.max_active_enemies
+	profile.pursuit_throttle_threshold = -1
+	check("pursuit_throttle_threshold" in String(profile.call("validation_error")), "Invalid pursuit threshold reports its owning parameter")
+	profile.pursuit_throttle_threshold = world_profile.pursuit_throttle_threshold
 	profile.crowd_clearance_distance = NAN
 	check("crowd_clearance_distance" in String(profile.call("validation_error")), "Non-finite scalar input is rejected")
 	profile.crowd_clearance_distance = world_profile.crowd_clearance_distance

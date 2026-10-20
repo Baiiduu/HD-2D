@@ -7,7 +7,9 @@ const EntryRequest = preload("res://scripts/world/world_entry_request.gd")
 const GraphicsPage = preload("res://scripts/ui/graphics_settings_page.gd")
 const CameraPage = preload("res://scripts/ui/camera_settings_page.gd")
 const ControlsPage = preload("res://scripts/ui/controls_settings_page.gd")
-const FONT = preload("res://assets/fonts/fusion_pixel/fusion-pixel-12px-monospaced-zh_hans.ttf")
+const LeaderboardWindow = preload("res://scripts/ui/leaderboard_window.gd")
+const MENU_SIZE := Vector2(360, 620)
+const FONT = preload("res://assets/fonts/maoken_assorted_sans/MaokenAssortedSans.ttf")
 const CORE = preload("res://data/audio/core_sound_bank.tres")
 const MUSIC = preload("res://data/audio/music/exploration.tres")
 const PREFERENCES := "user://main_menu.cfg"
@@ -21,6 +23,7 @@ const PREFERENCES := "user://main_menu.cfg"
 @export var auto_prepare_world := true
 @export_group("演出声音")
 @export var audio_enabled := true
+@export var ui_sounds: UISoundBank = preload("res://data/audio/ui_sounds.tres")
 @export_range(-40.0, 0.0, 0.5) var performance_volume_db := -23.0
 
 var stage: Node2D
@@ -41,6 +44,7 @@ var _music: AudioStreamPlayer
 var _graphics_page: VBoxContainer
 var _camera_page: VBoxContainer
 var _controls_page: VBoxContainer
+var _leaderboard_window: Control
 var _loading := false
 var _selected := 0
 var _opacity := 0.0
@@ -82,6 +86,14 @@ func _ready() -> void:
 	_load_preferences()
 	_build_menu()
 	_build_settings()
+	_leaderboard_window = LeaderboardWindow.new()
+	_surface.add_child(_leaderboard_window)
+	_ui_audio.bind_controls(_leaderboard_window.page)
+	_leaderboard_window.closed.connect(func():
+		flow.modal_open = false
+		for button in buttons: button.focus_mode = Control.FOCUS_ALL
+		buttons[_selected].grab_focus()
+		_ui_audio.play_action(&"close"))
 	_curtain = ColorRect.new()
 	_curtain.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_curtain.color = Color(0.015, 0.025, 0.045, 0.0)
@@ -105,10 +117,11 @@ func _build_audio() -> void:
 		_mix_manager.name = "GameAudio"
 		_mix_manager.max_voices = 3
 		_mix_manager.important_reserve = 0
+		_mix_manager.load_local_mix = save_preferences
 		add_child(_mix_manager)
 		_mix_manager.get_node("PlayerListener").make_current()
 	_ui_audio = UIAudio.new()
-	_ui_audio.sounds = preload("res://data/audio/ui_sounds.tres")
+	_ui_audio.sounds = ui_sounds
 	_ui_audio.enabled = audio_enabled
 	add_child(_ui_audio)
 	_action_audio = UIAudio.new()
@@ -156,10 +169,10 @@ func _build_menu() -> void:
 	_title.add_theme_color_override("font_shadow_color", Color(0.91, 0.44, 0.10, 0.45))
 	_title.add_theme_constant_override("shadow_offset_y", 3)
 	_label(_panel, "DEMO", Vector2(0, 167), Vector2(360, 30), 18, Color("bfa875"))
-	var titles := ["开始游戏", "设置", "退出游戏"]
+	var titles := ["开始游戏", "设置", "排行榜", "退出游戏"]
 	for i in titles.size():
 		var button := ActionButton.new()
-		button.name = ["Start", "Settings", "Quit"][i]
+		button.name = ["Start", "Settings", "Leaderboard", "Quit"][i]
 		button.text = titles[i]
 		button.position = Vector2(34, 232 + i * 80)
 		button.size = Vector2(292, 68)
@@ -170,9 +183,9 @@ func _build_menu() -> void:
 		button.pressed.connect(_activate.bind(i))
 		buttons.append(button)
 	for i in buttons.size():
-		buttons[i].focus_neighbor_top = buttons[(i + 2) % 3].get_path()
-		buttons[i].focus_neighbor_bottom = buttons[(i + 1) % 3].get_path()
-	_status = _label(_panel, "", Vector2(10, 487), Vector2(340, 44), 18, Color("d5bd8d"))
+		buttons[i].focus_neighbor_top = buttons[posmod(i - 1, buttons.size())].get_path()
+		buttons[i].focus_neighbor_bottom = buttons[(i + 1) % buttons.size()].get_path()
+	_status = _label(_panel, "", Vector2(10, 567), Vector2(340, 44), 18, Color("d5bd8d"))
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_footer = _label(_surface, "↑ ↓ 选择   ENTER 确认", Vector2.ZERO, Vector2(500, 28), 18, Color("8fdbf5"))
 	_footer.add_theme_color_override("font_outline_color", Color("101723"))
@@ -180,20 +193,20 @@ func _build_menu() -> void:
 	_footer.name = "Footer"
 
 func _draw_panel() -> void:
-	var rect := Rect2(0, 0, 360, 540)
+	var rect := Rect2(Vector2.ZERO, MENU_SIZE)
 	_panel.draw_rect(rect, Color(0.025, 0.04, 0.065, 0.88))
 	_panel.draw_rect(rect.grow(-5), Color(0.75, 0.56, 0.30, 0.14), false, 1.0)
 	var border := Color(0.96, 0.73, 0.36, 0.62 + _opacity * 0.25)
-	for corner in [Vector2(0, 0), Vector2(360, 0), Vector2(0, 540), Vector2(360, 540)]:
+	for corner in [Vector2.ZERO, Vector2(MENU_SIZE.x, 0), Vector2(0, MENU_SIZE.y), MENU_SIZE]:
 		var direction := Vector2(1 if corner.x == 0 else -1, 1 if corner.y == 0 else -1)
 		_panel.draw_line(corner, corner + Vector2(27 * direction.x, 0), border, 2.0)
 		_panel.draw_line(corner, corner + Vector2(0, 27 * direction.y), border, 2.0)
 	_panel.draw_line(Vector2(88, 207), Vector2(272, 207), Color(0.91, 0.68, 0.32, 0.5), 1.0)
 
 func panel_rect_for(view_size: Vector2) -> Rect2:
-	var fit := minf(1.0, minf((view_size.x - 40.0) / 360.0, (view_size.y - 54.0) / 540.0))
+	var fit := minf(1.0, minf((view_size.x - 40.0) / MENU_SIZE.x, (view_size.y - 54.0) / MENU_SIZE.y))
 	fit = maxf(fit, 0.1)
-	var dimensions := Vector2(360, 540) * fit
+	var dimensions := MENU_SIZE * fit
 	return Rect2((view_size - dimensions) * 0.5, dimensions)
 
 func _layout() -> void:
@@ -201,9 +214,9 @@ func _layout() -> void:
 	stage.fit_view(size)
 	var rect := panel_rect_for(size)
 	_panel.position = rect.position
-	_panel.size = Vector2(360, 540)
+	_panel.size = MENU_SIZE
 	_panel.scale = Vector2.ONE * rect.size.x / 360.0
-	_panel.pivot_offset = Vector2(180, 270)
+	_panel.pivot_offset = MENU_SIZE * 0.5
 	# Scale around the panel center without moving its safe area.
 	_panel.position += (_panel.scale - Vector2.ONE) * _panel.pivot_offset
 	_footer.position = Vector2((size.x - 500) * 0.5, size.y - 35)
@@ -217,7 +230,7 @@ func _layout() -> void:
 
 func _select(index: int) -> void:
 	if _selected != index and not flow.busy and not flow.modal_open:
-		_ui_audio.play(&"select")
+		_ui_audio.play_action(&"navigate")
 	_selected = index
 
 func _activate(index: int) -> void:
@@ -225,8 +238,9 @@ func _activate(index: int) -> void:
 	match index:
 		0: start_game()
 		1: open_settings()
-		2:
-			_ui_audio.play(&"confirm")
+		2: open_leaderboard()
+		3:
+			_ui_audio.play_action(&"confirm")
 			flow.begin()
 			for button in buttons: button.disabled = true
 			var tween := create_tween()
@@ -243,7 +257,7 @@ func start_game() -> void:
 	if not flow.begin(): return
 	flow.minimum_transition = start_feedback_seconds
 	for button in buttons: button.disabled = true
-	_ui_audio.play(&"confirm")
+	_ui_audio.play_action(&"confirm")
 	stage.celebrate()
 	_status.text = "正在出发…"
 	EntryRequest.clear()
@@ -348,7 +362,7 @@ func _restore_after_error() -> void:
 	for button in buttons: button.disabled = false
 	buttons[0].grab_focus()
 	_sync_music_mix()
-	_ui_audio.play(&"error")
+	_ui_audio.play_action(&"error")
 
 func _on_performance_cue(event: StringName) -> void:
 	if not audio_enabled or DisplayServer.get_name() == "headless": return
@@ -393,9 +407,9 @@ func _build_settings() -> void:
 	tabs.add_child(audio_tab)
 	var bus_labels := {&"Music":"音乐", &"UI":"界面反馈", &"Movement":"弹射演出", &"Combat":"战斗", &"Ambience":"环境"}
 	for bus: StringName in bus_labels:
-		var slider := _slider(audio_tab, bus_labels[bus], -40, 6, 1, float(_mix_manager.mix.bus_gains.get(String(bus), 0.0)), " dB")
+		var slider := _slider(audio_tab, bus_labels[bus], 0, 100, 1, _mix_manager.mix.bus_volume_percent(bus), "")
 		slider.value_changed.connect(func(value: float):
-			_mix_manager.mix.set_bus_gain(bus, value)
+			_mix_manager.mix.set_bus_volume_percent(bus, value)
 			if save_preferences: _mix_manager.mix.save_to_path(_mix_manager.mix_save_path))
 	var motion := _slider(audio_tab, "演出动感", 0, 1.5, 0.05, stage.motion_strength, "")
 	motion.value_changed.connect(func(value: float):
@@ -426,16 +440,19 @@ func _build_settings() -> void:
 	controls_scroll.name = "按键"
 	tabs.add_child(controls_scroll)
 	_controls_page = ControlsPage.new()
+	_controls_page.audio = _ui_audio
 	_controls_page.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	controls_scroll.add_child(_controls_page)
 	_controls_page.configure(theme)
 	_settings_back = Button.new()
+	_settings_back.set_meta(&"ui_audio_action", &"")
 	_settings_back.text = "返回"
 	_settings_back.custom_minimum_size.y = 48
 	_settings_back.pressed.connect(close_settings)
 	column.add_child(_settings_back)
 	_settings_dim.hide()
 	settings_panel.hide()
+	_ui_audio.bind_controls(settings_panel)
 
 func _slider(parent: Node, label_text: String, minimum: float, maximum: float, step_size: float, initial: float, suffix: String) -> HSlider:
 	var row := HBoxContainer.new()
@@ -455,33 +472,42 @@ func _slider(parent: Node, label_text: String, minimum: float, maximum: float, s
 	var value_label := Label.new()
 	value_label.custom_minimum_size.x = 88
 	row.add_child(value_label)
-	var update_label := func(value: float): value_label.text = ("%.2f" % value if suffix.is_empty() else "%d" % roundi(value)) + suffix
+	var update_label := func(value: float): value_label.text = ("%d" % roundi(value) if step_size >= 1.0 else "%.2f" % value) + suffix
 	slider.value_changed.connect(update_label)
 	update_label.call(initial)
 	return slider
 
 func open_settings() -> void:
-	if flow.busy: return
+	if flow.busy or flow.modal_open: return
 	flow.modal_open = true
 	for button in buttons: button.focus_mode = Control.FOCUS_NONE
 	_settings_dim.show()
 	settings_panel.show()
 	_settings_back.grab_focus()
-	_ui_audio.play(&"journal_open")
+	_ui_audio.play_action(&"open")
 
 func close_settings() -> void:
+	if not settings_panel.visible: return
 	_controls_page.cancel_capture()
 	flow.modal_open = false
 	_settings_dim.hide()
 	settings_panel.hide()
 	for button in buttons: button.focus_mode = Control.FOCUS_ALL
 	buttons[_selected].grab_focus()
-	_ui_audio.play(&"cancel")
+	_ui_audio.play_action(&"close")
+
+func open_leaderboard() -> void:
+	if flow.busy or flow.modal_open: return
+	flow.modal_open = true
+	for button in buttons: button.focus_mode = Control.FOCUS_NONE
+	_leaderboard_window.open()
+	_ui_audio.play_action(&"open")
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"ui_cancel") and not event.is_echo():
-		if flow.modal_open: close_settings()
-		elif not flow.busy: buttons[2].grab_focus()
+		if _leaderboard_window.visible: _leaderboard_window.close()
+		elif flow.modal_open: close_settings()
+		elif not flow.busy: buttons[-1].grab_focus()
 		get_viewport().set_input_as_handled()
 
 func _load_preferences() -> void:

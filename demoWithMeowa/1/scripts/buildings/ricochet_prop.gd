@@ -86,12 +86,19 @@ func _solid_box(center: Vector3, size: Vector3, key: String, rotation := Vector3
 	if not _collision_body: return
 	var shape := BoxShape3D.new()
 	shape.size = size
-	_collide(shape, center, rotation, label)
+	_collide(shape, center, rotation, label, _surface_for_material(key))
 
-func _collide(shape: Shape3D, center: Vector3, rotation := Vector3.ZERO, label := "Surface") -> void:
+func _surface_for_material(key: String) -> StringName:
+	# 生成时由明确的建材键写入语义；声音端不读取贴图或建筑类型。
+	match key:
+		"wood", "wood_frame": return &"wood"
+		"metal", "brass": return &"metal"
+		"fabric", "rope": return &"fabric"
+	return &"stone"
+
+func _collide(shape: Shape3D, center: Vector3, rotation := Vector3.ZERO, label := "Surface", surface: StringName = &"stone") -> void:
 	if not _collision_body: return
-	_collider(_collision_body, shape, center)
-	var node := _collision_body.get_child(_collision_body.get_child_count() - 1) as CollisionShape3D
+	var node := _collider(_collision_body, shape, center, surface)
 	node.name = label + str(_collision_body.get_child_count())
 	node.rotation = rotation
 
@@ -216,7 +223,7 @@ func _barrel(root: Vector3, radius: float, height: float) -> void:
 	var shape := CylinderShape3D.new()
 	shape.radius = radius
 	shape.height = height * 0.52
-	_collide(shape, root + Vector3(0, height * 0.5, 0), Vector3.ZERO, "Barrel")
+	_collide(shape, root + Vector3(0, height * 0.5, 0), Vector3.ZERO, "Barrel", &"wood")
 	_barrel_end_collision(root + Vector3(0, height * 0.12, 0), radius * 0.87, radius, height * 0.24)
 	_barrel_end_collision(root + Vector3(0, height * 0.88, 0), radius, radius * 0.87, height * 0.24)
 
@@ -229,7 +236,7 @@ func _barrel_end_collision(center: Vector3, bottom: float, top: float, height: f
 	mesh.radial_segments = 24
 	var shape := ConvexPolygonShape3D.new()
 	shape.points = mesh.get_mesh_arrays()[Mesh.ARRAY_VERTEX]
-	_collide(shape, center, Vector3.ZERO, "BarrelTaper")
+	_collide(shape, center, Vector3.ZERO, "BarrelTaper", &"wood")
 
 func _stone_pillar() -> void:
 	if layout_variant > 0:

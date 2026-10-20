@@ -6,6 +6,10 @@ signal changed
 const BUSES := [&"Combat", &"Music", &"Ambience", &"UI", &"Movement"]
 const MIN_DB := -40.0
 const MAX_DB := 6.0
+## 50 keeps the map's default mix; 100 adds headroom without changing stored dB gains.
+const DEFAULT_BUS_VOLUME_PERCENT := 50.0
+const BUS_MIN_DB := -80.0
+const BUS_MAX_DB := linear_to_db(100.0 / DEFAULT_BUS_VOLUME_PERCENT)
 
 var clip_gains: Dictionary = {}
 var clip_mutes: Dictionary = {}
@@ -34,11 +38,23 @@ func set_clip_muted(path: String, value: bool) -> void:
 
 func set_bus_gain(bus: StringName, value: float) -> void:
 	if bus not in BUSES or not is_finite(value): return
-	_store_gain(bus_gains, String(bus), value)
+	_store_gain(bus_gains, String(bus), value, BUS_MIN_DB, BUS_MAX_DB)
 	changed.emit()
 
-func _store_gain(values: Dictionary, key: String, value: float) -> void:
-	value = clampf(value, MIN_DB, MAX_DB)
+func bus_volume_percent(bus: StringName) -> float:
+	if is_bus_muted(bus): return 0.0
+	return clampf(db_to_linear(float(bus_gains.get(String(bus), 0.0))) * DEFAULT_BUS_VOLUME_PERCENT, 0.0, 100.0)
+
+func set_bus_volume_percent(bus: StringName, value: float) -> void:
+	if bus not in BUSES or not is_finite(value): return
+	value = clampf(value, 0.0, 100.0)
+	set_bus_gain(bus, linear_to_db(value / DEFAULT_BUS_VOLUME_PERCENT) if value > 0 else BUS_MIN_DB)
+
+func is_bus_muted(bus: StringName) -> bool:
+	return float(bus_gains.get(String(bus), 0.0)) <= BUS_MIN_DB
+
+func _store_gain(values: Dictionary, key: String, value: float, minimum := MIN_DB, maximum := MAX_DB) -> void:
+	value = clampf(value, minimum, maximum)
 	if is_zero_approx(value): values.erase(key)
 	else: values[key] = value
 
@@ -75,7 +91,8 @@ func load_from_path(path: String) -> Error:
 			var value: Variant = file.get_value(section, key)
 			if not (value is float or value is int) or not is_finite(float(value)): continue
 			if section == "buses" and StringName(key) not in BUSES: continue
-			_store_gain(clip_gains if section == "clips" else bus_gains, key, float(value))
+			if section == "buses": _store_gain(bus_gains, key, float(value), BUS_MIN_DB, BUS_MAX_DB)
+			else: _store_gain(clip_gains, key, float(value))
 	if file.has_section("muted"):
 		for key in file.get_section_keys("muted"):
 			if file.get_value("muted", key) == true: clip_mutes[key] = true

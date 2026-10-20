@@ -10,6 +10,8 @@ signal blink_travelled(start: Vector3, destination: Vector3)
 signal normal_attack_requested(direction: Vector3)
 ## 当前生命、魔力或其上限发生变化；HUD 订阅此信号。
 signal vitals_changed
+## take_damage 实际扣除的生命；属性、回血及魔力变化不视为受击。
+signal damaged(amount: float)
 
 const ANIMATION_REFERENCE_SPEED := 4.0
 @export_group("移动与动画")
@@ -135,6 +137,7 @@ var motion_feedback: PlayerMotionFeedback
 var surface_feedback: PlayerSurfaceFeedback
 var bounce_effect: PlayerBounceEffect
 var fire_trail: PlayerFireTrail
+var hurt_effect: Node3D
 var action_animator: PlayerActionAnimator
 var sword: PlayerSword
 
@@ -172,7 +175,9 @@ func take_damage(amount: float) -> float:
 		return 0.0
 	var before := current_health
 	current_health -= amount
-	return before - current_health
+	var lost := before - current_health
+	if lost > 0.0: damaged.emit(lost)
+	return lost
 
 func heal(amount: float) -> float:
 	if not is_finite(amount) or amount < 0.0:
@@ -210,7 +215,8 @@ func _ready() -> void:
 		add_child(skill_manager)
 	_blink = skill_manager.dash
 	body_ricochet = skill_manager.body_ricochet
-	body_ricochet.impact_recorded.connect(func(impact: RicochetImpact): action_animator.request_bounce(impact.outgoing_velocity.normalized()))
+	body_ricochet.surface_bounced.connect(_on_ricochet_surface_bounced)
+	body_ricochet.crowd_deflected.connect(func(_point: Vector3, _incoming: Vector3, _outgoing: Vector3): action_animator.cancel_bounce())
 	if flight_trail_settings:
 		flight_trail = PlayerFlightTrail.new()
 		flight_trail.name = "FlightTrail"
@@ -238,6 +244,18 @@ func _ready() -> void:
 		fire_trail = PlayerFireTrail.new()
 		fire_trail.name = "GroundFireTrail"
 		add_child(fire_trail)
+		hurt_effect = preload("res://scripts/player/player_hurt_effect.gd").new()
+		hurt_effect.name = "HurtEffect"
+		add_child(hurt_effect)
+
+func _on_ricochet_surface_bounced(collision: KinematicCollision3D) -> void:
+	var source := collision.get_collider() as Node
+	while source:
+		if source.is_in_group(&"occlusion_buildings") or source.is_in_group(&"ricochet_obstacles") or source is PlazaProp or source is TreePlanter:
+			action_animator.request_bounce(body_ricochet.direction)
+			return
+		source = source.get_parent()
+	action_animator.cancel_bounce()
 
 func _on_skill_phase_changed(phase: WavePrototype.Phase) -> void:
 	if phase == WavePrototype.Phase.READY: skill_manager.reset()
@@ -303,10 +321,14 @@ func _physics_process(delta: float) -> void:
 		skill_manager.request_dash(movement)
 	if body_ricochet.charging and (not is_on_floor() or Input.is_action_just_pressed(&"jump")): body_ricochet.cancel()
 	if _blink.active:
+		if sword: sword.interrupt_normal_attack()
 		# 朝向与跳跃锁定；瞬移定格结束后，收尾阶段可立即恢复走路。
 		direction = Vector2.ZERO
 		if _blink.movement_locked:
 			movement = Vector3.ZERO
+	if sword and sword.blocks_normal_movement(delta):
+		direction = Vector2.ZERO
+		movement = Vector3.ZERO
 	var movement_speed := get_movement_speed()
 	velocity.x = movement.x * movement_speed
 	velocity.z = movement.z * movement_speed

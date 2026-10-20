@@ -20,6 +20,14 @@ class Board(Base):
     created_at: Mapped[datetime] = mapped_column(utc_datetime)
 
 
+class Device(Base):
+    __tablename__ = "demo_devices"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    token_hash: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(utc_datetime)
+
+
 class BestScore(Base):
     __tablename__ = "best_scores"
     __table_args__ = (Index("ix_best_scores_board_score", "board_id", "score"),)

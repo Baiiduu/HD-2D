@@ -11,6 +11,8 @@ uniform vec3 reveal_origin = vec3(0.0);
 uniform float reveal_progress = 0.0;
 uniform float retreat_distance = 42.0;
 uniform float curl_strength = 1.0;
+uniform float self_emission = 2.0;
+uniform vec3 noise_offset = vec3(0.0);
 
 float noise_slice(vec2 p, float slice) {
 	vec2 tile = vec2(mod(slice, 8.0), floor(slice / 8.0));
@@ -35,7 +37,7 @@ void fog() {
 		+ reveal_progress * 2.4 * exp(-abs(radial - retreat) * 0.08));
 	roll = mat2(vec2(cos(vortex), sin(vortex)), vec2(-sin(vortex), cos(vortex))) * roll;
 	vec3 transported = vec3(outward.x * roll.x, roll.y + 5.0, outward.y * roll.x) + reveal_origin;
-	vec3 p = transported * 0.14 + vec3(flow_time * 0.11, -flow_time * 0.05, -flow_time * 0.08);
+	vec3 p = transported * 0.14 + noise_offset + vec3(flow_time * 0.11, -flow_time * 0.05, -flow_time * 0.08);
 	float billows = cloud_noise(p);
 	float detail = cloud_noise(p * 2.1 + vec3(0.23, 0.51, 0.17));
 	float cloud = smoothstep(0.34, 0.66, billows * 0.7 + detail * 0.3);
@@ -48,6 +50,6 @@ void fog() {
 	float billow_density = mix(coverage_floor, 1.0, cloud) * envelope * remaining;
 	DENSITY = density * billow_density;
 	ALBEDO = fog_color.rgb * mix(0.76, 1.05, billows);
-	// 克制的中性散射保住灰白云体，不让夜景冷环境把它染成整片蓝幕。
-	EMISSION = fog_color.rgb * billow_density * density * 2.0;
+	// 引擎会将 EMISSION 乘入本体密度；此处只给云体颜色，避免重复衰减后只剩蓝黑背景。
+	EMISSION = fog_color.rgb * mix(0.65, 1.0, billows) * self_emission * (box_volume ? 0.45 : 1.0);
 }

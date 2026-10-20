@@ -19,6 +19,8 @@ func run() -> void:
 	var profile := load("res://data/combat/scenes/world/configuration.tres") as SceneCombatConfiguration
 	var original_enabled := profile.ricochet_rules.enabled
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
+	world.get_node("WorldMainMenu").show_on_world_start = false
+	world.get_node("WorldEntry").preview_on_direct_run = false
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("MapEffects/BGM").music_enabled = false
 	world.get_node("MapEffects/Weather").rain_audio_enabled = false
@@ -26,6 +28,9 @@ func run() -> void:
 	root.add_child(world)
 	await frames()
 	var player := world.get_node("Player") as Player
+	var loadout := world.get_node("LoadoutUI") as LoadoutUI
+	check(not profile.equipment_bonuses_enabled and not loadout.state.equipment_bonuses_enabled, "World binds disabled equipment bonuses before loading character state")
+	check(loadout.state.get_attribute_totals().is_empty() and player.max_health == loadout.training_rules.base_health, "World spawns with actual base health despite retained starter equipment")
 	var authored_visuals := load("res://data/player/action_visuals.tres") as PlayerActionVisuals
 	check(player.action_visuals == profile.action_visuals and player.action_visuals.show_fire_trail, "World's bound scene profile preserves the authored ground fire trail")
 	check(player.action_visuals.bounce_frames == authored_visuals.bounce_frames and player.action_visuals.bounce_anchor_pixels == authored_visuals.bounce_anchor_pixels, "World's independent visuals retain the authored bounce animation and contact anchor")
@@ -36,6 +41,20 @@ func run() -> void:
 	check(player.body_ricochet.get_parent() == manager and player._blink.get_parent() == manager, "Ricochet and dash components belong to the character manager")
 	check(manager.get_registered_ids().size() == 2 and manager.get_skill(&"basic_sword") == null, "Only ricochet and dash are character skills")
 	check(not run_manager.is_skill_available(&"body_ricochet") and not run_manager.is_skill_available(&"dash") and run_manager.get_registered_ids().size() == 5, "The run manager contains only the five learnable components")
+	var mirror := run_manager.get_skill(&"mirror_mark") as MirrorMarkAutoAttack
+	check(mirror != null and not run_manager.is_skill_available(&"mirror_mark") and not run_manager.is_skill_enabled(&"mirror_mark"), "World temporarily disables mirror learning and execution while retaining the component")
+	check(not run_manager.set_skill_level(&"mirror_mark", 1) and mirror.skill_level == 0 and not mirror.is_physics_processing(), "Disabled mirror rejects direct learning and remains idle")
+	check(not run_manager.candidates().any(func(option): return String(option.id).begins_with("skill:mirror_mark:")), "World upgrades cannot offer mirror cards")
+	var draft := world.get_node("WavePrototype/SkillDraft") as RunSkillDraft
+	check(draft.present_initial_choice(), "Remaining World skills still open the starting draw")
+	check(draft._initial_pool.size() == 2 and not draft._initial_offered.has(&"initial:mirror_mark"), "Starting draw contains the two remaining available skills")
+	var growth := world.get_node("WavePrototype/RunGrowth") as RunGrowth
+	var rerolls := growth.rerolls_left
+	draft.initial_choice.request_reroll()
+	check(not draft._initial_cards.any(func(option): return option.id == &"initial:mirror_mark") and growth.rerolls_left == rerolls, "A starting draw with no replacement cannot restore mirror or spend a reroll")
+	run_manager.reset()
+	check(not run_manager.is_skill_available(&"mirror_mark") and not mirror.enabled, "New-run reset preserves the configured mirror exclusion")
+	check(profile.population_rules.simulation_skills.all(func(entry): return entry.skill_definition.id != &"mirror_mark" or entry.skill_level == 0), "World's default simulation loadout also leaves mirror unequipped")
 	check(manager.set_skill_enabled(CharacterSkillManager.BODY_RICOCHET, false), "Character ricochet has an independent runtime switch")
 	check(profile.ricochet_rules.enabled == original_enabled, "Runtime switching leaves the loaded character template unchanged")
 	check(not player.body_ricochet.begin_charge(Vector3.RIGHT), "Direct ability commands obey the character manager")
@@ -44,6 +63,7 @@ func run() -> void:
 	check(not player.sword.get_combat_stats().is_empty(), "Basic sword stats remain active independently of both skill registries")
 	manager.set_skill_enabled(CharacterSkillManager.BODY_RICOCHET, true)
 	var wave := world.get_node("WavePrototype") as WavePrototype
+	check(profile.pursuit_throttle_threshold == 80 and wave.pursuit_throttle_threshold == 80 and wave._spatial_index.pursuit_throttle_threshold == 80, "World binds the editable pursuit threshold through the controller into its live index")
 	player._blink._cooldown = 0.5
 	wave.set_combat_frozen(true)
 	player._blink.advance(0.1)
@@ -74,6 +94,7 @@ func run() -> void:
 	await frames()
 	check(is_equal_approx(camera.distance, 37.0) and is_equal_approx(camera.fov, 34.0) and is_equal_approx(camera.focus_height, 1.2), "City preserves authored camera distance, FOV and focus")
 	var city_player := city.get_node("Player") as Player
+	check(city.get_node("WavePrototype").pursuit_throttle_threshold == 0 and SceneCombatConfiguration.new().pursuit_throttle_threshold == 0, "City and generic scene profiles retain their independent full-rate defaults")
 	check(city_player.skill_manager.get_registered_ids().size() == 2 and city.get_node("WavePrototype/RunSkillManager").get_registered_ids().size() == 5, "City uses the same separated ownership with its independent profile")
 	city.free()
 	await frames(3)

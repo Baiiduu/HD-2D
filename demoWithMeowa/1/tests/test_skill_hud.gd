@@ -82,5 +82,7 @@ func run() -> void:
 	assert(hud.position.y + hud.size.y * hud.scale.y <= 400.1)
 	ui.free()
 	await settle()
+	# Dummy 驱动仍异步释放 WAV 播放实例，退出前等待声音线程完成回收。
+	await create_timer(0.1).timeout
 	print("PASS: empty Meowa slots, no menu button/icons, lower-left layout, live size/margin/glow parameters, unchanged assignments, Tab/ESC, click details and narrow-window 8-slot fit")
 	quit()

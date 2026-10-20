@@ -1,6 +1,7 @@
 class_name RicochetCameraFeedback
 extends RefCounted
 const COMBAT_FOCUS := preload("res://scripts/camera/ricochet_combat_focus.gd")
+const ORBIT_SHOT := preload("res://scripts/camera/ricochet_orbit_shot.gd")
 
 ## 镜头局部时间线，不改人物速度、输入、伤害时钟或 Engine.time_scale。
 var active := false
@@ -14,7 +15,12 @@ var yaw_offset := 0.0
 var roll_offset := 0.0
 var collision_offset := Vector3.ZERO
 var collision_distance_scale := 0.0
+## 独立距离层，不写入蓄力／停止的距离快照，避免交接时重复计入。
+var orbit_distance_scale := 0.0
+var orbit_focus_offset := Vector3.ZERO
+var orbit_pitch_offset := 0.0
 var _impact_shot := RicochetImpactShot.new()
+var _orbit_shot := ORBIT_SHOT.new()
 var _combat_focus := COMBAT_FOCUS.new()
 var _combat_sword: PlayerSword
 var _combat_storm: Node
@@ -100,7 +106,7 @@ func dispose() -> void:
 func follows(player: Node3D) -> bool:
 	return _player == player and is_instance_valid(_body)
 
-func reset(keep_impact := false) -> void:
+func reset(keep_impact := false, keep_orbit_interval := false) -> void:
 	_combat_focus.reset()
 	active = false
 	_flying = false
@@ -127,6 +133,10 @@ func reset(keep_impact := false) -> void:
 	_impact_age = 1000.0
 	_bounce_age = 1000.0
 	if not keep_impact:
+		_orbit_shot.clear(keep_orbit_interval)
+		orbit_distance_scale = 0.0
+		orbit_focus_offset = Vector3.ZERO
+		orbit_pitch_offset = 0.0
 		_charge_tremor_phase = 0.0
 		_charge_tremor_strength = 0.0
 		_charge_tremor_offset = Vector2.ZERO
@@ -344,20 +354,20 @@ func _on_bounced(_point: Vector3, normal: Vector3) -> void:
 	var settings := _camera.ricochet_camera_settings
 	if not settings or not settings.enabled: return
 	# 用前后真实速度差接住镜头运动，人物折返时镜头不会立刻跟着反向。
-	var velocity_change := _direction * _last_speed - _body.direction * _body.flight_speed
+	var velocity_change := _direction * _last_speed - _body.direction * _body.movement_speed
 	var impact := _body.last_impact
 	if impact and impact.flight_id == _body.flight_serial and impact.point.is_equal_approx(_point):
 		velocity_change = impact.incoming_velocity - impact.outgoing_velocity
 	var view := Basis.looking_at(-_camera._orbit_offset(), Vector3.UP)
 	_velocity += Vector2(velocity_change.dot(view.x), velocity_change.dot(view.y)) / _camera._short_side_span()
 	_direction = _body.direction
-	_last_speed = _body.flight_speed
+	_last_speed = _body.movement_speed
 	_bounce_age = 0.0
 	if _focus_handoff: _begin_focus_handoff(focus_velocity)
 	if _impact_age >= settings.impact_min_interval:
 		_impact_age = 0.0
 		_impact_direction = -normal
-		_impact_strength = clampf(_body.flight_speed / _launch_speed, 0.0, 1.0)
+		_impact_strength = clampf(_body.movement_speed / _launch_speed, 0.0, 1.0)
 
 func _on_finished(_reason: StringName) -> void:
 	if not active: return
@@ -365,6 +375,7 @@ func _on_finished(_reason: StringName) -> void:
 	if not settings:
 		reset()
 		return
+	_orbit_shot.observe(false, settings, _body.direction, Vector3.ZERO, _orbit_shot_allowed())
 	_return_seconds = settings.charge_cancel_seconds if _charging else settings.return_seconds
 	var view := Basis.looking_at(-_camera._orbit_offset(), Vector3.UP)
 	var span := _camera._short_side_span()
@@ -386,6 +397,17 @@ func _on_finished(_reason: StringName) -> void:
 	_impact_shot.release(0.10)
 	_combat_focus.reset()
 
+func _orbit_shot_allowed() -> bool:
+	return _orbit_closeup_allowed() and not _camera.hit_closeup_active and not _impact_shot.active
+
+## 新碰撞曲线尚在零偏移首帧时，也应拥有震动优先权。
+func impact_feedback_active() -> bool:
+	var settings := _camera.ricochet_camera_settings
+	return _impact_shot.active or not shake.is_zero_approx() or (_flying and settings != null and _impact_age < settings.impact_shake_seconds)
+
+func _orbit_closeup_allowed() -> bool:
+	return not _camera.wave_shot_active and _player.current_health > 0.0 and _player.get_tree().get_first_node_in_group(&"gameplay_input_blockers") == null and (not is_instance_valid(_body._session) or _body._session.phase == WavePrototype.Phase.BATTLE)
+
 func advance(delta: float, point: Vector3, view: Basis, world_span: float, short_side: float) -> void:
 	var settings := _camera.ricochet_camera_settings
 	if not settings or not settings.enabled or not is_instance_valid(_player) or _player.current_health <= 0.0:
@@ -393,8 +415,17 @@ func advance(delta: float, point: Vector3, view: Basis, world_span: float, short
 		return
 	if _charging and not settings.charge_focus_enabled: _on_finished(&"cancelled")
 	if settings.charge_focus_enabled and _body.charging and not _charging: _on_state_changed(PlayerRicochet.State.CHARGING)
-	if not _flying and _body.flying: _on_launched(_body.direction, _body.flight_speed, 0.0)
-	if not active or _body.is_frozen(): return
+	if not _flying and _body.flying: _on_launched(_body.direction, _body.movement_speed, 0.0)
+	if _body.is_frozen(): return
+	# 入圈接住上一呈现帧的入射方向；离圈读取已完成真实转向的出射方向。
+	var shot_heading := _direction if _body.orbiting else _body.direction
+	var closeup_allowed := _orbit_closeup_allowed()
+	var accent_blocked := not closeup_allowed or _camera.hit_closeup_active or _impact_shot.active
+	_orbit_shot.advance(delta, _body.orbiting, settings, accent_blocked, shot_heading, _body.orbit_presentation_center - point, not closeup_allowed)
+	orbit_distance_scale = distance_scale * _orbit_shot.distance_offset
+	orbit_focus_offset = _orbit_shot.focus_offset * world_span
+	orbit_pitch_offset = _orbit_shot.pitch_offset
+	if not active: return
 	_age += delta
 	_combat_focus.advance(delta, _body.orbiting, point, _body.orbit_presentation_center, settings)
 	if _flying:
@@ -402,11 +433,13 @@ func advance(delta: float, point: Vector3, view: Basis, world_span: float, short
 			_speed_profile_enabled = settings.flight_speed_camera_enabled
 			_charge_focus_profile_enabled = settings.flight_charge_focus_enabled
 			_begin_lens_handoff(Vector2(_zoom_amount, pitch_offset), _lens_velocity, settings.charge_release_seconds, settings.charge_release_pitch_seconds)
-		var speed_goal := settings.flight_speed_weight(_body.flight_speed) if _speed_profile_enabled else 0.0
+		var speed_goal := settings.flight_speed_weight(_body.movement_speed) if _speed_profile_enabled else 0.0
 		_flight_speed_weight = lerpf(_flight_speed_weight, speed_goal, 1.0 - exp(-delta / maxf(settings.flight_speed_smoothing, 0.001)))
 	var full_shake := _advance_full_shake(delta, settings, view, short_side)
 	var charge_tremor := _advance_charge_tremor(delta, settings, short_side)
 	_advance_zoom(delta, settings)
+	# 对未叠加环绕的距离取比例，不被原有拉远抵消，也不逐帧累乘。
+	orbit_distance_scale = distance_scale * _orbit_shot.distance_offset
 	_impact_shot.advance(delta, settings)
 	collision_offset = _impact_shot.offset
 	var rotation_goal := 0.35 if _camera._yaw_input_active else 1.0
@@ -432,7 +465,7 @@ func advance(delta: float, point: Vector3, view: Basis, world_span: float, short
 	_impact_age += delta
 	if _flying:
 		_direction = _body.direction
-		_last_speed = _body.flight_speed
+		_last_speed = _body.movement_speed
 		if _focus_handoff:
 			_focus_handoff_age += delta
 			var seconds := maxf(settings.charge_release_framing_seconds, 0.001)
@@ -475,8 +508,8 @@ func advance(delta: float, point: Vector3, view: Basis, world_span: float, short
 		var t := clampf(_return_age / maxf(_return_seconds, 0.001), 0.0, 1.0)
 		framing = _return_from * (2.0 * t * t * t - 3.0 * t * t + 1.0) + _return_velocity * _return_seconds * (t * t * t - 2.0 * t * t + t)
 		carry = _return_carry * (1.0 - smoothstep(0.0, 1.0, t))
-		if t >= 1.0 and is_zero_approx(_zoom_amount) and is_zero_approx(pitch_offset) and not _lens_handoff and _charge_tremor_strength == 0.0 and (not (settings.charge_full_shake_enabled or settings.charge_staging_enabled) or _full_shake_age >= settings.charge_full_shake_seconds):
-			reset()
+		if t >= 1.0 and is_zero_approx(_zoom_amount) and is_zero_approx(pitch_offset) and not _lens_handoff and not _orbit_shot.active and _charge_tremor_strength == 0.0 and (not (settings.charge_full_shake_enabled or settings.charge_staging_enabled) or _full_shake_age >= settings.charge_full_shake_seconds):
+			reset(false, true)
 			return
 	framing = framing.limit_length(settings.max_offset_ratio)
 	if framing.length() >= settings.max_offset_ratio and _velocity.dot(framing) > 0.0:

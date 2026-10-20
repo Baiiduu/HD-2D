@@ -36,6 +36,9 @@ var _frame_seconds := 0.0
 var _audio: GameAudio
 var _hit_sounds := 0
 var _piece_time := 0.0
+var _score: RunScore
+var _strike_index := 0
+var _strike_total := 1
 
 func _ready() -> void:
 	player = get_parent() as Player
@@ -47,6 +50,7 @@ func _ready() -> void:
 	add_child(_effect)
 	_effect.top_level = true
 	if session:
+		_score = session.get_node_or_null("RunScore") as RunScore
 		session.register_combat_node(self)
 		_surface = session.get_attack_surface_query()
 		session.phase_changed.connect(_on_phase)
@@ -56,6 +60,23 @@ func _ready() -> void:
 	player.body_ricochet.flight_segment_travelled.connect(_on_flight_segment)
 	player.body_ricochet.state_changed.connect(_on_body_state)
 	player.blink_travelled.connect(_on_blink)
+
+func prepare_feedback() -> void:
+	if not rules: return
+	while _tail_pool.size() < 4:
+		var effect := GroundSlashEffect.new()
+		effect.name = "SwordResidue%d" % _tail_pool.size()
+		add_child(effect)
+		effect.top_level = true
+		_tail_pool.append({"effect": effect, "age": -1.0})
+	for flying in [false, true]:
+		var settings := rules.duplicate() as PlayerSwordRules
+		if flying and rules.flight_ribbon_visual:
+			settings.effect_mode = PlayerSwordRules.SlashVisual.NATIVE_RIBBON
+			settings.ribbon_visual = rules.flight_ribbon_visual
+		var stats := get_stats(flying)
+		_effect.prepare_feedback(settings, stats.range, stats.angle)
+		for tail in _tail_pool: tail.effect.prepare_feedback(settings, stats.range, stats.angle)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not _enabled() or _blocked(): return
@@ -77,6 +98,23 @@ func request_manual(heading: Vector3) -> bool:
 	_tap = true
 	return true
 
+## 人物移动之前读取，包含本物理步内即将开始的按住连击，避免先走一步再起刀。
+func blocks_normal_movement(delta := 0.0) -> bool:
+	if not _enabled() or player.current_health <= 0.0 or player.body_ricochet.charging or player.body_ricochet.flying or player._blink.active: return false
+	if swinging:
+		return not _flight_swing and _settings.normal_stationary_enabled and _age < _settings.windup_seconds + _settings.sweep_seconds - 0.000001
+	if not rules.normal_stationary_enabled: return false
+	var requested := _tap or (_manual_held and Input.is_action_pressed(&"normal_attack"))
+	if not requested or _blocked() or player.body_ricochet.state == PlayerRicochet.State.RECOVERY or not rules.validation_error().is_empty(): return false
+	return _since_strike + maxf(delta, 0.0) + 0.00001 >= get_stats(false).interval
+
+## 仅站定普攻让位给闪身；保留已消耗的攻击间隔，不清除其它自动攻击。
+func interrupt_normal_attack() -> void:
+	if swinging and (_flight_swing or not _settings.normal_stationary_enabled): return
+	if not swinging and not rules.normal_stationary_enabled: return
+	cancel(false)
+	player.action_animator.cancel_normal_attack()
+
 func get_stats(flying := false, modifiers: RunCombatModifiers = null) -> Dictionary:
 	var result := {"damage": rules.damage, "range": rules.flight_range if flying else rules.normal_range,
 		"angle": rules.flight_angle if flying else rules.normal_angle,
@@ -88,7 +126,8 @@ func get_stats(flying := false, modifiers: RunCombatModifiers = null) -> Diction
 		result.range *= modifiers.range_multiplier()
 		interval_scale = modifiers.interval_multiplier()
 	# 最短间隔同时约束完整动作，不截断上一刀，也不改变基础资源。
-	var base_interval: float = maxf(result.interval, rules.duration())
+	var motion_duration := rules.windup_for(flying) + rules.sweep_seconds + rules.fade_seconds
+	var base_interval: float = maxf(result.interval, motion_duration)
 	result.interval = maxf(base_interval * interval_scale, rules.minimum_attack_interval)
 	result.motion_scale = float(result.interval) / base_interval
 	return result
@@ -138,7 +177,7 @@ func _physics_process(delta: float) -> void:
 	for piece in _motion:
 		if piece.seconds <= 0.000001: continue
 		_piece_time = used
-		_simulate(piece.start, piece.end, piece.seconds, true, piece.heading, piece.get("speed", 0.0), piece.get("deceleration", 0.0), piece.get("orbiting", false))
+		_simulate(piece.start, piece.end, piece.seconds, true, piece.heading, piece.get("speed", 0.0), piece.get("deceleration", 0.0), piece.get("orbiting", false), piece.get("energy_speed", -1.0), piece.get("energy_deceleration", 0.0))
 		used += piece.seconds
 		cursor = piece.end
 	if used < delta - 0.000001:
@@ -148,9 +187,10 @@ func _physics_process(delta: float) -> void:
 	_last_position = player.global_position
 	# 先记录本帧真实运动中的全部刀锋接触，再扣血；升级中断时保留未结算接触。
 	_drain_hits()
+	_sync_normal_animation()
 	_update_effect()
 
-func _simulate(start: Vector3, end: Vector3, seconds: float, flying: bool, heading: Vector3, speed := 0.0, deceleration := 0.0, orbiting := false) -> void:
+func _simulate(start: Vector3, end: Vector3, seconds: float, flying: bool, heading: Vector3, speed := 0.0, deceleration := 0.0, orbiting := false, energy_speed := -1.0, energy_deceleration := 0.0) -> void:
 	var time := 0.0
 	while time < seconds - 0.000001:
 		var fraction := PlayerRicochetRules.segment_fraction(time, seconds, speed, deceleration)
@@ -173,7 +213,7 @@ func _simulate(start: Vector3, end: Vector3, seconds: float, flying: bool, headi
 				var delay := maxf(0.0, PlayerRicochetRules.segment_time(lerpf(fraction, 1.0, float(target.entry)), seconds, speed, deceleration) - time)
 				time += delay
 				_since_strike += delay
-				_begin(target.heading, true)
+				_begin(target.heading, true, maxf(0.0, energy_speed - energy_deceleration * time) if energy_speed >= 0.0 else -1.0)
 			elif can_start and player.body_ricochet.state != PlayerRicochet.State.RECOVERY and not _blocked() and (_tap or _manual_held):
 				var aim := _requested_heading if not _requested_heading.is_zero_approx() else player.body_ricochet.cursor_direction()
 				_begin(aim, false)
@@ -195,23 +235,45 @@ func _simulate(start: Vector3, end: Vector3, seconds: float, flying: bool, headi
 		_since_strike += step
 		time += step
 		if _age >= _settings.duration() - 0.000001:
-			_age = -1.0
+			_strike_index += 1
+			if _strike_index < _strike_total:
+				# 同一次出手内连续完整扫击；逐刀去重与挡墙，频率仍按根出手计算。
+				_age = 0.0
+				_hits.clear()
+				if not (_settings.ribbon_visual and _settings.ribbon_visual.ribbon_orbit_enabled): _reverse = not _reverse
+				strike_started.emit(_heading, _flight_swing, _reverse)
+			else: _age = -1.0
 			_effect.hide()
 
-func _begin(heading: Vector3, flying: bool) -> void:
+func _begin(heading: Vector3, flying: bool, remaining_speed := -1.0) -> void:
 	_settings = rules.duplicate()
+	if flying and rules.flight_ribbon_visual:
+		_settings.effect_mode = PlayerSwordRules.SlashVisual.NATIVE_RIBBON
+		_settings.ribbon_visual = rules.flight_ribbon_visual
 	if _settings.ribbon_visual: _settings.ribbon_visual = _settings.ribbon_visual.duplicate()
 	if flying and player.action_visuals and player.action_visuals.combat_readability_enabled and _settings.meowa_body_opacity > 0.0:
 		_settings.meowa_body_opacity = maxf(_settings.meowa_body_opacity, player.action_visuals.combat_sword_body_opacity)
 	_stats = get_stats(flying)
-	_settings.windup_seconds *= float(_stats.motion_scale)
-	_settings.sweep_seconds *= float(_stats.motion_scale)
-	_settings.fade_seconds *= float(_stats.motion_scale)
+	var snapshot := session.attack_snapshot(flying, remaining_speed) if session else CombatAttackSnapshot.new()
+	_stats.attack_snapshot = snapshot
+	_stats.damage *= snapshot.speed_damage_multiplier
+	_strike_total = snapshot.strikes
+	_strike_index = 0
+	_stats.score_batch = _score.begin_attack() if is_instance_valid(_score) else null
+	var motion_scale := float(_stats.motion_scale) / _strike_total
+	_settings.windup_seconds = rules.windup_for(flying) * motion_scale
+	_settings.sweep_seconds *= motion_scale
+	_settings.fade_seconds *= motion_scale
 	_heading = heading.normalized()
 	_heading.y = 0.0
 	if _heading.is_zero_approx(): _heading = player.facing_direction()
 	_flight_swing = flying
 	_reverse = _next_reverse
+	if not flying and _settings.normal_slash_alignment_enabled:
+		var right := player.movement_camera.global_basis.x if player.movement_camera else Vector3.RIGHT
+		right.y = 0.0
+		_reverse = _heading.dot(right.normalized()) < -0.0001
+	if flying and _settings.ribbon_visual and _settings.ribbon_visual.ribbon_orbit_enabled: _reverse = false
 	_next_reverse = not _next_reverse
 	_age = 0.0
 	_since_strike = 0.0
@@ -220,10 +282,15 @@ func _begin(heading: Vector3, flying: bool) -> void:
 	_tap = false
 	_requested_heading = Vector3.ZERO
 	player.face_world_direction(_heading)
-	player.action_animator.play_attack(&"flight_attack" if flying else &"normal_attack", _heading, _settings.duration())
+	player.action_animator.play_attack(&"flight_attack" if flying else &"normal_attack", _heading, _settings.duration() * _strike_total)
+	_sync_normal_animation()
 	player.normal_attack_requested.emit(_heading)
 	strike_started.emit(_heading, flying, _reverse)
 	_play_sound(false, player.global_position)
+
+func _sync_normal_animation() -> void:
+	if _flight_swing or not _settings or not _settings.normal_slash_alignment_enabled: return
+	player.action_animator.sync_normal_attack(_age, Vector3(_settings.windup_seconds, _settings.sweep_seconds, _settings.fade_seconds), _settings.normal_attack_frame_breaks, _reverse)
 
 func _combat_active() -> bool:
 	return is_instance_valid(session) and session.combat_active() and _path.data != null
@@ -321,8 +388,15 @@ func _collect_hits(start: Vector3, end: Vector3, first: float, last: float, movi
 			candidates.remove_at(candidate_index)
 			var time := PlayerRicochetRules.segment_time((index + entry) / steps, seconds, speed, deceleration)
 			var motion := (end - start).normalized() * maxf(0.0, speed - deceleration * time) if speed > 0.0 else (end - start) / maxf(seconds, 0.000001)
-			_pending_hits.append({"enemy": enemy, "damage": _stats.damage, "origin": origin, "heading": _heading, "flying": _flight_swing and moving_flight, "flight_id": player.body_ricochet.flight_serial if _flight_swing and moving_flight else 0, "time":start_time + seconds * (index + entry) / steps,
-				"motion_velocity": motion, "contact_distance": TerrainPath.horizontal_distance(origin, enemy.global_position), "slash_direction": (tip_b - tip_a).normalized()})
+			var hit_heading := _heading
+			if _flight_swing and _stats.angle >= 360.0:
+				var outward := enemy.global_position - origin
+				outward.y = 0.0
+				if not outward.is_zero_approx(): hit_heading = outward.normalized()
+			var damage: float = _stats.damage
+			if _strike_index > 0: damage *= float(_stats.attack_snapshot.additional_strike_damage_ratio)
+			_pending_hits.append({"enemy": enemy, "damage": damage, "origin": origin, "heading": hit_heading, "flying": _flight_swing and moving_flight, "flight_id": player.body_ricochet.flight_serial if _flight_swing and moving_flight else 0, "time":start_time + seconds * (index + entry) / steps,
+				"motion_velocity": motion, "contact_distance": TerrainPath.horizontal_distance(origin, enemy.global_position), "slash_direction": (tip_b - tip_a).normalized(), "score_batch": _stats.get("score_batch"), "attack_snapshot": _stats.get("attack_snapshot")})
 
 static func swept_blade(point: Vector3, a: Vector3, tip_a: Vector3, tip_b: Vector3, b: Vector3) -> bool:
 	var p := Vector2(point.x, point.z)
@@ -352,7 +426,7 @@ func _drain_hits() -> void:
 		var enemy: WaveEnemy = hit.enemy
 		if not _eligible(enemy): continue
 		var before := enemy.health
-		enemy.take_damage(hit.damage, {"source": &"flight_sword" if hit.flying else &"basic_sword", "direction": hit.heading, "flight_id": hit.get("flight_id", 0), "motion_velocity": hit.get("motion_velocity", Vector3.ZERO), "contact_distance": hit.get("contact_distance", TerrainPath.horizontal_distance(hit.origin, enemy.global_position)), "slash_direction": hit.get("slash_direction", Vector3.ZERO)})
+		enemy.take_damage(hit.damage, {"source": &"flight_sword" if hit.flying else &"basic_sword", "direction": hit.heading, "flight_id": hit.get("flight_id", 0), "motion_velocity": hit.get("motion_velocity", Vector3.ZERO), "contact_distance": hit.get("contact_distance", TerrainPath.horizontal_distance(hit.origin, enemy.global_position)), "slash_direction": hit.get("slash_direction", Vector3.ZERO), "score_batch": hit.get("score_batch"), "attack_snapshot": hit.get("attack_snapshot")})
 		if not is_instance_valid(enemy): continue
 		var dealt := before - enemy.health
 		if dealt <= 0.0 and not session.combat_modifiers.damage_disabled: continue
@@ -439,7 +513,8 @@ func _play_sound(hit: bool, point: Vector3) -> void:
 
 func _on_flight_segment(start: Vector3, end: Vector3, heading: Vector3, seconds: float) -> void:
 	var timing := player.body_ricochet.motion_timing(seconds)
-	_motion.append({"start": start, "end": end, "heading": heading, "seconds": seconds, "speed": timing.x, "deceleration": timing.y, "orbiting": player.body_ricochet.orbiting})
+	var energy := player.body_ricochet.energy_timing()
+	_motion.append({"start": start, "end": end, "heading": heading, "seconds": seconds, "speed": timing.x, "deceleration": timing.y, "orbiting": player.body_ricochet.orbiting, "energy_speed": energy.x, "energy_deceleration": energy.y})
 
 func _on_blink(_start: Vector3, end: Vector3) -> void:
 	_motion.clear()
@@ -465,8 +540,14 @@ func _on_freeze(frozen: bool) -> void:
 		_tap = false
 
 func cancel(reset_clock := true) -> void:
+	if not _flight_swing and _settings and _settings.normal_slash_alignment_enabled:
+		player.action_animator.cancel_normal_attack()
 	_age = -1.0
+	_strike_total = 1
+	_strike_index = 0
 	_pending_hits.clear()
+	_stats.erase("score_batch")
+	_stats.erase("attack_snapshot")
 	_pending_pushes.clear()
 	_hits.clear()
 	_manual_held = false

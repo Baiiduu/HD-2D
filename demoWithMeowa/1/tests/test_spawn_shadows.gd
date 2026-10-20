@@ -53,7 +53,7 @@ func run() -> void:
 	effects.advance(2.55)
 	effects.end(127, true)
 	check(effects._entries.size() == 127 and is_equal_approx(effects._entries[0].data.b, 2.55), "Birth releases a short tail on the combat clock")
-	effects.advance(2.68)
+	effects.advance(2.55 + settings.fade_seconds + 0.01)
 	check(effects._entries.size() == 126, "Only expired tails are removed")
 	effects.clear()
 	check(effects._entries.is_empty() and effects._mesh.multimesh.visible_instance_count == 0 and not effects.visible, "Clear hides all instances and keeps reusable allocations")
@@ -108,7 +108,7 @@ func run() -> void:
 	wave._physics_process(1.0)
 	check(wave._wave_clock == clock and wave._spawn_shadows._clock == clock, "Upgrade freeze stops both queue and shader clock")
 	wave.set_combat_frozen(false)
-	wave._physics_process(0.56)
+	wave._physics_process(settings.warning_seconds + 0.01)
 	check(wave.enemies.size() == 1 and wave._pending == 0, "The warning creates exactly one real actor when it completes")
 	if not wave.enemies.is_empty():
 		var enemy := wave.enemies[0]
@@ -118,7 +118,7 @@ func run() -> void:
 		wave._enemy_roster.remove(enemy)
 		enemy.cancel()
 	await settle()
-	wave._physics_process(0.13)
+	wave._physics_process(settings.fade_seconds + 0.01)
 	# Empty wave just cleared; resume a fixture battle for invalidation/cleanup.
 	wave.phase = WavePrototype.Phase.BATTLE
 	wave._attack_root = Node3D.new()
@@ -135,7 +135,7 @@ func run() -> void:
 	world.add_child(wall)
 	wall.position = point + Vector3.UP * 1.5
 	await settle()
-	wave._physics_process(0.56)
+	wave._physics_process(settings.warning_seconds + 0.01)
 	check(wave.enemies.is_empty() and wave._pending == 1 and wave._spawn_shadows._entries.is_empty(), "A new real wall cancels the stale silhouette instead of relocating an unannounced actor")
 	wall.queue_free()
 	await settle()

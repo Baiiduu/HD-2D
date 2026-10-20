@@ -2,18 +2,27 @@
 class_name TreePlanter
 extends Node3D
 
+const COLLISION_SURFACE := preload("res://scripts/core/collision_surface.gd")
+
 const STATIC_BATCH = preload("res://scripts/rendering/static_geometry_batch.gd")
 
 ## 根节点底部为地面、+Z 为长椅正面。所有内容跟随本节点移动，不改动地图数据。
 const TREE_SHADER := preload("res://shaders/environment/tree_billboard.gdshader")
 const PLANT_SHADER := preload("res://shaders/environment/vegetation_wind.gdshader")
 const SURFACE_SHADER := preload("res://shaders/environment/lumina_building.gdshader")
+const METAL_SHADER := preload("res://shaders/environment/plaza_metal.gdshader")
 const STREETLAMP := preload("res://scenes/buildings/plaza_streetlamp.tscn")
 const TREE := preload("res://assets/meowa/buildings/tree_planter/tree.png")
 const STONE := preload("res://assets/meowa/buildings/materials/masonry.png")
 const CAP := preload("res://assets/meowa/buildings/materials/limestone.png")
 const WOOD := preload("res://assets/meowa/buildings/ricochet/wood.png")
 const SOIL := preload("res://assets/meowa/buildings/materials/compost.png")
+# Native atlas rectangles; front/back/side keep distinct authored details.
+const CITY_FRONT := Rect2i(16, 32, 176, 32)
+const CITY_BACK := Rect2i(16, 96, 176, 32)
+const CITY_SIDE := Rect2i(224, 32, 128, 32)
+const CITY_METAL := Rect2i(112, 176, 64, 64)
+const CITY_CORNER := Rect2i(224, 112, 16, 32)
 const PLANTS := [
 	preload("res://assets/meowa/dressing/forest/plant_01.png"),
 	preload("res://assets/meowa/dressing/forest/plant_04.png"),
@@ -72,6 +81,9 @@ const PLANTS := [
 	set(value): lamp_canopy_clearance = value; _queue_build()
 
 @export_group("花坛材质")
+## 指定城市面板图集时，复用树木和坐面，改用金属包角与完整面板 UV；留空使用原石砌造型。
+@export var city_panel_texture: Texture2D:
+	set(value): city_panel_texture = value; _queue_build()
 @export var stone_texture: Texture2D = STONE:
 	set(value): stone_texture = value; _queue_build()
 @export var cap_texture: Texture2D = CAP:
@@ -145,13 +157,19 @@ func build() -> void:
 	_wind_state.clear()
 	var rim := clampf(rim_width, 0.08, minf(width, depth) * 0.2)
 	var soil_y := height - 0.065
-	_box(Vector3(0, height * 0.5, 0), Vector3(width, height, depth), "stone", true)
+	if city_panel_texture:
+		_build_city_body()
+	else:
+		_box(Vector3(0, height * 0.5, 0), Vector3(width, height, depth), "stone", true)
 	_box(Vector3(0, height + 0.025, -(depth - rim) * 0.5), Vector3(width + 0.06, 0.09, rim + 0.06), "cap")
 	_box(Vector3(0, height + 0.025, (depth - rim) * 0.5), Vector3(width + 0.06, 0.09, rim + 0.06), "cap")
 	for side in [-1.0, 1.0]:
 		_box(Vector3(side * (width - rim) * 0.5, height + 0.025, 0), Vector3(rim + 0.06, 0.09, depth - rim * 2.0), "cap")
 		for end in [-1.0, 1.0]:
-			_box(Vector3(side * (width - rim) * 0.5, height * 0.5, end * (depth - rim) * 0.5), Vector3(rim + 0.1, height + 0.12, rim + 0.1), "stone")
+			if city_panel_texture:
+				_box(Vector3(side * (width * 0.5 - 0.055), height + 0.074, end * (depth * 0.5 - 0.055)), Vector3(0.11, 0.008, 0.11), "metal", false, CITY_METAL)
+			else:
+				_box(Vector3(side * (width - rim) * 0.5, height * 0.5, end * (depth - rim) * 0.5), Vector3(rim + 0.1, height + 0.12, rim + 0.1), "stone")
 	# The body has an open top; soil sits below the rim rather than covering its edge.
 	_quad([Vector3(-width * 0.5 + rim, soil_y, -depth * 0.5 + rim),
 		Vector3(width * 0.5 - rim, soil_y, -depth * 0.5 + rim),
@@ -181,10 +199,16 @@ func build() -> void:
 		body.name = "PlanterCollision"
 		body.collision_layer = 1
 		body.collision_mask = 0
+		COLLISION_SURFACE.mark(body, &"metal" if city_panel_texture else &"stone")
 		_generated.add_child(body)
-		_collision(body, Vector3(0, (height + 0.07) * 0.5, 0), Vector3(width + 0.06, height + 0.07, depth + 0.06))
+		if city_panel_texture:
+			# Split material regions without changing the old solid's occupied volume.
+			_collision(body, Vector3(0, (height - 0.02) * 0.5, 0), Vector3(width + 0.06, height - 0.02, depth + 0.06), &"metal")
+			_collision(body, Vector3(0, height + 0.025, 0), Vector3(width + 0.06, 0.09, depth + 0.06), &"stone")
+		else:
+			_collision(body, Vector3(0, (height + 0.07) * 0.5, 0), Vector3(width + 0.06, height + 0.07, depth + 0.06))
 		if bench_enabled:
-			_collision(body, Vector3(-0.15, 0.27, depth * 0.5 + 0.28), Vector3(width * 0.7, 0.54, 0.55))
+			_collision(body, Vector3(-0.15, 0.27, depth * 0.5 + 0.28), Vector3(width * 0.7, 0.54, 0.55), &"wood")
 	if lamp_enabled:
 		var lamp := STREETLAMP.instantiate() as PlazaStreetlamp
 		lamp.name = "Lamp"
@@ -200,13 +224,26 @@ func build() -> void:
 	set_process(not _wind_materials.is_empty())
 	if batch: batch.register_owner(self, _generated)
 
+func _build_city_body() -> void:
+	var x := width * 0.5
+	var z := depth * 0.5
+	_quad([Vector3(-x,height,z), Vector3(x,height,z), Vector3(x,0,z), Vector3(-x,0,z)], "city", CITY_FRONT)
+	_quad([Vector3(x,height,-z), Vector3(-x,height,-z), Vector3(-x,0,-z), Vector3(x,0,-z)], "city", CITY_BACK)
+	_quad([Vector3(x,height,z), Vector3(x,height,-z), Vector3(x,0,-z), Vector3(x,0,z)], "city", CITY_SIDE)
+	_quad([Vector3(-x,height,-z), Vector3(-x,height,z), Vector3(-x,0,z), Vector3(-x,0,-z)], "city", CITY_SIDE)
+	for side in [-1.0, 1.0]:
+		for end in [-1.0, 1.0]:
+			# Shallow L plates sit inside the existing cap/collision footprint.
+			_box(Vector3(side * (x - 0.07), height * 0.5, end * (z - 0.014)), Vector3(0.14, height + 0.04, 0.04), "metal", false, CITY_CORNER)
+			_box(Vector3(side * (x - 0.014), height * 0.5, end * (z - 0.07)), Vector3(0.04, height + 0.04, 0.14), "metal", false, CITY_CORNER)
+
 func _build_bench() -> void:
 	var bench_width := width * 0.7
 	var front := depth * 0.5 + 0.28
 	for row in 3:
 		_box(Vector3(-0.15, 0.49, front + (row - 1) * 0.16), Vector3(bench_width, 0.07, 0.13), "wood")
 	for side in [-1.0, 1.0]:
-		_box(Vector3(-0.15 + side * bench_width * 0.38, 0.22, front), Vector3(0.16, 0.44, 0.4), "stone")
+		_box(Vector3(-0.15 + side * bench_width * 0.38, 0.22, front), Vector3(0.16, 0.44, 0.4), "metal" if city_panel_texture else "stone", false, CITY_METAL if city_panel_texture else Rect2i())
 
 func _build_flowers(soil_y: float, rim: float) -> void:
 	var materials: Array[ShaderMaterial] = []
@@ -253,11 +290,17 @@ func _card(label: String, texture: Texture2D, anchor: Vector2, pixel_size: float
 
 func _surface_material(key: String) -> ShaderMaterial:
 	var material := ShaderMaterial.new()
+	if key == "metal":
+		material.shader = METAL_SHADER
+		material.set_shader_parameter("metal_texture", city_panel_texture)
+		material.set_shader_parameter("roughness", 0.62)
+		material.set_shader_parameter("metallic", 0.3)
+		return material
 	material.shader = SURFACE_SHADER
-	var texture: Texture2D = wood_texture if key == "wood" else SOIL if key == "soil" else cap_texture if key == "cap" else stone_texture
+	var texture: Texture2D = city_panel_texture if key == "city" else wood_texture if key == "wood" else SOIL if key == "soil" else cap_texture if key == "cap" else stone_texture
 	material.set_shader_parameter("surface_texture", texture)
 	material.set_shader_parameter("surface_texture_linear", texture)
-	material.set_shader_parameter("surface_roughness", stone_roughness if key in ["stone", "cap"] else 0.96)
+	material.set_shader_parameter("surface_roughness", 0.78 if key == "city" else stone_roughness if key in ["stone", "cap"] else 0.96)
 	material.set_shader_parameter("lumina_relief_enabled", true)
 	material.set_shader_parameter("lumina_relief_strength", 0.4)
 	material.set_shader_parameter("relief_sample_pixels", 1.0)
@@ -265,7 +308,7 @@ func _surface_material(key: String) -> ShaderMaterial:
 	material.set_shader_parameter("lumina_tone_strength", 0.025)
 	return material
 
-func _quad(points: Array[Vector3], key: String) -> void:
+func _quad(points: Array[Vector3], key: String, atlas_rect := Rect2i()) -> void:
 	if not _streams.has(key):
 		var stream := SurfaceTool.new()
 		stream.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -274,12 +317,18 @@ func _quad(points: Array[Vector3], key: String) -> void:
 	var normal := -(points[1] - points[0]).cross(points[2] - points[0]).normalized()
 	var span := Vector2(points[0].distance_to(points[1]), points[0].distance_to(points[3])) / texture_meters
 	var uvs := [Vector2.ZERO, Vector2(span.x, 0), span, Vector2(0, span.y)]
+	if atlas_rect.has_area():
+		var texture_size := city_panel_texture.get_size()
+		# Pixel centers keep neighboring labels and atlas gutters out of the UVs.
+		var start := (Vector2(atlas_rect.position) + Vector2(0.5, 0.5)) / texture_size
+		var end := (Vector2(atlas_rect.end) - Vector2(0.5, 0.5)) / texture_size
+		uvs = [start, Vector2(end.x, start.y), end, Vector2(start.x, end.y)]
 	for index in [0, 1, 2, 0, 2, 3]:
 		stream.set_normal(normal)
 		stream.set_uv(uvs[index])
 		stream.add_vertex(points[index])
 
-func _box(center: Vector3, size: Vector3, key: String, open_top := false) -> void:
+func _box(center: Vector3, size: Vector3, key: String, open_top := false, atlas_rect := Rect2i()) -> void:
 	var h := size * 0.5
 	var faces := [
 		[Vector3(-h.x,h.y,-h.z),Vector3(h.x,h.y,-h.z),Vector3(h.x,h.y,h.z),Vector3(-h.x,h.y,h.z)],
@@ -293,14 +342,15 @@ func _box(center: Vector3, size: Vector3, key: String, open_top := false) -> voi
 		if open_top and index == 0: continue
 		var points: Array[Vector3] = []
 		for corner: Vector3 in faces[index]: points.append(center + corner)
-		_quad(points, key)
+		_quad(points, key, atlas_rect)
 
-func _collision(body: StaticBody3D, center: Vector3, size: Vector3) -> void:
+func _collision(body: StaticBody3D, center: Vector3, size: Vector3, surface: StringName = &"stone") -> void:
 	var shape := BoxShape3D.new()
 	shape.size = size
 	var collider := CollisionShape3D.new()
 	collider.shape = shape
 	collider.position = center
+	COLLISION_SURFACE.mark(collider, surface)
 	body.add_child(collider)
 
 func _resolve_weather() -> void:

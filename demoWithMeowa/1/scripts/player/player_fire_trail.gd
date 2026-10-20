@@ -1,10 +1,12 @@
 class_name PlayerFireTrail
 extends Node3D
+const BODY_LAYOUT := preload("res://scripts/rendering/sprite_body_layout.gd")
 
 ## 三阶段地面火带，仅消费真实弹射路段。无伤害、碰撞、额外灯光或怪物覆盖通道。
 const SHADER := preload("res://shaders/combat/player_fire_trail.gdshader")
 const EMPTY := Transform3D(Basis(Vector3.ZERO, Vector3.ZERO, Vector3.ZERO), Vector3.ZERO)
 const INITIAL_CAPACITY := 128
+const SPARKS := preload("res://scripts/player/player_fire_sparks.gd")
 var _player: Player
 var _body: PlayerRicochet
 var _mesh: MultiMeshInstance3D
@@ -19,6 +21,11 @@ var _count := 0
 var _clock := 0.0
 var _duration := 0.0
 var _bounds := AABB()
+var _sparks: Node3D
+var _flow := Vector3(-1, -1, -1)
+var _brush: Texture2D
+var _brush_region := Rect2()
+var _mask_sync_queued := false
 
 func _ready() -> void:
 	_player = get_parent() as Player
@@ -35,6 +42,22 @@ func _ready() -> void:
 
 func _phase_changed(phase: int) -> void:
 	if phase != WavePrototype.Phase.BATTLE: clear()
+
+func prepare_feedback() -> void:
+	var settings := _player.action_visuals
+	if not settings or not settings.show_fire_trail: return
+	_prepare()
+	_configure()
+	if settings.fire_trail_flow_enabled and settings.fire_trail_spark_amount > 0.0:
+		_prepare_sparks()
+		_sparks.advance(_clock, settings)
+	clear()
+
+func _prepare_sparks() -> void:
+	if _sparks: return
+	_sparks = SPARKS.new()
+	_sparks.name = "FireSparks"
+	add_child(_sparks)
 
 func _prepare() -> void:
 	if _mesh: return
@@ -79,14 +102,24 @@ func _configure() -> void:
 	var settings := _player.action_visuals
 	_duration = settings.fire_trail_fresh_seconds + settings.fire_trail_burn_seconds + settings.fire_trail_ember_seconds
 	var timing := Vector4(settings.fire_trail_fresh_seconds, settings.fire_trail_burn_seconds, settings.fire_trail_ember_seconds, settings.fire_trail_energy)
-	if timing == _timing and _pixels == settings.fire_trail_pixels_per_meter: return
+	var strength := settings.fire_trail_flow_strength if settings.fire_trail_flow_enabled and settings.fire_trail_brush else 0.0
+	var flow := Vector3(float(settings.fire_trail_flow_enabled), strength, settings.fire_trail_flow_speed)
+	_material.set_shader_parameter("body_mask_margin_pixels", settings.fire_trail_body_clearance_pixels)
+	if timing == _timing and _pixels == settings.fire_trail_pixels_per_meter and flow == _flow and _brush == settings.fire_trail_brush and _brush_region == settings.fire_trail_brush_region: return
 	_timing = timing
+	_flow = flow
+	_brush = settings.fire_trail_brush
+	_brush_region = settings.fire_trail_brush_region
 	_pixels = settings.fire_trail_pixels_per_meter
 	_material.set_shader_parameter("fresh_seconds", settings.fire_trail_fresh_seconds)
 	_material.set_shader_parameter("burn_seconds", settings.fire_trail_burn_seconds)
 	_material.set_shader_parameter("ember_seconds", settings.fire_trail_ember_seconds)
 	_material.set_shader_parameter("energy", settings.fire_trail_energy)
 	_material.set_shader_parameter("pixels_per_meter", settings.fire_trail_pixels_per_meter)
+	_material.set_shader_parameter("flow_strength", strength)
+	_material.set_shader_parameter("flow_speed", settings.fire_trail_flow_speed)
+	_material.set_shader_parameter("fire_brush", _brush)
+	_material.set_shader_parameter("brush_region", Vector4(_brush_region.position.x, _brush_region.position.y, _brush_region.size.x, _brush_region.size.y))
 
 func _travelled(start: Vector3, end: Vector3, _heading: Vector3, seconds: float) -> void:
 	var settings := _player.action_visuals
@@ -119,6 +152,9 @@ func _travelled(start: Vector3, end: Vector3, _heading: Vector3, seconds: float)
 	_bounds = area if _count == 0 else _bounds.merge(area)
 	_mesh.custom_aabb = _bounds
 	_count += 1
+	if settings.fire_trail_flow_enabled and settings.fire_trail_spark_amount > 0.0:
+		_prepare_sparks()
+		_sparks.deposit(start, end, seconds, _clock, settings)
 	_material.set_shader_parameter("effect_clock", _clock)
 	show()
 	set_process(true)
@@ -131,6 +167,10 @@ func _process(delta: float) -> void:
 	_clock += maxf(0.0, delta)
 	_configure()
 	_material.set_shader_parameter("effect_clock", _clock)
+	if _sparks: _sparks.advance(_clock, _player.action_visuals)
+	if not _mask_sync_queued:
+		_mask_sync_queued = true
+		_sync_body_mask.call_deferred()
 	while _count > 0 and _clock >= _births[_head] + _duration:
 		_transforms[_head] = EMPTY
 		_mesh.multimesh.set_instance_transform(_head, EMPTY)
@@ -139,7 +179,9 @@ func _process(delta: float) -> void:
 	if _count == 0: clear()
 
 func clear() -> void:
+	if _sparks: _sparks.clear()
 	if _mesh:
+		_material.set_shader_parameter("body_mask_enabled", false)
 		for index in _count:
 			var slot := (_head + index) % _births.size()
 			_transforms[slot] = EMPTY
@@ -150,3 +192,29 @@ func clear() -> void:
 	_bounds = AABB()
 	hide()
 	set_process(false)
+
+## 本帧 Sprite 更新后同步真实轮廓；贴地笔触与火星共用一次布局查询。
+func _sync_body_mask() -> void:
+	_mask_sync_queued = false
+	if not visible: return
+	var source := _player.sprite
+	var materials: Array[ShaderMaterial] = [_material]
+	if _sparks and _sparks.visible: materials.append(_sparks.material)
+	var enabled := _player.action_visuals.fire_trail_flow_enabled and source.texture != null and source.is_visible_in_tree() and source.modulate.a > 0.01 and DisplayServer.get_name() != "headless"
+	for target in materials:
+		target.set_shader_parameter("body_mask_enabled", enabled)
+		target.set_shader_parameter("subject_position", _player.get_global_transform_interpolated().origin)
+	if not enabled: return
+	var layout: Array = BODY_LAYOUT.sample(source)
+	for target in materials:
+		target.set_shader_parameter("body_texture", source.texture)
+		target.set_shader_parameter("body_transform", source.get_global_transform_interpolated())
+		target.set_shader_parameter("body_motion_lean", source.get_meta("motion_lean", Vector3.ZERO))
+		target.set_shader_parameter("body_motion_pivot", source.get_meta("motion_pivot", Vector3.ZERO))
+		target.set_shader_parameter("body_billboard_mode", source.billboard)
+		target.set_shader_parameter("body_origin", layout[0])
+		target.set_shader_parameter("body_edge_u", layout[1])
+		target.set_shader_parameter("body_edge_v", layout[2])
+		target.set_shader_parameter("body_uv_origin", layout[3])
+		target.set_shader_parameter("body_uv_u", layout[4])
+		target.set_shader_parameter("body_uv_v", layout[5])

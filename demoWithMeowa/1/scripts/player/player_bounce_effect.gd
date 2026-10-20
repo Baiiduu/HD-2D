@@ -64,9 +64,20 @@ func _prepare_frames(source: SpriteFrames) -> bool:
 	_frames = frames
 	return not _frames.is_empty()
 
+func prepare_feedback() -> void:
+	var settings := _player.action_visuals
+	if not settings: return
+	if settings.show_bounce_effect and _prepare_frames(settings.bounce_frames):
+		while _pool.size() < 4:
+			var item := _create()
+			item.mesh.material_override = _frames[0].material
+			item.mesh.hide()
+			_pool.append(item)
+	if settings.bounce_particles_enabled: _prepare_sparks()
+
 func _bounced(point: Vector3, normal: Vector3) -> void:
-	var maximum := _body._settings.maximum_launch_speed if _body._settings else _body.flight_speed
-	play(point, normal, _body.direction, clampf(_body.flight_speed / maxf(maximum, 0.001), 0.0, 1.0))
+	var maximum := _body._settings.maximum_launch_speed if _body._settings else _body.movement_speed
+	play(point, normal, _body.direction, clampf(_body.movement_speed / maxf(maximum, 0.001), 0.0, 1.0))
 
 func _prepare_sparks() -> void:
 	if is_instance_valid(sparks): return

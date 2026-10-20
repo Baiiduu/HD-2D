@@ -31,6 +31,32 @@ func _ready() -> void:
 	if is_instance_valid(_body._session): _body._session.phase_changed.connect(_phase)
 	set_process(false)
 
+func prepare_feedback() -> void:
+	foot_pivot(_player.global_position)
+	var settings := _player.action_visuals
+	if not settings or not settings.departure_airflow_enabled or not settings.departure_airflow_texture: return
+	var texture := settings.departure_airflow_texture
+	var size := texture.get_size() * _player.sprite.pixel_size * _player.sprite.global_basis.x.length()
+	if not _quads.has(size):
+		var quad := QuadMesh.new()
+		quad.size = size
+		_quads[size] = quad
+	if not _materials.has(texture):
+		var material := ShaderMaterial.new()
+		material.shader = AIR_SHADER
+		material.set_shader_parameter("airflow_texture", texture)
+		_materials[texture] = material
+	while _pool.size() < 4:
+		var mesh := MeshInstance3D.new()
+		mesh.mesh = _quads[size]
+		mesh.material_override = _materials[texture]
+		mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mesh.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
+		mesh.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+		add_child(mesh)
+		mesh.hide()
+		_pool.append(mesh)
+
 func _launched(_direction: Vector3, _speed: float, _charge: float) -> void:
 	_impact = null
 	_air_impact = null
@@ -69,7 +95,7 @@ func advance(delta: float) -> void:
 	_impact_age += maxf(delta, 0.0)
 	var goal := Vector3.ZERO
 	if settings.motion_feedback_enabled and _body.flying:
-		goal = _target_lean(_body.direction, _body.flight_speed, _impact_age)
+		goal = _target_lean(_body.direction, _body.movement_speed, _impact_age)
 	var seconds := 0.025 if _body.flying else settings.lean_return_seconds * 0.25
 	lean = lean.lerp(goal, 1.0 - exp(-maxf(delta, 0.0) / maxf(seconds, 0.001)))
 	if lean.length_squared() < 0.00000001: lean = Vector3.ZERO
@@ -97,7 +123,7 @@ func _target_lean(heading: Vector3, speed: float, age: float) -> Vector3:
 	return Vector3.UP.cross(heading) * deg_to_rad(settings.flight_lean_degrees) * clampf(speed / maxf(settings.motion_reference_speed, 0.001), 0.0, 1.0)
 
 func pose_for_segment(heading: Vector3, flight_time: float) -> Vector3:
-	return _target_lean(heading, _body.flight_speed, maxf(0.0, flight_time - _impact.seconds) if _impact else 1000.0)
+	return _target_lean(heading, _body.movement_speed, maxf(0.0, flight_time - _impact.seconds) if _impact else 1000.0)
 
 func _apply_pose() -> void:
 	var pivot := foot_pivot(_player.get_global_transform_interpolated().origin)

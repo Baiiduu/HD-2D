@@ -1,0 +1,4723 @@
+{
+  "atlas_size": [
+    1024,
+    1024
+  ],
+  "pixels_per_meter": 80,
+  "padding_pixels": 8,
+  "uv_origin": "top-left",
+  "stage": "native_80px_style_pass",
+  "source_images": {
+    "garage_front": "source/garage_front.png",
+    "garage_left": "source/garage_left.png",
+    "garage_back": "source/garage_back.png",
+    "tower_front": "source/tower_front.png",
+    "tower_right": "source/tower_right.png",
+    "tower_back": "source/tower_back.png",
+    "roof": "source/roof.png",
+    "sign": "source/sign.png",
+    "metal": "source/metal.png",
+    "ac_top": "source/ac_top.png",
+    "ac_front": "source/ac_front.png",
+    "ac_side": "source/ac_side.png",
+    "style_master": "source/style_master.png"
+  },
+  "assembly": {
+    "facade_panels_in_master": {
+      "garage_front": [
+        20,
+        40,
+        188,
+        200
+      ],
+      "garage_left": [
+        212,
+        40,
+        404,
+        200
+      ],
+      "garage_back": [
+        428,
+        40,
+        596,
+        200
+      ],
+      "tower_front": [
+        20,
+        248,
+        140,
+        520
+      ],
+      "tower_right": [
+        164,
+        248,
+        356,
+        520
+      ],
+      "tower_back": [
+        380,
+        248,
+        500,
+        520
+      ],
+      "roof": [
+        640,
+        40,
+        832,
+        232
+      ],
+      "sign": [
+        640,
+        280,
+        808,
+        304
+      ],
+      "metal": [
+        640,
+        360,
+        768,
+        488
+      ],
+      "ac_top": [
+        824,
+        360,
+        888,
+        424
+      ],
+      "ac_front": [
+        824,
+        472,
+        888,
+        520
+      ],
+      "ac_side": [
+        928,
+        472,
+        976,
+        520
+      ]
+    },
+    "wall_coordinates": "projected world coordinates at 80px/m; original masses and complete continuous facade panels retained",
+    "resampling": "none; fresh Meowa native pixel artwork",
+    "style_reference": "res://assets/models/convenience_24/textures/front.png",
+    "native_panels": {
+      "garage_front": [
+        20,
+        40,
+        168,
+        160
+      ],
+      "garage_left": [
+        212,
+        40,
+        192,
+        160
+      ],
+      "garage_back": [
+        428,
+        40,
+        168,
+        160
+      ],
+      "tower_front": [
+        20,
+        248,
+        120,
+        272
+      ],
+      "tower_right": [
+        164,
+        248,
+        192,
+        272
+      ],
+      "tower_back": [
+        380,
+        248,
+        120,
+        272
+      ],
+      "roof": [
+        640,
+        40,
+        192,
+        192
+      ],
+      "sign": [
+        640,
+        280,
+        168,
+        24
+      ],
+      "metal": [
+        640,
+        360,
+        128,
+        128
+      ],
+      "ac_top": [
+        824,
+        360,
+        64,
+        64
+      ],
+      "ac_front": [
+        824,
+        472,
+        64,
+        48
+      ],
+      "ac_side": [
+        928,
+        472,
+        48,
+        48
+      ]
+    },
+    "panel_coordinate_format": "facade_panels_in_master: x0,y0,x1,y1; native_panels: x,y,width,height",
+    "roof_trim_source": "metal; native pixels tiled across coping face islands",
+    "style_references": [
+      "res://assets/models/city_hospital/textures/hospital_atlas.png",
+      "res://assets/models/convenience_24/textures/front.png",
+      "res://assets/models/convenience_24/textures/roof.png"
+    ],
+    "roof_mapping": "native cropped roof panels with right-aligned hatches; extend edge pixels if face exceeds source bounds",
+    "roof_detail_policy": "One low sloping garage skylight; tower inspection walkway and cable tray. No rooftop HVAC."
+  },
+  "faces": [
+    {
+      "face": "z+",
+      "height": 160,
+      "max": [
+        0.299999952316284,
+        0.0
+      ],
+      "min": [
+        -1.79999995231628,
+        -2.0
+      ],
+      "node": "Model/Shell/Garage",
+      "vertices": [
+        {
+          "index": 0,
+          "u": -1.79999995231628,
+          "v": -2.0
+        },
+        {
+          "index": 2,
+          "u": 0.299999952316284,
+          "v": -2.0
+        },
+        {
+          "index": 4,
+          "u": -1.79999995231628,
+          "v": 0.0
+        },
+        {
+          "index": 6,
+          "u": 0.299999952316284,
+          "v": 0.0
+        }
+      ],
+      "width": 168,
+      "packed": [
+        782,
+        370,
+        168,
+        160
+      ],
+      "surface_kind": "facade",
+      "facade_source": "garage_front",
+      "native_source": "garage_front",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z-",
+      "height": 160,
+      "max": [
+        1.79999995231628,
+        0.0
+      ],
+      "min": [
+        -0.299999952316284,
+        -2.0
+      ],
+      "node": "Model/Shell/Garage",
+      "vertices": [
+        {
+          "index": 1,
+          "u": -0.299999952316284,
+          "v": -2.0
+        },
+        {
+          "index": 3,
+          "u": 1.79999995231628,
+          "v": -2.0
+        },
+        {
+          "index": 5,
+          "u": -0.299999952316284,
+          "v": 0.0
+        },
+        {
+          "index": 7,
+          "u": 1.79999995231628,
+          "v": 0.0
+        }
+      ],
+      "width": 168,
+      "packed": [
+        572,
+        414,
+        168,
+        160
+      ],
+      "surface_kind": "facade",
+      "facade_source": "garage_back",
+      "native_source": "garage_back",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x+",
+      "height": 160,
+      "max": [
+        1.20000004768372,
+        0.0
+      ],
+      "min": [
+        -1.20000004768372,
+        -2.0
+      ],
+      "node": "Model/Shell/Garage",
+      "vertices": [
+        {
+          "index": 8,
+          "u": -1.20000004768372,
+          "v": -2.0
+        },
+        {
+          "index": 10,
+          "u": 1.20000004768372,
+          "v": -2.0
+        },
+        {
+          "index": 12,
+          "u": -1.20000004768372,
+          "v": 0.0
+        },
+        {
+          "index": 14,
+          "u": 1.20000004768372,
+          "v": 0.0
+        }
+      ],
+      "width": 192,
+      "packed": [
+        572,
+        8,
+        192,
+        160
+      ],
+      "surface_kind": "facade",
+      "facade_source": "garage_left",
+      "native_source": "garage_left",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x-",
+      "height": 160,
+      "max": [
+        1.20000004768372,
+        0.0
+      ],
+      "min": [
+        -1.20000004768372,
+        -2.0
+      ],
+      "node": "Model/Shell/Garage",
+      "vertices": [
+        {
+          "index": 9,
+          "u": -1.20000004768372,
+          "v": -2.0
+        },
+        {
+          "index": 11,
+          "u": 1.20000004768372,
+          "v": -2.0
+        },
+        {
+          "index": 13,
+          "u": -1.20000004768372,
+          "v": 0.0
+        },
+        {
+          "index": 15,
+          "u": 1.20000004768372,
+          "v": 0.0
+        }
+      ],
+      "width": 192,
+      "packed": [
+        780,
+        8,
+        192,
+        160
+      ],
+      "surface_kind": "facade",
+      "facade_source": "garage_left",
+      "native_source": "garage_left",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y+",
+      "height": 192,
+      "max": [
+        0.299999952316284,
+        1.20000004768372
+      ],
+      "min": [
+        -1.79999995231628,
+        -1.20000004768372
+      ],
+      "node": "Model/Shell/Garage",
+      "vertices": [
+        {
+          "index": 16,
+          "u": 0.299999952316284,
+          "v": 1.20000004768372
+        },
+        {
+          "index": 18,
+          "u": -1.79999995231628,
+          "v": 1.20000004768372
+        },
+        {
+          "index": 20,
+          "u": 0.299999952316284,
+          "v": -1.20000004768372
+        },
+        {
+          "index": 22,
+          "u": -1.79999995231628,
+          "v": -1.20000004768372
+        }
+      ],
+      "width": 168,
+      "packed": [
+        388,
+        8,
+        168,
+        192
+      ],
+      "surface_kind": "roof",
+      "facade_source": "roof",
+      "native_source": "roof",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y-",
+      "height": 192,
+      "max": [
+        0.299999952316284,
+        1.20000004768372
+      ],
+      "min": [
+        -1.79999995231628,
+        -1.20000004768372
+      ],
+      "node": "Model/Shell/Garage",
+      "vertices": [
+        {
+          "index": 17,
+          "u": -1.79999995231628,
+          "v": -1.20000004768372
+        },
+        {
+          "index": 19,
+          "u": 0.299999952316284,
+          "v": -1.20000004768372
+        },
+        {
+          "index": 21,
+          "u": -1.79999995231628,
+          "v": 1.20000004768372
+        },
+        {
+          "index": 23,
+          "u": 0.299999952316284,
+          "v": 1.20000004768372
+        }
+      ],
+      "width": 168,
+      "packed": [
+        388,
+        216,
+        168,
+        192
+      ],
+      "surface_kind": "metal",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z+",
+      "height": 272,
+      "max": [
+        1.79999995231628,
+        0.0
+      ],
+      "min": [
+        0.299999952316284,
+        -3.40000009536743
+      ],
+      "node": "Model/Shell/TowerCore",
+      "vertices": [
+        {
+          "index": 0,
+          "u": 0.299999952316284,
+          "v": -3.40000009536743
+        },
+        {
+          "index": 2,
+          "u": 1.79999995231628,
+          "v": -3.40000009536743
+        },
+        {
+          "index": 4,
+          "u": 0.299999952316284,
+          "v": 0.0
+        },
+        {
+          "index": 6,
+          "u": 1.79999995231628,
+          "v": 0.0
+        }
+      ],
+      "width": 120,
+      "packed": [
+        8,
+        584,
+        120,
+        272
+      ],
+      "surface_kind": "facade",
+      "facade_source": "tower_front",
+      "native_source": "tower_front",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z-",
+      "height": 272,
+      "max": [
+        -0.299999952316284,
+        0.0
+      ],
+      "min": [
+        -1.79999995231628,
+        -3.40000009536743
+      ],
+      "node": "Model/Shell/TowerCore",
+      "vertices": [
+        {
+          "index": 1,
+          "u": -1.79999995231628,
+          "v": -3.40000009536743
+        },
+        {
+          "index": 3,
+          "u": -0.299999952316284,
+          "v": -3.40000009536743
+        },
+        {
+          "index": 5,
+          "u": -1.79999995231628,
+          "v": 0.0
+        },
+        {
+          "index": 7,
+          "u": -0.299999952316284,
+          "v": 0.0
+        }
+      ],
+      "width": 120,
+      "packed": [
+        144,
+        584,
+        120,
+        272
+      ],
+      "surface_kind": "facade",
+      "facade_source": "tower_back",
+      "native_source": "tower_back",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x+",
+      "height": 272,
+      "max": [
+        1.19999992847443,
+        0.0
+      ],
+      "min": [
+        -0.919999957084656,
+        -3.40000009536743
+      ],
+      "node": "Model/Shell/TowerCore",
+      "vertices": [
+        {
+          "index": 8,
+          "u": -0.919999957084656,
+          "v": -3.40000009536743
+        },
+        {
+          "index": 10,
+          "u": 1.19999992847443,
+          "v": -3.40000009536743
+        },
+        {
+          "index": 12,
+          "u": -0.919999957084656,
+          "v": 0.0
+        },
+        {
+          "index": 14,
+          "u": 1.19999992847443,
+          "v": 0.0
+        }
+      ],
+      "width": 170,
+      "packed": [
+        8,
+        8,
+        170,
+        272
+      ],
+      "surface_kind": "facade",
+      "facade_source": "tower_right",
+      "native_source": "tower_right",
+      "source_origin_px": [
+        22,
+        0
+      ]
+    },
+    {
+      "face": "x-",
+      "height": 272,
+      "max": [
+        0.919999957084656,
+        0.0
+      ],
+      "min": [
+        -1.19999992847443,
+        -3.40000009536743
+      ],
+      "node": "Model/Shell/TowerCore",
+      "vertices": [
+        {
+          "index": 9,
+          "u": -1.19999992847443,
+          "v": -3.40000009536743
+        },
+        {
+          "index": 11,
+          "u": 0.919999957084656,
+          "v": -3.40000009536743
+        },
+        {
+          "index": 13,
+          "u": -1.19999992847443,
+          "v": 0.0
+        },
+        {
+          "index": 15,
+          "u": 0.919999957084656,
+          "v": 0.0
+        }
+      ],
+      "width": 170,
+      "packed": [
+        8,
+        296,
+        170,
+        272
+      ],
+      "surface_kind": "facade",
+      "facade_source": "tower_right",
+      "native_source": "tower_right",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y+",
+      "height": 170,
+      "max": [
+        1.79999995231628,
+        0.919999957084656
+      ],
+      "min": [
+        0.299999952316284,
+        -1.19999992847443
+      ],
+      "node": "Model/Shell/TowerCore",
+      "vertices": [
+        {
+          "index": 16,
+          "u": 1.79999995231628,
+          "v": 0.919999957084656
+        },
+        {
+          "index": 18,
+          "u": 0.299999952316284,
+          "v": 0.919999957084656
+        },
+        {
+          "index": 20,
+          "u": 1.79999995231628,
+          "v": -1.19999992847443
+        },
+        {
+          "index": 22,
+          "u": 0.299999952316284,
+          "v": -1.19999992847443
+        }
+      ],
+      "width": 120,
+      "packed": [
+        840,
+        184,
+        120,
+        170
+      ],
+      "surface_kind": "roof",
+      "facade_source": "roof",
+      "native_source": "roof",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y-",
+      "height": 170,
+      "max": [
+        1.79999995231628,
+        1.19999992847443
+      ],
+      "min": [
+        0.299999952316284,
+        -0.919999957084656
+      ],
+      "node": "Model/Shell/TowerCore",
+      "vertices": [
+        {
+          "index": 17,
+          "u": 0.299999952316284,
+          "v": -0.919999957084656
+        },
+        {
+          "index": 19,
+          "u": 1.79999995231628,
+          "v": -0.919999957084656
+        },
+        {
+          "index": 21,
+          "u": 0.299999952316284,
+          "v": 1.19999992847443
+        },
+        {
+          "index": 23,
+          "u": 1.79999995231628,
+          "v": 1.19999992847443
+        }
+      ],
+      "width": 120,
+      "packed": [
+        646,
+        228,
+        120,
+        170
+      ],
+      "surface_kind": "metal",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z+",
+      "height": 132,
+      "max": [
+        0.509999990463257,
+        0.0
+      ],
+      "min": [
+        0.300000011920929,
+        -1.64999997615814
+      ],
+      "node": "Model/Shell/EntryWestPier",
+      "vertices": [
+        {
+          "index": 0,
+          "u": 0.300000011920929,
+          "v": -1.64999997615814
+        },
+        {
+          "index": 2,
+          "u": 0.509999990463257,
+          "v": -1.64999997615814
+        },
+        {
+          "index": 4,
+          "u": 0.300000011920929,
+          "v": 0.0
+        },
+        {
+          "index": 6,
+          "u": 0.509999990463257,
+          "v": 0.0
+        }
+      ],
+      "width": 16,
+      "packed": [
+        610,
+        184,
+        16,
+        132
+      ],
+      "surface_kind": "facade",
+      "facade_source": "tower_front",
+      "native_source": "tower_front",
+      "source_origin_px": [
+        0,
+        140
+      ]
+    },
+    {
+      "face": "z-",
+      "height": 132,
+      "max": [
+        -0.300000011920929,
+        0.0
+      ],
+      "min": [
+        -0.509999990463257,
+        -1.64999997615814
+      ],
+      "node": "Model/Shell/EntryWestPier",
+      "vertices": [
+        {
+          "index": 1,
+          "u": -0.509999990463257,
+          "v": -1.64999997615814
+        },
+        {
+          "index": 3,
+          "u": -0.300000011920929,
+          "v": -1.64999997615814
+        },
+        {
+          "index": 5,
+          "u": -0.509999990463257,
+          "v": 0.0
+        },
+        {
+          "index": 7,
+          "u": -0.300000011920929,
+          "v": 0.0
+        }
+      ],
+      "width": 16,
+      "packed": [
+        722,
+        826,
+        16,
+        132
+      ],
+      "surface_kind": "facade",
+      "facade_source": "garage_left",
+      "native_source": "garage_left",
+      "source_origin_px": [
+        55,
+        28
+      ]
+    },
+    {
+      "face": "x+",
+      "height": 132,
+      "max": [
+        -0.919999957084656,
+        0.0
+      ],
+      "min": [
+        -1.19999992847443,
+        -1.64999997615814
+      ],
+      "node": "Model/Shell/EntryWestPier",
+      "vertices": [
+        {
+          "index": 8,
+          "u": -1.19999992847443,
+          "v": -1.64999997615814
+        },
+        {
+          "index": 10,
+          "u": -0.919999957084656,
+          "v": -1.64999997615814
+        },
+        {
+          "index": 12,
+          "u": -1.19999992847443,
+          "v": 0.0
+        },
+        {
+          "index": 14,
+          "u": -0.919999957084656,
+          "v": 0.0
+        }
+      ],
+      "width": 22,
+      "packed": [
+        966,
+        506,
+        22,
+        132
+      ],
+      "surface_kind": "facade",
+      "facade_source": "tower_right",
+      "native_source": "tower_right",
+      "source_origin_px": [
+        0,
+        140
+      ]
+    },
+    {
+      "face": "x-",
+      "height": 132,
+      "max": [
+        1.19999992847443,
+        0.0
+      ],
+      "min": [
+        0.919999957084656,
+        -1.64999997615814
+      ],
+      "node": "Model/Shell/EntryWestPier",
+      "vertices": [
+        {
+          "index": 9,
+          "u": 0.919999957084656,
+          "v": -1.64999997615814
+        },
+        {
+          "index": 11,
+          "u": 1.19999992847443,
+          "v": -1.64999997615814
+        },
+        {
+          "index": 13,
+          "u": 0.919999957084656,
+          "v": 0.0
+        },
+        {
+          "index": 15,
+          "u": 1.19999992847443,
+          "v": 0.0
+        }
+      ],
+      "width": 22,
+      "packed": [
+        572,
+        184,
+        22,
+        132
+      ],
+      "surface_kind": "facade",
+      "facade_source": "tower_right",
+      "native_source": "tower_right",
+      "source_origin_px": [
+        170,
+        140
+      ]
+    },
+    {
+      "face": "y+",
+      "height": 22,
+      "max": [
+        0.509999990463257,
+        1.19999992847443
+      ],
+      "min": [
+        0.300000011920929,
+        0.919999957084656
+      ],
+      "node": "Model/Shell/EntryWestPier",
+      "vertices": [
+        {
+          "index": 16,
+          "u": 0.509999990463257,
+          "v": 1.19999992847443
+        },
+        {
+          "index": 18,
+          "u": 0.300000011920929,
+          "v": 1.19999992847443
+        },
+        {
+          "index": 20,
+          "u": 0.509999990463257,
+          "v": 0.919999957084656
+        },
+        {
+          "index": 22,
+          "u": 0.300000011920929,
+          "v": 0.919999957084656
+        }
+      ],
+      "width": 16,
+      "packed": [
+        754,
+        798,
+        16,
+        22
+      ],
+      "surface_kind": "roof",
+      "facade_source": "roof",
+      "native_source": "roof",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y-",
+      "height": 22,
+      "max": [
+        0.509999990463257,
+        -0.919999957084656
+      ],
+      "min": [
+        0.300000011920929,
+        -1.19999992847443
+      ],
+      "node": "Model/Shell/EntryWestPier",
+      "vertices": [
+        {
+          "index": 17,
+          "u": 0.300000011920929,
+          "v": -1.19999992847443
+        },
+        {
+          "index": 19,
+          "u": 0.509999990463257,
+          "v": -1.19999992847443
+        },
+        {
+          "index": 21,
+          "u": 0.300000011920929,
+          "v": -0.919999957084656
+        },
+        {
+          "index": 23,
+          "u": 0.509999990463257,
+          "v": -0.919999957084656
+        }
+      ],
+      "width": 16,
+      "packed": [
+        754,
+        836,
+        16,
+        22
+      ],
+      "surface_kind": "metal",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z+",
+      "height": 132,
+      "max": [
+        1.79999995231628,
+        0.0
+      ],
+      "min": [
+        1.5,
+        -1.64999997615814
+      ],
+      "node": "Model/Shell/EntryEastPier",
+      "vertices": [
+        {
+          "index": 0,
+          "u": 1.5,
+          "v": -1.64999997615814
+        },
+        {
+          "index": 2,
+          "u": 1.79999995231628,
+          "v": -1.64999997615814
+        },
+        {
+          "index": 4,
+          "u": 1.5,
+          "v": 0.0
+        },
+        {
+          "index": 6,
+          "u": 1.79999995231628,
+          "v": 0.0
+        }
+      ],
+      "width": 24,
+      "packed": [
+        976,
+        210,
+        24,
+        132
+      ],
+      "surface_kind": "facade",
+      "facade_source": "tower_front",
+      "native_source": "tower_front",
+      "source_origin_px": [
+        96,
+        140
+      ]
+    },
+    {
+      "face": "z-",
+      "height": 132,
+      "max": [
+        -1.5,
+        0.0
+      ],
+      "min": [
+        -1.79999995231628,
+        -1.64999997615814
+      ],
+      "node": "Model/Shell/EntryEastPier",
+      "vertices": [
+        {
+          "index": 1,
+          "u": -1.79999995231628,
+          "v": -1.64999997615814
+        },
+        {
+          "index": 3,
+          "u": -1.5,
+          "v": -1.64999997615814
+        },
+        {
+          "index": 5,
+          "u": -1.79999995231628,
+          "v": 0.0
+        },
+        {
+          "index": 7,
+          "u": -1.5,
+          "v": 0.0
+        }
+      ],
+      "width": 24,
+      "packed": [
+        976,
+        358,
+        24,
+        132
+      ],
+      "surface_kind": "facade",
+      "facade_source": "garage_left",
+      "native_source": "garage_left",
+      "source_origin_px": [
+        -48,
+        28
+      ]
+    },
+    {
+      "face": "x+",
+      "height": 132,
+      "max": [
+        -0.919999957084656,
+        0.0
+      ],
+      "min": [
+        -1.19999992847443,
+        -1.64999997615814
+      ],
+      "node": "Model/Shell/EntryEastPier",
+      "vertices": [
+        {
+          "index": 8,
+          "u": -1.19999992847443,
+          "v": -1.64999997615814
+        },
+        {
+          "index": 10,
+          "u": -0.919999957084656,
+          "v": -1.64999997615814
+        },
+        {
+          "index": 12,
+          "u": -1.19999992847443,
+          "v": 0.0
+        },
+        {
+          "index": 14,
+          "u": -0.919999957084656,
+          "v": 0.0
+        }
+      ],
+      "width": 22,
+      "packed": [
+        646,
+        826,
+        22,
+        132
+      ],
+      "surface_kind": "facade",
+      "facade_source": "tower_right",
+      "native_source": "tower_right",
+      "source_origin_px": [
+        0,
+        140
+      ]
+    },
+    {
+      "face": "x-",
+      "height": 132,
+      "max": [
+        1.19999992847443,
+        0.0
+      ],
+      "min": [
+        0.919999957084656,
+        -1.64999997615814
+      ],
+      "node": "Model/Shell/EntryEastPier",
+      "vertices": [
+        {
+          "index": 9,
+          "u": 0.919999957084656,
+          "v": -1.64999997615814
+        },
+        {
+          "index": 11,
+          "u": 1.19999992847443,
+          "v": -1.64999997615814
+        },
+        {
+          "index": 13,
+          "u": 0.919999957084656,
+          "v": 0.0
+        },
+        {
+          "index": 15,
+          "u": 1.19999992847443,
+          "v": 0.0
+        }
+      ],
+      "width": 22,
+      "packed": [
+        684,
+        826,
+        22,
+        132
+      ],
+      "surface_kind": "facade",
+      "facade_source": "tower_right",
+      "native_source": "tower_right",
+      "source_origin_px": [
+        170,
+        140
+      ]
+    },
+    {
+      "face": "y+",
+      "height": 22,
+      "max": [
+        1.79999995231628,
+        1.19999992847443
+      ],
+      "min": [
+        1.5,
+        0.919999957084656
+      ],
+      "node": "Model/Shell/EntryEastPier",
+      "vertices": [
+        {
+          "index": 16,
+          "u": 1.79999995231628,
+          "v": 1.19999992847443
+        },
+        {
+          "index": 18,
+          "u": 1.5,
+          "v": 1.19999992847443
+        },
+        {
+          "index": 20,
+          "u": 1.79999995231628,
+          "v": 0.919999957084656
+        },
+        {
+          "index": 22,
+          "u": 1.5,
+          "v": 0.919999957084656
+        }
+      ],
+      "width": 24,
+      "packed": [
+        792,
+        798,
+        24,
+        22
+      ],
+      "surface_kind": "roof",
+      "facade_source": "roof",
+      "native_source": "roof",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y-",
+      "height": 22,
+      "max": [
+        1.79999995231628,
+        -0.919999957084656
+      ],
+      "min": [
+        1.5,
+        -1.19999992847443
+      ],
+      "node": "Model/Shell/EntryEastPier",
+      "vertices": [
+        {
+          "index": 17,
+          "u": 1.5,
+          "v": -1.19999992847443
+        },
+        {
+          "index": 19,
+          "u": 1.79999995231628,
+          "v": -1.19999992847443
+        },
+        {
+          "index": 21,
+          "u": 1.5,
+          "v": -0.919999957084656
+        },
+        {
+          "index": 23,
+          "u": 1.79999995231628,
+          "v": -0.919999957084656
+        }
+      ],
+      "width": 24,
+      "packed": [
+        832,
+        798,
+        24,
+        22
+      ],
+      "surface_kind": "metal",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z+",
+      "height": 140,
+      "max": [
+        1.79999995231628,
+        -1.65000009536743
+      ],
+      "min": [
+        0.299999952316284,
+        -3.40000009536743
+      ],
+      "node": "Model/Shell/TowerUpperFront",
+      "vertices": [
+        {
+          "index": 0,
+          "u": 0.299999952316284,
+          "v": -3.40000009536743
+        },
+        {
+          "index": 2,
+          "u": 1.79999995231628,
+          "v": -3.40000009536743
+        },
+        {
+          "index": 4,
+          "u": 0.299999952316284,
+          "v": -1.65000009536743
+        },
+        {
+          "index": 6,
+          "u": 1.79999995231628,
+          "v": -1.65000009536743
+        }
+      ],
+      "width": 120,
+      "packed": [
+        474,
+        670,
+        120,
+        140
+      ],
+      "surface_kind": "facade",
+      "facade_source": "tower_front",
+      "native_source": "tower_front",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z-",
+      "height": 140,
+      "max": [
+        -0.299999952316284,
+        -1.65000009536743
+      ],
+      "min": [
+        -1.79999995231628,
+        -3.40000009536743
+      ],
+      "node": "Model/Shell/TowerUpperFront",
+      "vertices": [
+        {
+          "index": 1,
+          "u": -1.79999995231628,
+          "v": -3.40000009536743
+        },
+        {
+          "index": 3,
+          "u": -0.299999952316284,
+          "v": -3.40000009536743
+        },
+        {
+          "index": 5,
+          "u": -1.79999995231628,
+          "v": -1.65000009536743
+        },
+        {
+          "index": 7,
+          "u": -0.299999952316284,
+          "v": -1.65000009536743
+        }
+      ],
+      "width": 120,
+      "packed": [
+        610,
+        670,
+        120,
+        140
+      ],
+      "surface_kind": "facade",
+      "facade_source": "garage_left",
+      "native_source": "garage_left",
+      "source_origin_px": [
+        -48,
+        -112
+      ]
+    },
+    {
+      "face": "x+",
+      "height": 140,
+      "max": [
+        -0.919999957084656,
+        -1.65000009536743
+      ],
+      "min": [
+        -1.19999992847443,
+        -3.40000009536743
+      ],
+      "node": "Model/Shell/TowerUpperFront",
+      "vertices": [
+        {
+          "index": 8,
+          "u": -1.19999992847443,
+          "v": -3.40000009536743
+        },
+        {
+          "index": 10,
+          "u": -0.919999957084656,
+          "v": -3.40000009536743
+        },
+        {
+          "index": 12,
+          "u": -1.19999992847443,
+          "v": -1.65000009536743
+        },
+        {
+          "index": 14,
+          "u": -0.919999957084656,
+          "v": -1.65000009536743
+        }
+      ],
+      "width": 22,
+      "packed": [
+        474,
+        424,
+        22,
+        140
+      ],
+      "surface_kind": "facade",
+      "facade_source": "tower_right",
+      "native_source": "tower_right",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x-",
+      "height": 140,
+      "max": [
+        1.19999992847443,
+        -1.65000009536743
+      ],
+      "min": [
+        0.919999957084656,
+        -3.40000009536743
+      ],
+      "node": "Model/Shell/TowerUpperFront",
+      "vertices": [
+        {
+          "index": 9,
+          "u": 0.919999957084656,
+          "v": -3.40000009536743
+        },
+        {
+          "index": 11,
+          "u": 1.19999992847443,
+          "v": -3.40000009536743
+        },
+        {
+          "index": 13,
+          "u": 0.919999957084656,
+          "v": -1.65000009536743
+        },
+        {
+          "index": 15,
+          "u": 1.19999992847443,
+          "v": -1.65000009536743
+        }
+      ],
+      "width": 22,
+      "packed": [
+        512,
+        424,
+        22,
+        140
+      ],
+      "surface_kind": "facade",
+      "facade_source": "tower_right",
+      "native_source": "tower_right",
+      "source_origin_px": [
+        170,
+        0
+      ]
+    },
+    {
+      "face": "y+",
+      "height": 22,
+      "max": [
+        1.79999995231628,
+        1.19999992847443
+      ],
+      "min": [
+        0.299999952316284,
+        0.919999957084656
+      ],
+      "node": "Model/Shell/TowerUpperFront",
+      "vertices": [
+        {
+          "index": 16,
+          "u": 1.79999995231628,
+          "v": 1.19999992847443
+        },
+        {
+          "index": 18,
+          "u": 0.299999952316284,
+          "v": 1.19999992847443
+        },
+        {
+          "index": 20,
+          "u": 1.79999995231628,
+          "v": 0.919999957084656
+        },
+        {
+          "index": 22,
+          "u": 0.299999952316284,
+          "v": 0.919999957084656
+        }
+      ],
+      "width": 120,
+      "packed": [
+        892,
+        730,
+        120,
+        22
+      ],
+      "surface_kind": "roof",
+      "facade_source": "roof",
+      "native_source": "roof",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y-",
+      "height": 22,
+      "max": [
+        1.79999995231628,
+        -0.919999957084656
+      ],
+      "min": [
+        0.299999952316284,
+        -1.19999992847443
+      ],
+      "node": "Model/Shell/TowerUpperFront",
+      "vertices": [
+        {
+          "index": 17,
+          "u": 0.299999952316284,
+          "v": -1.19999992847443
+        },
+        {
+          "index": 19,
+          "u": 1.79999995231628,
+          "v": -1.19999992847443
+        },
+        {
+          "index": 21,
+          "u": 0.299999952316284,
+          "v": -0.919999957084656
+        },
+        {
+          "index": 23,
+          "u": 1.79999995231628,
+          "v": -0.919999957084656
+        }
+      ],
+      "width": 120,
+      "packed": [
+        892,
+        768,
+        120,
+        22
+      ],
+      "surface_kind": "metal",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z+",
+      "height": 6,
+      "max": [
+        0.360000014305115,
+        -2.0
+      ],
+      "min": [
+        -1.86000001430511,
+        -2.07999992370605
+      ],
+      "node": "Model/Roofs/GarageRoof/Deck",
+      "vertices": [
+        {
+          "index": 0,
+          "u": -1.86000001430511,
+          "v": -2.07999992370605
+        },
+        {
+          "index": 2,
+          "u": 0.360000014305115,
+          "v": -2.07999992370605
+        },
+        {
+          "index": 4,
+          "u": -1.86000001430511,
+          "v": -2.0
+        },
+        {
+          "index": 6,
+          "u": 0.360000014305115,
+          "v": -2.0
+        }
+      ],
+      "width": 178,
+      "packed": [
+        646,
+        184,
+        178,
+        6
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z-",
+      "height": 6,
+      "max": [
+        1.86000001430511,
+        -2.0
+      ],
+      "min": [
+        -0.360000014305115,
+        -2.07999992370605
+      ],
+      "node": "Model/Roofs/GarageRoof/Deck",
+      "vertices": [
+        {
+          "index": 1,
+          "u": -0.360000014305115,
+          "v": -2.07999992370605
+        },
+        {
+          "index": 3,
+          "u": 1.86000001430511,
+          "v": -2.07999992370605
+        },
+        {
+          "index": 5,
+          "u": -0.360000014305115,
+          "v": -2.0
+        },
+        {
+          "index": 7,
+          "u": 1.86000001430511,
+          "v": -2.0
+        }
+      ],
+      "width": 178,
+      "packed": [
+        646,
+        206,
+        178,
+        6
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x+",
+      "height": 6,
+      "max": [
+        1.25999999046326,
+        -2.0
+      ],
+      "min": [
+        -1.25999999046326,
+        -2.07999992370605
+      ],
+      "node": "Model/Roofs/GarageRoof/Deck",
+      "vertices": [
+        {
+          "index": 8,
+          "u": -1.25999999046326,
+          "v": -2.07999992370605
+        },
+        {
+          "index": 10,
+          "u": 1.25999999046326,
+          "v": -2.07999992370605
+        },
+        {
+          "index": 12,
+          "u": -1.25999999046326,
+          "v": -2.0
+        },
+        {
+          "index": 14,
+          "u": 1.25999999046326,
+          "v": -2.0
+        }
+      ],
+      "width": 202,
+      "packed": [
+        8,
+        872,
+        202,
+        6
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x-",
+      "height": 6,
+      "max": [
+        1.25999999046326,
+        -2.0
+      ],
+      "min": [
+        -1.25999999046326,
+        -2.07999992370605
+      ],
+      "node": "Model/Roofs/GarageRoof/Deck",
+      "vertices": [
+        {
+          "index": 9,
+          "u": -1.25999999046326,
+          "v": -2.07999992370605
+        },
+        {
+          "index": 11,
+          "u": 1.25999999046326,
+          "v": -2.07999992370605
+        },
+        {
+          "index": 13,
+          "u": -1.25999999046326,
+          "v": -2.0
+        },
+        {
+          "index": 15,
+          "u": 1.25999999046326,
+          "v": -2.0
+        }
+      ],
+      "width": 202,
+      "packed": [
+        8,
+        894,
+        202,
+        6
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y+",
+      "height": 202,
+      "max": [
+        0.360000014305115,
+        1.25999999046326
+      ],
+      "min": [
+        -1.86000001430511,
+        -1.25999999046326
+      ],
+      "node": "Model/Roofs/GarageRoof/Deck",
+      "vertices": [
+        {
+          "index": 16,
+          "u": 0.360000014305115,
+          "v": 1.25999999046326
+        },
+        {
+          "index": 18,
+          "u": -1.86000001430511,
+          "v": 1.25999999046326
+        },
+        {
+          "index": 20,
+          "u": 0.360000014305115,
+          "v": -1.25999999046326
+        },
+        {
+          "index": 22,
+          "u": -1.86000001430511,
+          "v": -1.25999999046326
+        }
+      ],
+      "width": 178,
+      "packed": [
+        194,
+        8,
+        178,
+        202
+      ],
+      "surface_kind": "roof",
+      "facade_source": "roof",
+      "native_source": "roof",
+      "source_origin_px": [
+        14,
+        0
+      ]
+    },
+    {
+      "face": "y-",
+      "height": 202,
+      "max": [
+        0.360000014305115,
+        1.25999999046326
+      ],
+      "min": [
+        -1.86000001430511,
+        -1.25999999046326
+      ],
+      "node": "Model/Roofs/GarageRoof/Deck",
+      "vertices": [
+        {
+          "index": 17,
+          "u": -1.86000001430511,
+          "v": -1.25999999046326
+        },
+        {
+          "index": 19,
+          "u": 0.360000014305115,
+          "v": -1.25999999046326
+        },
+        {
+          "index": 21,
+          "u": -1.86000001430511,
+          "v": 1.25999999046326
+        },
+        {
+          "index": 23,
+          "u": 0.360000014305115,
+          "v": 1.25999999046326
+        }
+      ],
+      "width": 178,
+      "packed": [
+        194,
+        8,
+        178,
+        202
+      ],
+      "surface_kind": "metal",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ],
+      "shared_with_face": "Model/Roofs/GarageRoof/Deck#y+"
+    },
+    {
+      "face": "z+",
+      "height": 12,
+      "max": [
+        0.360000014305115,
+        -2.08000016212463
+      ],
+      "min": [
+        -1.86000001430511,
+        -2.24000000953674
+      ],
+      "node": "Model/Roofs/GarageRoof/BackCoping",
+      "vertices": [
+        {
+          "index": 0,
+          "u": -1.86000001430511,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 2,
+          "u": 0.360000014305115,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 4,
+          "u": -1.86000001430511,
+          "v": -2.08000016212463
+        },
+        {
+          "index": 6,
+          "u": 0.360000014305115,
+          "v": -2.08000016212463
+        }
+      ],
+      "width": 178,
+      "packed": [
+        452,
+        828,
+        178,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z-",
+      "height": 12,
+      "max": [
+        1.86000001430511,
+        -2.08000016212463
+      ],
+      "min": [
+        -0.360000014305115,
+        -2.24000000953674
+      ],
+      "node": "Model/Roofs/GarageRoof/BackCoping",
+      "vertices": [
+        {
+          "index": 1,
+          "u": -0.360000014305115,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 3,
+          "u": 1.86000001430511,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 5,
+          "u": -0.360000014305115,
+          "v": -2.08000016212463
+        },
+        {
+          "index": 7,
+          "u": 1.86000001430511,
+          "v": -2.08000016212463
+        }
+      ],
+      "width": 178,
+      "packed": [
+        452,
+        856,
+        178,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x+",
+      "height": 12,
+      "max": [
+        1.25999999046326,
+        -2.08000016212463
+      ],
+      "min": [
+        1.16000008583069,
+        -2.24000000953674
+      ],
+      "node": "Model/Roofs/GarageRoof/BackCoping",
+      "vertices": [
+        {
+          "index": 8,
+          "u": 1.16000008583069,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 10,
+          "u": 1.25999999046326,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 12,
+          "u": 1.16000008583069,
+          "v": -2.08000016212463
+        },
+        {
+          "index": 14,
+          "u": 1.25999999046326,
+          "v": -2.08000016212463
+        }
+      ],
+      "width": 8,
+      "packed": [
+        940,
+        546,
+        8,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x-",
+      "height": 12,
+      "max": [
+        -1.16000008583069,
+        -2.08000016212463
+      ],
+      "min": [
+        -1.25999999046326,
+        -2.24000000953674
+      ],
+      "node": "Model/Roofs/GarageRoof/BackCoping",
+      "vertices": [
+        {
+          "index": 9,
+          "u": -1.25999999046326,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 11,
+          "u": -1.16000008583069,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 13,
+          "u": -1.25999999046326,
+          "v": -2.08000016212463
+        },
+        {
+          "index": 15,
+          "u": -1.16000008583069,
+          "v": -2.08000016212463
+        }
+      ],
+      "width": 8,
+      "packed": [
+        940,
+        574,
+        8,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y+",
+      "height": 8,
+      "max": [
+        0.360000014305115,
+        -1.16000008583069
+      ],
+      "min": [
+        -1.86000001430511,
+        -1.25999999046326
+      ],
+      "node": "Model/Roofs/GarageRoof/BackCoping",
+      "vertices": [
+        {
+          "index": 16,
+          "u": 0.360000014305115,
+          "v": -1.16000008583069
+        },
+        {
+          "index": 18,
+          "u": -1.86000001430511,
+          "v": -1.16000008583069
+        },
+        {
+          "index": 20,
+          "u": 0.360000014305115,
+          "v": -1.25999999046326
+        },
+        {
+          "index": 22,
+          "u": -1.86000001430511,
+          "v": -1.25999999046326
+        }
+      ],
+      "width": 178,
+      "packed": [
+        226,
+        936,
+        178,
+        8
+      ],
+      "surface_kind": "roof",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y-",
+      "height": 8,
+      "max": [
+        0.360000014305115,
+        1.25999999046326
+      ],
+      "min": [
+        -1.86000001430511,
+        1.16000008583069
+      ],
+      "node": "Model/Roofs/GarageRoof/BackCoping",
+      "vertices": [
+        {
+          "index": 17,
+          "u": -1.86000001430511,
+          "v": 1.16000008583069
+        },
+        {
+          "index": 19,
+          "u": 0.360000014305115,
+          "v": 1.16000008583069
+        },
+        {
+          "index": 21,
+          "u": -1.86000001430511,
+          "v": 1.25999999046326
+        },
+        {
+          "index": 23,
+          "u": 0.360000014305115,
+          "v": 1.25999999046326
+        }
+      ],
+      "width": 178,
+      "packed": [
+        452,
+        940,
+        178,
+        8
+      ],
+      "surface_kind": "metal",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z+",
+      "height": 12,
+      "max": [
+        -1.75999999046326,
+        -2.08000016212463
+      ],
+      "min": [
+        -1.85999989509583,
+        -2.24000000953674
+      ],
+      "node": "Model/Roofs/GarageRoof/WestCoping",
+      "vertices": [
+        {
+          "index": 0,
+          "u": -1.85999989509583,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 2,
+          "u": -1.75999999046326,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 4,
+          "u": -1.85999989509583,
+          "v": -2.08000016212463
+        },
+        {
+          "index": 6,
+          "u": -1.75999999046326,
+          "v": -2.08000016212463
+        }
+      ],
+      "width": 8,
+      "packed": [
+        940,
+        602,
+        8,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z-",
+      "height": 12,
+      "max": [
+        1.85999989509583,
+        -2.08000016212463
+      ],
+      "min": [
+        1.75999999046326,
+        -2.24000000953674
+      ],
+      "node": "Model/Roofs/GarageRoof/WestCoping",
+      "vertices": [
+        {
+          "index": 1,
+          "u": 1.75999999046326,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 3,
+          "u": 1.85999989509583,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 5,
+          "u": 1.75999999046326,
+          "v": -2.08000016212463
+        },
+        {
+          "index": 7,
+          "u": 1.85999989509583,
+          "v": -2.08000016212463
+        }
+      ],
+      "width": 8,
+      "packed": [
+        254,
+        444,
+        8,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x+",
+      "height": 12,
+      "max": [
+        1.1599999666214,
+        -2.08000016212463
+      ],
+      "min": [
+        -1.1599999666214,
+        -2.24000000953674
+      ],
+      "node": "Model/Roofs/GarageRoof/WestCoping",
+      "vertices": [
+        {
+          "index": 8,
+          "u": -1.1599999666214,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 10,
+          "u": 1.1599999666214,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 12,
+          "u": -1.1599999666214,
+          "v": -2.08000016212463
+        },
+        {
+          "index": 14,
+          "u": 1.1599999666214,
+          "v": -2.08000016212463
+        }
+      ],
+      "width": 186,
+      "packed": [
+        8,
+        960,
+        186,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x-",
+      "height": 12,
+      "max": [
+        1.1599999666214,
+        -2.08000016212463
+      ],
+      "min": [
+        -1.1599999666214,
+        -2.24000000953674
+      ],
+      "node": "Model/Roofs/GarageRoof/WestCoping",
+      "vertices": [
+        {
+          "index": 9,
+          "u": -1.1599999666214,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 11,
+          "u": 1.1599999666214,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 13,
+          "u": -1.1599999666214,
+          "v": -2.08000016212463
+        },
+        {
+          "index": 15,
+          "u": 1.1599999666214,
+          "v": -2.08000016212463
+        }
+      ],
+      "width": 186,
+      "packed": [
+        8,
+        988,
+        186,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y+",
+      "height": 186,
+      "max": [
+        -1.75999999046326,
+        1.1599999666214
+      ],
+      "min": [
+        -1.85999989509583,
+        -1.1599999666214
+      ],
+      "node": "Model/Roofs/GarageRoof/WestCoping",
+      "vertices": [
+        {
+          "index": 16,
+          "u": -1.75999999046326,
+          "v": 1.1599999666214
+        },
+        {
+          "index": 18,
+          "u": -1.85999989509583,
+          "v": 1.1599999666214
+        },
+        {
+          "index": 20,
+          "u": -1.75999999046326,
+          "v": -1.1599999666214
+        },
+        {
+          "index": 22,
+          "u": -1.85999989509583,
+          "v": -1.1599999666214
+        }
+      ],
+      "width": 8,
+      "packed": [
+        988,
+        8,
+        8,
+        186
+      ],
+      "surface_kind": "roof",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y-",
+      "height": 186,
+      "max": [
+        -1.75999999046326,
+        1.1599999666214
+      ],
+      "min": [
+        -1.85999989509583,
+        -1.1599999666214
+      ],
+      "node": "Model/Roofs/GarageRoof/WestCoping",
+      "vertices": [
+        {
+          "index": 17,
+          "u": -1.85999989509583,
+          "v": -1.1599999666214
+        },
+        {
+          "index": 19,
+          "u": -1.75999999046326,
+          "v": -1.1599999666214
+        },
+        {
+          "index": 21,
+          "u": -1.85999989509583,
+          "v": 1.1599999666214
+        },
+        {
+          "index": 23,
+          "u": -1.75999999046326,
+          "v": 1.1599999666214
+        }
+      ],
+      "width": 8,
+      "packed": [
+        426,
+        424,
+        8,
+        186
+      ],
+      "surface_kind": "metal",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z+",
+      "height": 12,
+      "max": [
+        0.360000014305115,
+        -2.08000016212463
+      ],
+      "min": [
+        -1.86000001430511,
+        -2.24000000953674
+      ],
+      "node": "Model/Roofs/GarageRoof/FrontCoping",
+      "vertices": [
+        {
+          "index": 0,
+          "u": -1.86000001430511,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 2,
+          "u": 0.360000014305115,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 4,
+          "u": -1.86000001430511,
+          "v": -2.08000016212463
+        },
+        {
+          "index": 6,
+          "u": 0.360000014305115,
+          "v": -2.08000016212463
+        }
+      ],
+      "width": 178,
+      "packed": [
+        452,
+        884,
+        178,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z-",
+      "height": 12,
+      "max": [
+        1.86000001430511,
+        -2.08000016212463
+      ],
+      "min": [
+        -0.360000014305115,
+        -2.24000000953674
+      ],
+      "node": "Model/Roofs/GarageRoof/FrontCoping",
+      "vertices": [
+        {
+          "index": 1,
+          "u": -0.360000014305115,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 3,
+          "u": 1.86000001430511,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 5,
+          "u": -0.360000014305115,
+          "v": -2.08000016212463
+        },
+        {
+          "index": 7,
+          "u": 1.86000001430511,
+          "v": -2.08000016212463
+        }
+      ],
+      "width": 178,
+      "packed": [
+        452,
+        912,
+        178,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x+",
+      "height": 12,
+      "max": [
+        -1.16000008583069,
+        -2.08000016212463
+      ],
+      "min": [
+        -1.25999999046326,
+        -2.24000000953674
+      ],
+      "node": "Model/Roofs/GarageRoof/FrontCoping",
+      "vertices": [
+        {
+          "index": 8,
+          "u": -1.25999999046326,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 10,
+          "u": -1.16000008583069,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 12,
+          "u": -1.25999999046326,
+          "v": -2.08000016212463
+        },
+        {
+          "index": 14,
+          "u": -1.16000008583069,
+          "v": -2.08000016212463
+        }
+      ],
+      "width": 8,
+      "packed": [
+        254,
+        472,
+        8,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x-",
+      "height": 12,
+      "max": [
+        1.25999999046326,
+        -2.08000016212463
+      ],
+      "min": [
+        1.16000008583069,
+        -2.24000000953674
+      ],
+      "node": "Model/Roofs/GarageRoof/FrontCoping",
+      "vertices": [
+        {
+          "index": 9,
+          "u": 1.16000008583069,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 11,
+          "u": 1.25999999046326,
+          "v": -2.24000000953674
+        },
+        {
+          "index": 13,
+          "u": 1.16000008583069,
+          "v": -2.08000016212463
+        },
+        {
+          "index": 15,
+          "u": 1.25999999046326,
+          "v": -2.08000016212463
+        }
+      ],
+      "width": 8,
+      "packed": [
+        254,
+        500,
+        8,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y+",
+      "height": 8,
+      "max": [
+        0.360000014305115,
+        1.25999999046326
+      ],
+      "min": [
+        -1.86000001430511,
+        1.16000008583069
+      ],
+      "node": "Model/Roofs/GarageRoof/FrontCoping",
+      "vertices": [
+        {
+          "index": 16,
+          "u": 0.360000014305115,
+          "v": 1.25999999046326
+        },
+        {
+          "index": 18,
+          "u": -1.86000001430511,
+          "v": 1.25999999046326
+        },
+        {
+          "index": 20,
+          "u": 0.360000014305115,
+          "v": 1.16000008583069
+        },
+        {
+          "index": 22,
+          "u": -1.86000001430511,
+          "v": 1.16000008583069
+        }
+      ],
+      "width": 178,
+      "packed": [
+        452,
+        964,
+        178,
+        8
+      ],
+      "surface_kind": "roof",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y-",
+      "height": 8,
+      "max": [
+        0.360000014305115,
+        -1.16000008583069
+      ],
+      "min": [
+        -1.86000001430511,
+        -1.25999999046326
+      ],
+      "node": "Model/Roofs/GarageRoof/FrontCoping",
+      "vertices": [
+        {
+          "index": 17,
+          "u": -1.86000001430511,
+          "v": -1.25999999046326
+        },
+        {
+          "index": 19,
+          "u": 0.360000014305115,
+          "v": -1.25999999046326
+        },
+        {
+          "index": 21,
+          "u": -1.86000001430511,
+          "v": -1.16000008583069
+        },
+        {
+          "index": 23,
+          "u": 0.360000014305115,
+          "v": -1.16000008583069
+        }
+      ],
+      "width": 178,
+      "packed": [
+        452,
+        988,
+        178,
+        8
+      ],
+      "surface_kind": "metal",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z+",
+      "height": 6,
+      "max": [
+        1.85999989509583,
+        -3.40000009536743
+      ],
+      "min": [
+        0.239999949932098,
+        -3.48000001907349
+      ],
+      "node": "Model/Roofs/TowerRoof/Deck",
+      "vertices": [
+        {
+          "index": 0,
+          "u": 0.239999949932098,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 2,
+          "u": 1.85999989509583,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 4,
+          "u": 0.239999949932098,
+          "v": -3.40000009536743
+        },
+        {
+          "index": 6,
+          "u": 1.85999989509583,
+          "v": -3.40000009536743
+        }
+      ],
+      "width": 130,
+      "packed": [
+        746,
+        754,
+        130,
+        6
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z-",
+      "height": 6,
+      "max": [
+        -0.239999949932098,
+        -3.40000009536743
+      ],
+      "min": [
+        -1.85999989509583,
+        -3.48000001907349
+      ],
+      "node": "Model/Roofs/TowerRoof/Deck",
+      "vertices": [
+        {
+          "index": 1,
+          "u": -1.85999989509583,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 3,
+          "u": -0.239999949932098,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 5,
+          "u": -1.85999989509583,
+          "v": -3.40000009536743
+        },
+        {
+          "index": 7,
+          "u": -0.239999949932098,
+          "v": -3.40000009536743
+        }
+      ],
+      "width": 130,
+      "packed": [
+        746,
+        776,
+        130,
+        6
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x+",
+      "height": 6,
+      "max": [
+        1.25999999046326,
+        -3.40000009536743
+      ],
+      "min": [
+        -1.25999999046326,
+        -3.48000001907349
+      ],
+      "node": "Model/Roofs/TowerRoof/Deck",
+      "vertices": [
+        {
+          "index": 8,
+          "u": -1.25999999046326,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 10,
+          "u": 1.25999999046326,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 12,
+          "u": -1.25999999046326,
+          "v": -3.40000009536743
+        },
+        {
+          "index": 14,
+          "u": 1.25999999046326,
+          "v": -3.40000009536743
+        }
+      ],
+      "width": 202,
+      "packed": [
+        8,
+        916,
+        202,
+        6
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x-",
+      "height": 6,
+      "max": [
+        1.25999999046326,
+        -3.40000009536743
+      ],
+      "min": [
+        -1.25999999046326,
+        -3.48000001907349
+      ],
+      "node": "Model/Roofs/TowerRoof/Deck",
+      "vertices": [
+        {
+          "index": 9,
+          "u": -1.25999999046326,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 11,
+          "u": 1.25999999046326,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 13,
+          "u": -1.25999999046326,
+          "v": -3.40000009536743
+        },
+        {
+          "index": 15,
+          "u": 1.25999999046326,
+          "v": -3.40000009536743
+        }
+      ],
+      "width": 202,
+      "packed": [
+        8,
+        938,
+        202,
+        6
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y+",
+      "height": 202,
+      "max": [
+        1.85999989509583,
+        1.25999999046326
+      ],
+      "min": [
+        0.239999949932098,
+        -1.25999999046326
+      ],
+      "node": "Model/Roofs/TowerRoof/Deck",
+      "vertices": [
+        {
+          "index": 16,
+          "u": 1.85999989509583,
+          "v": 1.25999999046326
+        },
+        {
+          "index": 18,
+          "u": 0.239999949932098,
+          "v": 1.25999999046326
+        },
+        {
+          "index": 20,
+          "u": 1.85999989509583,
+          "v": -1.25999999046326
+        },
+        {
+          "index": 22,
+          "u": 0.239999949932098,
+          "v": -1.25999999046326
+        }
+      ],
+      "width": 130,
+      "packed": [
+        280,
+        444,
+        130,
+        202
+      ],
+      "surface_kind": "roof",
+      "facade_source": "roof",
+      "native_source": "roof",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y-",
+      "height": 202,
+      "max": [
+        1.85999989509583,
+        1.25999999046326
+      ],
+      "min": [
+        0.239999949932098,
+        -1.25999999046326
+      ],
+      "node": "Model/Roofs/TowerRoof/Deck",
+      "vertices": [
+        {
+          "index": 17,
+          "u": 0.239999949932098,
+          "v": -1.25999999046326
+        },
+        {
+          "index": 19,
+          "u": 1.85999989509583,
+          "v": -1.25999999046326
+        },
+        {
+          "index": 21,
+          "u": 0.239999949932098,
+          "v": 1.25999999046326
+        },
+        {
+          "index": 23,
+          "u": 1.85999989509583,
+          "v": 1.25999999046326
+        }
+      ],
+      "width": 130,
+      "packed": [
+        280,
+        444,
+        130,
+        202
+      ],
+      "surface_kind": "metal",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ],
+      "shared_with_face": "Model/Roofs/TowerRoof/Deck#y+"
+    },
+    {
+      "face": "z+",
+      "height": 12,
+      "max": [
+        1.85999989509583,
+        -3.48000001907349
+      ],
+      "min": [
+        0.239999949932098,
+        -3.6399998664856
+      ],
+      "node": "Model/Roofs/TowerRoof/BackCoping",
+      "vertices": [
+        {
+          "index": 0,
+          "u": 0.239999949932098,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 2,
+          "u": 1.85999989509583,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 4,
+          "u": 0.239999949932098,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 6,
+          "u": 1.85999989509583,
+          "v": -3.48000001907349
+        }
+      ],
+      "width": 130,
+      "packed": [
+        658,
+        630,
+        130,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z-",
+      "height": 12,
+      "max": [
+        -0.239999949932098,
+        -3.48000001907349
+      ],
+      "min": [
+        -1.85999989509583,
+        -3.6399998664856
+      ],
+      "node": "Model/Roofs/TowerRoof/BackCoping",
+      "vertices": [
+        {
+          "index": 1,
+          "u": -1.85999989509583,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 3,
+          "u": -0.239999949932098,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 5,
+          "u": -1.85999989509583,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 7,
+          "u": -0.239999949932098,
+          "v": -3.48000001907349
+        }
+      ],
+      "width": 130,
+      "packed": [
+        804,
+        630,
+        130,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x+",
+      "height": 12,
+      "max": [
+        1.25999999046326,
+        -3.48000001907349
+      ],
+      "min": [
+        1.16000008583069,
+        -3.6399998664856
+      ],
+      "node": "Model/Roofs/TowerRoof/BackCoping",
+      "vertices": [
+        {
+          "index": 8,
+          "u": 1.16000008583069,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 10,
+          "u": 1.25999999046326,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 12,
+          "u": 1.16000008583069,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 14,
+          "u": 1.25999999046326,
+          "v": -3.48000001907349
+        }
+      ],
+      "width": 8,
+      "packed": [
+        756,
+        414,
+        8,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x-",
+      "height": 12,
+      "max": [
+        -1.16000008583069,
+        -3.48000001907349
+      ],
+      "min": [
+        -1.25999999046326,
+        -3.6399998664856
+      ],
+      "node": "Model/Roofs/TowerRoof/BackCoping",
+      "vertices": [
+        {
+          "index": 9,
+          "u": -1.25999999046326,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 11,
+          "u": -1.16000008583069,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 13,
+          "u": -1.25999999046326,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 15,
+          "u": -1.16000008583069,
+          "v": -3.48000001907349
+        }
+      ],
+      "width": 8,
+      "packed": [
+        756,
+        442,
+        8,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y+",
+      "height": 8,
+      "max": [
+        1.85999989509583,
+        -1.16000008583069
+      ],
+      "min": [
+        0.239999949932098,
+        -1.25999999046326
+      ],
+      "node": "Model/Roofs/TowerRoof/BackCoping",
+      "vertices": [
+        {
+          "index": 16,
+          "u": 1.85999989509583,
+          "v": -1.16000008583069
+        },
+        {
+          "index": 18,
+          "u": 0.239999949932098,
+          "v": -1.16000008583069
+        },
+        {
+          "index": 20,
+          "u": 1.85999989509583,
+          "v": -1.25999999046326
+        },
+        {
+          "index": 22,
+          "u": 0.239999949932098,
+          "v": -1.25999999046326
+        }
+      ],
+      "width": 130,
+      "packed": [
+        792,
+        658,
+        130,
+        8
+      ],
+      "surface_kind": "roof",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y-",
+      "height": 8,
+      "max": [
+        1.85999989509583,
+        1.25999999046326
+      ],
+      "min": [
+        0.239999949932098,
+        1.16000008583069
+      ],
+      "node": "Model/Roofs/TowerRoof/BackCoping",
+      "vertices": [
+        {
+          "index": 17,
+          "u": 0.239999949932098,
+          "v": 1.16000008583069
+        },
+        {
+          "index": 19,
+          "u": 1.85999989509583,
+          "v": 1.16000008583069
+        },
+        {
+          "index": 21,
+          "u": 0.239999949932098,
+          "v": 1.25999999046326
+        },
+        {
+          "index": 23,
+          "u": 1.85999989509583,
+          "v": 1.25999999046326
+        }
+      ],
+      "width": 130,
+      "packed": [
+        792,
+        682,
+        130,
+        8
+      ],
+      "surface_kind": "metal",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z+",
+      "height": 12,
+      "max": [
+        0.340000003576279,
+        -3.48000001907349
+      ],
+      "min": [
+        0.239999994635582,
+        -3.6399998664856
+      ],
+      "node": "Model/Roofs/TowerRoof/WestCoping",
+      "vertices": [
+        {
+          "index": 0,
+          "u": 0.239999994635582,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 2,
+          "u": 0.340000003576279,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 4,
+          "u": 0.239999994635582,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 6,
+          "u": 0.340000003576279,
+          "v": -3.48000001907349
+        }
+      ],
+      "width": 8,
+      "packed": [
+        756,
+        470,
+        8,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z-",
+      "height": 12,
+      "max": [
+        -0.239999994635582,
+        -3.48000001907349
+      ],
+      "min": [
+        -0.340000003576279,
+        -3.6399998664856
+      ],
+      "node": "Model/Roofs/TowerRoof/WestCoping",
+      "vertices": [
+        {
+          "index": 1,
+          "u": -0.340000003576279,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 3,
+          "u": -0.239999994635582,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 5,
+          "u": -0.340000003576279,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 7,
+          "u": -0.239999994635582,
+          "v": -3.48000001907349
+        }
+      ],
+      "width": 8,
+      "packed": [
+        756,
+        498,
+        8,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x+",
+      "height": 12,
+      "max": [
+        1.1599999666214,
+        -3.48000001907349
+      ],
+      "min": [
+        -1.1599999666214,
+        -3.6399998664856
+      ],
+      "node": "Model/Roofs/TowerRoof/WestCoping",
+      "vertices": [
+        {
+          "index": 8,
+          "u": -1.1599999666214,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 10,
+          "u": 1.1599999666214,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 12,
+          "u": -1.1599999666214,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 14,
+          "u": 1.1599999666214,
+          "v": -3.48000001907349
+        }
+      ],
+      "width": 186,
+      "packed": [
+        210,
+        960,
+        186,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x-",
+      "height": 12,
+      "max": [
+        1.1599999666214,
+        -3.48000001907349
+      ],
+      "min": [
+        -1.1599999666214,
+        -3.6399998664856
+      ],
+      "node": "Model/Roofs/TowerRoof/WestCoping",
+      "vertices": [
+        {
+          "index": 9,
+          "u": -1.1599999666214,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 11,
+          "u": 1.1599999666214,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 13,
+          "u": -1.1599999666214,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 15,
+          "u": 1.1599999666214,
+          "v": -3.48000001907349
+        }
+      ],
+      "width": 186,
+      "packed": [
+        210,
+        988,
+        186,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y+",
+      "height": 186,
+      "max": [
+        0.340000003576279,
+        1.1599999666214
+      ],
+      "min": [
+        0.239999994635582,
+        -1.1599999666214
+      ],
+      "node": "Model/Roofs/TowerRoof/WestCoping",
+      "vertices": [
+        {
+          "index": 16,
+          "u": 0.340000003576279,
+          "v": 1.1599999666214
+        },
+        {
+          "index": 18,
+          "u": 0.239999994635582,
+          "v": 1.1599999666214
+        },
+        {
+          "index": 20,
+          "u": 0.340000003576279,
+          "v": -1.1599999666214
+        },
+        {
+          "index": 22,
+          "u": 0.239999994635582,
+          "v": -1.1599999666214
+        }
+      ],
+      "width": 8,
+      "packed": [
+        426,
+        626,
+        8,
+        186
+      ],
+      "surface_kind": "roof",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y-",
+      "height": 186,
+      "max": [
+        0.340000003576279,
+        1.1599999666214
+      ],
+      "min": [
+        0.239999994635582,
+        -1.1599999666214
+      ],
+      "node": "Model/Roofs/TowerRoof/WestCoping",
+      "vertices": [
+        {
+          "index": 17,
+          "u": 0.239999994635582,
+          "v": -1.1599999666214
+        },
+        {
+          "index": 19,
+          "u": 0.340000003576279,
+          "v": -1.1599999666214
+        },
+        {
+          "index": 21,
+          "u": 0.239999994635582,
+          "v": 1.1599999666214
+        },
+        {
+          "index": 23,
+          "u": 0.340000003576279,
+          "v": 1.1599999666214
+        }
+      ],
+      "width": 8,
+      "packed": [
+        428,
+        828,
+        8,
+        186
+      ],
+      "surface_kind": "metal",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z+",
+      "height": 12,
+      "max": [
+        1.85999989509583,
+        -3.48000001907349
+      ],
+      "min": [
+        0.239999949932098,
+        -3.6399998664856
+      ],
+      "node": "Model/Roofs/TowerRoof/FrontCoping",
+      "vertices": [
+        {
+          "index": 0,
+          "u": 0.239999949932098,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 2,
+          "u": 1.85999989509583,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 4,
+          "u": 0.239999949932098,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 6,
+          "u": 1.85999989509583,
+          "v": -3.48000001907349
+        }
+      ],
+      "width": 130,
+      "packed": [
+        646,
+        974,
+        130,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z-",
+      "height": 12,
+      "max": [
+        -0.239999949932098,
+        -3.48000001907349
+      ],
+      "min": [
+        -1.85999989509583,
+        -3.6399998664856
+      ],
+      "node": "Model/Roofs/TowerRoof/FrontCoping",
+      "vertices": [
+        {
+          "index": 1,
+          "u": -1.85999989509583,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 3,
+          "u": -0.239999949932098,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 5,
+          "u": -1.85999989509583,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 7,
+          "u": -0.239999949932098,
+          "v": -3.48000001907349
+        }
+      ],
+      "width": 130,
+      "packed": [
+        646,
+        1002,
+        130,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x+",
+      "height": 12,
+      "max": [
+        -1.16000008583069,
+        -3.48000001907349
+      ],
+      "min": [
+        -1.25999999046326,
+        -3.6399998664856
+      ],
+      "node": "Model/Roofs/TowerRoof/FrontCoping",
+      "vertices": [
+        {
+          "index": 8,
+          "u": -1.25999999046326,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 10,
+          "u": -1.16000008583069,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 12,
+          "u": -1.25999999046326,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 14,
+          "u": -1.16000008583069,
+          "v": -3.48000001907349
+        }
+      ],
+      "width": 8,
+      "packed": [
+        572,
+        382,
+        8,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x-",
+      "height": 12,
+      "max": [
+        1.25999999046326,
+        -3.48000001907349
+      ],
+      "min": [
+        1.16000008583069,
+        -3.6399998664856
+      ],
+      "node": "Model/Roofs/TowerRoof/FrontCoping",
+      "vertices": [
+        {
+          "index": 9,
+          "u": 1.16000008583069,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 11,
+          "u": 1.25999999046326,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 13,
+          "u": 1.16000008583069,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 15,
+          "u": 1.25999999046326,
+          "v": -3.48000001907349
+        }
+      ],
+      "width": 8,
+      "packed": [
+        596,
+        382,
+        8,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y+",
+      "height": 8,
+      "max": [
+        1.85999989509583,
+        1.25999999046326
+      ],
+      "min": [
+        0.239999949932098,
+        1.16000008583069
+      ],
+      "node": "Model/Roofs/TowerRoof/FrontCoping",
+      "vertices": [
+        {
+          "index": 16,
+          "u": 1.85999989509583,
+          "v": 1.25999999046326
+        },
+        {
+          "index": 18,
+          "u": 0.239999949932098,
+          "v": 1.25999999046326
+        },
+        {
+          "index": 20,
+          "u": 1.85999989509583,
+          "v": 1.16000008583069
+        },
+        {
+          "index": 22,
+          "u": 0.239999949932098,
+          "v": 1.16000008583069
+        }
+      ],
+      "width": 130,
+      "packed": [
+        792,
+        706,
+        130,
+        8
+      ],
+      "surface_kind": "roof",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y-",
+      "height": 8,
+      "max": [
+        1.85999989509583,
+        -1.16000008583069
+      ],
+      "min": [
+        0.239999949932098,
+        -1.25999999046326
+      ],
+      "node": "Model/Roofs/TowerRoof/FrontCoping",
+      "vertices": [
+        {
+          "index": 17,
+          "u": 0.239999949932098,
+          "v": -1.25999999046326
+        },
+        {
+          "index": 19,
+          "u": 1.85999989509583,
+          "v": -1.25999999046326
+        },
+        {
+          "index": 21,
+          "u": 0.239999949932098,
+          "v": -1.16000008583069
+        },
+        {
+          "index": 23,
+          "u": 1.85999989509583,
+          "v": -1.16000008583069
+        }
+      ],
+      "width": 130,
+      "packed": [
+        746,
+        730,
+        130,
+        8
+      ],
+      "surface_kind": "metal",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z+",
+      "height": 12,
+      "max": [
+        1.85999989509583,
+        -3.48000001907349
+      ],
+      "min": [
+        1.75999999046326,
+        -3.6399998664856
+      ],
+      "node": "Model/Roofs/TowerRoof/EastCoping",
+      "vertices": [
+        {
+          "index": 0,
+          "u": 1.75999999046326,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 2,
+          "u": 1.85999989509583,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 4,
+          "u": 1.75999999046326,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 6,
+          "u": 1.85999989509583,
+          "v": -3.48000001907349
+        }
+      ],
+      "width": 8,
+      "packed": [
+        620,
+        382,
+        8,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z-",
+      "height": 12,
+      "max": [
+        -1.75999999046326,
+        -3.48000001907349
+      ],
+      "min": [
+        -1.85999989509583,
+        -3.6399998664856
+      ],
+      "node": "Model/Roofs/TowerRoof/EastCoping",
+      "vertices": [
+        {
+          "index": 1,
+          "u": -1.85999989509583,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 3,
+          "u": -1.75999999046326,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 5,
+          "u": -1.85999989509583,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 7,
+          "u": -1.75999999046326,
+          "v": -3.48000001907349
+        }
+      ],
+      "width": 8,
+      "packed": [
+        1004,
+        506,
+        8,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x+",
+      "height": 12,
+      "max": [
+        1.1599999666214,
+        -3.48000001907349
+      ],
+      "min": [
+        -1.1599999666214,
+        -3.6399998664856
+      ],
+      "node": "Model/Roofs/TowerRoof/EastCoping",
+      "vertices": [
+        {
+          "index": 8,
+          "u": -1.1599999666214,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 10,
+          "u": 1.1599999666214,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 12,
+          "u": -1.1599999666214,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 14,
+          "u": 1.1599999666214,
+          "v": -3.48000001907349
+        }
+      ],
+      "width": 186,
+      "packed": [
+        226,
+        880,
+        186,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x-",
+      "height": 12,
+      "max": [
+        1.1599999666214,
+        -3.48000001907349
+      ],
+      "min": [
+        -1.1599999666214,
+        -3.6399998664856
+      ],
+      "node": "Model/Roofs/TowerRoof/EastCoping",
+      "vertices": [
+        {
+          "index": 9,
+          "u": -1.1599999666214,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 11,
+          "u": 1.1599999666214,
+          "v": -3.6399998664856
+        },
+        {
+          "index": 13,
+          "u": -1.1599999666214,
+          "v": -3.48000001907349
+        },
+        {
+          "index": 15,
+          "u": 1.1599999666214,
+          "v": -3.48000001907349
+        }
+      ],
+      "width": 186,
+      "packed": [
+        226,
+        908,
+        186,
+        12
+      ],
+      "surface_kind": "metal",
+      "facade_source": "garage_left",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y+",
+      "height": 186,
+      "max": [
+        1.85999989509583,
+        1.1599999666214
+      ],
+      "min": [
+        1.75999999046326,
+        -1.1599999666214
+      ],
+      "node": "Model/Roofs/TowerRoof/EastCoping",
+      "vertices": [
+        {
+          "index": 16,
+          "u": 1.85999989509583,
+          "v": 1.1599999666214
+        },
+        {
+          "index": 18,
+          "u": 1.75999999046326,
+          "v": 1.1599999666214
+        },
+        {
+          "index": 20,
+          "u": 1.85999989509583,
+          "v": -1.1599999666214
+        },
+        {
+          "index": 22,
+          "u": 1.75999999046326,
+          "v": -1.1599999666214
+        }
+      ],
+      "width": 8,
+      "packed": [
+        450,
+        424,
+        8,
+        186
+      ],
+      "surface_kind": "roof",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y-",
+      "height": 186,
+      "max": [
+        1.85999989509583,
+        1.1599999666214
+      ],
+      "min": [
+        1.75999999046326,
+        -1.1599999666214
+      ],
+      "node": "Model/Roofs/TowerRoof/EastCoping",
+      "vertices": [
+        {
+          "index": 17,
+          "u": 1.75999999046326,
+          "v": -1.1599999666214
+        },
+        {
+          "index": 19,
+          "u": 1.85999989509583,
+          "v": -1.1599999666214
+        },
+        {
+          "index": 21,
+          "u": 1.75999999046326,
+          "v": 1.1599999666214
+        },
+        {
+          "index": 23,
+          "u": 1.85999989509583,
+          "v": 1.1599999666214
+        }
+      ],
+      "width": 8,
+      "packed": [
+        450,
+        626,
+        8,
+        186
+      ],
+      "surface_kind": "metal",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z+",
+      "height": 24,
+      "max": [
+        0.299999952316284,
+        -1.67000007629395
+      ],
+      "min": [
+        -1.79999995231628,
+        -1.97000002861023
+      ],
+      "node": "Model/SignCanopy/BlankSignCanopy",
+      "vertices": [
+        {
+          "index": 0,
+          "u": -1.79999995231628,
+          "v": -1.97000002861023
+        },
+        {
+          "index": 2,
+          "u": 0.299999952316284,
+          "v": -1.97000002861023
+        },
+        {
+          "index": 4,
+          "u": -1.79999995231628,
+          "v": -1.67000007629395
+        },
+        {
+          "index": 6,
+          "u": 0.299999952316284,
+          "v": -1.67000007629395
+        }
+      ],
+      "width": 168,
+      "packed": [
+        474,
+        590,
+        168,
+        24
+      ],
+      "surface_kind": "sign",
+      "facade_source": "sign",
+      "native_source": "sign",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "z-",
+      "height": 24,
+      "max": [
+        1.79999995231628,
+        -1.67000007629395
+      ],
+      "min": [
+        -0.299999952316284,
+        -1.97000002861023
+      ],
+      "node": "Model/SignCanopy/BlankSignCanopy",
+      "vertices": [
+        {
+          "index": 1,
+          "u": -0.299999952316284,
+          "v": -1.97000002861023
+        },
+        {
+          "index": 3,
+          "u": 1.79999995231628,
+          "v": -1.97000002861023
+        },
+        {
+          "index": 5,
+          "u": -0.299999952316284,
+          "v": -1.67000007629395
+        },
+        {
+          "index": 7,
+          "u": 1.79999995231628,
+          "v": -1.67000007629395
+        }
+      ],
+      "width": 168,
+      "packed": [
+        474,
+        630,
+        168,
+        24
+      ],
+      "surface_kind": "metal",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x+",
+      "height": 24,
+      "max": [
+        -1.12000000476837,
+        -1.67000007629395
+      ],
+      "min": [
+        -1.43999993801117,
+        -1.97000002861023
+      ],
+      "node": "Model/SignCanopy/BlankSignCanopy",
+      "vertices": [
+        {
+          "index": 8,
+          "u": -1.43999993801117,
+          "v": -1.97000002861023
+        },
+        {
+          "index": 10,
+          "u": -1.12000000476837,
+          "v": -1.97000002861023
+        },
+        {
+          "index": 12,
+          "u": -1.43999993801117,
+          "v": -1.67000007629395
+        },
+        {
+          "index": 14,
+          "u": -1.12000000476837,
+          "v": -1.67000007629395
+        }
+      ],
+      "width": 26,
+      "packed": [
+        658,
+        590,
+        26,
+        24
+      ],
+      "surface_kind": "metal",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "x-",
+      "height": 24,
+      "max": [
+        1.43999993801117,
+        -1.67000007629395
+      ],
+      "min": [
+        1.12000000476837,
+        -1.97000002861023
+      ],
+      "node": "Model/SignCanopy/BlankSignCanopy",
+      "vertices": [
+        {
+          "index": 9,
+          "u": 1.12000000476837,
+          "v": -1.97000002861023
+        },
+        {
+          "index": 11,
+          "u": 1.43999993801117,
+          "v": -1.97000002861023
+        },
+        {
+          "index": 13,
+          "u": 1.12000000476837,
+          "v": -1.67000007629395
+        },
+        {
+          "index": 15,
+          "u": 1.43999993801117,
+          "v": -1.67000007629395
+        }
+      ],
+      "width": 26,
+      "packed": [
+        700,
+        590,
+        26,
+        24
+      ],
+      "surface_kind": "metal",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y+",
+      "height": 26,
+      "max": [
+        0.299999952316284,
+        1.43999993801117
+      ],
+      "min": [
+        -1.79999995231628,
+        1.12000000476837
+      ],
+      "node": "Model/SignCanopy/BlankSignCanopy",
+      "vertices": [
+        {
+          "index": 16,
+          "u": 0.299999952316284,
+          "v": 1.43999993801117
+        },
+        {
+          "index": 18,
+          "u": -1.79999995231628,
+          "v": 1.43999993801117
+        },
+        {
+          "index": 20,
+          "u": 0.299999952316284,
+          "v": 1.12000000476837
+        },
+        {
+          "index": 22,
+          "u": -1.79999995231628,
+          "v": 1.12000000476837
+        }
+      ],
+      "width": 168,
+      "packed": [
+        756,
+        546,
+        168,
+        26
+      ],
+      "surface_kind": "roof",
+      "facade_source": "roof",
+      "native_source": "roof",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    },
+    {
+      "face": "y-",
+      "height": 26,
+      "max": [
+        0.299999952316284,
+        -1.12000000476837
+      ],
+      "min": [
+        -1.79999995231628,
+        -1.43999993801117
+      ],
+      "node": "Model/SignCanopy/BlankSignCanopy",
+      "vertices": [
+        {
+          "index": 17,
+          "u": -1.79999995231628,
+          "v": -1.43999993801117
+        },
+        {
+          "index": 19,
+          "u": 0.299999952316284,
+          "v": -1.43999993801117
+        },
+        {
+          "index": 21,
+          "u": -1.79999995231628,
+          "v": -1.12000000476837
+        },
+        {
+          "index": 23,
+          "u": 0.299999952316284,
+          "v": -1.12000000476837
+        }
+      ],
+      "width": 168,
+      "packed": [
+        756,
+        588,
+        168,
+        26
+      ],
+      "surface_kind": "metal",
+      "facade_source": "roof",
+      "native_source": "metal",
+      "source_origin_px": [
+        0,
+        0
+      ]
+    }
+  ],
+  "roof_regions": {
+    "glass": {
+      "source": "roof_master",
+      "source_box": [
+        63,
+        498,
+        191,
+        578
+      ],
+      "rect": [
+        194,
+        226,
+        128,
+        80
+      ],
+      "kind": "glass",
+      "tile": false
+    },
+    "walkway": {
+      "source": "roof_master",
+      "source_box": [
+        480,
+        518,
+        512,
+        646
+      ],
+      "rect": [
+        338,
+        226,
+        32,
+        128
+      ],
+      "kind": "metal",
+      "tile": false
+    },
+    "repair_metal": {
+      "source": "roof_master",
+      "source_box": [
+        861,
+        499,
+        925,
+        563
+      ],
+      "rect": [
+        194,
+        322,
+        64,
+        64
+      ],
+      "kind": "metal",
+      "tile": false
+    },
+    "repair_trim": {
+      "source": "roof_master",
+      "source_box": [
+        298,
+        481,
+        394,
+        513
+      ],
+      "rect": [
+        274,
+        370,
+        96,
+        32
+      ],
+      "kind": "metal",
+      "tile": false
+    },
+    "cable": {
+      "source": "roof_master",
+      "source_box": [
+        603,
+        515,
+        627,
+        643
+      ],
+      "rect": [
+        194,
+        402,
+        24,
+        128
+      ],
+      "kind": "metal",
+      "tile": false
+    },
+    "hazard": {
+      "source": "roof_master",
+      "source_box": [
+        722,
+        508,
+        738,
+        636
+      ],
+      "rect": [
+        280,
+        662,
+        16,
+        128
+      ],
+      "kind": "cloth",
+      "tile": false
+    },
+    "hatch": {
+      "source": "roof",
+      "source_box": [
+        132,
+        24,
+        168,
+        60
+      ],
+      "rect": [
+        782,
+        228,
+        36,
+        36
+      ],
+      "kind": "metal",
+      "tile": false
+    }
+  },
+  "roof_design_reference": "docs/references/city-buildings/cafe-repair-rooftops-approved.png"
+}

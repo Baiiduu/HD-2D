@@ -17,11 +17,19 @@ extends Node3D
 const MIRROR_BITS := [1 << 18, 1 << 19]
 const SPRITE_SHADER = preload("res://shaders/character/reflection_sprite.gdshader")
 const CHARACTER_SHADER = preload("res://shaders/character/character_lighting.gdshader")
+const CHARACTER_FILL_LAYER = preload("res://scripts/rendering/character_spotlight.gd").RECEIVER_LAYER
 var views: Array[Dictionary] = []
 var sprites: Array[Dictionary] = []
 var water: ShaderMaterial
 var active_view_count := 0
 var _last_size := Vector2i.ZERO
+## 菜单只停止额外视口绘制，不改玩家的反射画质选择。
+var render_suspended := false:
+	set(value):
+		render_suspended = value
+		if value:
+			active_view_count = 0
+			for view in views: view.viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
 
 func _ready() -> void:
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
@@ -135,7 +143,7 @@ func _process(_delta: float) -> void:
 	active_view_count = 0
 	for index in views.size():
 		var view := views[index]
-		var visible := enabled and source_camera.global_position.y > float(view.height) + 0.02 and _water_visible(view.cells, frustum)
+		var visible := enabled and not render_suspended and source_camera.global_position.y > float(view.height) + 0.02 and _water_visible(view.cells, frustum)
 		var mirror_viewport: SubViewport = view.viewport
 		mirror_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if visible else SubViewport.UPDATE_DISABLED
 		water.set_shader_parameter("reflection_enabled_%d" % index, visible)
@@ -201,6 +209,7 @@ func _water_visible(cells: Array, frustum: Array[Plane]) -> bool:
 func _prepare_geometry(sources: Array[Node], index: int, height: float) -> void:
 	var bit: int = MIRROR_BITS[index]
 	for source in sources:
+		if source.is_in_group(&"distant_city_geometry"): continue
 		# 源表面继续负责反射准备，合批替身不能再次生成一份反射。
 		if source.is_in_group(&"static_geometry_batches"): continue
 		if source.is_in_group("light_beams") or source.is_in_group("atmospheric_beams") or source.is_in_group("occlusion_outlines"):
@@ -254,7 +263,9 @@ func _make_sprite(source: Sprite3D, bit: int, height: float) -> void:
 	var proxy := MeshInstance3D.new()
 	proxy.mesh = quad
 	proxy.material_override = material
-	proxy.layers = bit
+	# World's character-only fill reaches its mirror too. The main camera excludes
+	# this receiver tag; ordinary sprites retain the original mirror-only layer.
+	proxy.layers = bit | (source.layers & CHARACTER_FILL_LAYER)
 	proxy.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	proxy.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
 	add_child(proxy)

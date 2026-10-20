@@ -3,11 +3,15 @@ extends Resource
 
 ## 已制作的核心操作音效；每个事件对应一组可替换的原生音源。
 @export var cues: Dictionary = {}
+## 地图音色只覆盖需要替换的事件，其余事件继续读取共用音源。
+@export var base_bank: CoreSoundBank
+## 实际随机池排除的音源，试听仍保留原编号作对照。
+@export var excluded_clips: Array[AudioStream] = []
 
 # 原四十条试听顺序保持，新事件追加在末尾；变体沿用各事件的音源顺序。
 const AUDITION := [
-	[&"charge_start", "蓄力与弹射", "蓄力起手", "开始蓄力时触发。"],
-	[&"charge_loop", "蓄力与弹射", "蓄力持续", "持续蓄力时循环播放。"],
+	[&"charge_start", "蓄力与弹射", "旧蓄力起手", "World 已停用；保留其它地图兼容与对照试听。"],
+	[&"charge_loop", "蓄力与弹射", "旧蓄力持续", "World 已停用；正式持续蓄力只保留聚力风 S54。"],
 	[&"charge_ready", "蓄力与弹射", "满蓄提示", "达到满蓄时只提示一次。"],
 	[&"launch", "蓄力与弹射", "发射", "松开蓄力、发射人物本体时触发。"],
 	[&"flight_end", "蓄力与弹射", "飞行结束收势", "本次弹射正常结束时触发。"],
@@ -37,9 +41,9 @@ const AUDITION := [
 	[&"kill_slime_retired", "停用候选", "旧史莱姆击杀候选 · 变体 1（停用）", "停用，仅供对照试听，不参与实战随机池。"],
 	[&"kill_slime", "击杀反馈", "史莱姆击杀确认 · 变体 2", "真实致死瞬间的弹性爆破与厚实冲击；普通命中不播放。"],
 	[&"kill_group", "击杀反馈", "附近群杀强调", "附近短时间多次击杀合并一次；这里按普通群杀档试听。"],
-	[&"kill_air", "击杀反馈", "尸体抛飞气流", "死亡短顿结束、实际抛飞开始时触发，密集尸体合并。"],
+	[&"kill_air", "击杀反馈", "尸体抛飞气流", "World 实际起飞后跟随空中翻飞，落地短淡出，密集时最多两个代表；这里按完整素材试听。"],
 	[&"kill_land", "击杀反馈", "尸体落地与碰墙", "已有死亡演出确实落地或碰墙时触发；碰墙略轻。"],
-	[&"enemy_hit_common", "通用命中", "人物攻击命中", "同一 Meowa 母版的轻微音高变化；World 普攻与弹射攻击真实命中后随机一条，击杀优先确认声。"],
+	[&"enemy_hit_common", "通用命中", "人物攻击命中", "同一 Meowa 母版的轻微音高变化；World 空挥与真实命中共用此音色，命中时击杀优先确认声。"],
 	[&"leaf_windup", "怪物招式", "冲锋虫蓄势", "实际锁线冲锋预告；密集预告合并声音，视觉提示保留。"],
 	[&"lantern_shot", "怪物招式", "花兽吐籽", "花兽实际出手的吐籽声。"],
 	[&"frog_pulse", "怪物招式", "苔蛙鼓舞", "苔蛙实际发出移速脉冲；作为轻伴随声，不压过人物命中。"],
@@ -48,7 +52,16 @@ const AUDITION := [
 ]
 
 func clips_for(cue: StringName) -> Array:
-	return cues.get(cue, [])
+	var clips: Array = cues[cue] if cues.has(cue) else (base_bank.clips_for(cue) if base_bank else [])
+	return filter_clips(clips)
+
+## 技能和怪物可直接持有素材数组；公共播放入口同样执行地图的停用选择。
+func filter_clips(clips: Array) -> Array:
+	return clips if excluded_clips.is_empty() else clips.filter(func(clip): return clip not in excluded_clips)
+
+func _audition_clips_for(cue: StringName) -> Array:
+	if cues.has(cue): return cues[cue]
+	return base_bank._audition_clips_for(cue) if base_bank else []
 
 static func playback_cue(cue: StringName) -> StringName:
 	if cue == &"storm_strike": return &"ricochet_storm_start"
@@ -59,10 +72,20 @@ static func playback_cue(cue: StringName) -> StringName:
 
 func audition_entries() -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
+	var additions: Array[Dictionary] = []
 	for row in AUDITION:
-		var clips := clips_for(row[0])
+		var clips := _audition_clips_for(row[0])
+		var active := clips_for(row[0])
+		var inherited_count := base_bank._audition_clips_for(row[0]).size() if base_bank else clips.size()
 		for index in clips.size():
-			entries.append({"id": "S%02d" % (entries.size() + 1), "cue": row[0], "group": row[1],
+			var retired: bool = clips[index] not in active or row[0] == &"kill_slime_retired"
+			var entry := {"id": "S%02d" % (entries.size() + 1), "cue": row[0], "group": row[1],
 				"label": row[2] + (" · 变体 %d" % (index + 1) if clips.size() > 1 else ""),
-				"purpose": row[3], "clip": clips[index]})
+				"purpose": ("已停用，仅供对照试听。" if retired else row[3]), "clip": clips[index], "retired": retired}
+			# 地图新增变体追加在旧索引之后，避免已停用槽及其它事件重新编号。
+			if index >= inherited_count: additions.append(entry)
+			else: entries.append(entry)
+	for entry in additions:
+		entry.id = "S%02d" % (entries.size() + 1)
+		entries.append(entry)
 	return entries

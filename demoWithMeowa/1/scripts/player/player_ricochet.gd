@@ -22,6 +22,12 @@ var enabled: bool:
 	get: return _enabled()
 var direction := Vector3.RIGHT
 var flight_speed := 0.0
+## 实际移动速度；flight_speed 保留为用于续航与碰撞结算的剩余动能速度。
+var movement_speed: float:
+	get: return flight_speed * (_settings.orbit_motion_ratio(_orbit_speed_blend) if _settings else 1.0) if flying else 0.0
+var _orbit_speed_blend := 0.0
+var _motion_timing := Vector2.ZERO
+var _energy_timing := Vector2.ZERO
 var bounce_count := 0
 var last_impact: RicochetImpact
 var impact_serial := 0
@@ -131,6 +137,8 @@ func begin_charge(movement: Vector3) -> bool:
 	if direction.is_zero_approx(): direction = _player.facing_direction()
 	direction = direction.normalized()
 	_charge_age = 0.0
+	_orbit_speed_blend = 0.0
+	_motion_timing = Vector2.ZERO
 	orbit_debug_last = {}
 	_pushed.clear()
 	_push_wave = null
@@ -270,18 +278,22 @@ func _advance_flight(delta: float) -> void:
 	var elapsed := 0.0
 	var stalled_contacts := 0
 	while flying and remaining > 0.000001:
-		var step_seconds := minf(remaining, _settings.coast_seconds(flight_speed))
+		_orbit_speed_blend = _settings.orbit_blend_after(_orbit_speed_blend, orbiting, 0.0)
+		var step_seconds := _settings.orbit_motion_seconds(minf(remaining, _settings.coast_seconds(flight_speed)), orbiting, _orbit_speed_blend)
+		var time_sliced := step_seconds < remaining - 0.000001
+		var speed_ratio := _settings.orbit_motion_ratio(_orbit_speed_blend)
 		if step_seconds <= 0.000001:
 			_end_flight(&"speed_depleted")
 			break
 		var start := _player.global_position
-		var distance := _settings.coast_distance(flight_speed, step_seconds)
+		var distance := _settings.coast_distance(flight_speed, step_seconds) * speed_ratio
 		var curved := false
 		if _crowd:
 			var step := _crowd.step(start, direction, distance)
 			direction = step.heading
 			curved = step.distance < distance - 0.00001
 			distance = step.distance
+		var segment_orbiting := orbiting
 		var allowed := _ground_limit(start, distance)
 		var reached_edge := allowed < distance - 0.00001
 		if allowed <= 0.00001:
@@ -300,13 +312,16 @@ func _advance_flight(delta: float) -> void:
 		if stalled_contacts >= 3:
 			_end_flight(&"blocked_contact")
 			break
-		var seconds := minf(step_seconds, _settings.coast_time_for_distance(flight_speed, travelled))
+		var seconds := minf(step_seconds, _settings.coast_time_for_distance(flight_speed, travelled / speed_ratio))
 		var initial_speed := flight_speed
 		flight_speed = _settings.speed_after_coast(flight_speed, seconds)
+		_motion_timing = Vector2(initial_speed * speed_ratio, _settings.flight_deceleration * speed_ratio)
+		_energy_timing = Vector2(initial_speed, _settings.flight_deceleration)
+		_orbit_speed_blend = _settings.orbit_blend_after(_orbit_speed_blend, segment_orbiting, seconds)
 		flight_elapsed += seconds
 		if travelled > 0.00001:
 			if _player.sword and _player.sword.enabled:
-				_travel_segments.append({"start":start, "end":end, "heading":direction, "time":elapsed, "seconds":seconds, "speed":initial_speed, "deceleration":_settings.flight_deceleration})
+				_travel_segments.append({"start":start, "end":end, "heading":direction, "time":elapsed, "seconds":seconds, "speed":_motion_timing.x, "deceleration":_motion_timing.y})
 			flight_segment_travelled.emit(start, end, direction, seconds)
 			_push_segment(start, end)
 		elapsed += seconds
@@ -324,7 +339,7 @@ func _advance_flight(delta: float) -> void:
 					crowd_deflected.emit(end, incoming, _crowd.target_heading)
 				continue
 			if reached_edge: _end_flight(&"ground_edge")
-			if curved and flying: continue
+			if (curved or time_sliced) and flying: continue
 			break
 		if _crowd: _crowd.cancel_turn(&"真实墙面／镜面／地形接触中断路线")
 		var normal := ProjectileCollision.reflection_normal(hit.get_collider(), hit.get_normal(), direction)
@@ -341,12 +356,12 @@ func _advance_flight(delta: float) -> void:
 		if not _settings.can_rebound(flight_speed, _settings.bounce_speed_retention):
 			_end_flight(&"speed_depleted")
 			break
-		var incoming_velocity := direction * flight_speed
+		var incoming_velocity := direction * movement_speed
 		direction = direction.bounce(normal).normalized()
 		bounce_count += 1
 		flight_speed = _settings.rebound_speed(flight_speed, _settings.bounce_speed_retention)
 		impact_serial += 1
-		last_impact = RicochetImpact.new(hit.get_position(), normal, incoming_velocity, direction * flight_speed, impact_serial, flight_serial, flight_elapsed)
+		last_impact = RicochetImpact.new(hit.get_position(), normal, incoming_velocity, direction * movement_speed, impact_serial, flight_serial, flight_elapsed)
 		impact_recorded.emit(last_impact)
 		ProjectileCollision.show_reflection(hit.get_collider())
 		wall_bounced.emit(hit.get_position(), normal)
@@ -355,15 +370,19 @@ func _advance_flight(delta: float) -> void:
 		_player.move_and_collide(normal * 0.003)
 	PhysicsServer3D.body_set_collision_mask(_player.get_rid(), mask)
 	if flying and flight_speed <= _settings.minimum_bounce_speed + 0.000001: _end_flight(&"speed_depleted")
-	_player.velocity = direction * flight_speed if flying else Vector3.ZERO
+	_player.velocity = direction * movement_speed if flying else Vector3.ZERO
 	_player.face_world_direction(direction)
 
 func _ground_limit(start: Vector3, length: float) -> float:
 	return BodyPathPrediction.ground_limit(_collision, _path, _player.bounds, start, direction, length, _plane, _settings.ground_height_tolerance)
 
 ## 在 flight_segment_travelled 回调中读取本段起速与减速度，之后由消费者保存快照。
-func motion_timing(seconds: float) -> Vector2:
-	return Vector2(flight_speed + _settings.flight_deceleration * seconds, _settings.flight_deceleration) if flying and _settings else Vector2.ZERO
+func motion_timing(_seconds: float) -> Vector2:
+	return _motion_timing if flying else Vector2.ZERO
+
+## 信号同步读取的能量时序，不含环绕对位移速度的缩放。
+func energy_timing() -> Vector2:
+	return _energy_timing if flying else Vector2.ZERO
 
 ## 沿本次蓄力快照预览；输出可供其它显示方式消费，不产生位移、攻击或拨怪事件。
 func predict_path(query: BodyPathPrediction, output: AimPathData, max_distance: float, preview_bounces: int, followup_distance := -1.0, deduplicate_queries := false) -> void:
@@ -473,6 +492,15 @@ static func circle_entry(start: Vector3, end: Vector3, point: Vector3, radius: f
 	var entry := projection - sqrt(maxf(0.0, radius * radius - perpendicular) / squared)
 	return entry if entry >= 0.0 and entry <= 1.0 else -1.0
 
+func prepare_feedback() -> void:
+	var visuals := _player.action_visuals
+	if not visuals or not visuals.show_charge_effect: return
+	if not is_instance_valid(_charge_effect):
+		_charge_effect = PlayerChargeEffect.new()
+		_charge_effect.name = "ChargeEffect"
+		_player.add_child(_charge_effect)
+	_charge_effect.prepare_feedback(_player, self, visuals)
+
 func _update_visual_context() -> void:
 	var action: StringName = &""
 	var progress := -1.0
@@ -512,6 +540,8 @@ func _change_state(value: State) -> void:
 	state_changed.emit(state)
 
 func _end_flight(reason: StringName) -> void:
+	_orbit_speed_blend = 0.0
+	_motion_timing = Vector2.ZERO
 	_collision.center_certificate_enabled = false
 	if orbit_debug_enabled and _crowd: orbit_debug_last = _crowd.debug_snapshot()
 	_crowd = null
@@ -523,6 +553,8 @@ func _end_flight(reason: StringName) -> void:
 	finished.emit(reason)
 
 func cancel(reset_cooldown := false) -> void:
+	_orbit_speed_blend = 0.0
+	_motion_timing = Vector2.ZERO
 	_collision.center_certificate_enabled = false
 	if orbit_debug_enabled and _crowd: orbit_debug_last = _crowd.debug_snapshot()
 	var was_active := state != State.IDLE

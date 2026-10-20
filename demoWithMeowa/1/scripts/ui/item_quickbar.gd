@@ -23,6 +23,7 @@ const SLOT_SHADER := preload("res://shaders/ui/skill_hud.gdshader")
 @export_range(0.0,0.5,0.05) var name_background_opacity := 0.0:
 	set(value): name_background_opacity = value; _update_name_hint()
 var state: LoadoutState
+var player_access_enabled := true
 var audio: UIAudio
 var reserved_hud: Control
 var _slots := HBoxContainer.new()
@@ -178,12 +179,13 @@ func _label(text: String, font_size: int) -> Label:
 	return label
 
 func _select(index: int) -> void:
+	if not player_access_enabled: return
 	state.select_quick_slot(index)
 	if audio: audio.play(&"select")
 	slot_selected.emit(state.get_quick_slots()[index])
 
 func _unhandled_key_input(event: InputEvent) -> void:
-	if not state or get_tree().get_first_node_in_group(&"gameplay_input_blockers"):
+	if not player_access_enabled or not state or get_tree().get_first_node_in_group(&"gameplay_input_blockers"):
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		var index := int(event.physical_keycode) - int(KEY_1)

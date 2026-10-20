@@ -19,6 +19,7 @@ var _remaining_presentations := 0
 var _prewarm_visuals: PlayerActionVisuals
 var _prewarm_deaths := 0
 var _prewarm_contacts := 0
+var terrain: Terrain
 
 func _ready() -> void:
 	_users += 1
@@ -61,9 +62,11 @@ func _take_death() -> EnemyDeathEffect:
 
 func _new_death() -> EnemyDeathEffect:
 	var effect := EnemyDeathEffect.new()
+	effect.terrain = terrain
 	add_child(effect)
 	effect.finished.connect(func(): _idle_deaths.append(effect))
 	effect.presentation_event.connect(_death_presentation)
+	effect.airborne_changed.connect(_death_airborne)
 	return effect
 
 func _new_contact() -> MeshInstance3D:
@@ -78,6 +81,13 @@ func start_prewarm(visuals: PlayerActionVisuals, deaths: int, contacts: int) -> 
 	_prewarm_deaths = maxi(0, deaths - _idle_deaths.size())
 	_prewarm_contacts = maxi(0, contacts - _idle_contacts.size())
 	if not prewarm_ready(): set_process(true)
+
+func prepare_projectiles() -> void:
+	while _idle_seeds.size() < 4:
+		var projectile := EnemySeedProjectile.new()
+		add_child(projectile)
+		projectile.finished.connect(func(): _idle_seeds.append(projectile))
+		_idle_seeds.append(projectile)
 
 func prewarm_ready() -> bool:
 	return _prewarm_deaths == 0 and _prewarm_contacts == 0
@@ -125,6 +135,11 @@ func _retired_finished() -> void:
 
 func _death_presentation(stage: StringName, point: Vector3) -> void:
 	if not _retiring and is_instance_valid(_audio): _audio.death_presentation.emit(stage, point)
+
+func _death_airborne(subject: Node3D, airborne: bool) -> void:
+	# 清波后只阻止新声音；已在空中的快照仍须将落地／回收送达。
+	if (not airborne or not _retiring) and is_instance_valid(_audio):
+		_audio.death_airborne.emit(subject, airborne)
 
 func _register_burst(sprite: Sprite3D, visuals: PlayerActionVisuals, camera: Camera3D) -> void:
 	if _burst_cooldown > 0.0: return

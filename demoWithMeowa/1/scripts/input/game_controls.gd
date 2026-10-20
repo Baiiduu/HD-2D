@@ -67,6 +67,13 @@ func rebind(action: StringName, slot: int, code: int) -> String:
 func release_world(world: Node) -> void:
 	if _world == world: _world = null
 
+## 保留尚未开放操作的旧键位与存档，只隐藏玩家入口。
+func action_available(action: StringName) -> bool:
+	if action != &"inventory": return true
+	if not is_instance_valid(_world): return false
+	var loadout := _world.get_node_or_null("LoadoutUI")
+	return loadout != null and loadout.player_access_enabled
+
 func reset_defaults() -> void:
 	model.reset_defaults()
 	last_error = ""

@@ -11,12 +11,17 @@ func _enter_tree() -> void:
 	wave.configuration_error = configuration.validation_error()
 	if not wave.configuration_error.is_empty(): return
 	_bind_player(configuration, player)
+	var loadout := scene.get_node_or_null("LoadoutUI") as LoadoutUI
+	if loadout: loadout.equipment_bonuses_enabled = configuration.equipment_bonuses_enabled
 	_bind_skills(configuration, wave.run_skill_manager)
 	player.crowd_clearance_distance = configuration.crowd_clearance_distance
-	for property in ["enemy_catalog", "default_enemy", "population_rules", "health_growth_rules", "spawn_shadow_settings", "waves", "endless_mode", "max_active_enemies", "centralized_enemy_updates", "native_swarm_enabled", "batch_crowd_enabled", "native_chase_enabled", "slime_ground_movement_enabled"]:
+	for property in ["enemy_catalog", "default_enemy", "population_rules", "health_growth_rules", "spawn_shadow_settings", "waves", "endless_mode", "max_active_enemies", "centralized_enemy_updates", "native_swarm_enabled", "batch_crowd_enabled", "pursuit_throttle_threshold", "native_chase_enabled", "slime_ground_movement_enabled"]:
 		wave.set(property, configuration.get(property))
 	var growth := wave.get_node("RunGrowth") as RunGrowth
 	growth.rules = configuration.experience_rules
+	growth.progression_rules = configuration.growth_rules
+	wave.growth_rules = configuration.growth_rules
+	wave.combat_modifiers.growth_rules = configuration.growth_rules
 	growth.cards_per_draw = configuration.cards_per_draw
 	growth.rerolls_per_run = configuration.rerolls_per_run
 	wave.get_node("RunBuffs").definitions = configuration.growth_definitions

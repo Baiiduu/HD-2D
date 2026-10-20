@@ -14,6 +14,10 @@ extends Resource
 @export_range(-18.0, 3.0, 0.5) var group_gain_db := -2.0
 @export_range(-24.0, 0.0, 0.5) var air_gain_db := -10.0
 @export_range(-24.0, 0.0, 0.5) var landing_gain_db := -9.0
+@export_group("真实空中翻飞")
+## 地图明确启用；起落由快照驱动，原一次性抛飞事件保留兼容。
+@export var air_motion_enabled := false
+@export_range(0.01, 0.2, 0.01, "suffix:s") var air_fade_out_seconds := 0.06
 @export_group("群杀临时声音退让")
 @export_range(-6.0, 0.0, 0.1) var music_duck_db := -1.2
 @export_range(-6.0, 0.0, 0.1) var ambience_duck_db := -1.8

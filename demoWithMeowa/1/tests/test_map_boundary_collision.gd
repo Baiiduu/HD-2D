@@ -18,6 +18,7 @@ func path_checks() -> void:
 	var boundary := effects._boundary
 	check(boundary.collision_layer == 1 and boundary.collision_mask == 0,
 		"空气墙使用现有墙体碰撞层，不依赖额外弹射查询")
+	check(boundary.is_in_group(&"map_boundaries"), "地图空气墙独立标记，供纯视觉死亡抛飞忽略")
 	check(boundary.get_child_count() == 4 and not terrain.is_ancestor_of(boundary),
 		"四面独立碰撞形状不被误认成水面或断层")
 	var shapes: Array[Shape3D] = []

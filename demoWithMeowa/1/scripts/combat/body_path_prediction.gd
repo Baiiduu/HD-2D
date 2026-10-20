@@ -37,9 +37,17 @@ func _trace(body: CharacterBody3D, heading: Vector3, speed: float, seconds: floa
 	# 非负值仅推演首次响应及短尾段；负值保留完整路线供只读诊断使用。
 	var single_response := followup_distance >= 0.0
 	var responded := false
+	var orbit_blend := 0.0
 	for iteration in 256:
 		var available_seconds := speed_rules.coast_seconds(speed) if speed_rules else seconds
-		var available_distance := speed_rules.coast_distance(speed, available_seconds) if speed_rules else speed * available_seconds
+		var speed_ratio := 1.0
+		if speed_rules:
+			var orbiting := crowd != null and crowd.orbiting
+			orbit_blend = speed_rules.orbit_blend_after(orbit_blend, orbiting, 0.0)
+			available_seconds = speed_rules.orbit_motion_seconds(available_seconds, orbiting, orbit_blend)
+			speed_ratio = speed_rules.orbit_motion_ratio(orbit_blend)
+		var time_sliced := speed_rules != null and available_seconds < speed_rules.coast_seconds(speed) - 0.000001
+		var available_distance := speed_rules.coast_distance(speed, available_seconds) * speed_ratio if speed_rules else speed * available_seconds
 		var distance := minf(available_distance, max_distance - output.total_distance)
 		if distance <= 0.00001:
 			if single_response and responded and output.total_distance >= max_distance - 0.00001:
@@ -70,9 +78,11 @@ func _trace(body: CharacterBody3D, heading: Vector3, speed: float, seconds: floa
 			hit = PhysicsServer3D.body_test_motion(body.get_rid(), _parameters, _result)
 			transform.origin += _result.get_travel() if hit else displacement
 		var travel := TerrainPath.horizontal_distance(transform.origin, start)
-		var used := minf(available_seconds, speed_rules.coast_time_for_distance(speed, travel) if speed_rules else travel / speed)
+		var used := minf(available_seconds, speed_rules.coast_time_for_distance(speed, travel / speed_ratio) if speed_rules else travel / speed)
 		output.append(start, transform.origin, heading, used, crowd != null and crowd.orbiting)
-		if speed_rules: speed = speed_rules.speed_after_coast(speed, used)
+		if speed_rules:
+			speed = speed_rules.speed_after_coast(speed, used)
+			orbit_blend = speed_rules.orbit_blend_after(orbit_blend, crowd != null and crowd.orbiting, used)
 		else: seconds = maxf(0.0, seconds - used)
 		if not hit:
 			if not group.is_empty() and travel >= allowed - 0.0001:
@@ -101,7 +111,7 @@ func _trace(body: CharacterBody3D, heading: Vector3, speed: float, seconds: floa
 			if single_response and responded and output.total_distance >= max_distance - 0.00001:
 				output.end_reason = &"preview_limit"
 				return
-			if curved: continue
+			if curved or time_sliced: continue
 			output.end_reason = (&"speed_depleted" if speed_rules else &"duration") if (speed_rules.coast_seconds(speed) if speed_rules else seconds) < 0.00001 else &"distance"
 			return
 		if crowd: crowd.cancel_turn()

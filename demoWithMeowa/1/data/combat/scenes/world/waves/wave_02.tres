@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="WaveDefinition" format=3 uid="uid://b28j0idc3ekxs"]
 
 [ext_resource type="Script" uid="uid://i1xql6e8gpsr" path="res://scripts/combat/wave_spawn_entry.gd" id="1_1ibui"]
-[ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/wave_slime.tres" id="2_hjidt"]
+[ext_resource type="Resource" uid="uid://cdl3rm50c677s" path="res://data/combat/scenes/world/enemies/wave_slime.tres" id="2_hjidt"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/leaf_charger.tres" id="3_a5tku"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/lantern_spitter.tres" id="4_d07nv"]
 [ext_resource type="Script" uid="uid://caklrlj8ospwr" path="res://scripts/combat/wave_definition.gd" id="5_6e18b"]

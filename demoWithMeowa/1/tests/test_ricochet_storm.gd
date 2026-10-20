@@ -413,6 +413,27 @@ func flight_budget_checks() -> void:
 	tick(1.0)
 	check(first.health == 993.0 and storm._until_pulse == 0.0, "一帧内飞行结束后的余时只冷却，不补出地面雷潮")
 
+func score_checks() -> void:
+	reset()
+	var score: RunScore = wave.get_node("RunScore")
+	score.state.begin(88, score.rules)
+	var batches: Array = []
+	for x in [1.0, 2.35]:
+		for index in 5:
+			var enemy := mob(Vector3(x, 0, -0.4 + index * 0.2), 1.0)
+			enemy.experience_reward = 0
+			enemy.damaged.connect(func(event: CombatDamageEvent): batches.append(event.score_batch))
+	var stats := storm.get_attack_stats()
+	stats.targets = 5
+	check(storm.discharge(Vector3(0, 0.03, 0), stats), "真实雷潮启动计分测试")
+	storm.set_physics_process(false)
+	check(score.state.kills == 5 and score.state.total == 75, "首片五杀统一基础倍率并即时获得固定奖励")
+	tick(0.1)
+	check(score.state.kills == 10 and score.state.combo_score == 12 and score.state.burst_score == 50 and score.state.total == 162, "下一片使用提升后的倍率，片间奖励独立且保留小数余量")
+	check(batches.size() == 10 and batches[0] != null and batches[5] != null and batches[0] != batches[5], "不同雷片保留独立计分批次")
+	if batches.size() == 10:
+		check(batches.slice(0, 5).all(func(batch): return batch == batches[0]) and batches.slice(5).all(func(batch): return batch == batches[5]), "同片所有真实伤害共用一个计分上下文")
+
 func run() -> void:
 	AudioServer.set_bus_mute(0, true)
 	world = Node3D.new()
@@ -484,6 +505,7 @@ func run() -> void:
 	await flight_checks()
 	balance_and_outward_checks()
 	await flight_budget_checks()
+	score_checks()
 	growth_and_cleanup()
 	for voice in root.find_children("*", "AudioStreamPlayer", true, false): voice.stop()
 	await create_timer(0.1).timeout

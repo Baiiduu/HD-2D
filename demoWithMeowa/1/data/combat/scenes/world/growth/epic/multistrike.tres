@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="GrowthBuffDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/growth/growth_buff_definition.gd" id="definition"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/journal/symbols/sword.png" id="icon"]
+
+[resource]
+script = ExtResource("definition")
+id = &"E03"
+title = "千手"
+description = "弹射挥剑随余速追加真实斩击，追加刀各造成原刀 1/3 伤害。"
+icon = ExtResource("icon")
+category = 3
+epic = true
+attribute = 19
+bonus_per_level = 1.0
+max_level = 5
+diminishing_after = 0
+breakthrough_every = 0

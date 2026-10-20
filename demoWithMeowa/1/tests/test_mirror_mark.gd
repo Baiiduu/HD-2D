@@ -201,7 +201,7 @@ func run() -> void:
 	wave.combat_modifiers.apply_buff(load("res://data/growth/range.tres"))
 	var boosted := attack.get_attack_stats()
 	check(is_equal_approx(boosted.damage, raw.damage * 1.2) and is_equal_approx(boosted.interval, raw.interval / 1.12), "共享伤害与加法攻速增益只叠加一次")
-	check(boosted.distance == raw.distance and not attack.get_combat_stats().has("range"), "通用覆盖范围不虚报纯弹丸收益")
+	check(boosted.distance > raw.distance and attack.get_combat_stats().has("range"), "正式范围成长同步扩大镜梭实际射程与显示")
 	for level in range(2, 5):
 		skills.candidates()
 		wave.skill_draft._choose(growth.state.level, StringName("skill:mirror_mark:%d" % level))

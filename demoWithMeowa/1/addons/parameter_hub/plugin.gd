@@ -52,6 +52,7 @@ func _enter_tree() -> void:
 	_hint.text = "选择参数，在检查器修改原值；双击或点击“定位来源”跳转。\nStyle 只切视觉和天气；镜头独立调节。"
 	_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(_hint)
+	_ensure_scroll_layout()
 	add_dock(_dock)
 	scene_changed.connect(_scene_changed)
 	scene_closed.connect(_scene_closed)
@@ -65,6 +66,33 @@ func _exit_tree() -> void:
 	remove_dock(_dock)
 	_dock.queue_free()
 	_catalog.entries.clear()
+
+func _ensure_scroll_layout() -> void:
+	var column := _search.get_parent() as VBoxContainer
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	column.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	# 同组隐藏页签也参与最小尺寸计算，滚动内容不能撑高整个编辑器。
+	if column.get_parent() == _dock:
+		var scroll := ScrollContainer.new()
+		scroll.name = "ParameterScroll"
+		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+		scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		_dock.remove_child(column)
+		_dock.add_child(scroll)
+		scroll.add_child(column)
+	# 长资源路径和说明只在说明区滚动，保留上方参数列表的空间。
+	if _hint.get_parent() == column:
+		var hint_scroll := ScrollContainer.new()
+		hint_scroll.name = "ParameterDescriptionScroll"
+		hint_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		hint_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+		hint_scroll.custom_minimum_size.y = 80
+		_hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		column.remove_child(_hint)
+		column.add_child(hint_scroll)
+		hint_scroll.add_child(_hint)
 
 func _scene_changed(_scene: Node) -> void:
 	_refresh.call_deferred()
@@ -91,6 +119,8 @@ func _ensure_combat_controls() -> void:
 
 func _refresh() -> void:
 	if not is_instance_valid(_tree): return
+	# 工具脚本热重载后沿用现有控件，也补齐旧面板的尺寸隔离。
+	_ensure_scroll_layout()
 	_ensure_combat_controls()
 	var scene := EditorInterface.get_edited_scene_root()
 	if scene and scene.scene_file_path in COMBAT_SCENES:

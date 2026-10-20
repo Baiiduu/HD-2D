@@ -40,7 +40,7 @@ func _can_reuse(positions: PackedVector3Array, active: PackedByteArray,
 
 func plan(cells: Dictionary, positions: PackedVector3Array, ids: PackedInt64Array,
 		active: PackedByteArray, spacing: PackedFloat64Array,
-		bodies: PackedFloat64Array, cell_size: float, revision := -1) -> PackedVector3Array:
+		bodies: PackedFloat64Array, cell_size: float, revision := -1, cohort := -1) -> PackedVector3Array:
 	# A nonnegative revision must change whenever membership, IDs, active flags,
 	# body radii or spacing changes. WaveEnemySpatialIndex owns this contract.
 	candidate_pairs = 0
@@ -59,13 +59,16 @@ func plan(cells: Dictionary, positions: PackedVector3Array, ids: PackedInt64Arra
 	for pair in range(0, _pairs.size(), 2):
 		var a := _pairs[pair]
 		var b := _pairs[pair + 1]
+		var write_a := cohort < 0 or a % 2 == cohort
+		var write_b := cohort < 0 or b % 2 == cohort
+		if not write_a and not write_b: continue
 		if count_metrics: candidate_pairs += 1
 		var pair_spacing := (spacing[a] + spacing[b]) * 0.5
 		var offset := positions[a] - positions[b]
 		if offset.x * offset.x + offset.z * offset.z >= pair_spacing * pair_spacing: continue
 		var force := OriginalIndex.crowd_pair_force(offset, pair_spacing, bodies[a] + bodies[b], ids[a], ids[b])
-		forces[a] += force
-		forces[b] -= force
+		if write_a: forces[a] += force
+		if write_b: forces[b] -= force
 		if count_metrics: accepted_pairs += 1
 	return forces
 

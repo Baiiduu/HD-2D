@@ -51,6 +51,38 @@ func run() -> void:
 	check(merged.mesh.get_faces().size() == 72, "all original triangles are retained")
 	var bounds := merged.global_transform * merged.get_aabb()
 	check(bounds.position.is_equal_approx(Vector3(0.5, -0.5, 0.5)) and bounds.size.is_equal_approx(Vector3(2, 1, 1)), "merged transform preserves both world footprints")
+	var extra := owner_at(Vector3(3, 0, 1))
+	await settle()
+	var record = load("res://scripts/rendering/building_occlusion.gd").Building.new(a, true)
+	record.refresh_bounds()
+	record.blocked = true
+	record.advance(0.03, 0.25, 0.12, 0.25, 0.18)
+	await settle()
+	check(a.get_child(0) not in batch._sources and b.get_child(0) in batch._sources and extra.get_child(0) in batch._sources, "fading a prop releases only its contribution while other props remain batched")
+	var fading_batch: MeshInstance3D = batch._batches[0]
+	record.advance(0.03, 0.25, 0.12, 0.25, 0.18)
+	await settle()
+	check(batch._batches[0] == fading_batch and a.get_child(0).transparency > 0.3, "fade progress changes original geometry without rebuilding batches every frame")
+	a.add_child(Node3D.new())
+	record.refresh_bounds()
+	record.advance(0.0, 0.25, 0.12, 0.25, 0.18)
+	await settle()
+	check(batch._batches[0] == fading_batch and is_equal_approx(record.amount, 0.5), "refreshing geometry retains the fade and batch exclusion")
+	extra.reparent(a, true)
+	batch.request_rebuild()
+	await settle()
+	check(batch._sources.is_empty(), "a planter fade also releases geometry registered by its nested lamp")
+	extra.reparent(world, true)
+	batch.request_rebuild()
+	await settle()
+	record.blocked = false
+	record.advance(1.0, 0.25, 0.12, 0.25, 0.18)
+	await settle()
+	check(a.get_child(0) in batch._sources and is_zero_approx(a.get_child(0).transparency), "fully restored props return to shared batches")
+	record.release()
+	record = null
+	extra.free()
+	await settle()
 	b.position.x = 20.0
 	b.force_update_transform()
 	await settle()
@@ -104,9 +136,16 @@ func run() -> void:
 
 func formal_world() -> void:
 	world = load("res://scenes/world/world.tscn").instantiate()
+	world.get_node("WorldEntry").preview_on_direct_run = false
+	world.get_node("WorldMainMenu").show_on_world_start = false
 	world.get_node("LoadoutUI").save_enabled = false
+	world.get_node("GameSettingsUI").save_graphics_settings = false
+	world.get_node("BuildingOcclusion").enabled = false
 	world.get_node("WavePrototype").process_mode = Node.PROCESS_MODE_DISABLED
 	world.get_node("MapEffects/BGM").music_enabled = false
+	world.get_node("MapEffects/CoreFeedbackAudio").enabled = false
+	world.get_node("MapEffects/Weather").rain_audio_enabled = false
+	world.get_node("MapEffects/Weather").wind_audio_enabled = false
 	batch = world.get_node("StaticGeometryBatch")
 	batch.enabled = true
 	root.add_child(world)
@@ -118,7 +157,16 @@ func formal_world() -> void:
 	for source in batch._sources: original_faces += source.mesh.get_faces().size()
 	for replacement in batch._batches: merged_faces += replacement.mesh.get_faces().size()
 	check(original_faces == merged_faces, "formal batches preserve every source triangle")
-	var planter: TreePlanter = world.get_node("WorldDetails/BattleCourts/TreePlanter")
+	var planter: TreePlanter
+	for prop in world.get_node("WorldDetails/BattleCourts").get_children():
+		if prop is TreePlanter:
+			planter = prop
+			break
+	check(planter != null, "formal scene includes a real planter for collision and reflection checks")
+	if planter == null:
+		world.queue_free()
+		await settle()
+		return
 	var collider := planter.get_node("PlanterGeometry/PlanterCollision") as StaticBody3D
 	var collider_rid := collider.get_rid()
 	var tree := planter.get_node("PlanterGeometry/Tree") as MeshInstance3D

@@ -115,7 +115,7 @@ func _wheel(center: Vector3, radius: float) -> void:
 	var hub := CylinderShape3D.new()
 	hub.radius = 0.075
 	hub.height = 0.16
-	_collide(hub, center, rotation, "WheelHub")
+	_collide(hub, center, rotation, "WheelHub", &"metal")
 	for index in 8:
 		_solid_box(center, Vector3(0.045, 0.045, radius * 1.72), "wood_frame", Vector3(index * PI / 8, 0, 0), "WheelSpoke")
 
@@ -224,7 +224,7 @@ func _sack(base: Vector3, width: float, height: float) -> void:
 	if _collision_body:
 		var shape := ConvexPolygonShape3D.new()
 		shape.points = mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
-		_collide(shape, base, Vector3.ZERO, "SackBody")
+		_collide(shape, base, Vector3.ZERO, "SackBody", &"fabric")
 	var neck := base + Vector3(-width * 0.058, height * 0.86, 0)
 	_solid_taper(neck, width * 0.1, width * 0.17, height * 0.14, "fabric", 12)
 	_ring(neck, width * 0.13, 0.025, "rope")
@@ -240,7 +240,7 @@ func _solid_taper(center: Vector3, bottom: float, top: float, height: float, key
 	if not _collision_body: return
 	var shape := ConvexPolygonShape3D.new()
 	shape.points = mesh.get_mesh_arrays()[Mesh.ARRAY_VERTEX]
-	_collide(shape, center, Vector3.ZERO, key.capitalize() + "Body")
+	_collide(shape, center, Vector3.ZERO, key.capitalize() + "Body", _surface_for_material(key))
 
 func _solid_ring(center: Vector3, radius: float, thickness: float, key: String, rotation := Vector3.ZERO) -> void:
 	var mesh := TorusMesh.new()
@@ -249,7 +249,7 @@ func _solid_ring(center: Vector3, radius: float, thickness: float, key: String, 
 	mesh.rings = 32
 	mesh.ring_segments = 8
 	_append(mesh, key, center, rotation, Vector2(TAU * radius, PI * thickness))
-	if _collision_body: _collide(mesh.create_trimesh_shape(), center, rotation, "HollowRim")
+	if _collision_body: _collide(mesh.create_trimesh_shape(), center, rotation, "HollowRim", _surface_for_material(key))
 
 func _flower(base: Vector3, kind_index: int) -> void:
 	while _plants.size() < PLANTS.size():

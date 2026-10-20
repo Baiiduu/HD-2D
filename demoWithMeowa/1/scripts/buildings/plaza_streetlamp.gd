@@ -68,7 +68,7 @@ func _build_geometry() -> void:
 			head.get_node(light_name).position.y = 0.93
 		_heads.append(head)
 	if collision_enabled:
-		var body := _body("LampCollision")
+		var body := _body("LampCollision", &"metal")
 		var shape := BoxShape3D.new()
 		shape.size = Vector3(0.58, 0.27, 0.58)
 		_collider(body, shape, Vector3(0, shape.size.y * 0.5, 0))

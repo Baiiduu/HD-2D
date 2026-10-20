@@ -26,7 +26,9 @@ func get_attack_stats(level := -1, modifiers: RunCombatModifiers = null) -> Dict
 func get_combat_stats(modifiers: RunCombatModifiers = null) -> Dictionary:
 	if not enabled or skill_level <= 0: return {}
 	var stats := get_attack_stats(skill_level, modifiers)
-	return {"name": "反射镜印", "damage": stats.damage, "interval": stats.interval}
+	var result := {"name": "反射镜印", "damage": stats.damage, "interval": stats.interval}
+	if session and session.growth_rules: result.range = stats.distance
+	return result
 
 func describe_skill_upgrade(from_level: int, to_level: int) -> String:
 	var after := get_attack_stats(to_level)
@@ -43,7 +45,8 @@ func _physics_process(delta: float) -> void:
 func launch(point: Vector3, direction: Vector3, stats: Dictionary) -> void:
 	super.launch(point, direction, stats)
 	var effect: MirrorProjectileEffect = _shots[-1].effect
-	if match_player_pixel_density: effect.pixel_size = _player_pixel_size()
+	if not effect.has_meta(&"base_pixel_size"): effect.set_meta(&"base_pixel_size", effect.pixel_size)
+	effect.pixel_size = (_player_pixel_size() if match_player_pixel_density else float(effect.get_meta(&"base_pixel_size"))) * float(stats.get("growth_scale", 1.0))
 	effect.motion_speed = stats.speed
 	effect._update_head(get_viewport().get_camera_3d())
 
@@ -77,6 +80,13 @@ func _new_normal(enemy: WaveEnemy, point: Vector3, shot: Dictionary) -> Vector3:
 		nearest = distance
 		desired = direction
 	return (desired - shot.direction).normalized()
+
+func prepare_feedback() -> void:
+	super.prepare_feedback()
+	if not mark_scene or not _mark_effects.is_empty(): return
+	var effect := _acquire_mark()
+	effect.prepare_feedback()
+	_release_mark(effect)
 
 func _acquire_mark() -> MirrorMarkEffect:
 	var effect: MirrorMarkEffect

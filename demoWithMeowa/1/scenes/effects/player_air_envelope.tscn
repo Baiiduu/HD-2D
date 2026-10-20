@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/player/player_air_envelope.gd" id="script"]
 [ext_resource type="Shader" path="res://shaders/combat/player_air_envelope.gdshader" id="shader"]
+[ext_resource type="Texture2D" path="res://assets/meowa/combat/speed_flow/streamline.png" id="brush"]
 
 [sub_resource type="FastNoiseLite" id="Noise"]
 seed = 2761
@@ -19,19 +20,10 @@ noise = SubResource("Noise")
 [sub_resource type="ShaderMaterial" id="AirMaterial"]
 shader = ExtResource("shader")
 shader_parameter/flow_noise = SubResource("NoiseTexture")
-
-[sub_resource type="CylinderMesh" id="Carrier"]
-top_radius = 1.0
-bottom_radius = 1.0
-height = 1.0
-radial_segments = 32
-rings = 12
-cap_top = false
-cap_bottom = false
+shader_parameter/flow_brush = ExtResource("brush")
 
 [node name="AirEnvelope" type="MeshInstance3D"]
 script = ExtResource("script")
-mesh = SubResource("Carrier")
 material_override = SubResource("AirMaterial")
 cast_shadow = 0
 gi_mode = 0

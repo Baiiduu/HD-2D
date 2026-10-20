@@ -80,7 +80,7 @@ func advance(delta: float, camera: Camera3D) -> bool:
 		anchor_screen = camera.unproject_position(event.world_position)
 		position = (anchor_screen + motion_offset).round()
 		visible = Rect2(-_cull_margin, get_viewport_rect().size + _cull_margin * 2.0).has_point(position)
-	queue_redraw()
+	if visible: queue_redraw()
 	return true
 
 func release() -> void:

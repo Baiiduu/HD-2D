@@ -166,7 +166,7 @@ func contact(start: Vector3, end: Vector3, heading: Vector3) -> Dictionary:
 	return _legacy_contact(start, end, heading)
 
 func _legacy_contact(start: Vector3, end: Vector3, heading: Vector3) -> Dictionary:
-	var radius := rules.crowd_contact_radius + (rules.eccentric_capture_margin if _eccentric else 0.0)
+	var radius := capture_radius()
 	var length := TerrainPath.horizontal_distance(start, end)
 	session.get_nearby_enemies_into((start + end) * 0.5, radius + length * 0.5, _ignored, _nearby)
 	for enemy in _nearby:
@@ -199,7 +199,7 @@ func _legacy_contact(start: Vector3, end: Vector3, heading: Vector3) -> Dictiona
 
 
 func _view_contact(start: Vector3, end: Vector3, heading: Vector3) -> Dictionary:
-	var radius := rules.crowd_contact_radius + (rules.eccentric_capture_margin if _eccentric else 0.0)
+	var radius := capture_radius()
 	var length := TerrainPath.horizontal_distance(start, end)
 	_query_view.nearby_slots_into((start + end) * 0.5, radius + length * 0.5, _ignored, _nearby_slots)
 	for enemy_slot in _nearby_slots:
@@ -232,8 +232,14 @@ func _view_contact(start: Vector3, end: Vector3, heading: Vector3) -> Dictionary
 	return hit
 
 ## 提前识别只服务于持续环绕，不能把单怪短弧也推到近身技能射程之外。
+func capture_radius() -> float:
+	var radius := rules.crowd_contact_radius + (rules.eccentric_capture_margin if _eccentric else 0.0)
+	if _eccentric and is_instance_valid(session) and is_instance_valid(session.player) and session.player.sword_rules and session.combat_modifiers.range_multiplier() > 1.0:
+		radius = maxf(radius, session.player.sword_rules.flight_range * session.combat_modifiers.range_multiplier() + 0.05)
+	return radius
+
 func _resolve_contact(candidate: Dictionary, start: Vector3, end: Vector3, heading: Vector3) -> Dictionary:
-	if not _eccentric or rules.eccentric_capture_margin <= 0.0: return candidate
+	if not _eccentric or capture_radius() <= rules.crowd_contact_radius: return candidate
 	var point := start.lerp(end, candidate.entry)
 	var focus := _eccentric_outline(candidate.enemy, point)
 	if not focus.is_empty():

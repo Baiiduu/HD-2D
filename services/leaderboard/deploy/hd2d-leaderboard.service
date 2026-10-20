@@ -1,0 +1,29 @@
+[Unit]
+Description=HD2D leaderboard API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=leaderboard
+Group=leaderboard
+WorkingDirectory=/opt/hd2d-leaderboard/current
+EnvironmentFile=/etc/hd2d-leaderboard/leaderboard.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/hd2d-leaderboard/current/.venv/bin/python -m uvicorn leaderboard.app:app --host 127.0.0.1 --port 18080 --workers 1 --proxy-headers --forwarded-allow-ips=127.0.0.1
+Restart=on-failure
+RestartSec=3
+KillSignal=SIGINT
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+StateDirectory=hd2d-leaderboard
+UMask=0077
+MemoryHigh=200M
+MemoryMax=320M
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target

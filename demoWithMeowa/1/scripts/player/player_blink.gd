@@ -16,6 +16,7 @@ var _moved := false
 var _facing: StringName
 var _flip := false
 var _echoes: Array[Dictionary] = []
+var _idle_echoes: Array[Dictionary] = []
 var _buffer_remaining := 0.0
 var _buffer_direction := Vector3.ZERO
 var movement_locked: bool:
@@ -127,10 +128,31 @@ func _teleport() -> void:
 	_player.reset_physics_interpolation()
 	_player.blink_travelled.emit(start, _player.global_position)
 
-func _spawn_echo(point: Vector3, index: int) -> void:
-	var source := _player.sprite
+func prepare_feedback() -> void:
+	if not _player.blink_enabled: return
+	while _idle_echoes.size() < _player.blink_echo_count: _idle_echoes.append(_create_echo())
+
+func _create_echo() -> Dictionary:
 	var echo := Sprite3D.new()
 	echo.name = "BlinkEcho"
+	echo.texture = _player.sprite.texture
+	echo.pixel_size = _player.sprite.pixel_size
+	echo.billboard = _player.sprite.billboard
+	echo.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	echo.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
+	echo.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+	var material := ShaderMaterial.new()
+	material.shader = ECHO_SHADER
+	material.set_shader_parameter("sprite_texture",echo.texture)
+	echo.material_override = material
+	_player.get_parent().add_child(echo)
+	echo.hide()
+	return {"sprite":echo,"material":material}
+
+func _spawn_echo(point: Vector3, index: int) -> void:
+	var source := _player.sprite
+	var entry: Dictionary = _idle_echoes.pop_back() if not _idle_echoes.is_empty() else _create_echo()
+	var echo: Sprite3D = entry.sprite
 	echo.texture = source.texture
 	echo.pixel_size = source.pixel_size
 	echo.offset = source.offset
@@ -141,8 +163,7 @@ func _spawn_echo(point: Vector3, index: int) -> void:
 	echo.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	echo.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
 	echo.add_to_group(&"blink_echoes")
-	var material := ShaderMaterial.new()
-	material.shader = ECHO_SHADER
+	var material: ShaderMaterial = entry.material
 	material.set_shader_parameter("sprite_texture", source.texture)
 	material.set_shader_parameter("echo_color", _player.blink_echo_color)
 	material.set_shader_parameter("energy", _player.blink_echo_energy)
@@ -150,10 +171,10 @@ func _spawn_echo(point: Vector3, index: int) -> void:
 	var opacity := _player.blink_echo_opacity * (1.0 - float(index) / maxf(1.0, _player.blink_echo_count) * 0.45)
 	material.set_shader_parameter("opacity", opacity)
 	echo.material_override = material
-	_player.get_parent().add_child(echo)
 	echo.global_transform = source.global_transform
 	echo.global_position += point - _player.global_position
 	echo.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+	echo.show()
 	_echoes.append({"sprite": echo, "material": material, "elapsed": 0.0,
 		"lifetime": maxf(_player.blink_echo_lifetime, 0.05), "opacity": opacity})
 
@@ -163,7 +184,9 @@ func _process(delta: float) -> void:
 		var echo := _echoes[index]
 		echo.elapsed += delta
 		if echo.elapsed >= echo.lifetime:
-			echo.sprite.queue_free()
+			echo.sprite.hide()
+			echo.sprite.remove_from_group(&"blink_echoes")
+			_idle_echoes.append(echo)
 			_echoes.remove_at(index)
 		else:
 			echo.material.set_shader_parameter("opacity", echo.opacity * pow(1.0 - echo.elapsed / echo.lifetime, 1.25))
@@ -187,6 +210,6 @@ func cancel() -> void:
 	if active: _finish()
 
 func _exit_tree() -> void:
-	for echo in _echoes:
+	for echo in _echoes + _idle_echoes:
 		if is_instance_valid(echo.sprite):
 			echo.sprite.queue_free()

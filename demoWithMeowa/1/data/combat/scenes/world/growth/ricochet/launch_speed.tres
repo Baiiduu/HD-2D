@@ -7,7 +7,7 @@
 [resource]
 script = ExtResource("3_3ckla")
 attribute = 3
-bonus_per_level = 0.1
+bonus_per_level = 0.2
 id = &"R01"
 title = "弹射速度"
 icon = ExtResource("2_h8b66")

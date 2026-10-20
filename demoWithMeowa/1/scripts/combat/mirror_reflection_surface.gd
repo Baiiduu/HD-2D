@@ -1,5 +1,7 @@
 extends StaticBody3D
 
+const COLLISION_SURFACE := preload("res://scripts/core/collision_surface.gd")
+
 ## 独立反射层：走路、怪物导航和不反弹的攻击仍只查询原有层。
 const COLLISION_LAYER := 4
 signal reflected
@@ -10,6 +12,7 @@ var _shape := BoxShape3D.new()
 var _follow: RemoteTransform3D
 
 func _init() -> void:
+	COLLISION_SURFACE.mark(self, &"mirror")
 	collision_layer = 0
 	collision_mask = 0
 	var collision := CollisionShape3D.new()

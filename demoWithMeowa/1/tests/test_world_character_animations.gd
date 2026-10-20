@@ -53,6 +53,34 @@ func animator_checks() -> void:
 		check(bool(animator.call("request_bounce", Vector3.LEFT)), "预留反弹素材可独立触发显示")
 		animator.render(0.1)
 		check(player.sprite.flip_h, "反弹显示跟随出射方向")
+		var bounce_age := animator._attack_age
+		animator.play_attack(&"flight_attack", Vector3.RIGHT, 0.2)
+		check(animator._attack == &"bounce" and animator._attack_heading == Vector3.LEFT and is_equal_approx(animator._attack_age, bounce_age), "真实剑术继续结算时不覆盖尚未播完的反弹动作")
+		animator.render(0.0)
+		check(is_equal_approx(animator._attack_age, bounce_age), "战斗冻结不推进反弹动作")
+		animator.render(0.71)
+		check(animator._attack.is_empty() and animator.render(0.0), "反弹单次播完后继续原滑行循环")
+		animator.request_bounce(Vector3.RIGHT)
+		animator.render(0.1)
+		animator.request_bounce(Vector3.LEFT)
+		check(is_zero_approx(animator._attack_age) and animator._attack_heading == Vector3.LEFT, "连续真实碰墙从首帧响应新的出射方向")
+		animator.cancel_attack()
+		check(animator._attack.is_empty(), "取消弹射同时清理反弹动作")
+		animator.visuals.bounce = frames(&"side")
+		for heading in [Vector3.RIGHT, Vector3.LEFT, Vector3.FORWARD, Vector3.BACK, Vector3(-0.2, 0, -1).normalized(), Vector3(0.2, 0, 1).normalized()]:
+			check(animator.request_bounce(heading), "所有出射方向复用侧向反弹素材：" + str(heading))
+			animator.render(0.0)
+			check(player.sprite.texture == animator.visuals.bounce.get_frame_texture(&"side", 0) and player.sprite.flip_h == (heading.x < 0.0), "复用相同首帧，仅按屏幕左右分量镜像")
+		var camera := Camera3D.new()
+		root.add_child(camera)
+		camera.rotation.y = PI * 0.5
+		player.movement_camera = camera
+		for heading in [Vector3.FORWARD, Vector3.BACK, Vector3.RIGHT, Vector3.LEFT]:
+			check(animator.request_bounce(heading), "旋转镜头后各方向仍能播放同一反弹素材")
+			animator.render(0.0)
+			check(player.sprite.flip_h == (heading == Vector3.BACK), "镜像以当前镜头为准，纯上下不因浮点余量翻转")
+		camera.free()
+		player.movement_camera = null
 	else: check(false, "人物动画须预留真实反弹接口")
 	player.free()
 
@@ -83,8 +111,22 @@ func world_checks() -> void:
 	check(player.animations.get_frame_texture(&"run", 0).resource_path.contains("/finalart/walk/"), "行走接入战斗形态八帧")
 	var visuals := world.get_node("BattleConfiguration").configuration.action_visuals as PlayerActionVisuals
 	check(visuals.normal_attack != null and visuals.flight != null, "World 已绑定普攻和弹射动作素材")
+	check(visuals.bounce != null, "World 绑定已确认并去掉第十帧的人物反弹动画")
+	if visuals.bounce:
+		check(visuals.bounce.get_frame_count(&"side") == 9 and not visuals.bounce.get_animation_loop(&"side"), "反弹动画仅播放前九帧且不循环")
+		check(visuals.bounce.get_frame_texture(&"side", 8).resource_path.ends_with("bounce_side/frame_09.png"), "反弹尾帧使用第九帧，不重新加入被移除的姿势")
+		var duration := 0.0
+		for index in visuals.bounce.get_frame_count(&"side"):
+			duration += visuals.bounce.get_frame_duration(&"side", index) / visuals.bounce.get_animation_speed(&"side")
+			check(visuals.bounce.get_frame_texture(&"side", index).get_size() == Vector2(96, 96), "反弹每帧保持原生 96×96 尺寸")
+		check(is_equal_approx(duration, 0.23), "移除第十帧后保留九帧原有节奏，共 0.23 秒")
+		for heading in [Vector3.RIGHT, Vector3.LEFT, Vector3.FORWARD, Vector3.BACK]:
+			check(player.action_animator.request_bounce(heading), "World 原生九帧资源支持各个出射方向")
+		player.action_animator.cancel_attack()
 	var native_imports := true
-	for source in [player.animations, visuals.normal_attack, visuals.flight]:
+	var sources := [player.animations, visuals.normal_attack, visuals.flight]
+	if visuals.bounce: sources.append(visuals.bounce)
+	for source in sources:
 		for name in source.get_animation_names():
 			for index in source.get_frame_count(name):
 				var imported := ConfigFile.new()
@@ -93,7 +135,7 @@ func world_checks() -> void:
 				else:
 					native_imports = native_imports and imported.get_value("params", "compress/mode") == 0 and imported.get_value("params", "detect_3d/compress_to") == 0 and imported.get_value("params", "process/size_limit") == 0
 	check(native_imports, "全部动作帧保留原尺寸和无损像素，首次用于 3D 也不自动切换有损压缩")
-	check(visuals.charge == null and visuals.get("bounce") == null, "蓄力和反弹保留空槽，不伪造动作")
+	check(visuals.charge == null, "本次不替换蓄力动作")
 	var sprite := player.get_node("Sprite") as Sprite3D
 	check(is_equal_approx(sprite.pixel_size * sprite.scale.x, 0.018), "World 拉远镜头后以 0.9 显示缩放补偿人物辨识度，保留原生像素")
 	var texture := player.animations.get_frame_texture(&"idle", 0)
@@ -114,9 +156,18 @@ func world_checks() -> void:
 	check(is_equal_approx(player.action_animator._attack_duration, player.sword._settings.duration()), "真实剑术出手事件传入本刀时长，不由贴图帧数决定伤害时序")
 	player.action_visuals = player.action_visuals.duplicate()
 	player.action_animator.visuals = player.action_visuals
-	player.action_visuals.bounce = frames(&"default")
+	player.action_animator.cancel_attack()
 	player.body_ricochet.impact_recorded.emit(RicochetImpact.new(Vector3.ZERO, Vector3.RIGHT, Vector3.LEFT * 5.0, Vector3.RIGHT * 4.0, 1, 1, 0.0))
-	check(player.action_animator._attack == &"bounce", "真实反弹事件已连到空槽背后的动作接口")
+	check(player.action_animator._attack.is_empty(), "通用反弹快照不绕过建筑碰撞限制直接播放人物动作")
+	player.action_animator.cancel_attack()
+	player.body_ricochet.crowd_deflected.emit(Vector3.ZERO, Vector3.RIGHT, Vector3.FORWARD)
+	check(player.action_animator._attack.is_empty(), "怪群接触与环绕转向不播放蹬墙动作")
+	player.action_animator.request_bounce(Vector3.RIGHT)
+	player.body_ricochet.crowd_deflected.emit(Vector3.ZERO, Vector3.RIGHT, Vector3.FORWARD)
+	check(player.action_animator._attack.is_empty(), "转入怪群绕行立即交回飞行显示，不残留此前蹬墙动作")
+	player.action_animator.play_attack(&"flight_attack", Vector3.RIGHT, 0.2)
+	player.body_ricochet.crowd_deflected.emit(Vector3.ZERO, Vector3.RIGHT, Vector3.FORWARD)
+	check(player.action_animator._attack == &"flight_attack", "怪群绕行不取消正常飞行攻击显示")
 	player.body_ricochet.cancel()
 	var shape := player.get_node("Collision").shape as CapsuleShape3D
 	check(is_equal_approx(shape.height, 1.06592) and is_equal_approx(shape.radius, 0.24), "美术替换不改变人物碰撞体")

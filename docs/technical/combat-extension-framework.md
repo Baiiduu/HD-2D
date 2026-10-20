@@ -83,6 +83,12 @@ CPU 原生候选由 `SceneCombatConfiguration.native_swarm_enabled` 单独选择
 
 自定义 `WaveEnemy` 默认保留自己的回调；内置脚本白名单之外的 `SlimeEnemy` 子类也不自动接管。新脚本只有在符合共用 `_advance_wave_step()`、无额外 `_physics_process()` 规则，并保持已绑定目标与纯战斗资格接口时，才可覆写 `supports_central_update()` 返回 true。改写了 `WavePrototype` 战斗谓词的自定义控制器不启用此共享资格快路。集中更新期间的外部伤害／冻结／结束继续经过控制器公共入口，不直接改私有战斗状态。
 
+### 普通追击分组降频
+
+地图配置 `pursuit_throttle_threshold` 控制启用数量；World 默认 80，City 与通用配置默认 0（关闭）。参数总览「战斗与成长」可搜索「普通追击降频启用数量」。达到已登记存活数量后，复用普通追击／站立避让接口的怪物按稳定槽位分两组，交替物理步计算寻路意图和避让；60Hz 物理下，每怪普通决策为 30Hz，未到决策步延续上一物理步的转向。共享避让规划只累加当前组所需的成对作用，特殊退步使用实时局部查询，不为少量请求重算全群。
+
+身体移动、真实墙体／地形碰撞、空间提交、近身留白、接触伤害和招式状态机继续每个物理步执行，路线与攻击时钟不累计补算。出生、恢复、瞬移、切换目标／导航、跨入停靠距离或配置变更立即重判；外力期间不延用旧转向。只允许延用普通转向意图，命中与碰撞查询不能跨帧复用。新怪复用 `CreatureEnemy._move_chase()` 即参与；自定义招式继续自行逐帧推进，勿把整个 `_physics_process()` 隔帧跳过。原生模拟原型将追击决策与运动合并，启用降频时此调用回退到拆分后的脚本路径。
+
 ### 蓄力预测内的查询复用
 
 `PlayerActionVisuals.deduplicate_charge_preview` 默认关闭，独立于已有显示请求合并开关；后者合并多次物理显示请求，前者只优化一次同步预测内部的数据读取和障碍查询。真实运动、剑术伤害和实际环绕不消费预测结果。
@@ -126,6 +132,10 @@ body.shape_owner_add_shape(owner_id, extra_shape)
 ## 表现和诊断
 
 怪物反馈复用 `EnemyFeedbackPool`；战斗声音走 `MapEffects/GameAudio.request()` 的预算、优先级与混音；伤害数字来自真实扣血事件并使用 `DamageNumbers` 的节点池。新增技能特效可沿用已有 LightPierce／Prism／Storm 的共享材质和节点池方式，保持原生像素、遮挡和完整动画，结束后停处理。按需要复用现有池，不额外创建一个通用池管理器。
+
+正式蓄力的 `AimPathPreview.defer_display_updates=true` 将多次显示请求合并到镜头之后的优先级 3 阶段，预测和目标选择仍实时执行；空目标立即隐藏。独立预览默认保留即时 `display()`／`mark_target()`。同一批伤害数字仍逆序推进和即时回收，批末稳定压紧存活对象；回收回调中新追加的数字本轮不提前推进，清空／重开使旧批次失效。
+
+反馈池可绑定 `EnemyFeedbackPool.terrain`，预热及按需创建的死亡快照继承该地图。尸体经 `ProjectileCollision.visual_wall_contact()` 读取已建立的共享障碍表，仅在完整球体扫掠包围盒（含形状／查询边距）被证明为空时略过原生查询。地面真实三维边界、动态身体和排除 RID 继续实时检查；不创建冷地图缓存，不保存空路段结果。关闭地图证明、地形退出、独立物理线程、异世界、Area／其它查询形状或自定义查询覆写均走原 `wall_contact()`。空气墙仍由原尸体流程逐次排除，不改变弹丸、身体反弹或伤害规则；原生障碍修改继续遵守上方撤销接口。
 
 近身短闪调用 `WaveEnemy.get_contact_feedback_position(origin)` 获取身体接触锚点，头顶伤害数字继续用 `get_damage_feedback_position()`；异形怪可分别覆写，避免把接触特效放到数字位置。持续攻击镜头消费剑术真实命中和 `RicochetStorm.presentation_landed(point, hits, kills, flight_id)`，后者按实际同片落雷合并且冻结中途保留计数，不负责伤害或目标查询。启用持续视觉层次的地图在正常清波后只保留纯视觉反馈短收尾，危险和种子弹丸即时停用；退役视觉仍登记战斗冻结，完成后释放，退出／重试强制清理。
 

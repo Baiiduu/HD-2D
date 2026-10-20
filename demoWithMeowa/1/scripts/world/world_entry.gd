@@ -6,6 +6,10 @@ const VOLUME_FOG = preload("res://shaders/effects/world_entry_volume.gdshader")
 const CLOUD_NOISE = preload("res://assets/effects/world_entry/cloud_noise_atlas.png")
 const WISP_SHADER = preload("res://shaders/effects/world_entry_wisp.gdshader")
 const WISP_TEXTURE = preload("res://assets/meowa/effects/world_entry/cloud_bank_density.png")
+const CITY_SHADER = preload("res://shaders/environment/city_background_blend.gdshader")
+const ENTRY_BUILDING_SHADER = preload("res://shaders/effects/world_entry_building.gdshader")
+const SOFT_FOCUS_SHADER = preload("res://shaders/effects/world_entry_soft_focus.gdshader")
+const EMISSION_FOG = preload("res://scripts/world/world_entry_emission_fog.gd")
 const CLOUD_DEPTH := 96.0
 const PREWARM_PROGRESS := [0.0, 0.4, 0.8, 1.0]
 
@@ -53,6 +57,11 @@ var _wisp_bases: Array[Basis] = []
 var _wisp_directions: Array[Vector3] = []
 var _wisp_retreat_distances: Array[float] = []
 var _wisp_material: ShaderMaterial
+var _soft_focus: MeshInstance3D
+var _soft_focus_material: ShaderMaterial
+var _emission_fog := EMISSION_FOG.new()
+var _building_surfaces: Array[Dictionary] = []
+var _building_materials: Dictionary[ShaderMaterial, ShaderMaterial] = {}
 var _render_wait_frames := 0
 var _drop_next_delta := false
 var _traversal: AudioStreamPlayer
@@ -151,6 +160,7 @@ func _create_effects() -> void:
 	entry_environment.volumetric_fog_albedo = settings.fog_color
 	entry_environment.volumetric_fog_temporal_reprojection_enabled = false
 	camera.environment = entry_environment
+	_prepare_buildings()
 	var focus := camera.focus
 	# 包住完整前向视锥，而不只包住相机位置；转向／侧倾时远景也经过厚云层。
 	var cover := _cloud_cover_bounds(focus)
@@ -164,21 +174,28 @@ func _create_effects() -> void:
 	# 更浓的局部云团提供前后层次；体积与位置固定在世界中。
 	for index in 7:
 		var along := index / 6.0
-		var bank := _cloud_volume("CloudBank%d" % index, Vector3(48, 32, 48))
+		var bank := _cloud_volume("CloudBank%d" % index, Vector3(48, 32, 48) * settings.cloud_bank_scale)
 		var side := -1.0 if index % 2 == 0 else 1.0
-		bank.global_position = focus + _route_offset(along) + _right * side * 4.5
+		var offset := _route_offset(along)
+		var view := Basis(_flight_rotation(along, offset))
+		# 云团固定在各段前侧，让镜头掠过体积边缘，避免一直埋在重叠云团中央。
+		bank.global_position = focus + offset - view.z * 12.0 + view.x * side * 8.0 + view.y * ((index % 3) - 1) * 3.0
 		_fog_banks.append(bank)
 		_bank_materials.append(bank.material as ShaderMaterial)
+		_bank_materials[-1].set_shader_parameter("noise_offset", Vector3(index * 0.17, (index % 3) * 0.27, index * 0.31))
 		_bank_origins.append(bank.global_position)
 	# 地图四周的雾团在散雾时真实退到外围，保留云墙的轮廓与厚度。
 	for index in 8:
 		var angle := TAU * index / 8.0
-		var bank := _cloud_volume("MapBank%d" % index, Vector3(24, 16, 24))
+		var bank := _cloud_volume("MapBank%d" % index, Vector3(24, 16, 24) * settings.cloud_bank_scale)
 		bank.global_position = focus + Vector3(cos(angle) * 11.0, 3.0 + index % 3, sin(angle) * 11.0)
 		_fog_banks.append(bank)
 		_bank_materials.append(bank.material as ShaderMaterial)
+		_bank_materials[-1].set_shader_parameter("noise_offset", Vector3(index * 0.23, 0.5, index * -0.19))
 		_bank_origins.append(bank.global_position)
 	_create_wisps(focus)
+	_create_soft_focus()
+	_emission_fog.prepare(get_parent(), _effects, settings)
 	_spotlight = SpotLight3D.new()
 	_spotlight.name = "PlayerSpotlight"
 	_spotlight.light_color = settings.spotlight_color
@@ -189,6 +206,52 @@ func _create_effects() -> void:
 	_spotlight.light_specular = 0.35
 	_spotlight.shadow_enabled = true
 	_effects.add_child(_spotlight)
+
+func _prepare_buildings() -> void:
+	if not settings.building_atmosphere_enabled: return
+	# 只扫描一次本地图的外围城市；每份原材质共用一份临时材质，不动网格资源。
+	for node in get_tree().get_nodes_in_group(&"distant_city_geometry"):
+		if not node is MeshInstance3D or not get_parent().is_ancestor_of(node) or not node.mesh or node.material_override: continue
+		for surface in node.mesh.get_surface_count():
+			var source := node.get_active_material(surface) as ShaderMaterial
+			if not source or source.shader != CITY_SHADER: continue
+			if not _building_materials.has(source):
+				var material := source.duplicate() as ShaderMaterial
+				material.shader = ENTRY_BUILDING_SHADER
+				for uniform in source.shader.get_shader_uniform_list():
+					if uniform.usage & PROPERTY_USAGE_GROUP: continue
+					var value: Variant = source.get_shader_parameter(uniform.name)
+					if value != null: material.set_shader_parameter(uniform.name, value)
+				material.set_shader_parameter("entry_light_gain", settings.building_light_gain)
+				_building_materials[source] = material
+			_building_surfaces.append({"mesh": weakref(node), "surface": surface, "original": node.get_surface_override_material(surface)})
+			node.set_surface_override_material(surface, _building_materials[source])
+
+func _restore_buildings() -> void:
+	for item in _building_surfaces:
+		var mesh: MeshInstance3D = item.mesh.get_ref()
+		if mesh: mesh.set_surface_override_material(item.surface, item.original)
+	_building_surfaces.clear()
+	_building_materials.clear()
+
+func _create_soft_focus() -> void:
+	if not settings.building_atmosphere_enabled or settings.building_edge_blur_strength <= 0.0: return
+	_soft_focus_material = ShaderMaterial.new()
+	_soft_focus_material.shader = SOFT_FOCUS_SHADER
+	# 每帧只处理一次，先模糊真实画面，再照常叠加各层云片；不反复覆盖前层雾色。
+	_soft_focus_material.render_priority = -127
+	_soft_focus_material.set_shader_parameter("blur_radius_pixels", settings.building_edge_softness_pixels)
+	_soft_focus_material.set_shader_parameter("blur_strength", settings.building_edge_blur_strength)
+	var quad := QuadMesh.new()
+	quad.size = Vector2(2.0, 2.0)
+	_soft_focus = MeshInstance3D.new()
+	_soft_focus.name = "EntrySilhouetteBlur"
+	_soft_focus.mesh = quad
+	_soft_focus.material_override = _soft_focus_material
+	_soft_focus.extra_cull_margin = 16384.0
+	_soft_focus.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_soft_focus.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
+	_effects.add_child(_soft_focus)
 
 func _view_size(depth: float) -> Vector2:
 	var viewport := get_viewport().get_visible_rect().size
@@ -254,8 +317,13 @@ func _create_wisps(focus: Vector3) -> void:
 	_wisp_material.set_shader_parameter("mist_texture", WISP_TEXTURE)
 	_wisp_material.set_shader_parameter("mist_color", settings.fog_color)
 	_wisp_material.set_shader_parameter("curl_strength", settings.fog_curl_strength)
+	_wisp_material.set_shader_parameter("light_response", settings.mist_light_response if settings.building_atmosphere_enabled else 0.0)
+	_wisp_material.set_shader_parameter("light_threshold", settings.mist_light_threshold)
+	_wisp_material.set_shader_parameter("depth_bulge", settings.wisp_depth_bulge)
 	var quad := QuadMesh.new()
 	quad.size = Vector2(16, 16)
+	quad.subdivide_width = 6
+	quad.subdivide_depth = 6
 	# 每组云团面向此段真实运镜方向，并按视野放大；运动切线与镜头朝向并不相同。
 	for index in 9:
 		var along := index / 8.0
@@ -265,7 +333,7 @@ func _create_wisps(focus: Vector3) -> void:
 		var view := _view_size(depth)
 		var plane_basis := view_basis.scaled(Vector3.ONE * view.y * 2.0 / quad.size.y)
 		for side in [-1.0, 1.0]:
-			var point: Vector3 = focus + offset - view_basis.z * depth + view_basis.x * side * view.x * 0.2 + view_basis.y * side * view.y * 0.08
+			var point: Vector3 = focus + offset - view_basis.z * (depth + side * 1.5) + view_basis.x * side * view.x * 0.2 + view_basis.y * side * view.y * 0.08
 			_add_wisp(quad, point, plane_basis, side, index)
 	# 固定在世界中的近、中、远景云片，落稳后仍有可辨认的云团掠过。
 	for index in 3:
@@ -301,6 +369,7 @@ func _cloud_volume(label: String, size: Vector3) -> FogVolume:
 	material.shader = VOLUME_FOG
 	material.set_shader_parameter("fog_color", settings.fog_color)
 	material.set_shader_parameter("noise_atlas", CLOUD_NOISE)
+	material.set_shader_parameter("self_emission", settings.fog_self_emission)
 	var cloud := FogVolume.new()
 	cloud.name = label
 	cloud.shape = RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID
@@ -400,8 +469,8 @@ func _apply(progress: float) -> void:
 	var retreat := reveal * settings.fog_retreat_distance
 	for index in _bank_materials.size():
 		var material := _bank_materials[index]
-		material.set_shader_parameter("density", settings.volume_density * fog_amount * 0.75)
-		material.set_shader_parameter("flow_time", _elapsed * settings.fog_flow_speed)
+		material.set_shader_parameter("density", settings.volume_density * fog_amount * settings.cloud_bank_density_ratio)
+		material.set_shader_parameter("flow_time", _elapsed * settings.fog_flow_speed * (0.8 + (index % 3) * 0.2))
 		material.set_shader_parameter("reveal_origin", point)
 		material.set_shader_parameter("reveal_progress", reveal)
 		material.set_shader_parameter("retreat_distance", settings.fog_retreat_distance)
@@ -418,9 +487,17 @@ func _apply(progress: float) -> void:
 	# 广域云层也须退出整个可见深度，不能在地图外留下雾墙直到最后一帧才消失。
 	_volume_material.set_shader_parameter("retreat_distance", _cover_retreat_distance * settings.fog_retreat_distance / 42.0)
 	_volume_material.set_shader_parameter("curl_strength", settings.fog_curl_strength)
-	_wisp_material.set_shader_parameter("opacity", fog_amount)
+	_wisp_material.set_shader_parameter("opacity", fog_amount * settings.wisp_opacity)
 	_wisp_material.set_shader_parameter("flow_time", _elapsed * settings.fog_flow_speed)
 	_wisp_material.set_shader_parameter("reveal_progress", reveal)
+	_emission_fog.refresh(camera, player)
+	_emission_fog.apply_weight(fog_amount * (1.0 - reveal))
+	if _soft_focus_material:
+		_soft_focus_material.set_shader_parameter("fog_weight", fog_amount / maxf(settings.fog_opacity, 0.001))
+		_soft_focus_material.set_shader_parameter("reveal_origin", point)
+		_soft_focus_material.set_shader_parameter("clear_radius", retreat)
+	for material in _building_materials.values():
+		material.set_shader_parameter("entry_weight", 1.0 - reveal)
 	for index in _wisps.size():
 		var direction := _wisp_directions[index]
 		_wisps[index].global_position = _wisp_origins[index] + direction * reveal * _wisp_retreat_distances[index]
@@ -473,6 +550,8 @@ func _release() -> void:
 	if is_instance_valid(_outline_sprite): _outline_sprite.occlusion_outline_enabled = _outline_was_enabled
 	_outline_sprite = null
 	_outline_was_enabled = false
+	_restore_buildings()
+	_emission_fog.clear()
 	if is_instance_valid(_effects):
 		_effects.hide()
 		_effects.queue_free()
@@ -487,6 +566,8 @@ func _release() -> void:
 	_wisp_directions.clear()
 	_wisp_retreat_distances.clear()
 	_wisp_material = null
+	_soft_focus = null
+	_soft_focus_material = null
 	_effects = null
 	_volume_material = null
 	_cover_retreat_distance = 0.0

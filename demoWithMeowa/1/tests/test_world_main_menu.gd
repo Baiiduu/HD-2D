@@ -3,10 +3,12 @@ extends SceneTree
 const WORLD := "res://scenes/world/world.tscn"
 const MENU := "res://scenes/ui/main_menu.tscn"
 const REQUEST = preload("res://scripts/world/world_entry_request.gd")
+const WORK := "D:/.codexfile/work/audio-preferences-20261020"
 var checks := 0
 var failures: Array[String] = []
 
 func _initialize() -> void:
+	DirAccess.make_dir_recursive_absolute(WORK)
 	create_timer(40.0).timeout.connect(func(): quit(2))
 	node_added.connect(quiet_scene)
 	run.call_deferred()
@@ -17,6 +19,7 @@ func quiet_scene(node: Node) -> void:
 		node.get_node("GameSettingsUI").save_graphics_settings = false
 		node.get_node("MapEffects/BGM").music_enabled = false
 		node.get_node("MapEffects/GameAudio").load_local_mix = false
+		node.get_node("MapEffects/GameAudio").mix_save_path = WORK + "/world-main-menu.cfg"
 		node.get_node("MapEffects/Weather").rain_audio_enabled = false
 		node.get_node("MapEffects/Weather").wind_audio_enabled = false
 		node.get_node("MapEffects/CoreFeedbackAudio").enabled = false

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="GrowthBuffDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/growth/growth_buff_definition.gd" id="definition"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/journal/symbols/sword.png" id="icon"]
+
+[resource]
+script = ExtResource("definition")
+id = &"E01"
+title = "空间扩张"
+description = "所有适用攻击的真实范围与特效同步扩大；仍贴近怪群外沿。"
+icon = ExtResource("icon")
+category = 3
+epic = true
+attribute = 2
+bonus_per_level = 0.3
+max_level = 0

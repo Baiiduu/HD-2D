@@ -42,9 +42,9 @@ Y 可切换「镜头跟随人物」，「设置 → 镜头」与主菜单中的�
 
 战区地形使用 `data/world/world_terrain.tres`，当前战斗面为零层平地，取消原东西两侧的高台地与坡道；裁切后保留格子的原道路覆盖层、区域类型、高度与画笔编号。`data/world/world_surface.res` 保留手绘地表与分隔带数据，仅上传落在战区内的绘制块。原 `data/world/spawn_terrain.tres` 保留为小院原型基准。`VisualSample` 使用场景当前保存的光影，三种 Lumina 与原始增强仍可按 R 比较；原始增强参数见[提亮、明暗交界与光向统一](../../../../docs/visuals/original-light-refinement.md)。
 
-`SpawnPoint` 是实际出生位置，运行时将人物放到此标记。默认 WASD / 方向键移动，空格跳跃，Q/E 连续旋转，Y 切镜头跟随，R 切四种光影 Style，G 切晴雨，结算后 T 重试，P 打开／关闭设置。主菜单与游戏内「设置 → 按键」可统一改键并恢复默认，保存本机偏好；Esc 保留返回与取消。晴雨快捷键与「画质 → 天气与装饰 → 下雨」共用按地图保存的状态，R 保留晴雨、雨量和雨丝数量。Godot「参数总览」统一定位参数，见 [参数与 Style](../../../../docs/technical/parameters-and-styles.md)。
+`SpawnPoint` 是实际出生位置，运行时将人物放到此标记。默认 WASD / 方向键移动，Q/E 连续旋转，Y 切镜头跟随，R 切四种光影 Style，G 切晴雨，结算后 T 重试，P 打开／关闭设置。正式地图暂时关闭空格跳跃，保留按键配置与人物开关。主菜单与游戏内「设置 → 按键」可统一改键并恢复默认，保存本机偏好；Esc 保留返回与取消。晴雨快捷键与「画质 → 天气与装饰 → 下雨」共用按地图保存的状态，R 保留晴雨、雨量和雨丝数量。Godot「参数总览」统一定位参数，见 [参数与 Style](../../../../docs/technical/parameters-and-styles.md)。
 
-`Player → 台阶通行` 可开关自动迈步，并调整单级最大高度（默认 0.25 米）；当前地图地面不需要登坡或跳台，建筑自身的体积与碰撞保留。
+正式地图关闭 `Player → 台阶通行 → auto_step_enabled`，并将原生 `Floor → Max Angle` 设为 1°，防止胶囊底部沿矮边爬升。人物走路被栅栏底座、花坛和建筑台阶阻挡，可沿边滑行；`Player → 跳跃与下落 → jump_enabled` 暂时关闭，后续可重新启用。其它地图与预览保留各自配置，建筑自身的体积与碰撞不变。
 
 地表分布可在编辑器中手绘：选中 `Homestead`，打开右侧「地表画笔」并启用，选择草地或卵石道路后左键拖动。Shift+左键擦除道路，Ctrl+Z / Ctrl+Shift+Z 撤销或重做；使用「保存地表」或 Ctrl+S 保存。详见 [地表画笔](../../addons/terrain_painter/README.md)。
 

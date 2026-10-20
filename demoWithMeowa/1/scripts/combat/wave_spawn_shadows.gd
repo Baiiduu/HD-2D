@@ -44,6 +44,9 @@ func configure(value: WaveSpawnShadowSettings, scenes: Array[PackedScene], area:
 	set_process(false)
 	set_physics_process(false)
 
+func prepare_feedback(capacity: int) -> void:
+	if _mesh and _mesh.multimesh.instance_count < capacity: _grow(capacity)
+
 func begin(id: int, scene: PackedScene, point: Vector3, seconds: float, clock: float) -> void:
 	if not _mesh or not atlas.records.has(scene): return
 	if _slots.has(id): end(id, false)

@@ -331,7 +331,9 @@ func build(source: Terrain, radius: float, exclude: Array[RID], world_bounds := 
 			if data.has_overlay(cell,TerrainData.OVERLAY_WATER) and not data.has_overlay(cell,TerrainData.OVERLAY_BRIDGE): continue
 			var point := grid_position(grid)
 			_query.transform = Transform3D(Basis.IDENTITY,point+Vector3.UP*_clearance)
-			if not space.intersect_shape(_query,1).is_empty(): continue
+			if not space.intersect_shape(_query,1).is_empty():
+				point = _fit_grid_point(point, cell, space)
+				if not point.is_finite(): continue
 			graph.add_point(_id(grid),point)
 	for id: int in graph.get_point_ids():
 		var grid := Vector2i(id % _size.x,id / _size.x)
@@ -358,6 +360,22 @@ func build(source: Terrain, radius: float, exclude: Array[RID], world_bounds := 
 			graph.connect_points(id, end)
 	_cache_graph()
 	_building_graph = false
+
+## A corridor may fit the real query body while missing every fixed grid centre.
+## Keep the same point IDs/count budget; only move a blocked sample inside its
+## own cell. All graph links retain their original terrain and body sweeps.
+func _fit_grid_point(point: Vector3, cell: Vector2i, space: PhysicsDirectSpaceState3D) -> Vector3:
+	var shift := data.cell_size / SUBDIVISIONS * 0.25
+	# Deep interior samples cannot escape inside this local search radius.
+	var contacts := space.collide_shape(_query, 1)
+	if contacts.size() < 2 or contacts[0].distance_to(contacts[1]) > shift * sqrt(2.0): return Vector3.INF
+	for offset: Vector2 in [Vector2.RIGHT, Vector2.LEFT, Vector2.DOWN, Vector2.UP, Vector2(1,1), Vector2(-1,1), Vector2(1,-1), Vector2(-1,-1)]:
+		var candidate := point + Vector3(offset.x, 0.0, offset.y) * shift
+		if data.world_to_cell(terrain.to_local(candidate)) != cell: continue
+		candidate = ground_position(candidate)
+		_query.transform = Transform3D(Basis.IDENTITY, candidate + Vector3.UP * _clearance)
+		if space.intersect_shape(_query, 1).is_empty(): return candidate
+	return Vector3.INF
 
 func _cache_graph() -> void:
 	_invalidate_prefetch()
@@ -638,7 +656,8 @@ func pursuit_route(from: Vector3, target: Vector3, allow_partial_path := false) 
 	var goal := ground_position(target)
 	if not _point_blocked(goal): return route(from, goal)
 	var start := closest_point(from)
-	var end := closest_point(goal)
+	var end := _padded_goal_id(goal, closest_point(goal))
+	if end < 0: return PackedVector3Array()
 	var path := graph.get_point_path(start, end, allow_partial_path)
 	if path.is_empty() or not _segment_clear(from, path[0]) or _point_blocked(path[-1]): return PackedVector3Array()
 	return path
@@ -687,14 +706,14 @@ func _pursuit_contacts_clear(from: Vector3, to: Vector3, contacts: PackedVector3
 	# 首段必须离开留白接触，且导航点不能被新障碍覆盖。
 	return not _point_blocked(to)
 
-## 端点落在被障碍裁掉的半格或墙角时，只检查邻近九格，不能跨墙选全图最近点。
-func _nearby_endpoint_ids(point: Vector3) -> Array[int]:
+## 普通端点补选邻近九格；贴墙目标可在有界邻域内寻找同侧接近点。
+func _nearby_endpoint_ids(point: Vector3, span := 1) -> Array[int]:
 	var local := terrain.to_local(point)
 	var coord := (Vector2(local.x, local.z) / data.cell_size - Vector2(data.origin) + Vector2.ONE * 0.5) * SUBDIVISIONS
 	var center := Vector2i(floori(coord.x), floori(coord.y))
 	var ids: Array[int] = []
-	for z in range(center.y - 1, center.y + 2):
-		for x in range(center.x - 1, center.x + 2):
+	for z in range(center.y - span, center.y + span + 1):
+		for x in range(center.x - span, center.x + span + 1):
 			if x < 0 or z < 0 or x >= _size.x or z >= _size.y: continue
 			var id := _id(Vector2i(x, z))
 			if graph.has_point(id) and not graph.is_point_disabled(id): ids.append(id)
@@ -758,6 +777,7 @@ func _prepare_pursuit_goal(target: Vector3) -> int:
 	var end: int
 	if _goal_blocked:
 		end = closest_point(goal)
+		end = _padded_goal_id(goal, end)
 	else:
 		var local := terrain.to_local(goal)
 		var coord := (Vector2(local.x, local.z) / data.cell_size - Vector2(data.origin) + Vector2.ONE * 0.5) * SUBDIVISIONS
@@ -776,6 +796,27 @@ func _prepare_pursuit_goal(target: Vector3) -> int:
 				return -1
 	_selected_goal_id = end
 	return end
+
+## A shallow wall contact may put the nearest grid point beyond a real wall.
+## Pick a nearby visible approach on connected ground instead. Deep building
+## projections retain the established rooftop fallback; start/goal graph
+## connectivity is still required by every caller.
+func _padded_goal_id(goal: Vector3, closest: int) -> int:
+	if closest < 0: return -1
+	var contacts := _start_contact_points(goal)
+	for index in range(0, contacts.size(), 2):
+		if contacts[index].distance_to(contacts[index + 1]) >= _query.shape.radius: return closest
+	if _goal_approach_visible(goal, graph.get_point_position(closest)): return closest
+	for id in _nearby_endpoint_ids(goal, 3):
+		if id == closest: continue
+		var point := graph.get_point_position(id)
+		if _point_blocked(point): continue
+		if not _flat_surface_between(point, goal) and not _endpoint_surface_clear(point, goal): continue
+		if _goal_approach_visible(goal, point): return id
+	return -1
+
+func _goal_approach_visible(goal: Vector3, point: Vector3) -> bool:
+	return terrain.ray_clear(goal + Vector3.UP * _clearance, point + Vector3.UP * _clearance, _query.collision_mask, _query.exclude)
 
 ## 同一个地面目标共用反向最短路树；斜线与坡面的边长不同，使用真实距离。
 ## 目标导航点变化或 build 重建时失效；动态终点遮挡每物理帧重新检查。

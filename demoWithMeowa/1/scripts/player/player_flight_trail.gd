@@ -1,5 +1,6 @@
 class_name PlayerFlightTrail
 extends Node3D
+const BODY_LAYOUT := preload("res://scripts/rendering/sprite_body_layout.gd")
 
 ## 保留飞行拖尾入口，显示内容改为实际人物帧的世界坐标残影。
 const CAPACITY := 8
@@ -21,7 +22,6 @@ var _distance := 0.0
 var _spacing_left := 0.0
 var _emitting := false
 var _mask_sync_queued := false
-var _body_layouts: Dictionary = {}
 var _bounce_generation := 0
 var _rhythm_events: Array[Dictionary] = []
 
@@ -56,6 +56,19 @@ func _ready() -> void:
 		_body._session.phase_changed.connect(_on_phase)
 		_body._session.combat_frozen_changed.connect(_on_freeze)
 	clear()
+
+func prepare_feedback() -> void:
+	if not _settings or not _settings.enabled: return
+	var source := _player.sprite
+	var frames := _player.action_visuals.flight if _player.action_visuals else null
+	var texture := source.texture
+	if frames and not frames.get_animation_names().is_empty():
+		texture = frames.get_frame_texture(frames.get_animation_names()[0], 0)
+	for echo in _echoes:
+		echo.sprite.texture = texture
+		for property in SPRITE_PROPERTIES: echo.sprite.set(property, source.get(property))
+		echo.material.set_shader_parameter("sprite_texture", texture)
+		echo.sprite.hide()
 
 func clear() -> void:
 	_pending.clear()
@@ -174,24 +187,7 @@ func _sync_body_mask() -> void:
 	if not visible: return
 	var source := _player.sprite
 	var enabled := source.texture != null and source.is_visible_in_tree() and source.modulate.a > 0.01 and DisplayServer.get_name() != "headless"
-	var layout: Array = []
-	if enabled:
-		var key: Array = [source.texture, source.texture.get_rid(), source.texture.get_size(), source.get_item_rect(), source.pixel_size,
-			source.axis, source.hframes, source.vframes, source.frame, source.region_enabled, source.region_rect, source.flip_h, source.flip_v]
-		var texture := source.texture
-		while texture is AtlasTexture:
-			var atlas := texture as AtlasTexture
-			key.append_array([atlas.region, atlas.margin, atlas.atlas, atlas.atlas.get_size() if atlas.atlas else Vector2.ZERO])
-			texture = atlas.atlas
-		if not _body_layouts.has(key):
-			# 直接使用引擎生成的顶点与 UV，兼容图集留白、区域裁切和不同 Sprite 轴。
-			var arrays := RenderingServer.mesh_surface_get_arrays(source.get_base(), 0)
-			var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
-			var uvs: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
-			if _body_layouts.size() >= 64: _body_layouts.clear()
-			_body_layouts[key] = [vertices[0], vertices[1] - vertices[0], vertices[3] - vertices[0],
-				uvs[0], uvs[1] - uvs[0], uvs[3] - uvs[0]]
-		layout = _body_layouts[key]
+	var layout: Array = BODY_LAYOUT.sample(source) if enabled else []
 	for echo in _echoes:
 		if not echo.active: continue
 		var material: ShaderMaterial = echo.material

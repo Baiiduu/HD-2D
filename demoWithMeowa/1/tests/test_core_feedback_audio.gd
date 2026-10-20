@@ -56,6 +56,8 @@ func physical_bounces() -> void:
 		player.body_ricochet.advance(0.25, Vector3.ZERO, false)
 		var cue := &"core:bounce_wood" if surface == 4 else (&"core:bounce_metal" if surface == 5 else &"core:bounce_stone")
 		check(player.body_ricochet.bounce_count > 0 and playing(cue), "真实胶囊反弹根据碰撞材质播放对应声音：%d" % surface)
+		var selected := audio._voices.filter(func(slot): return slot.active and slot.cue == cue)
+		check(selected.size() == 1 and selected[0].voice.stream == feedback.sounds.clips_for(StringName(cue.trim_prefix("core:")))[0], "材质碰撞仅播放本材质固定音源：%d" % surface)
 		player.body_ricochet.cancel(true)
 		wall.queue_free()
 		await settle()
@@ -74,6 +76,14 @@ func run() -> void:
 			check(valid and clip.get_length() > 0.05, "既有单声道 WAV 或原始怪物 MP3 可播放：" + cue)
 	check(count == 54, "五十三条实战音源与一条停用对照登记，不包含额外制作源文件")
 	world = load("res://scenes/world/world.tscn").instantiate()
+	# 完整声音框架兼容回归显式恢复旧事件；正式停用清单由 test_world_audio_retirements 验证。
+	var compatibility_bank := (world.get_node("MapEffects/CoreFeedbackAudio").sounds as CoreSoundBank).duplicate() as CoreSoundBank
+	compatibility_bank.excluded_clips = compatibility_bank.excluded_clips.filter(func(clip):
+		return clip.resource_path.contains("/bounce_") or clip.resource_path.ends_with("/launch_01.wav"))
+	world.get_node("MapEffects/CoreFeedbackAudio").sounds = compatibility_bank
+	world.get_node("MapEffects/GameAudio").sound_selection = compatibility_bank
+	# 兼容起手／循环的完整回归显式开启；World 单风声规则另行验证。
+	world.get_node("MapEffects/CoreFeedbackAudio").charge_energy_audio_enabled = true
 	# 镜头入场由人工验收；声音用例不接受编辑器的直接运行预览开关。
 	world.get_node("WorldEntry").preview_on_direct_run = false
 	FIXTURE.clear_placed_obstacles(world)
@@ -99,6 +109,7 @@ func run() -> void:
 	await settle(15)
 	wave = world.get_node("WavePrototype")
 	feedback = world.get_node("MapEffects/CoreFeedbackAudio")
+	bank = feedback.sounds
 	audio = world.get_node("MapEffects/GameAudio")
 	feedback._ui.cue_played.connect(func(cue: StringName): ui_cues.append(cue))
 	check(feedback.player == player and feedback.session == wave and feedback._audio == audio, "正式场景绑定实际人物与公共战斗音效池")

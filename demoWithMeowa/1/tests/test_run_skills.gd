@@ -15,6 +15,7 @@ class SessionProbe extends Node3D:
 	var _path := FlatPath.new()
 	var combat_frozen := false
 	func set_combat_frozen(value: bool) -> void: combat_frozen = value
+	func is_wave_finish_pending() -> bool: return false
 
 class SkillProbe extends Node:
 	var definition: CombatSkillDefinition
@@ -72,6 +73,8 @@ func sweep_damage(level: int, count: int) -> void:
 func run() -> void:
 	world = load("res://scenes/world/world.tscn").instantiate()
 	world.get_node("LoadoutUI").save_enabled = false
+	world.get_node("WorldEntry").preview_on_direct_run = false
+	world.get_node("WorldMainMenu").show_on_world_start = false
 	# 隔离技能成长；正式场景的增益配置保持原样，叠加另行验证。
 	world.get_node("BattleConfiguration").configuration.growth_definitions.clear()
 	# A01 已在正式玩法停用；此兼容原型测试显式开启，不修改正式默认值。

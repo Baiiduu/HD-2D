@@ -35,6 +35,42 @@ func run() -> void:
 	check(entries[49].id == "S50" and entries[49].cue == &"leaf_windup" and entries[52].cue == &"pot_shatter", "怪物原有招式音源追加 S50–S53，不改变原编号")
 	check(entries[53].id == "S54" and entries[53].cue == &"charge_wind", "聚力风追加 S54，原试听编号保持")
 	var settings := AudioMixSettings.new()
+	check(settings.has_method("set_bus_volume_percent"), "分组音量提供 0–100 百分比接口")
+	if not settings.has_method("set_bus_volume_percent"):
+		quit(1)
+		return
+	for bus in AudioMixSettings.BUSES:
+		near(settings.bus_volume_percent(bus), 50.0, "默认音量在滑块中点：" + String(bus))
+	settings.set_bus_volume_percent(&"Music", 50.0)
+	near(settings.bus_volume_percent(&"Music"), 50.0, "百分比保留实际线性音量")
+	near(float(settings.bus_gains.get("Music", 0.0)), 0.0, "50 对应既有默认混音")
+	settings.set_bus_volume_percent(&"Music", 75.0)
+	near(settings.bus_volume_percent(&"Music"), 75.0, "默认之上仍可调高")
+	near(settings.bus_gains.Music, linear_to_db(1.5), "75 真正放大声音而不只是改变数字")
+	settings.set_bus_volume_percent(&"Music", 0.0)
+	check(settings.is_bus_muted(&"Music"), "0 对应静音")
+	settings.set_bus_volume_percent(&"Music", 200.0)
+	near(settings.bus_volume_percent(&"Music"), 100.0, "音量上限为 100")
+	near(float(settings.bus_gains.get("Music", 0.0)), linear_to_db(2.0), "100 保留默认之上的完整放大余量")
+	settings.set_bus_volume_percent(&"Music", -10.0)
+	check(settings.is_bus_muted(&"Music"), "负音量钳制为静音")
+	settings.set_bus_volume_percent(&"Music", NAN)
+	check(settings.is_bus_muted(&"Music"), "非法数值不破坏当前音量")
+	check(settings.save_to_path(WORK + "/percent.cfg") == OK, "零音量可保存")
+	var percent_restore := AudioMixSettings.new()
+	check(percent_restore.load_from_path(WORK + "/percent.cfg") == OK and percent_restore.is_bus_muted(&"Music"), "重启保留零音量")
+	settings.set_bus_gain(&"Music", -6.0)
+	near(settings.bus_volume_percent(&"Music"), db_to_linear(-6.0) * 50.0, "旧增益存档可转换成新刻度")
+	settings.set_bus_gain(&"Music", 6.0)
+	near(settings.bus_volume_percent(&"Music"), db_to_linear(6.0) * 50.0, "旧正增益仍可保留")
+	var legacy := ConfigFile.new()
+	legacy.set_value("mix", "version", 1)
+	legacy.set_value("buses", "Music", -6.0)
+	legacy.set_value("buses", "Combat", 6.0)
+	legacy.save(WORK + "/legacy.cfg")
+	check(percent_restore.load_from_path(WORK + "/legacy.cfg") == OK, "旧增益存档仍可加载")
+	near(percent_restore.bus_volume_percent(&"Music"), db_to_linear(-6.0) * 50.0, "旧存档保留原衰减音量")
+	near(percent_restore.bus_volume_percent(&"Combat"), db_to_linear(6.0) * 50.0, "旧存档保留原放大音量")
 	var first := entries[0].clip as AudioStream
 	var path := first.resource_path
 	near(settings.clip_gain_db(first), 0.0, "默认保持原音量")
@@ -123,6 +159,20 @@ func run() -> void:
 	near(ui_voice.volume_db, -13.0, "进行中的界面声音实时更新")
 	audio.mix.set_bus_gain(&"Combat", -8.0)
 	near(AudioServer.get_bus_volume_db(AudioServer.get_bus_index(&"Combat")), audio.combat_volume_db - 8.0, "分组音量接入实际总线")
+	for index in AudioMixSettings.BUSES.size():
+		var bus: StringName = AudioMixSettings.BUSES[index]
+		var bus_index := AudioServer.get_bus_index(bus)
+		var slider := panel._bus_sliders[index]
+		check(slider.min_value == 0 and slider.max_value == 100 and slider.step == 1, "分组滑块使用整数 0–100：" + String(bus))
+		slider.value = 0
+		check(AudioServer.is_bus_mute(bus_index) and panel._bus_labels[index].text == "0", "拖到 0 真正静音且不显示 dB：" + String(bus))
+		slider.value = 50
+		check(not AudioServer.is_bus_mute(bus_index) and panel._bus_labels[index].text == "50", "从静音恢复到 50：" + String(bus))
+		near(audio.mix.bus_volume_percent(bus), 50.0, "滑块同步实际百分比：" + String(bus))
+		var default_level := AudioServer.get_bus_volume_db(bus_index)
+		slider.value = 100
+		check(not AudioServer.is_bus_mute(bus_index), "满音量解除静音：" + String(bus))
+		near(AudioServer.get_bus_volume_db(bus_index) - default_level, linear_to_db(2.0), "50–100 增加真实播放音量：" + String(bus))
 	panel.open_menu()
 	check(panel.menu_open and panel.is_in_group(&"gameplay_input_blockers"), "面板接管人物输入")
 	check(not paused and not audio._frozen, "声音调试不会暂停世界或战斗音")

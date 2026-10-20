@@ -29,7 +29,7 @@ func physical_bounces() -> void:
 	sword.set_physics_process(false)
 	reset_audio()
 	sword._play_sound(false, player.global_position)
-	check(audio.get_debug_state().active == 0, "空挥没有通用怪物命中声")
+	check(playing(&"basic_sword_swing") and not playing(&"core:enemy_hit_common"), "空挥只有新出手声，没有通用怪物命中声")
 	for flying in [false, true]:
 		reset_audio()
 		var before := target.health

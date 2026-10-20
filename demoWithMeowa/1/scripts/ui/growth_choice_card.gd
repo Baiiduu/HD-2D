@@ -43,6 +43,7 @@ func configure(value: GrowthChoiceOption, opacity: float, strength: float, durat
 	if category == null: category = GrowthChoiceOption.Category.GENERAL
 	_category.text = ["", "学习技能", "技能升级", "全局增益"][category]
 	if value.get("ricochet_growth") == true: _category.text = "弹射成长"
+	if value.hide_category: _category.text = "史诗" if value.epic else ""
 	_category.visible = not _category.text.is_empty()
 	_title.add_theme_font_size_override("font_size", font_size + 4)
 	_description.add_theme_font_size_override("font_size", font_size)

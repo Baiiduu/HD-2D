@@ -1,5 +1,6 @@
 class_name PlayerChargeWind
 extends Node3D
+const BODY_LAYOUT := preload("res://scripts/rendering/sprite_body_layout.gd")
 
 ## 原生 Meowa 风纹沿立体螺旋运动；地图可选下窄上宽的向上风旋。
 ## 由蓄力组件统一推进，无独立处理，不查询场景或改写人物运动。
@@ -9,7 +10,7 @@ var _wisps: MultiMeshInstance3D
 var _material: ShaderMaterial
 var _phase := 0.0
 var _texture: Texture2D
-var _body_layouts: Dictionary = {}
+var _shape_profile: Array = []
 
 func _ready() -> void:
 	_wisps = MultiMeshInstance3D.new()
@@ -79,18 +80,23 @@ func synchronize(visuals: PlayerActionVisuals, pixel: float, fraction: float, de
 	var width := visuals.charge_wind_width_pixels * pixel if visuals.charge_wind_funnel_enabled else _texture.get_height() * pixel * 0.65
 	_material.set_shader_parameter("phase", _phase)
 	_material.set_shader_parameter("charge", fraction)
-	_material.set_shader_parameter("funnel_enabled", visuals.charge_wind_funnel_enabled)
-	_material.set_shader_parameter("radius", radius)
-	_material.set_shader_parameter("bottom_radius", bottom_radius)
-	_material.set_shader_parameter("height", height)
-	_material.set_shader_parameter("width", width)
-	_material.set_shader_parameter("turns", visuals.charge_wind_turns)
-	_material.set_shader_parameter("trail_span", visuals.charge_wind_trail_span)
-	_material.set_shader_parameter("opacity", visuals.charge_wind_opacity * visuals.charge_effect_opacity)
-	# Shader displacement stays within this local volume, including ribbon width.
-	var padding := width * 0.5 + pixel
-	var extent := radius + padding
-	_wisps.custom_aabb = AABB(Vector3(-extent, -padding, -extent), Vector3(extent * 2.0, height + padding * 2.0, extent * 2.0))
+	var opacity := visuals.charge_wind_opacity * visuals.charge_effect_opacity
+	# 只复用本节点已提交的形状配置；数值、像素尺度变化立即生效，不缓存相位或人物遮罩。
+	var profile: Array = [visuals.charge_wind_funnel_enabled, radius, bottom_radius, height, width, visuals.charge_wind_turns, visuals.charge_wind_trail_span, opacity, pixel]
+	if profile != _shape_profile:
+		_shape_profile = profile
+		_material.set_shader_parameter("funnel_enabled", visuals.charge_wind_funnel_enabled)
+		_material.set_shader_parameter("radius", radius)
+		_material.set_shader_parameter("bottom_radius", bottom_radius)
+		_material.set_shader_parameter("height", height)
+		_material.set_shader_parameter("width", width)
+		_material.set_shader_parameter("turns", visuals.charge_wind_turns)
+		_material.set_shader_parameter("trail_span", visuals.charge_wind_trail_span)
+		_material.set_shader_parameter("opacity", opacity)
+		# Shader displacement stays within this local volume, including ribbon width.
+		var padding := width * 0.5 + pixel
+		var extent := radius + padding
+		_wisps.custom_aabb = AABB(Vector3(-extent, -padding, -extent), Vector3(extent * 2.0, height + padding * 2.0, extent * 2.0))
 	show()
 
 func stop() -> void:
@@ -104,21 +110,7 @@ func sync_body_mask(source: Sprite3D, clearance: float) -> void:
 	var enabled := visible and clearance > 0.0 and is_instance_valid(source) and source.texture != null and source.is_visible_in_tree() and source.modulate.a > 0.01 and DisplayServer.get_name() != "headless"
 	_material.set_shader_parameter("body_mask_enabled", enabled)
 	if not enabled: return
-	var key: Array = [source.texture, source.texture.get_rid(), source.texture.get_size(), source.get_item_rect(), source.pixel_size,
-		source.axis, source.hframes, source.vframes, source.frame, source.region_enabled, source.region_rect, source.flip_h, source.flip_v]
-	var texture := source.texture
-	while texture is AtlasTexture:
-		var atlas := texture as AtlasTexture
-		key.append_array([atlas.region, atlas.margin, atlas.atlas, atlas.atlas.get_size() if atlas.atlas else Vector2.ZERO])
-		texture = atlas.atlas
-	if not _body_layouts.has(key):
-		var arrays := RenderingServer.mesh_surface_get_arrays(source.get_base(), 0)
-		var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
-		var uvs: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
-		if _body_layouts.size() >= 64: _body_layouts.clear()
-		_body_layouts[key] = [vertices[0], vertices[1] - vertices[0], vertices[3] - vertices[0],
-			uvs[0], uvs[1] - uvs[0], uvs[3] - uvs[0]]
-	var layout: Array = _body_layouts[key]
+	var layout: Array = BODY_LAYOUT.sample(source)
 	_material.set_shader_parameter("body_texture", source.texture)
 	_material.set_shader_parameter("body_transform", source.get_global_transform_interpolated())
 	_material.set_shader_parameter("body_motion_lean", source.get_meta("motion_lean", Vector3.ZERO))

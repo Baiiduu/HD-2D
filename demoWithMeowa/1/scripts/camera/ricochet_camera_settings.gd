@@ -29,6 +29,22 @@ extends Resource
 @export_range(0.2, 2.0, 0.1, "suffix:m") var orbit_focus_max_distance := 1.2
 @export_range(0.08, 0.6, 0.01, "suffix:s") var orbit_settle_seconds := 0.22
 @export_range(0.0, 0.08, 0.005) var orbit_pullback_ratio := 0.035
+@export_subgroup("环绕近景与进出特写")
+@export var orbit_shot_enabled := false
+## 相对未叠加环绕特写时的取景放大；1 不额外放大，不逐帧累计。
+@export_range(1.0, 2.5, 0.05, "suffix:倍") var orbit_enter_magnification := 1.5
+@export_range(1.0, 2.5, 0.05, "suffix:倍") var orbit_hold_magnification := 1.4
+@export_range(0.05, 0.8, 0.01, "suffix:s") var orbit_closeup_enter_seconds := 0.18
+## 离圈后先保留当前放大倍数；期间再次入圈直接接续。清波／管理接管不等待。
+@export_range(0.0, 2.0, 0.05, "suffix:s") var orbit_closeup_exit_hold_seconds := 0.0
+@export_range(0.1, 1.0, 0.01, "suffix:s") var orbit_closeup_exit_seconds := 0.4
+## 相对画面短边的连续弧形位移；独立于震动与普通跟随平滑。
+@export_range(0.0, 0.035, 0.001) var orbit_shot_offset_ratio := 0.018
+@export_range(0.0, 3.0, 0.05, "suffix:°") var orbit_shot_pitch_degrees := 1.25
+@export_range(0.2, 0.8, 0.01, "suffix:s") var orbit_shot_seconds := 0.42
+## 进出共用；间隔内的新边沿直接丢弃，不重启或延后补播。
+@export_range(0.5, 2.0, 0.05, "suffix:s") var orbit_shot_interval := 0.8
+@export_range(0.0, 0.6, 0.01, "suffix:s") var orbit_exit_minimum_seconds := 0.2
 @export_group("连续攻击与清群重音")
 @export var combat_beat_enabled := false
 @export_range(0.0, 5.0, 0.25, "suffix:px") var combat_beat_pixels := 3.0

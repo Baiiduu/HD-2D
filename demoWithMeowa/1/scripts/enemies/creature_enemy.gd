@@ -29,27 +29,16 @@ func _move_chase(delta: float, stop: float) -> void:
 	var away := origin - goal
 	away.y = 0.0
 	var target_distance := TerrainPath.horizontal_distance(origin, goal)
-	var direction := Vector3.ZERO
 	stop = _personal_stop_distance(stop)
-	if target_distance > stop:
-		_route_clock -= delta
-		if _route_clock <= 0.0:
-			_route_clock = route_interval
-			_route = navigation.chase_route(origin, goal, pursuit_lookahead)
-			_waypoint = 1 if _route.size() > 1 else 0
-		if not _route.is_empty() and TerrainPath.horizontal_distance(origin, _route[-1]) > 0.1:
-			while _waypoint < _route.size() - 1 and TerrainPath.horizontal_distance(origin, _route[_waypoint]) < 0.14: _waypoint += 1
-			direction = _route[_waypoint] - origin
-			direction.y = 0.0
-			direction = direction.normalized()
-	var intended := direction
-	direction = _pursuit_crowd_direction(direction, origin, target_distance)
+	var direction := _plan_ordinary_chase(delta, origin, goal, target_distance, stop)
 	var actual_speed := effective_move_speed()
 	direction = _personal_space_direction(direction, stop, away, target_distance, actual_speed)
 	_move_direction(direction, actual_speed, delta, true)
-	_update_chase_facing(intended)
+	_ordinary_moved()
+	_update_chase_facing(_ordinary_intended)
 
-func _move_direction(direction: Vector3, speed: float, delta: float, ordinary_chase := false) -> void:
+func _move_direction(direction: Vector3, speed: float, delta: float, ordinary_chase := false, ordinary_spacing := false) -> void:
+	if not ordinary_chase and not ordinary_spacing: _clear_ordinary_decision()
 	velocity.y = 0.0 if is_on_floor() or (ordinary_chase and _ground_moved) else velocity.y - gravity * delta
 	velocity.x = direction.x * speed
 	velocity.z = direction.z * speed
@@ -60,7 +49,8 @@ func _move_direction(direction: Vector3, speed: float, delta: float, ordinary_ch
 
 func _move_local(direction: Vector3, delta: float) -> void:
 	var intended := direction
-	direction = _crowd_direction(direction)
+	var spacing := direction.is_zero_approx()
+	direction = _plan_ordinary_spacing() if spacing else _crowd_direction(direction)
 	var origin := global_position
 	var away := Vector3.INF
 	if target is Player and (target as Player).crowd_clearance_distance > 0.0:
@@ -71,7 +61,8 @@ func _move_local(direction: Vector3, delta: float) -> void:
 	var length := direction.length() * actual_speed * delta
 	var ground := navigation.ground_position(origin)
 	if length > 0.0 and _surface_collision.ground_limit(navigation, origin, direction.normalized(), length, ground.y, 0.2) < length: direction = Vector3.ZERO
-	_move_direction(direction, actual_speed, delta)
+	_move_direction(direction, actual_speed, delta, false, spacing)
+	if spacing: _ordinary_moved()
 	if not intended.is_zero_approx(): _look = intended.normalized()
 	else: _update_chase_facing(Vector3.ZERO)
 

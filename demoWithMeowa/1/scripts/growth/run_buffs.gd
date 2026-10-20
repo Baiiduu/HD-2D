@@ -9,6 +9,8 @@ const LABELS := {
 	A.RICOCHET_COOLDOWN_EFFICIENCY: "发射间隔", A.PUSH_RADIUS: "拨怪范围", A.PUSH_FORCE: "推力",
 	A.PUSH_DURATION: "推力持续", A.PUSH_STUN: "眩晕", A.MOVE_SPEED: "移动", A.PICKUP_RADIUS: "吸取范围",
 	A.MOMENTUM_EFFICIENCY: "耗速倍率",
+	A.SPEED_DAMAGE: "动能增伤强度", A.MULTISTRIKE: "额外斩击基数", A.HEAVY_STRIKE: "重击伤害",
+	A.LIFESTEAL: "全能吸血", A.LIFESTEAL_CAP: "每秒恢复上限",
 }
 
 @export_group("本局增益")
@@ -27,6 +29,21 @@ func _clear_offered() -> void:
 	_offered.clear()
 
 func _attribute_changed(attribute: A, preview: RunCombatModifiers) -> bool:
+	if attribute in [A.SPEED_DAMAGE, A.MULTISTRIKE, A.HEAVY_STRIKE, A.LIFESTEAL, A.LIFESTEAL_CAP]:
+		if not session.combat_modifiers.growth_rules: return false
+		var current: RunCombatModifiers = session.combat_modifiers
+		var rules := current.growth_rules
+		if attribute in [A.SPEED_DAMAGE, A.MULTISTRIKE]:
+			if not is_instance_valid(session.player) or not session.player.body_ricochet or not session.player.body_ricochet.enabled: return false
+			if attribute == A.MULTISTRIKE and (not session.player.sword or not session.player.sword.enabled): return false
+		if attribute == A.MULTISTRIKE:
+			if rules.additional_strike_damage_ratio <= 0.0: return false
+			for tier in rules.strike_speed_thresholds.size() + 1:
+				if current.strike_count(tier, true) != preview.strike_count(tier, true): return true
+			return false
+		if attribute == A.SPEED_DAMAGE:
+			return not is_equal_approx(current.speed_damage_multiplier(rules.speed_damage_high, true), preview.speed_damage_multiplier(rules.speed_damage_high, true))
+		return not is_equal_approx(session.combat_modifiers.bonus(attribute), preview.bonus(attribute))
 	var key: String = {A.DAMAGE: "damage", A.COOLDOWN: "interval", A.ATTACK_SPEED: "interval", A.RANGE: "range"}.get(attribute, "")
 	if not key.is_empty():
 		var before: Array[Dictionary] = session.get_attack_stats()
@@ -79,6 +96,8 @@ func candidates() -> Array[GrowthChoiceOption]:
 			continue
 		var option := GrowthChoiceOption.new()
 		option.id = definition.id
+		option.epic = definition.epic
+		option.growth_level = session.combat_modifiers.level_for(definition.id)
 		var level: int = session.combat_modifiers.level_for(definition.id) + 1
 		var rank := "Lv.%d" % level
 		if definition.max_level > 0: rank += "/%d" % definition.max_level
@@ -107,6 +126,8 @@ func _value(attribute: A, modifiers: RunCombatModifiers) -> float:
 		A.MOVE_SPEED: return session.player.get_movement_speed(modifiers)
 		A.PICKUP_RADIUS: return (session.get_node("RunGrowth") as RunGrowth).get_attraction_radius(modifiers)
 		A.MOMENTUM_EFFICIENCY: return 1.0 / modifiers.multiplier(attribute)
+		A.HEAVY_STRIKE: return modifiers.multiplier(attribute)
+		A.SPEED_DAMAGE, A.MULTISTRIKE, A.LIFESTEAL, A.LIFESTEAL_CAP: return modifiers.bonus(attribute)
 	var stats: Dictionary = session.player.body_ricochet.get_stats(modifiers)
 	if attribute == A.RICOCHET_RETENTION:
 		return minf(stats.bounce_speed_retention, stats.crowd_speed_retention) if session.player.ricochet_rules.crowd_deflection_enabled else stats.bounce_speed_retention
@@ -114,7 +135,9 @@ func _value(attribute: A, modifiers: RunCombatModifiers) -> float:
 
 func _format_value(attribute: A, value: float, include_unit := true) -> String:
 	match attribute:
-		A.DAMAGE, A.RANGE, A.ATTACK_SPEED: return "×%.2f" % value
+		A.DAMAGE, A.RANGE, A.ATTACK_SPEED, A.HEAVY_STRIKE: return "×%.2f" % value
+		A.SPEED_DAMAGE, A.LIFESTEAL, A.LIFESTEAL_CAP: return "%.1f%%" % (value * 100.0)
+		A.MULTISTRIKE: return "%d" % roundi(value)
 		A.COOLDOWN, A.RICOCHET_RETENTION, A.MOMENTUM_EFFICIENCY: return "%d%%" % roundi(value * 100.0)
 		A.RICOCHET_DURATION: return "%.2f%s" % [value, "米/秒²" if include_unit else ""]
 		A.MOVE_SPEED, A.RICOCHET_SPEED, A.PUSH_FORCE, A.RICOCHET_BOUNCES: return "%.2f%s" % [value, "米/秒" if include_unit else ""]
@@ -125,6 +148,7 @@ func _description(definition: GrowthBuffDefinition) -> String:
 	var current: RunCombatModifiers = session.combat_modifiers
 	var preview := current.preview_after(definition)
 	var lines := PackedStringArray()
+	if not definition.description.is_empty(): lines.append(definition.description)
 	var gains := current.gains_for(definition)
 	for attribute in gains:
 		if not _attribute_changed(attribute, preview): continue
@@ -135,7 +159,7 @@ func _description(definition: GrowthBuffDefinition) -> String:
 	var level := current.level_for(definition.id) + 1
 	if definition.is_breakthrough(level): lines.append("突破加成 ×%.1f" % definition.breakthrough_multiplier)
 	if definition.is_ricochet(): lines.append("下次蓄力生效")
-	elif definition.attribute == A.ATTACK_SPEED: lines.append("完整动作不加速")
+	elif definition.attribute == A.ATTACK_SPEED: lines.append("攻击间隔与判定动作同步提速")
 	return "\n".join(lines)
 
 func _choose(_level: int, id: StringName) -> void:

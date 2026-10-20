@@ -23,6 +23,9 @@ func run() -> void:
 	world.get_node("WavePrototype/RunGrowth").enabled = false
 	world.get_node("WavePrototype").process_mode = Node.PROCESS_MODE_DISABLED
 	world.get_node("MapEffects/BGM").music_enabled = false
+	world.get_node("MapEffects/Weather").rain_audio_enabled = false
+	world.get_node("MapEffects/Weather").wind_audio_enabled = false
+	world.get_node("MapEffects/CoreFeedbackAudio").enabled = false
 	root.add_child(world)
 	current_scene = world
 	await settle()
@@ -50,8 +53,14 @@ func run() -> void:
 	var image: Image = first.tree_texture.get_image()
 	if image.is_compressed(): image.decompress()
 	check(image.get_pixel(0, 0).a == 0.0 and image.get_pixel(63, 95).a > 0.5, "Transparent background and solid trunk")
-	var lamp := first.get_node("PlanterGeometry/Lamp") as PlazaStreetlamp
-	check(lamp._heads.size() == 2 and lamp._heads.all(func(head): return head.get("beam_strength") == 0.0), "Twin-head planter lamp keeps ground beams disabled")
+	check(not first.lamp_enabled and not first.has_node("PlanterGeometry/Lamp"), "Planter prefab has no attached lamp or light by default")
+	check(first.city_panel_texture != null, "Planter prefab selects the approved city panels")
+	check(collision.get_child_count() == 3, "Metal body, stone cap and wooden bench have separate material regions")
+	if collision.get_child_count() == 3:
+		var lower := collision.get_child(0) as CollisionShape3D
+		var upper := collision.get_child(1) as CollisionShape3D
+		check(is_equal_approx(lower.shape.size.x, first.width + 0.06) and is_equal_approx(upper.shape.size.x, lower.shape.size.x) and is_equal_approx(lower.shape.size.z, first.depth + 0.06) and is_equal_approx(upper.shape.size.z, lower.shape.size.z), "City panels keep the original collision footprint")
+		check(is_zero_approx(lower.position.y - lower.shape.size.y * 0.5) and is_equal_approx(lower.position.y + lower.shape.size.y * 0.5, upper.position.y - upper.shape.size.y * 0.5) and is_equal_approx(upper.position.y + upper.shape.size.y * 0.5, first.height + 0.07), "Material split keeps the original continuous solid height")
 	check((first.get_node("PlanterGeometry/Plant00").mesh.surface_get_material(0) as ShaderMaterial).get_shader_parameter("stable_shadows"), "Planter vegetation uses stable soft clump shadows")
 	first.position += Vector3(6, 0, 3)
 	first.rotation_degrees.y = 90.0
@@ -77,7 +86,7 @@ func run() -> void:
 	check(not first.has_node("PlanterGeometry/Lamp"), "Lamp toggle removes only prefab lamp")
 	var shifted_tree: MeshInstance3D = first.get_node("PlanterGeometry/Tree")
 	check(absf((shifted_tree.mesh as QuadMesh).center_offset.x - 0.2) < 0.001 and shifted_tree.position.x == first.tree_offset.x, "Off-center tree anchor stays at the root through camera rotation")
-	check(first.get_node("PlanterGeometry/PlanterCollision").get_child_count() == 1, "Bench toggle updates matching collision")
+	check(first.get_node("PlanterGeometry/PlanterCollision").get_child_count() == 2, "Bench toggle keeps only the body and cap collision")
 	var holder := Node3D.new()
 	root.add_child(holder)
 	var saved: TreePlanter = prefab.instantiate()
@@ -103,7 +112,12 @@ func run() -> void:
 	first.collision_enabled = false
 	await settle()
 	check(not first.has_node("PlanterGeometry/PlanterCollision"), "Collision switch removes all prefab blockers")
+	second.city_panel_texture = null
+	await settle()
+	check(second.has_node("PlanterGeometry/Stone") and not second.has_node("PlanterGeometry/City") and not second.has_node("PlanterGeometry/Metal"), "Clearing city panels restores the original stone construction")
+	check(second.get_node("PlanterGeometry/PlanterCollision").get_child_count() == 2, "Original stone construction keeps its body and bench collision")
 	print("Tree planter: ", checks, " checks, ", failures, " failures")
+	(world.get_node("MapEffects/GameAudio") as GameAudio).stop_all()
 	world.queue_free()
 	holder.queue_free()
 	restored.queue_free()

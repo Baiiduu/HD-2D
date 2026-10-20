@@ -139,6 +139,8 @@ func run() -> void:
 	world.get_node("WorldEntry").preview_on_direct_run = false
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("MapEffects/BGM").music_enabled = false
+	# Expanded-pool rerolls explicitly restore the temporarily disabled mirror in this fixture.
+	world.get_node("WavePrototype/MirrorMarkAutoAttack").enabled = true
 	var wave: WavePrototype = world.get_node("WavePrototype")
 	var profile := world.get_node("BattleConfiguration").configuration.duplicate() as SceneCombatConfiguration
 	profile.population_rules = profile.population_rules.duplicate(true) as WavePopulationRules

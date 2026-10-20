@@ -147,6 +147,8 @@ func target_checks() -> void:
 	check(player.sword.preview_target(route) == near, "首目标复用挥剑宽度，排除身后、高处和预告中怪物")
 	check(near.health == health and far.health == far.max_health, "选中目标不会造成伤害或拨怪")
 	var effect := body._charge_effect
+	# 显式推进镜头后的显示提交阶段；此夹具只验证逻辑，不启动渲染。
+	effect._aim._process(0.0)
 	check(effect._target_enemy == near and effect._aim._target.visible, "仅首个预计可触及目标显示角标")
 	var bounds: Rect2i = effect._aim._bounds[near.sprite.texture]
 	check(bounds.size.x > 0 and bounds.size.x < near.sprite.texture.get_width(), "压缩图集先解压再读取原生透明边界，角标围住实际身体")

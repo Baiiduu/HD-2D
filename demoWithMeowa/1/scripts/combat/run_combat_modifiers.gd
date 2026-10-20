@@ -6,6 +6,7 @@ var levels: Dictionary[StringName, int] = {}
 var _bonuses: Dictionary[int, float] = {}
 ## 巨量怪潮模拟只关闭怪物扣血；基础剑术、技能和成长仍计算真实攻击数值。
 var damage_disabled := false
+var growth_rules: RunGrowthRules
 
 func reset() -> void:
 	damage_disabled = false
@@ -51,14 +52,23 @@ func preview_after(definition: GrowthBuffDefinition) -> RunCombatModifiers:
 	preview.levels = levels.duplicate()
 	preview._bonuses = _bonuses.duplicate()
 	preview.damage_disabled = damage_disabled
+	preview.growth_rules = growth_rules
 	preview.apply_buff(definition)
 	return preview
 
 func damage_multiplier() -> float:
-	return multiplier(GrowthBuffDefinition.Attribute.DAMAGE)
+	return multiplier(GrowthBuffDefinition.Attribute.DAMAGE) * multiplier(GrowthBuffDefinition.Attribute.HEAVY_STRIKE)
 
 func interval_multiplier() -> float:
-	return maxf(0.01, 1.0 - bonus(GrowthBuffDefinition.Attribute.COOLDOWN)) / multiplier(GrowthBuffDefinition.Attribute.ATTACK_SPEED)
+	var heavy := growth_rules.heavy_interval_multiplier if growth_rules and bonus(GrowthBuffDefinition.Attribute.HEAVY_STRIKE) > 0.0 else 1.0
+	return heavy * maxf(0.01, 1.0 - bonus(GrowthBuffDefinition.Attribute.COOLDOWN)) / multiplier(GrowthBuffDefinition.Attribute.ATTACK_SPEED)
+
+func speed_damage_multiplier(speed: float, flying: bool) -> float:
+	return 1.0 + bonus(GrowthBuffDefinition.Attribute.SPEED_DAMAGE) * growth_rules.speed_damage_bonus(speed) if flying and growth_rules else 1.0
+
+func strike_count(speed_tier: int, flying: bool) -> int:
+	var rank := roundi(bonus(GrowthBuffDefinition.Attribute.MULTISTRIKE))
+	return mini(growth_rules.maximum_strikes, 1 + rank + maxi(speed_tier, 0)) if flying and growth_rules and rank > 0 else 1
 
 func range_multiplier() -> float:
 	return multiplier(GrowthBuffDefinition.Attribute.RANGE)

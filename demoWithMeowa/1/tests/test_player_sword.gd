@@ -70,6 +70,7 @@ func enemy(point: Vector3, health := 200.0) -> SlimeEnemy:
 	result.set_physics_process(false)
 	session.enemies.append(result)
 	session._spatial_index.update(result)
+	session.enemy_spawned.emit(result)
 	return result
 
 func manual(heading := Vector3.RIGHT) -> void:
@@ -351,6 +352,36 @@ func input_and_art_checks() -> void:
 	terrain.data.set_overlay(Vector2i(1, 0), TerrainData.OVERLAY_WATER, false)
 	await settle()
 
+func score_checks() -> void:
+	await reset()
+	var score: RunScore = session.get_node("RunScore")
+	score.state.begin(77, score.rules)
+	var batches: Array = []
+	for index in 6:
+		var mob := enemy(Vector3(1.0, 0, -0.25 + index * 0.1), 1.0)
+		mob.damaged.connect(func(event: CombatDamageEvent): batches.append(event.score_batch))
+	await manual()
+	check(score.state.kill_score == 60 and score.state.burst_score == 25 and score.state.combo_score == 0, "真实普攻一刀六杀共享倍率并即时支付成片奖励")
+	check(batches.size() == 6 and batches[0] != null and batches.all(func(batch): return batch == batches[0]), "刀锋接触到真实伤害事件保留同一计分批次")
+	sword._physics_process(0.55)
+	enemy(Vector3(1.0, 0, 0), 1.0)
+	await manual()
+	check(score.state.combo_score == 2 and score.state.total == 97, "下一刀接上连杀倍率，普通攻击同样受益")
+	await reset()
+	score.state.begin(78, score.rules)
+	batches.clear()
+	for index in 6:
+		var mob := enemy(Vector3(1.0, 0, -0.25 + index * 0.1), 1.0)
+		mob.damaged.connect(func(event: CombatDamageEvent): batches.append(event.score_batch))
+		if index == 0: mob.damaged.connect(func(_event): session.set_combat_frozen(true), CONNECT_ONE_SHOT)
+	await manual()
+	check(session.combat_frozen and score.state.kills == 1, "升级式冻结在当前真实命中后暂停余下扣血与计分")
+	session.set_combat_frozen(false)
+	for frame in 17: sword._physics_process(1.0 / 60.0)
+	check(score.state.kills == 6, "恢复后完成当前刀的全部击杀，实际 %d；待结算 %d，动作 %.3f，短顿 %s" % [score.state.kills, sword._pending_hits.size(), sword._age, player.hit_stop_active])
+	check(score.state.total == 85, "恢复后不复制奖励，实际分数 %d" % score.state.total)
+	check(batches.all(func(batch): return batch == batches[0]), "恢复后保留原刀计分批次")
+
 func run() -> void:
 	world = Node3D.new()
 	root.add_child(world)
@@ -368,6 +399,11 @@ func run() -> void:
 	world.add_child(session)
 	session._attack_root = Node3D.new()
 	session.add_child(session._attack_root)
+	var score := RunScore.new()
+	score.name = "RunScore"
+	score.session = session
+	score.rules = RunScoreRules.new()
+	session.add_child(score)
 	player = Player.new()
 	player.animations = load("res://assets/meowa/player/animations.tres")
 	player.action_visuals = PlayerActionVisuals.new()
@@ -403,6 +439,7 @@ func run() -> void:
 	await flight_checks()
 	await freeze_checks()
 	await input_and_art_checks()
+	await score_checks()
 	for mob in session.enemies: mob.cancel()
 	session.enemies.clear()
 	world.queue_free()

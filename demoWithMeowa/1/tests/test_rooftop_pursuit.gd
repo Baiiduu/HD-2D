@@ -85,6 +85,7 @@ func navigation_checks() -> void:
 
 func run() -> void:
 	var scene: Node3D = load("res://scenes/world/world.tscn").instantiate()
+	scene.get_node("WorldEntry").preview_on_direct_run = false
 	preload("res://tests/fixtures/combat_scene_fixture.gd").clear_placed_obstacles(scene)
 	# 保留真实地形和寻路，以固定实体几何验证屋顶回退，不依赖地编节点名称。
 	for index in 3:

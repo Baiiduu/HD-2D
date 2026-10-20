@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="GrowthBuffDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/growth/growth_buff_definition.gd" id="definition"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/journal/symbols/sword.png" id="icon"]
+
+[resource]
+script = ExtResource("definition")
+id = &"E04"
+title = "一拳超人"
+description = "攻击频率减半，初次单击伤害变为三倍；续级只增强重击。"
+icon = ExtResource("icon")
+category = 3
+epic = true
+attribute = 20
+bonus_per_level = 2.0
+max_level = 0

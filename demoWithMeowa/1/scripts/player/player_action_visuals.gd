@@ -9,7 +9,7 @@ extends Resource
 @export var flight: SpriteFrames
 @export var flight_attack: SpriteFrames
 @export var recovery: SpriteFrames
-## 仅真实墙面／镜面／水域反弹触发；留空继续当前飞行动画。
+## 仅真实建筑／实体道具碰撞反弹触发，不响应怪群绕行；留空继续当前飞行动画。
 @export var bounce: SpriteFrames
 ## 缺少攻击美术时，接口占用的占位时间；有素材时读取完整原生帧时长。
 @export_range(0.05, 2.0, 0.05, "suffix:s") var placeholder_attack_seconds := 0.3
@@ -76,6 +76,27 @@ extends Resource
 @export_range(1, 16, 1) var bounce_particle_count := 8
 @export_range(0.5, 6.0, 0.1, "suffix:m/s") var bounce_particle_speed := 3.2
 @export_range(0.12, 0.5, 0.01, "suffix:s") var bounce_particle_seconds := 0.24
+@export_group("人物受击像素粒子")
+## 只响应真实扣血；地图独立启用，不添加受伤音效或改变战斗规则。
+@export var hurt_particles_enabled := false
+@export_range(1, 12, 1) var hurt_particle_count := 8
+@export_range(0.15, 0.45, 0.01, "suffix:s") var hurt_particle_seconds := 0.32
+## 散开距离与方片尺寸均按人物实际缩放后的原生像素计量。
+@export_range(6.0, 24.0, 1.0, "suffix:px") var hurt_particle_spread_pixels := 16.0
+@export_range(1.0, 3.0, 1.0, "suffix:px") var hurt_particle_size_pixels := 2.0
+@export var hurt_particle_color := Color(1.0, 0.10, 0.16)
+@export_group("人物受击画面提示")
+@export var hurt_screen_enabled := false
+@export_range(0.0, 0.15, 0.01) var hurt_screen_opacity := 0.08
+@export_range(0.1, 0.4, 0.01, "suffix:s") var hurt_screen_seconds := 0.2
+@export var hurt_screen_color := Color(0.9, 0.04, 0.07)
+@export var hurt_camera_enabled := false
+@export_range(0.0, 3.0, 0.25, "suffix:px") var hurt_shake_pixels := 1.5
+@export_range(0.04, 0.12, 0.01, "suffix:s") var hurt_shake_seconds := 0.08
+@export_range(0.0, 1.5, 0.05, "suffix:px") var hurt_orbit_shake_pixels := 0.65
+@export_range(0.03, 0.08, 0.01, "suffix:s") var hurt_orbit_shake_seconds := 0.05
+## 只限制镜头提示，不新增无敌时间；被高优先级反馈覆盖后不延后补播。
+@export_range(0.2, 0.8, 0.05, "suffix:s") var hurt_shake_interval := 0.35
 @export_group("弹射运动表现")
 ## 各地图独立开启；仅改变显示姿态，不改变人物动画、根节点或碰撞体。
 @export var motion_feedback_enabled := false
@@ -107,8 +128,7 @@ extends Resource
 @export_subgroup("贴身速度气流")
 ## World 选择纹理粒子，旧速度描边仅保留手动对照。
 @export var speed_flow_enabled := false
-@export_enum("笔触粒子（对照）", "空气绕流") var speed_flow_mode := 0
-@export_range(0.0, 1.5, 0.1, "suffix:px") var speed_air_distortion_pixels := 0.9
+@export_enum("笔触粒子（对照）", "掠过气流") var speed_flow_mode := 0
 @export var speed_flow_texture: Texture2D
 ## 归一化采样区域，只去掉纹理画布留白，不裁剪或重采样源文件。
 @export var speed_flow_texture_region := Rect2(0, 0, 1, 1)
@@ -128,6 +148,17 @@ extends Resource
 @export_range(0.0, 3.0, 0.05) var fire_trail_energy := 1.1
 ## 世界坐标像素密度；不把镜头透视烘焙进素材。
 @export_range(20.0, 80.0, 1.0) var fire_trail_pixels_per_meter := 40.0
+@export_subgroup("贴地火焰笔触与火星")
+@export var fire_trail_flow_enabled := false
+@export var fire_trail_brush: Texture2D
+## 只在着色器中选择笔触区域，保留原图与原生像素。
+@export var fire_trail_brush_region := Rect2(0.0201823, 0.3506944, 0.9544271, 0.2986111)
+@export_range(0.0, 1.0, 0.05) var fire_trail_flow_strength := 0.8
+@export_range(0.5, 4.0, 0.1) var fire_trail_flow_speed := 2.2
+@export_range(0.05, 0.4, 0.01, "suffix:m") var fire_trail_spark_height := 0.22
+@export_range(0.15, 0.5, 0.01, "suffix:m") var fire_trail_spark_spacing := 0.30
+@export_range(0.0, 0.5, 0.05) var fire_trail_spark_amount := 0.2
+@export_range(1.0, 5.0, 0.5, "suffix:px") var fire_trail_body_clearance_pixels := 2.0
 @export_group("持续攻击视觉层次")
 @export var combat_readability_enabled := false
 @export var combat_contact_frames: SpriteFrames

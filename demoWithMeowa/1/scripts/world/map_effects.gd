@@ -2,6 +2,8 @@
 class_name MapEffects
 extends Node3D
 
+const COLLISION_SURFACE := preload("res://scripts/core/collision_surface.gd")
+
 ## 独立地图的通用画面与音频。默认值来自当前视觉预览，不包含地图布局。
 @export_group("地图连接")
 ## 留空时连接同一地图的 World/Ground 或 Ground；也可手动指定其他 Terrain。
@@ -133,8 +135,10 @@ func _update_boundary_collision(rect: Rect2, ground_y: float) -> void:
 	if not is_instance_valid(_boundary):
 		_boundary = StaticBody3D.new()
 		_boundary.name = "MapBoundary"
+		_boundary.add_to_group(&"map_boundaries")
 		_boundary.collision_layer = 1
 		_boundary.collision_mask = 0
+		COLLISION_SURFACE.mark(_boundary, &"boundary")
 		add_child(_boundary)
 		for index in 4:
 			var wall := CollisionShape3D.new()

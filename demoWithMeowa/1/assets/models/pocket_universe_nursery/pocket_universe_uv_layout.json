@@ -1,0 +1,327 @@
+{
+  "atlas_size": [
+    1024,
+    1024
+  ],
+  "pixels_per_meter": 80,
+  "padding_pixels": 4,
+  "uv_origin": "top-left",
+  "body_dimensions_m": [
+    3.6,
+    3.8,
+    3.2
+  ],
+  "facade_y_top_m": 3.6,
+  "regions": {
+    "front": {
+      "rect": [
+        8,
+        8,
+        216,
+        288
+      ],
+      "kind": "facade",
+      "label": "SOUTH FRONT"
+    },
+    "right": {
+      "rect": [
+        240,
+        8,
+        204,
+        288
+      ],
+      "kind": "facade",
+      "label": "EAST RIGHT"
+    },
+    "back": {
+      "rect": [
+        460,
+        8,
+        216,
+        288
+      ],
+      "kind": "facade",
+      "label": "NORTH REAR"
+    },
+    "left": {
+      "rect": [
+        692,
+        8,
+        204,
+        288
+      ],
+      "kind": "facade",
+      "label": "WEST LEFT"
+    },
+    "mast": {
+      "rect": [
+        920,
+        8,
+        32,
+        280
+      ],
+      "kind": "metal",
+      "label": "MAST"
+    },
+    "pipe": {
+      "rect": [
+        968,
+        8,
+        16,
+        280
+      ],
+      "kind": "brass",
+      "label": "PIPE"
+    },
+    "upper_roof": {
+      "rect": [
+        8,
+        312,
+        288,
+        256
+      ],
+      "kind": "roof",
+      "label": "UPPER ROOF"
+    },
+    "gallery_roof": {
+      "rect": [
+        312,
+        312,
+        288,
+        256
+      ],
+      "kind": "roof",
+      "label": "GALLERY DECK"
+    },
+    "lower_roof": {
+      "rect": [
+        616,
+        312,
+        288,
+        256
+      ],
+      "kind": "roof",
+      "label": "LAB ROOF"
+    },
+    "planet": {
+      "rect": [
+        8,
+        584,
+        280,
+        144
+      ],
+      "kind": "planet",
+      "label": "PLANET EQUIRECTANGULAR"
+    },
+    "moon": {
+      "rect": [
+        8,
+        744,
+        64,
+        32
+      ],
+      "kind": "planet",
+      "label": "MOON"
+    },
+    "orbit": {
+      "rect": [
+        88,
+        744,
+        120,
+        8
+      ],
+      "kind": "light",
+      "label": "ORBIT"
+    },
+    "hub": {
+      "rect": [
+        320,
+        592,
+        40,
+        40
+      ],
+      "kind": "device",
+      "label": "GAUGE"
+    },
+    "cradle": {
+      "rect": [
+        376,
+        592,
+        96,
+        96
+      ],
+      "kind": "metal",
+      "label": "MAGNETIC CRADLE"
+    },
+    "vent_top": {
+      "rect": [
+        488,
+        592,
+        40,
+        32
+      ],
+      "kind": "metal",
+      "label": "TOP VENT"
+    },
+    "vent": {
+      "rect": [
+        544,
+        592,
+        48,
+        40
+      ],
+      "kind": "metal",
+      "label": "VENT"
+    },
+    "terminal": {
+      "rect": [
+        320,
+        648,
+        24,
+        32
+      ],
+      "kind": "device",
+      "label": "ACCESS"
+    },
+    "cap": {
+      "rect": [
+        488,
+        648,
+        40,
+        40
+      ],
+      "kind": "metal",
+      "label": "ROOF CAP"
+    },
+    "trim": {
+      "rect": [
+        544,
+        648,
+        40,
+        40
+      ],
+      "kind": "metal",
+      "label": "TRIM"
+    },
+    "service_door": {
+      "rect": [
+        320,
+        704,
+        48,
+        96
+      ],
+      "kind": "facade",
+      "label": "SERVICE DOOR"
+    },
+    "service_panel": {
+      "rect": [
+        384,
+        704,
+        40,
+        56
+      ],
+      "kind": "metal",
+      "label": "SIDE SERVICE"
+    },
+    "rear_vent": {
+      "rect": [
+        440,
+        704,
+        48,
+        40
+      ],
+      "kind": "metal",
+      "label": "REAR VENT"
+    },
+    "cabinet": {
+      "rect": [
+        528,
+        704,
+        64,
+        64
+      ],
+      "kind": "metal",
+      "label": "PLANT CABINET"
+    },
+    "entry_jamb": {
+      "rect": [
+        320,
+        816,
+        24,
+        104
+      ],
+      "kind": "metal",
+      "label": "DOOR RECESS"
+    },
+    "underside": {
+      "rect": [
+        360,
+        816,
+        64,
+        64
+      ],
+      "kind": "metal",
+      "label": "UNDERSIDE"
+    },
+    "main_door": {
+      "rect": [
+        448,
+        792,
+        64,
+        104
+      ],
+      "kind": "facade",
+      "label": "MAIN DOOR"
+    },
+    "entry_light": {
+      "rect": [
+        528,
+        792,
+        64,
+        8
+      ],
+      "kind": "light",
+      "label": "CANOPY LIGHT"
+    },
+    "inner_gallery": {
+      "rect": [
+        8,
+        936,
+        576,
+        40
+      ],
+      "kind": "glass",
+      "label": "INNER OBSERVATION BAND"
+    },
+    "inner_upper": {
+      "rect": [
+        8,
+        992,
+        368,
+        24
+      ],
+      "kind": "metal",
+      "label": "INNER UPPER SHELL"
+    },
+    "plain_shell": {
+      "rect": [
+        616,
+        584,
+        128,
+        128
+      ],
+      "kind": "shell",
+      "label": "PAINTED SHELL"
+    },
+    "equipment": {
+      "rect": [
+        760,
+        584,
+        128,
+        128
+      ],
+      "kind": "metal",
+      "label": "EQUIPMENT PANELS"
+    }
+  }
+}

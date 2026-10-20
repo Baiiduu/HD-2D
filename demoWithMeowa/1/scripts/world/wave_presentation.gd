@@ -3,7 +3,7 @@ extends CanvasLayer
 ## 只监听真实波次节点，不持有战斗时间、输入、相机或出怪权限。
 
 const Settings = preload("res://scripts/world/wave_presentation_settings.gd")
-const FONT = preload("res://assets/fonts/fusion_pixel/fusion-pixel-12px-monospaced-zh_hans.ttf")
+const FONT = preload("res://assets/fonts/maoken_assorted_sans/MaokenAssortedSans.ttf")
 const NUMBER_FONT = preload("res://assets/fonts/press_start_2p/PressStart2P-Regular.ttf")
 const EDGE = preload("res://shaders/effects/wave_transition_edge.gdshader")
 const PULSE = preload("res://shaders/effects/wave_transition_pulse.gdshader")
@@ -62,6 +62,13 @@ func _ready() -> void:
 	session.combat_frozen_changed.connect(_frozen_changed)
 	session.enemy_defeated.connect(_enemy_defeated)
 	shot.bind(session, settings)
+
+func prepare_feedback(closing := false) -> void:
+	if not enabled: return
+	_opening_title.configure(1,settings,closing)
+	_prepare_pulse()
+	if is_instance_valid(pulse): pulse.hide()
+	_root.hide()
 
 func _label(font: Font, size: int, color: Color) -> Label:
 	var label := Label.new()

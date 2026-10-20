@@ -1,12 +1,19 @@
 [gd_resource type="Resource" script_class="PlayerSwordRules" format=3 uid="uid://cl5ltfw0q27th"]
 
 [ext_resource type="Script" uid="uid://bgs0ouklybckn" path="res://scripts/player/player_sword_rules.gd" id="3_wbysx"]
+[ext_resource type="AudioStream" uid="uid://jtpn53ufhm0q" path="res://assets/meowa/audio/common_hit/enemy_hit_01.wav" id="common_hit_1"]
+[ext_resource type="AudioStream" uid="uid://c4id1q7mu8ijh" path="res://assets/meowa/audio/common_hit/enemy_hit_02.wav" id="common_hit_2"]
+[ext_resource type="AudioStream" uid="uid://dtwm11088upwq" path="res://assets/meowa/audio/common_hit/enemy_hit_03.wav" id="common_hit_3"]
 [ext_resource type="SpriteFrames" uid="uid://dg1nehjf03ubl" path="res://assets/meowa/combat/basic_sword/frames.tres" id="meowa_frames"]
-[ext_resource type="Resource" path="res://data/visual/sword_slash_world.tres" id="ribbon"]
+[ext_resource type="Resource" uid="uid://b5rb2fp5uwhb8" path="res://data/visual/sword_orbit_world.tres" id="orbit"]
+[ext_resource type="Resource" uid="uid://ck503h0fid3lg" path="res://data/visual/sword_slash_world.tres" id="ribbon"]
 
 [resource]
 script = ExtResource("3_wbysx")
-damage = 10.0
+normal_stationary_enabled = true
+normal_slash_alignment_enabled = true
+flight_angle = 360.0
+flight_ribbon_visual = ExtResource("orbit")
 effect_mode = 3
 frames = ExtResource("meowa_frames")
 ribbon_visual = ExtResource("ribbon")
@@ -14,3 +21,4 @@ effect_energy = 0.08
 arc_width = 0.25
 meowa_stretch_enabled = true
 meowa_visibility_strength = 1.0
+sweep_sounds = Array[AudioStream]([ExtResource("common_hit_1"), ExtResource("common_hit_2"), ExtResource("common_hit_3")])

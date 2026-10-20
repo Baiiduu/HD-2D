@@ -22,10 +22,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 GameControls="*res://scripts/input/game_controls.gd"
-
-[audio]
-
-buses/default_bus_layout="res://default_bus_layout.tres"
+LeaderboardClient="*res://scripts/network/leaderboard_client.gd"
 
 [display]
 
@@ -48,7 +45,7 @@ systems/run_skills=true
 
 [gui]
 
-theme/custom_font="res://assets/fonts/fusion_pixel/fusion-pixel-12px-monospaced-zh_hans.ttf"
+theme/custom_font="res://assets/fonts/maoken_assorted_sans/MaokenAssortedSans.ttf"
 
 [input]
 

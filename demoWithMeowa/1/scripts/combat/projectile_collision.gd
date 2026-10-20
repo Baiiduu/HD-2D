@@ -3,6 +3,8 @@ extends RefCounted
 
 ## Owned per query/flight instance. Other callers retain original sampling.
 var center_certificate_enabled := false
+## 仅地图查询诊断开启时累计，不触发额外空间查询。
+var visual_sweeps_certified := 0
 
 const MIRROR_SURFACE := preload("res://scripts/combat/mirror_reflection_surface.gd")
 const REFLECTION_MASK := 1 | MIRROR_SURFACE.COLLISION_LAYER
@@ -51,6 +53,25 @@ func wall_contact(space: PhysicsDirectSpaceState3D, start: Vector3, end: Vector3
 	return {"distance": motion.length() * fractions[0], "overlap": false,
 		"normal": rest.get("normal", Vector3.ZERO), "point": rest.get("point", _query.transform.origin),
 		"collider": instance_from_id(rest.collider_id) if rest.has("collider_id") else null}
+
+## 纯视觉尸体复用已建立的共享障碍表；冷地图和未知资格仍走原实时查询。
+## 不缓存空路段、不排除地面，也不改其它弹丸的查询入口。
+func visual_wall_contact(space: PhysicsDirectSpaceState3D, start: Vector3, end: Vector3, radius: float, excluded: Array[RID], terrain: Terrain) -> Dictionary:
+	# 原查询若被扩展成 Area 或其它形状，不得套用只覆盖身体球体的证明。
+	if _query.shape != _sphere or _query.collide_with_areas or not _query.collide_with_bodies:
+		return wall_contact(space, start, end, radius, excluded)
+	if (get_script() == ProjectileCollision and is_instance_valid(terrain)
+			and terrain.is_inside_tree() and terrain.get_script() == Terrain
+			and terrain.obstacle_certificates_enabled
+			and not ProjectSettings.get_setting("physics/3d/run_on_separate_thread", false)
+			and terrain.get_world_3d().direct_space_state == space):
+		var field := terrain._obstacle_field
+		if is_instance_valid(field) and field.is_inside_tree() and field.source == terrain and field.get_script() == StaticObstacleField:
+			var clearance := radius + maxf(0.0, _sphere.margin) + maxf(0.0, _query.margin)
+			if field.clear_sphere_sweep(start, end, clearance, 1, excluded):
+				if terrain.query_diagnostics_enabled: visual_sweeps_certified += 1
+				return {}
+	return wall_contact(space, start, end, radius, excluded)
 
 ## Reflecting projectiles need only the first eligible real body and its contact normal.
 ## Keep the multi-target query below unchanged for piercing attacks.

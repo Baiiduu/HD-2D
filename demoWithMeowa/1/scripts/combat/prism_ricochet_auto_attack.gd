@@ -27,6 +27,9 @@ signal wall_bounced(point: Vector3, normal: Vector3)
 @export var audio_enabled := true
 @export var hit_sounds: Array[AudioStream] = []
 @export var bounce_sounds: Array[AudioStream] = []
+## 命中与反弹共用一个接触音色时，避免同次怪物接触叠加两条完整声音。
+@export var enemy_bounce_sound_enabled := true
+@export var audio_pitch_range := Vector2(1.15, 1.22)
 @export var audio_manager: GameAudio
 
 var skill_level := 0
@@ -58,18 +61,21 @@ func get_attack_stats(level := -1, modifiers: RunCombatModifiers = null) -> Dict
 	var data := skill_definition.level_data(level) if skill_definition else null
 	var values: Dictionary = data.parameters if data else {}
 	if not modifiers and session: modifiers = session.combat_modifiers
+	var reach := modifiers.range_multiplier() if modifiers and modifiers.growth_rules else 1.0
 	return {"damage": damage * values.get("damage_multiplier", 1.0) * (modifiers.damage_multiplier() if modifiers else 1.0),
-		"distance": attack_range * values.get("distance_multiplier", 1.0),
+		"distance": attack_range * values.get("distance_multiplier", 1.0) * reach,
 		"interval": maxf(0.15, attack_interval * values.get("interval_multiplier", 1.0) * (modifiers.interval_multiplier() if modifiers else 1.0)),
 		"speed": flight_speed * values.get("speed_multiplier", 1.0),
-		"radius": hit_radius * values.get("width_multiplier", 1.0),
+		"radius": hit_radius * values.get("width_multiplier", 1.0) * reach,
 		"bounces": int(values.get("bounces", 2.0)), "count": int(values.get("projectiles", 1.0)),
-		"spread": deg_to_rad(values.get("spread_degrees", 24.0)), "visual": values.get("visual_multiplier", 1.0)}
+		"spread": deg_to_rad(values.get("spread_degrees", 24.0)), "visual": values.get("visual_multiplier", 1.0) * reach, "growth_scale": reach}
 
 func get_combat_stats(modifiers: RunCombatModifiers = null) -> Dictionary:
 	if not enabled or skill_level <= 0: return {}
 	var stats := get_attack_stats(skill_level, modifiers)
-	return {"name": "棱光弹射", "damage": stats.damage, "interval": stats.interval}
+	var result := {"name": "棱光弹射", "damage": stats.damage, "interval": stats.interval}
+	if session and session.growth_rules: result.range = stats.distance
+	return result
 
 func describe_skill_upgrade(from_level: int, to_level: int) -> String:
 	var before := get_attack_stats(from_level)
@@ -112,6 +118,7 @@ func fire() -> bool:
 			target = enemy
 			nearest = distance * distance
 	if not target: return false
+	stats.damage *= session.attack_snapshot().speed_damage_multiplier
 	var direction := target.global_position - origin
 	direction.y = 0.0
 	direction = direction.normalized() if not direction.is_zero_approx() else Vector3.FORWARD
@@ -123,6 +130,15 @@ func fire() -> bool:
 	return true
 
 ## 出手时锁定数值、平面与方向；闪避保留已发射弹丸和自动攻击冷却。
+func prepare_feedback() -> void:
+	if not effect_scene or not _effects.is_empty(): return
+	var effect := effect_scene.instantiate() as PrismRicochetEffect
+	add_child(effect)
+	_effects.append(effect)
+	effect.finished.connect(_release_effect.bind(effect))
+	effect.prepare_feedback()
+	_release_effect(effect)
+
 func launch(origin: Vector3, direction: Vector3, stats: Dictionary) -> void:
 	var effect: PrismRicochetEffect
 	if not _idle_effects.is_empty(): effect = _idle_effects.pop_back()
@@ -175,11 +191,13 @@ func _advance_shot(shot: Dictionary, delta: float) -> void:
 			enemy.take_damage(shot.stats.damage, {"source": &"A03", "direction": incoming})
 			if not is_instance_valid(enemy): return
 			var dealt := before - enemy.health
-			if dealt > 0.0 or session.combat_modifiers.damage_disabled:
+			var hit_confirmed := dealt > 0.0 or session.combat_modifiers.damage_disabled
+			if hit_confirmed:
 				_play_sound(hit_sounds, &"prism_hit", hit_position, GameAudio.Kind.HIT)
 				hit_landed.emit(enemy, dealt)
 			if not _active() or shot not in _shots or shot.generation != session._generation: return
-			_play_sound(bounce_sounds, &"prism_bounce", contact.point, GameAudio.Kind.ATTACK)
+			if enemy_bounce_sound_enabled or not hit_confirmed:
+				_play_sound(bounce_sounds, &"prism_bounce", contact.point, GameAudio.Kind.ATTACK)
 			continue
 		var end: Vector3 = start + shot.direction * distance
 		shot.position = end
@@ -241,5 +259,8 @@ func _play_sound(clips: Array[AudioStream], cue: StringName, point: Vector3, kin
 	if not audio_enabled or clips.is_empty(): return
 	if not is_instance_valid(audio_manager): audio_manager = get_tree().get_first_node_in_group(&"game_audio") as GameAudio
 	if audio_manager:
-		audio_manager.request({"source": self, "cue": cue, "clips": clips, "kind": kind,
-			"position": point, "volume_db": -18.0, "pitch": randf_range(1.15, 1.22)})
+		var event := {"source": self, "cue": cue, "clips": clips, "kind": kind,
+			"position": point, "volume_db": -18.0, "pitch": randf_range(audio_pitch_range.x, audio_pitch_range.y)}
+		# 单接触音模式独立合并；身体受击声不能吞掉棱晶的材质反馈。
+		if not enemy_bounce_sound_enabled: event.merge_group = &"prism_contact"
+		audio_manager.request(event)

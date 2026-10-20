@@ -56,6 +56,8 @@ func run() -> void:
 	check(not modifiers.can_apply(capped), "Capped entries have no further benefit")
 
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
+	world.get_node("WorldMainMenu").show_on_world_start = false
+	world.get_node("WorldEntry").preview_on_direct_run = false
 	world.get_node("LoadoutUI").save_enabled = false
 	# 此用例验收数值和冻结，声音由专项用例验收，避免退出时留下播放线程。
 	world.get_node("MapEffects/BGM").music_enabled = false
@@ -66,6 +68,9 @@ func run() -> void:
 	var profile := world.get_node("BattleConfiguration").configuration as SceneCombatConfiguration
 	profile = profile.duplicate() as SceneCombatConfiguration
 	profile.sword_rules = null
+	profile.growth_rules = null
+	profile.population_rules = null
+	profile.spawn_shadow_settings = null
 	profile.growth_definitions.assign([damage, cooldown, coverage])
 	world.get_node("BattleConfiguration").configuration = profile
 	world.get_node("WavePrototype/RunGrowth").enabled = true

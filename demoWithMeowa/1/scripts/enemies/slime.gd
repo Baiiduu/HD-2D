@@ -98,6 +98,19 @@ var _ground_moved := false
 var _ground_real_velocity := Vector3.ZERO
 var _flat_motion: FlatGroundMotion
 var _sight_ray: PhysicsRayQueryParameters3D
+## 只保存上一物理步的普通转向意图，绝不保存碰撞／命中／怪群查询结果。
+var _ordinary_last_step := -2
+var _ordinary_mode := 0
+var _ordinary_epoch := -1
+var _ordinary_target: Node3D
+var _ordinary_path: TerrainPath
+var _ordinary_index: WaveEnemySpatialIndex
+var _ordinary_end := Vector3.INF
+var _ordinary_stopped := false
+var _ordinary_stop := 0.0
+var _ordinary_intended := Vector3.ZERO
+var _ordinary_steering := Vector3.ZERO
+var _ordinary_planning := false
 @onready var sprite: Sprite3D = $Sprite
 
 func supports_central_update() -> bool:
@@ -119,6 +132,8 @@ var _native_chase_input := PackedFloat64Array()
 ## Values are refreshed on every call, so parameter edits and buffs stay live.
 func _try_native_chase(delta: float, stop: float) -> bool:
 	if not _native_swarm or not target is Player or not navigation or not spatial_index: return false
+	# 可选原型将决策与运动合为一次调用；分频时使用已拆开的普通脚本路径。
+	if spatial_index.pursuit_is_throttled(): return false
 	if navigation.get_script() != TerrainPath or spatial_index.get_script().resource_path not in ["res://scripts/combat/wave_enemy_spatial_index.gd", "res://scripts/combat/crowd_batch_enemy_spatial_index.gd"]: return false
 	_native_chase_input.resize(15)
 	_native_chase_input[0] = _route_clock
@@ -219,7 +234,7 @@ func _crowd_direction(desired: Vector3) -> Vector3:
 	if separation_radius <= 0.0 or separation_strength <= 0.0: return desired
 	var separation := Vector3.ZERO
 	if spatial_index:
-		separation = spatial_index.separation(self, separation_radius)
+		separation = spatial_index.pursuit_separation(self, separation_radius) if _ordinary_planning else spatial_index.separation(self, separation_radius)
 	else:
 		for other: WaveEnemy in get_tree().get_nodes_in_group(&"wave_enemies"):
 			if other == self or other.dead or other.spawn_delay > 0.0: continue
@@ -263,6 +278,65 @@ func _pursuit_crowd_direction(desired: Vector3, origin := Vector3.INF, target_di
 		_yield_side = choice
 		return candidate
 	return direction
+
+func _clear_ordinary_decision() -> void:
+	_ordinary_last_step = -2
+	_ordinary_mode = 0
+
+func _ordinary_due(mode: int, stopped: bool, stop := 0.0) -> bool:
+	if not wave_mode or not spatial_index or not spatial_index.pursuit_is_throttled(): return true
+	var frame := Engine.get_physics_frames()
+	# 冻结、招式、眩晕、瞬移和切换目标后立即重判，不积攒旧时间或旧转向。
+	if frame != _ordinary_last_step + 1 or mode != _ordinary_mode or _push_remaining > 0.0: return true
+	if target != _ordinary_target or navigation != _ordinary_path or spatial_index != _ordinary_index: return true
+	if spatial_index.pursuit_epoch != _ordinary_epoch or global_position != _ordinary_end: return true
+	if stopped != _ordinary_stopped or stop != _ordinary_stop: return true
+	return spatial_index.pursuit_due(self)
+
+func _remember_ordinary(mode: int, stopped: bool, stop := 0.0) -> void:
+	_ordinary_mode = mode
+	_ordinary_stopped = stopped
+	_ordinary_stop = stop
+	_ordinary_target = target
+	_ordinary_path = navigation
+	_ordinary_index = spatial_index
+	_ordinary_epoch = spatial_index.pursuit_epoch if spatial_index else -1
+
+func _ordinary_moved() -> void:
+	_ordinary_last_step = Engine.get_physics_frames()
+	_ordinary_end = global_position
+
+func _plan_ordinary_chase(delta: float, origin: Vector3, goal: Vector3, distance: float, stop: float) -> Vector3:
+	var stopped := distance <= stop
+	# 原路线时钟仍按每个物理步推进；只有到期后的重算等到自己的决策组。
+	if not stopped: _route_clock -= delta
+	if _ordinary_due(1, stopped, stop):
+		var intended := Vector3.ZERO
+		if not stopped:
+			if _route_clock <= 0.0:
+				_route_clock = route_interval
+				_route = navigation.chase_route(origin, goal, pursuit_lookahead)
+				_waypoint = 1 if _route.size() > 1 else 0
+			if not _route.is_empty() and TerrainPath.horizontal_distance(origin, _route[-1]) > 0.1:
+				while _waypoint < _route.size() - 1 and TerrainPath.horizontal_distance(origin, _route[_waypoint]) < 0.14: _waypoint += 1
+				intended = _route[_waypoint] - origin
+				intended.y = 0.0
+				intended = intended.normalized()
+		_ordinary_intended = intended
+		_ordinary_planning = true
+		_ordinary_steering = _pursuit_crowd_direction(intended, origin, distance)
+		_ordinary_planning = false
+		_remember_ordinary(1, stopped, stop)
+	return _ordinary_steering
+
+func _plan_ordinary_spacing() -> Vector3:
+	if _ordinary_due(2, false):
+		_ordinary_intended = Vector3.ZERO
+		_ordinary_planning = true
+		_ordinary_steering = _crowd_direction(Vector3.ZERO)
+		_ordinary_planning = false
+		_remember_ordinary(2, false)
+	return _ordinary_steering
 
 ## 史莱姆及其具体怪物子类共用实际显示高度，换素材或缩放后自动适配。
 func get_damage_feedback_position() -> Vector3:
@@ -348,6 +422,7 @@ func _path_height(cell: Vector2i) -> float:
 	return terrain.global_position.y+(heights[0]+heights[1]+heights[2]+heights[3])*0.25
 
 func _rebuild_path() -> void:
+	_clear_ordinary_decision()
 	var exclude: Array[RID] = [get_rid()]
 	if target is CollisionObject3D: exclude.append(target.get_rid())
 	for enemy in get_tree().get_nodes_in_group(&"enemies"):
@@ -456,6 +531,7 @@ func _physics_process(delta: float) -> void:
 		_stuck_clock = 0.0
 
 func _on_stun_started() -> void:
+	_clear_ordinary_decision()
 	_route.clear()
 	_route_clock = 0.0
 	if not is_instance_valid(_stun_effect):
@@ -468,6 +544,7 @@ func _on_stun_ended() -> void:
 	if is_instance_valid(_stun_effect): _stun_effect.stop()
 
 func _stunned_tick(delta: float) -> void:
+	_clear_ordinary_decision()
 	_ground_moved = false
 	velocity.x = 0.0
 	velocity.z = 0.0
@@ -485,28 +562,15 @@ func _combat_tick(delta: float) -> void:
 	var away := origin - goal
 	away.y = 0.0
 	var target_distance := TerrainPath.horizontal_distance(origin, goal)
-	var direction := Vector3.ZERO
 	var stop := _personal_stop_distance(combat_stop_distance)
-	if target_distance > stop:
-		_route_clock -= delta
-		if _route_clock <= 0.0:
-			_route_clock = route_interval
-			_route = _path.chase_route(origin, goal, pursuit_lookahead)
-			_waypoint = 1 if _route.size() > 1 else 0
-		if not _route.is_empty() and TerrainPath.horizontal_distance(origin, _route[-1]) > 0.1:
-			while _waypoint < _route.size() - 1 and TerrainPath.horizontal_distance(origin, _route[_waypoint]) < 0.14:
-				_waypoint += 1
-			direction = _route[_waypoint] - origin
-			direction.y = 0.0
-			direction = direction.normalized()
-	var intended := direction
-	direction = _pursuit_crowd_direction(direction, origin, target_distance)
+	var direction := _plan_ordinary_chase(delta, origin, goal, target_distance, stop)
 	var actual_speed := effective_move_speed()
 	direction = _personal_space_direction(direction, stop, away, target_distance, actual_speed)
 	velocity.x = direction.x * actual_speed
 	velocity.z = direction.z * actual_speed
 	_move_combat_body(delta)
-	_update_chase_facing(intended)
+	_ordinary_moved()
+	_update_chase_facing(_ordinary_intended)
 	_combat_contact()
 
 func _combat_contact() -> void:
@@ -593,6 +657,7 @@ func _feedback_pool() -> EnemyFeedbackPool:
 		_feedback = attack_root.get_node_or_null("EnemyFeedbackPool") as EnemyFeedbackPool
 		if not _feedback:
 			_feedback = EnemyFeedbackPool.new()
+			_feedback.terrain = terrain
 			_feedback.name = "EnemyFeedbackPool"
 			attack_root.add_child(_feedback)
 	return _feedback

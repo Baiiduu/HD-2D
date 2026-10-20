@@ -1,0 +1,21 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://shaders/environment/cyber_armillary_globe.gdshader" id="1_globe"]
+[ext_resource type="Texture2D" path="res://assets/models/cyber_armillary/globe_albedo.png" id="2_color"]
+[ext_resource type="Texture2D" path="res://assets/models/cyber_armillary/globe_orm.png" id="3_properties"]
+
+[resource]
+resource_local_to_scene = true
+resource_name = "AuroraGlobe"
+shader = ExtResource("1_globe")
+shader_parameter/albedo_atlas = ExtResource("2_color")
+shader_parameter/orm_atlas = ExtResource("3_properties")
+shader_parameter/original_uv_rect = Vector4(0.01953125, 0.01953125, 0.5078125, 0.24609375)
+shader_parameter/longitude_offset = -0.3
+shader_parameter/seam_width = 0.04
+shader_parameter/emission_energy = 1.2
+shader_parameter/motion_phase = 0.0
+shader_parameter/flow_strength = 0.018
+shader_parameter/flow_light_strength = 0.4
+shader_parameter/twinkle_strength = 0.1
+shader_parameter/twinkle_cycles = 5

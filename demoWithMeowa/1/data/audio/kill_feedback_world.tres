@@ -1,6 +1,8 @@
-[gd_resource type="Resource" script_class="KillAudioRules" format=3]
+[gd_resource type="Resource" script_class="KillAudioRules" format=3 uid="uid://crqkq0mccfwc8"]
 
-[ext_resource type="Script" path="res://scripts/audio/kill_audio_rules.gd" id="rules"]
+[ext_resource type="Script" uid="uid://7ayyhnuld4ah" path="res://scripts/audio/kill_audio_rules.gd" id="rules"]
 
 [resource]
 script = ExtResource("rules")
+air_gain_db = -6.0
+air_motion_enabled = true

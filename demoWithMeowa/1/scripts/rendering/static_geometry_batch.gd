@@ -22,6 +22,7 @@ var _pending := false
 var _building := false
 var _closing := false
 var _stats := {}
+var _fading_occluders: Dictionary[int, WeakRef] = {}
 
 func _enter_tree() -> void:
 	_closing = false
@@ -55,6 +56,26 @@ func register_owner(owner: Node3D, geometry: Node3D) -> void:
 func _owner_exiting(id: int) -> void:
 	_owners.erase(id)
 	request_rebuild()
+
+## 淡化开始／完全恢复时才撤销或归还合批，不在透明度逐帧变化时重建。
+## 花坛包含的附灯也属于同一遮挡物，其余道具继续参与合批。
+func set_occluder_fading(occluder: Node3D, fading: bool) -> void:
+	if not is_instance_valid(occluder): return
+	var id := occluder.get_instance_id()
+	if _fading_occluders.has(id) == fading: return
+	if fading: _fading_occluders[id] = weakref(occluder)
+	else: _fading_occluders.erase(id)
+	if enabled: request_rebuild()
+
+func _owner_is_fading(id: int) -> bool:
+	var owner := instance_from_id(id)
+	for key in _fading_occluders.keys():
+		var occluder: Node = _fading_occluders[key].get_ref()
+		if occluder == null:
+			_fading_occluders.erase(key)
+		elif occluder == owner or occluder.is_ancestor_of(owner):
+			return true
+	return false
 
 ## 原生绑定或无 changed 信号的材质参数修改，必须在写入前调用。
 ## 变更立即恢复源显示；合批只在本轮变更完成后重新建立。
@@ -114,7 +135,9 @@ func _rebuild() -> void:
 	var start := Time.get_ticks_usec()
 	var groups := {}
 	if enabled:
-		for surfaces in _owners.values():
+		for id in _owners:
+			if _owner_is_fading(id): continue
+			var surfaces: Array = _owners[id]
 			for candidate in surfaces:
 				if not is_instance_valid(candidate): continue
 				var source := candidate as MeshInstance3D

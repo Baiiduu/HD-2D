@@ -36,6 +36,11 @@ var _field_material: ShaderMaterial
 var _sky: ShaderMaterial
 var _ground: ShaderMaterial
 var _apply_queued := false
+## 保留时钟和画质参数，仅收住被主菜单完全遮住的附加绘制。
+var render_suspended := false:
+	set(value):
+		render_suspended = value
+		_sync_rendering()
 
 func _ready() -> void:
 	set_process(false)
@@ -94,9 +99,13 @@ func _apply() -> void:
 		regions.append(reflection_regions[i] if i < reflection_regions.size() else Vector4.ZERO)
 	_ground.set_shader_parameter("aurora_reflection_regions", regions)
 	_ground.set_shader_parameter("aurora_reflection_region_count", mini(reflection_regions.size(), 4))
-	_field.render_target_update_mode = (SubViewport.UPDATE_ALWAYS if flow_speed > 0.0 else SubViewport.UPDATE_ONCE) if enabled else SubViewport.UPDATE_DISABLED
+	_sync_rendering()
 	set_process(enabled and flow_speed > 0.0)
 	update_clock()
+
+func _sync_rendering() -> void:
+	if _field:
+		_field.render_target_update_mode = (SubViewport.UPDATE_ALWAYS if flow_speed > 0.0 else SubViewport.UPDATE_ONCE) if enabled and not render_suspended else SubViewport.UPDATE_DISABLED
 
 func _process(delta: float) -> void:
 	clock += delta * flow_speed

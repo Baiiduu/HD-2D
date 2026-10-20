@@ -1,0 +1,21 @@
+[gd_resource type="ORMMaterial3D" format=3 uid="uid://r6hs3hmdejkr"]
+
+[ext_resource type="Texture2D" uid="uid://iyg3gym4er8d" path="res://assets/models/pocket_universe_nursery/textures/pocket_universe_albedo.png" id="albedo"]
+[ext_resource type="Texture2D" uid="uid://nuwml7nhov2f" path="res://assets/models/pocket_universe_nursery/textures/pocket_universe_emission.png" id="emission"]
+[ext_resource type="Texture2D" uid="uid://bt1brxi6auw0a" path="res://assets/models/pocket_universe_nursery/textures/pocket_universe_normal.png" id="normal"]
+[ext_resource type="Texture2D" uid="uid://dhj0rbp6l0it7" path="res://assets/models/pocket_universe_nursery/textures/pocket_universe_orm.png" id="orm"]
+
+[resource]
+resource_name = "PocketUniverseAtlas"
+albedo_texture = ExtResource("albedo")
+orm_texture = ExtResource("orm")
+emission_enabled = true
+emission = Color(1, 1, 1, 1)
+emission_energy_multiplier = 0.4
+emission_operator = 1
+emission_texture = ExtResource("emission")
+normal_enabled = true
+normal_scale = 0.35
+normal_texture = ExtResource("normal")
+texture_filter = 0
+texture_repeat = false

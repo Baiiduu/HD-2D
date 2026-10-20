@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ValueLightingProfile" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/value_lighting_profile.gd" id="script"]
+[ext_resource type="Script" path="res://scripts/world/spawn_visual_preset.gd" id="preset_script"]
+[ext_resource type="Resource" path="res://data/visual/spawn_pixel_palette.tres" id="original_material"]
+[ext_resource type="Resource" path="res://data/visual/spawn_value_palette.tres" id="material"]
+[ext_resource type="Resource" path="res://data/visual/spawn_foliage_palette.tres" id="original_foliage"]
+[ext_resource type="Resource" path="res://data/visual/spawn_value_foliage.tres" id="foliage"]
+[ext_resource type="Resource" path="res://data/visual/spawn_value_day.tres" id="day"]
+[ext_resource type="Resource" path="res://data/visual/spawn_value_rain.tres" id="rain"]
+[ext_resource type="Resource" path="res://data/visual/spawn_value_night_world.tres" id="night"]
+
+[resource]
+script = ExtResource("script")
+original_material_palette = ExtResource("original_material")
+material_palette = ExtResource("material")
+original_foliage_palette = ExtResource("original_foliage")
+foliage_palette = ExtResource("foliage")
+lighting_presets = Array[ExtResource("preset_script")]([null, ExtResource("day"), ExtResource("rain"), ExtResource("night")])

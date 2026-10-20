@@ -204,6 +204,62 @@ func wall_checks() -> void:
 	clear_effects()
 	await settle()
 
+func boundary_checks() -> void:
+	var effects := preload("res://tests/test_map_boundary_collision.gd").BoundaryEffects.new()
+	world.add_child(effects)
+	var sample := spawn("wave_slime", Vector3.ZERO)
+	var effect := EnemyDeathEffect.new()
+	world.add_child(effect)
+	var stages: Array[StringName] = []
+	effect.presentation_event.connect(func(stage: StringName, _point: Vector3): stages.append(stage))
+	var excluded: Array[RID] = [player.get_rid()]
+	effect.begin(sample.sprite, false, player.movement_camera, player.action_visuals, {"visual_excluded": excluded})
+	effect.set_process(false)
+	effect._travel = Vector3.RIGHT * 5.0
+	effect._height = 0.0
+	var start := effect._position
+	effects._update_boundary_collision(Rect2(Vector2(start.x, start.z) - Vector2(2, 2), Vector2(4, 4)), 0.0)
+	await settle()
+	var boundary := effects._boundary
+	var ordinary := ProjectileCollision.new()
+	var contact := ordinary.wall_contact(world.get_world_3d().direct_space_state, start, start + Vector3.RIGHT * 5.0, 0.04, excluded)
+	check(not contact.is_empty() and contact.collider == boundary, "死亡视觉的调整不改变弹丸对空气墙的真实扫掠")
+	effect._process(0.2)
+	check(not effect._blocked and effect._offset.x > 2.5 and not stages.has(&"wall"), "死亡抛飞越过空气墙且不产生碰墙阶段")
+	check(effect._visual_excluded.has(player.get_rid()), "忽略空气墙时保留原有人物身体排除")
+	# 空气墙后方的实体障碍仍要截住尸体，不能跳过剩余路段。
+	var wall := StaticBody3D.new()
+	var collider := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(0.02, 4.0, 3.0)
+	collider.shape = box
+	wall.add_child(collider)
+	world.add_child(wall)
+	wall.global_position = start + Vector3(3.5, 0.0, 0.0)
+	await settle()
+	effect.begin(sample.sprite, false, player.movement_camera, player.action_visuals, {"visual_excluded": excluded})
+	effect.set_process(false)
+	effect._travel = Vector3.RIGHT * 5.0
+	effect._height = 0.0
+	effect._process(0.25)
+	check(effect._blocked and effect._offset.x > 2.5 and effect._offset.x < 3.5, "越过空气墙后仍被同一路段上的真实薄墙截住")
+	wall.free()
+	await settle()
+	effect.begin(sample.sprite, false, player.movement_camera, player.action_visuals, {"visual_excluded": excluded})
+	effect.set_process(false)
+	check(effect._visual_excluded == excluded, "复用死亡效果时不保留上一只怪物的碰撞排除")
+	effect._position = start + Vector3.RIGHT * 2.25
+	effect._travel = Vector3.RIGHT * 5.0
+	effect._height = 0.0
+	stages.clear()
+	effect._process(0.2)
+	check(not effect._blocked and effect._offset.x > 2.5 and not stages.has(&"wall"), "起点已与空气墙重叠的死亡残骸也能继续向外飞出")
+	effect.free()
+	sample.cancel()
+	session.enemies.erase(sample)
+	effects.free()
+	await settle()
+
 func sword_checks() -> void:
 	var sword := player.sword
 	sword.cancel()
@@ -803,6 +859,7 @@ func run() -> void:
 	await motion_checks()
 	await random_spread_checks()
 	await wall_checks()
+	await boundary_checks()
 	await sword_checks()
 	await storm_checks()
 	await toy_impact_checks()

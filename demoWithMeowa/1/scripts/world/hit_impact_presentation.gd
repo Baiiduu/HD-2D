@@ -168,6 +168,8 @@ func _begin_beat(settings: PlayerActionVisuals, heading: Vector3, killed := true
 		_age = 0.0
 	_beat_is_kill = killed
 	_hold_seconds = clampf(settings.kill_hitstop_seconds if killed else settings.sword_hitstop_seconds, 0.0, 0.2)
+	# 蹬墙关键动作持续展开；保留命中视觉，短慢动作期间不再叠加定格。
+	if is_instance_valid(_charge) and _charge.bounce_slow_active: _hold_seconds = 0.0
 	_tail_seconds = clampf(settings.kill_slow_tail_seconds, 0.0, 0.2) if killed and _hold_seconds > 0.0 else 0.0
 	_shake_seconds = maxf(settings.kill_shake_seconds if killed else settings.sword_hit_shake_seconds, 0.01)
 	_duration = maxf(_hold_seconds + _tail_seconds, _shake_seconds)
@@ -246,6 +248,7 @@ func _apply_shot() -> void:
 		var leave := 1.0 - smoothstep(_shot_seconds * 0.55, _shot_seconds, _shot_age)
 		weight = enter * leave
 	_camera.hit_shot_active = impact_active or shot_active
+	_camera.hit_closeup_active = shot_active
 	_camera.hit_shot_focus = _camera.focus + (_shot_point - _camera.focus).limit_length(1.0) if shot_active else Vector3.ZERO
 	_camera.hit_shot_weight = weight * 0.25
 	_camera.hit_shot_distance_scale = lerpf(1.0, _zoom, weight)
@@ -273,6 +276,7 @@ func cancel_beat() -> void:
 	_group_count = 0
 	if is_instance_valid(_camera):
 		_camera.hit_shot_active = false
+		_camera.hit_closeup_active = false
 		_camera.hit_shot_weight = 0.0
 		_camera.hit_shot_distance_scale = 1.0
 		_camera.hit_shot_focus = Vector3.ZERO

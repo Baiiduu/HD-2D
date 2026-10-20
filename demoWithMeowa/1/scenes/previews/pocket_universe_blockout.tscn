@@ -1,0 +1,131 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/buildings/pocket_universe_nursery.tscn" id="nursery"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/city_hospital.tscn" id="hospital"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/convenience_24.tscn" id="store"]
+[ext_resource type="Script" path="res://scripts/previews/pocket_universe_preview.gd" id="preview"]
+[ext_resource type="Script" path="res://scripts/camera/follow_camera.gd" id="camera"]
+[ext_resource type="Script" path="res://scripts/player/player.gd" id="player"]
+[ext_resource type="SpriteFrames" path="res://data/combat/scenes/world/player/character_movement.tres" id="frames"]
+[ext_resource type="Texture2D" path="res://assets/finalart/idle/idle_01.png" id="character"]
+
+[sub_resource type="StandardMaterial3D" id="ground_material"]
+albedo_color = Color(0.30, 0.32, 0.35, 1)
+roughness = 1.0
+
+[sub_resource type="BoxMesh" id="ground_mesh"]
+size = Vector3(30, 0.1, 26)
+
+[sub_resource type="BoxShape3D" id="ground_shape"]
+size = Vector3(30, 0.1, 26)
+
+[sub_resource type="CapsuleShape3D" id="player_capsule"]
+radius = 0.24
+height = 1.06592
+
+[sub_resource type="Environment" id="environment"]
+background_mode = 1
+background_color = Color(0.17, 0.19, 0.22, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.87, 0.91, 1, 1)
+ambient_light_energy = 0.55
+reflected_light_source = 2
+ssao_enabled = true
+ssao_radius = 0.32
+ssao_intensity = 0.85
+
+[node name="PocketUniverseBlockoutPreview" type="Node3D"]
+script = ExtResource("preview")
+
+[node name="Samples" type="Node3D" parent="."]
+
+[node name="Nursery" parent="Samples" instance=ExtResource("nursery")]
+rotation = Vector3(0, 1.5707963, 0)
+
+[node name="Hospital" parent="Samples" instance=ExtResource("hospital")]
+position = Vector3(4.2, 0, 4.2)
+rotation = Vector3(0, 1.5707963, 0)
+scale = Vector3(0.5, 0.5, 0.5)
+
+[node name="ConvenienceStore" parent="Samples" instance=ExtResource("store")]
+position = Vector3(-4.2, 0, -4.2)
+rotation = Vector3(0, 1.5707963, 0)
+scale = Vector3(0.5, 0.5, 0.5)
+
+[node name="HospitalScaleCharacter" type="Sprite3D" parent="Samples"]
+position = Vector3(6.25, 0.542, 4.2)
+scale = Vector3(0.9, 0.9, 0.9)
+pixel_size = 0.02
+billboard = 2
+shaded = true
+alpha_cut = 1
+texture_filter = 0
+texture = ExtResource("character")
+
+[node name="StoreScaleCharacter" type="Sprite3D" parent="Samples"]
+position = Vector3(-2.95, 0.542, -4.2)
+scale = Vector3(0.9, 0.9, 0.9)
+pixel_size = 0.02
+billboard = 2
+shaded = true
+alpha_cut = 1
+texture_filter = 0
+texture = ExtResource("character")
+
+[node name="Ground" type="StaticBody3D" parent="."]
+position = Vector3(0, -0.05, 0)
+metadata/collision_surface = &"stone"
+
+[node name="Mesh" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("ground_mesh")
+material_override = SubResource("ground_material")
+
+[node name="Collision" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("ground_shape")
+
+[node name="Environment" type="WorldEnvironment" parent="."]
+environment = SubResource("environment")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation = Vector3(-0.95, -0.45, 0)
+light_color = Color(1, 0.96, 0.90, 1)
+light_energy = 1.0
+light_angular_distance = 0.7
+shadow_enabled = true
+directional_shadow_max_distance = 45.0
+
+[node name="Focus" type="Node3D" parent="."]
+
+[node name="Camera3D" type="Camera3D" parent="." node_paths=PackedStringArray("target")]
+current = true
+fov = 28.0
+far = 80.0
+script = ExtResource("camera")
+target = NodePath("../Focus")
+distance = 30.0
+pitch_degrees = 30.627
+yaw_degrees = 135.0
+dof_enabled = false
+follow_toggle_key = 0
+
+[node name="Player" type="CharacterBody3D" parent="." node_paths=PackedStringArray("movement_camera")]
+position = Vector3(2.1, 0, 0.55)
+script = ExtResource("player")
+animations = ExtResource("frames")
+movement_camera = NodePath("../Camera3D")
+blink_enabled = false
+
+[node name="Collision" type="CollisionShape3D" parent="Player"]
+position = Vector3(0, 0.532959, 0)
+shape = SubResource("player_capsule")
+
+[node name="Sprite" type="Sprite3D" parent="Player"]
+process_priority = 1
+position = Vector3(0, 0.542, 0)
+scale = Vector3(0.9, 0.9, 0.9)
+pixel_size = 0.02
+billboard = 2
+shaded = true
+alpha_cut = 1
+texture_filter = 0
+texture = ExtResource("character")

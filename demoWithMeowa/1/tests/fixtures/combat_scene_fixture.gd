@@ -19,5 +19,5 @@ static func clear_placed_obstacles(scene: Node) -> void:
 
 static func enable_legacy_skills(scene: Node) -> void:
 	# 正式池关闭的旧武器仅在验证组合接口的夹具中显式启用。
-	for path in ["WavePrototype/FanAutoAttack", "WavePrototype/LightPierceAutoAttack"]:
+	for path in ["WavePrototype/FanAutoAttack", "WavePrototype/LightPierceAutoAttack", "WavePrototype/MirrorMarkAutoAttack"]:
 		scene.get_node(path).enabled = true

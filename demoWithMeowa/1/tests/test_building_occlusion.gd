@@ -37,6 +37,7 @@ func run() -> void:
 	check(ResourceLoader.exists(SCRIPT), "Formal map has a building occlusion controller")
 	if ResourceLoader.exists(SCRIPT):
 		await behavior_checks()
+		await prop_checks()
 		await world_checks()
 	print(JSON.stringify({"suite":"building_occlusion", "checks":checks, "failures":failures}))
 	quit(0 if failures.is_empty() else 1)
@@ -140,6 +141,72 @@ func behavior_checks() -> void:
 	world.free()
 	await process_frame
 
+func prop_checks() -> void:
+	var viewport := SubViewport.new()
+	viewport.size = Vector2i(640, 360)
+	root.add_child(viewport)
+	var world := Node3D.new()
+	world.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+	viewport.add_child(world)
+	var scope := Node3D.new()
+	world.add_child(scope)
+	var camera := Camera3D.new()
+	world.add_child(camera)
+	camera.position = Vector3(0, 0.15, 8)
+	camera.look_at(Vector3(0, 0.15, 0))
+	var player := Node3D.new()
+	world.add_child(player)
+	var prop := MeshInstance3D.new()
+	prop.mesh = BoxMesh.new()
+	prop.mesh.size = Vector3(1, 0.3, 0.4)
+	prop.position = Vector3(0, 0.15, 1)
+	scope.add_child(prop)
+	var controller = load(SCRIPT).new()
+	controller.set("include_scene_props", true)
+	controller.building_root = scope
+	controller.camera = camera
+	controller.player = player
+	world.add_child(controller)
+	controller.set_process(false)
+	controller.refresh_buildings()
+	controller.detect_occlusion()
+	controller.advance_fades(1.0)
+	check(prop.transparency > 0.6, "Low props without box colliders fade when they cover the player's feet")
+	prop.position.x = 4
+	controller.detect_occlusion()
+	controller.advance_fades(1.0)
+	check(is_zero_approx(prop.transparency), "An adjacent prop stays opaque")
+	var card := MeshInstance3D.new()
+	card.mesh = QuadMesh.new()
+	card.mesh.size = Vector2(2, 2)
+	card.position = Vector3(4, 2, 0)
+	var material := ShaderMaterial.new()
+	material.shader = load("res://shaders/environment/tree_billboard.gdshader")
+	var image := Image.create(8, 8, false, Image.FORMAT_RGBA8)
+	image.fill(Color.WHITE)
+	material.set_shader_parameter("tree_texture", ImageTexture.create_from_image(image))
+	card.material_override = material
+	scope.add_child(card)
+	player.position = Vector3(0, 1.5, 0)
+	camera.position = Vector3(8, 2, 0)
+	camera.look_at(Vector3(0, 2, 0))
+	controller.refresh_buildings()
+	controller.detect_occlusion()
+	controller.advance_fades(1.0)
+	check(card.transparency > 0.6, "Tree cards use their actual camera-facing orientation without a trunk collider")
+	card.hide()
+	controller.detect_occlusion()
+	controller.advance_fades(1.0)
+	check(is_zero_approx(card.transparency), "Hidden prop geometry does not keep fading")
+	card.show()
+	image.fill(Color.TRANSPARENT)
+	material.set_shader_parameter("tree_texture", ImageTexture.create_from_image(image))
+	controller.detect_occlusion()
+	controller.advance_fades(1.0)
+	check(is_zero_approx(card.transparency), "Transparent card padding does not cover the player")
+	viewport.free()
+	await process_frame
+
 func world_checks() -> void:
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
 	world.get_node("WorldEntry").preview_on_direct_run = false
@@ -158,7 +225,19 @@ func world_checks() -> void:
 	controller.camera.set_process(false)
 	for index in 12: await process_frame
 	controller.refresh_buildings()
-	check(controller._buildings.size() == 7, "Formal World registers only its seven native buildings")
+	check(controller._buildings.size() > 7, "Formal World registers buildings and scene props")
+	var authored_props := 0
+	for prop in world.get_node("WorldDetails/BattleCourts").get_children():
+		if not prop is Node3D or prop.scene_file_path.is_empty(): continue
+		authored_props += 1
+		check(controller._buildings.has(prop.get_instance_id()), "Formal prop participates in occlusion: " + str(prop.name))
+	check(authored_props > 0, "Formal World provides actual prop instances for occlusion checks")
+	for building in get_nodes_in_group(&"occlusion_buildings"):
+		if world.is_ancestor_of(building):
+			check(controller._buildings.has(building.get_instance_id()), "Every authored map building participates, including root-level instances: " + str(building.name))
+	check(controller._buildings.has(world.get_node("WorldDetails/BattlePerimeter/North01").get_instance_id()), "Perimeter fences also participate in occlusion")
+	var loadout = world.get_node("LoadoutUI")
+	check(loadout.bottom_bars_collapsed and not loadout._hud.visible and not loadout._item_bar.visible, "Formal World starts with equipment and skill bars hidden")
 	check(not world.get_node("Player/Sprite").occlusion_outline_enabled and not world.get_node("WavePrototype").enemy_occlusion_outline_enabled, "Formal player and all wave monsters disable through-building outlines")
 	var style = world.get_node("VisualSample")
 	var original_style: int = style.style
@@ -168,8 +247,7 @@ func world_checks() -> void:
 		check(not world.get_node("Player/Sprite").occlusion_outline_enabled, "Changing lighting Style preserves the disabled outline")
 	style.style = original_style
 	style.apply_style()
-	var records: Array = controller._buildings.values()
-	var first = records[0]
+	var first = controller._buildings[world.get_node("WorldDetails/BattleCourts/CityHospital").get_instance_id()]
 	first.refresh_bounds()
 	check(not first.surfaces.is_empty() and not first.shapes.is_empty(), "Actual imported models have reusable surfaces and segmented occluders")
 	var center: Vector3 = first.shapes[0].global_position

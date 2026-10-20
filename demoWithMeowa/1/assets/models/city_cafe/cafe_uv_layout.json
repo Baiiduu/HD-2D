@@ -1,0 +1,457 @@
+{
+  "atlas_size": [
+    1024,
+    1024
+  ],
+  "padding_pixels": 8,
+  "uv_origin": "top-left",
+  "front_upper_bottom_m": 1.7,
+  "front_lower_columns_px": [
+    86,
+    154
+  ],
+  "body_size_m": [
+    3.0,
+    2.54,
+    2.1
+  ],
+  "regions": {
+    "front_upper": {
+      "source": "style_master",
+      "source_box": [
+        20,
+        40,
+        260,
+        107
+      ],
+      "rect": [
+        264,
+        227,
+        240,
+        67
+      ],
+      "kind": "facade",
+      "tile": false
+    },
+    "front_lower": {
+      "source": "style_master",
+      "source_box": [
+        20,
+        137,
+        260,
+        243
+      ],
+      "rect": [
+        8,
+        227,
+        240,
+        106
+      ],
+      "kind": "facade",
+      "tile": false
+    },
+    "front_band": {
+      "source": "style_master",
+      "source_box": [
+        20,
+        107,
+        260,
+        137
+      ],
+      "rect": [
+        668,
+        349,
+        240,
+        30
+      ],
+      "kind": "plaster",
+      "tile": false
+    },
+    "back": {
+      "source": "style_master",
+      "source_box": [
+        284,
+        40,
+        524,
+        243
+      ],
+      "rect": [
+        8,
+        8,
+        240,
+        203
+      ],
+      "kind": "facade",
+      "tile": false
+    },
+    "right": {
+      "source": "style_master",
+      "source_box": [
+        20,
+        284,
+        188,
+        487
+      ],
+      "rect": [
+        264,
+        8,
+        168,
+        203
+      ],
+      "kind": "facade",
+      "tile": false
+    },
+    "left": {
+      "source": "style_master",
+      "source_box": [
+        212,
+        284,
+        380,
+        487
+      ],
+      "rect": [
+        448,
+        8,
+        168,
+        203
+      ],
+      "kind": "facade",
+      "tile": false
+    },
+    "roof": {
+      "source": "roof_master",
+      "source_box": [
+        25,
+        90,
+        275,
+        268
+      ],
+      "rect": [
+        632,
+        8,
+        250,
+        178
+      ],
+      "kind": "roof",
+      "tile": false
+    },
+    "awning_front": {
+      "source": "style_master",
+      "source_box": [
+        560,
+        264,
+        836,
+        296
+      ],
+      "rect": [
+        8,
+        349,
+        276,
+        32
+      ],
+      "kind": "cloth",
+      "tile": false
+    },
+    "awning_side": {
+      "source": "style_master",
+      "source_box": [
+        560,
+        336,
+        758,
+        364
+      ],
+      "rect": [
+        8,
+        397,
+        198,
+        28
+      ],
+      "kind": "cloth",
+      "tile": false
+    },
+    "valance_front": {
+      "source": "style_master",
+      "source_box": [
+        560,
+        290,
+        836,
+        296
+      ],
+      "rect": [
+        222,
+        397,
+        276,
+        6
+      ],
+      "kind": "cloth",
+      "tile": false
+    },
+    "valance_side": {
+      "source": "style_master",
+      "source_box": [
+        560,
+        358,
+        758,
+        364
+      ],
+      "rect": [
+        514,
+        397,
+        198,
+        6
+      ],
+      "kind": "cloth",
+      "tile": false
+    },
+    "coping": {
+      "source": "style_master",
+      "source_box": [
+        560,
+        404,
+        816,
+        436
+      ],
+      "rect": [
+        300,
+        349,
+        256,
+        32
+      ],
+      "kind": "stone",
+      "tile": false
+    },
+    "ac_front": {
+      "source": "style_master",
+      "source_box": [
+        560,
+        492,
+        624,
+        540
+      ],
+      "rect": [
+        776,
+        227,
+        64,
+        48
+      ],
+      "kind": "metal",
+      "tile": false
+    },
+    "ac_top": {
+      "source": "style_master",
+      "source_box": [
+        664,
+        492,
+        728,
+        556
+      ],
+      "rect": [
+        520,
+        227,
+        64,
+        64
+      ],
+      "kind": "metal",
+      "tile": false
+    },
+    "ac_side": {
+      "source": "style_master",
+      "source_box": [
+        768,
+        492,
+        800,
+        540
+      ],
+      "rect": [
+        856,
+        227,
+        32,
+        48
+      ],
+      "kind": "metal",
+      "tile": false
+    },
+    "metal": {
+      "source": "style_master",
+      "source_box": [
+        936,
+        492,
+        968,
+        524
+      ],
+      "rect": [
+        572,
+        349,
+        32,
+        32
+      ],
+      "kind": "metal",
+      "tile": false
+    },
+    "awning_plain": {
+      "source": "style_master",
+      "source_box": [
+        936,
+        564,
+        968,
+        596
+      ],
+      "rect": [
+        620,
+        349,
+        32,
+        32
+      ],
+      "kind": "cloth",
+      "tile": false
+    },
+    "sign": {
+      "source": "style_master",
+      "source_box": [
+        840,
+        492,
+        904,
+        556
+      ],
+      "rect": [
+        600,
+        227,
+        64,
+        64
+      ],
+      "kind": "sign",
+      "tile": false
+    },
+    "plain_wall": {
+      "source": "style_master",
+      "source_box": [
+        20,
+        548,
+        100,
+        604
+      ],
+      "rect": [
+        680,
+        227,
+        80,
+        56
+      ],
+      "kind": "plaster",
+      "tile": false
+    }
+  },
+  "source_policy": "New Meowa native pixels; crop and pack only. No resampling of generated art.",
+  "material_channels": {
+    "orm_r": "conservative local occlusion",
+    "orm_g": "roughness",
+    "orm_b": "metallic",
+    "normal": "OpenGL Y+"
+  },
+  "pixels_per_meter": 80,
+  "roof_regions": {
+    "canvas": {
+      "source": "roof_master",
+      "source_box": [
+        331,
+        44,
+        491,
+        124
+      ],
+      "rect": [
+        728,
+        396,
+        160,
+        80
+      ],
+      "kind": "cloth",
+      "tile": false
+    },
+    "wood_top": {
+      "source": "roof_master",
+      "source_box": [
+        534,
+        45,
+        598,
+        109
+      ],
+      "rect": [
+        898,
+        8,
+        64,
+        64
+      ],
+      "kind": "wood",
+      "tile": false
+    },
+    "wood_side": {
+      "source": "roof_master",
+      "source_box": [
+        338,
+        190,
+        466,
+        222
+      ],
+      "rect": [
+        776,
+        292,
+        128,
+        32
+      ],
+      "kind": "wood",
+      "tile": false
+    },
+    "planter": {
+      "source": "roof_master",
+      "source_box": [
+        28,
+        326,
+        156,
+        358
+      ],
+      "rect": [
+        222,
+        420,
+        128,
+        32
+      ],
+      "kind": "wood",
+      "tile": false
+    },
+    "dark_metal": {
+      "source": "roof_master",
+      "source_box": [
+        244,
+        334,
+        308,
+        398
+      ],
+      "rect": [
+        898,
+        88,
+        64,
+        64
+      ],
+      "kind": "metal",
+      "tile": false
+    },
+    "soil": {
+      "source": "roof_master",
+      "source_box": [
+        387,
+        334,
+        451,
+        398
+      ],
+      "rect": [
+        904,
+        168,
+        64,
+        64
+      ],
+      "kind": "plaster",
+      "tile": false
+    }
+  },
+  "roof_design_reference": "docs/references/city-buildings/cafe-repair-rooftops-approved.png",
+  "roof_detail_policy": "Burgundy pergola, one compact table with two stools, two low herb planters. No rooftop HVAC."
+}

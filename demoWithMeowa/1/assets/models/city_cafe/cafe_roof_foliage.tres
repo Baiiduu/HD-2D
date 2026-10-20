@@ -1,0 +1,13 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/meowa/dressing/forest/plant_03.png" id="foliage"]
+
+[resource]
+resource_name = "CafeRoofHerbs"
+transparency = 2
+alpha_scissor_threshold = 0.5
+cull_mode = 2
+metallic_specular = 0.0
+roughness = 1.0
+texture_filter = 0
+albedo_texture = ExtResource("foliage")

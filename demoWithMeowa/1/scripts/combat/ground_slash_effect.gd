@@ -13,26 +13,45 @@ var _arc_material: ShaderMaterial
 var _meowa_material: ShaderMaterial
 var _ribbon_material: ShaderMaterial
 var _flow_material: ShaderMaterial
+var _orbit_material: ShaderMaterial
 var _indices := PackedInt32Array()
-var _flat_meshes: Dictionary[Vector3, ArrayMesh] = {}
+var _flat_meshes: Dictionary[Vector4, ArrayMesh] = {}
 var _clipped: ArrayMesh
 var _collision := ProjectileCollision.new()
-var _layout := Vector4(-1, -1, -1, -1)
+var _layout := Vector3(-1, -1, -1)
 var _radials := PackedVector3Array()
 var _radial_angle := NAN
+var _angular_steps := ANGLES
 var _wall_ray := PhysicsRayQueryParameters3D.create(Vector3.ZERO, Vector3.ZERO, 1)
+
+class PreparationSurface extends RefCounted:
+	func unclipped_flat(_origin: Vector3, _radius: float) -> bool: return true
+	func flat_ground(_origin: Vector3, _radius: float) -> bool: return true
+
+func prepare_feedback(rules: PlayerSwordRules, radius: float, angle: float) -> void:
+	var placement := global_transform
+	for reverse in [false, true]:
+		display(Vector3.ZERO, Vector3.FORWARD, radius, angle, reverse, rules.frames,
+			rules.sweep_seconds * 0.5, rules, null, PreparationSurface.new(), [])
+	global_transform = placement
+	hide()
 
 func _ready() -> void:
 	cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_material = EFFECT_LAYER.material(preload("res://shaders/combat/player_sword.gdshader"))
 	_frame_material = _material
 	material_override = _material
-	for angular in ANGLES:
+	_build_indices(ANGLES)
+	hide()
+
+func _build_indices(steps: int) -> void:
+	_angular_steps = steps
+	_indices.clear()
+	for angular in steps:
 		for ring in RINGS:
 			var a := angular * (RINGS + 1) + ring
 			var b := a + RINGS + 1
 			_indices.append_array(PackedInt32Array([a, b, b + 1, a, b + 1, a + 1]))
-	hide()
 
 func display(origin: Vector3, heading: Vector3, radius: float, angle: float, reverse: bool,
 		frames: SpriteFrames, age: float, rules: PlayerSwordRules, path: TerrainPath,
@@ -44,6 +63,7 @@ func display(origin: Vector3, heading: Vector3, radius: float, angle: float, rev
 	if ribbon and not rules.ribbon_visual:
 		hide()
 		return
+	var effect_height := maxf(0.08, rules.effect_height + rules.ribbon_visual.ribbon_height_offset) if ribbon else rules.effect_height
 	if uses_frames and (not frames or not frames.has_animation(&"slash") or frames.get_frame_count(&"slash") == 0):
 		hide()
 		return
@@ -64,10 +84,19 @@ func display(origin: Vector3, heading: Vector3, radius: float, angle: float, rev
 		EFFECT_LAYER.set_parameter(_material, "tail_spread", rules.meowa_tail_spread)
 		EFFECT_LAYER.set_parameter(_material, "tail_inner_ratio", rules.meowa_tail_inner_ratio)
 	elif ribbon:
-		if rules.ribbon_visual.ribbon_layered_enabled:
-			if not _flow_material:
-				_flow_material = EFFECT_LAYER.material(preload("res://shaders/combat/player_sword_flow_slash.gdshader"))
-			_material = _flow_material
+		if rules.ribbon_visual.ribbon_layered_enabled or rules.ribbon_visual.ribbon_orbit_enabled:
+			if rules.ribbon_visual.ribbon_orbit_enabled:
+				if not _orbit_material:
+					_orbit_material = EFFECT_LAYER.material(preload("res://shaders/combat/player_sword_orbit.gdshader"))
+				_material = _orbit_material
+				EFFECT_LAYER.set_parameter(_material, "secondary_strength", rules.ribbon_visual.ribbon_orbit_secondary_strength)
+				EFFECT_LAYER.set_parameter(_material, "secondary_offset", deg_to_rad(rules.ribbon_visual.ribbon_orbit_secondary_offset))
+			else:
+				if not _flow_material:
+					_flow_material = EFFECT_LAYER.material(preload("res://shaders/combat/player_sword_flow_slash.gdshader"))
+				_material = _flow_material
+				for property in ["hilt_enabled", "hilt_offset", "hilt_width_ratio"]:
+					EFFECT_LAYER.set_parameter(_material, property, rules.ribbon_visual.get("ribbon_" + property))
 			EFFECT_LAYER.set_parameter(_material, "stroke_texture", rules.ribbon_visual.ribbon_brush)
 			EFFECT_LAYER.set_parameter(_material, "flow_noise", rules.ribbon_visual.ribbon_noise)
 			EFFECT_LAYER.set_parameter(_material, "visual_age", age)
@@ -127,17 +156,18 @@ func display(origin: Vector3, heading: Vector3, radius: float, angle: float, rev
 	var toward := Vector2(view.x, view.z)
 	var sideways := Vector2(-toward.y, toward.x)
 	# 朝镜头抬起，避免浅俯视下某些出剑方向变成一条线；左右刀附加小幅斜切。
-	var tilt := rules.ribbon_visual.ribbon_view_tilt if ribbon and rules.ribbon_visual.ribbon_layered_enabled else rules.effect_tilt_degrees
+	var tilt := rules.ribbon_visual.ribbon_view_tilt if ribbon and (rules.ribbon_visual.ribbon_layered_enabled or rules.ribbon_visual.ribbon_orbit_enabled) else rules.effect_tilt_degrees
 	var slope := -toward * tan(deg_to_rad(tilt))
 	slope += sideways * tan(deg_to_rad(tilt * 0.35)) * (-1.0 if reverse else 1.0)
-	slope = slope.limit_length(maxf(0.0, rules.effect_height - 0.08) / radius)
+	slope = slope.limit_length(maxf(0.0, effect_height - 0.08) / radius)
 	EFFECT_LAYER.set_parameter(_material, "plane_slope", slope)
-	var layout := Vector4(rules.effect_height, art_radius, canvas.x, canvas.y)
+	var layout := Vector3(art_radius, canvas.x, canvas.y)
 	if layout != _layout:
 		_layout = layout
 		_flat_meshes.clear()
 	var flat: bool = surface.unclipped_flat(origin, radius)
-	var key := Vector3(radius, angle, -1.0 if reverse else 1.0)
+	# 普攻腰前高度与弹射原高度各自复用，切换模式不清空另一套平地网格。
+	var key := Vector4(radius, angle, -1.0 if reverse else 1.0, effect_height)
 	if flat and _flat_meshes.has(key): mesh = _flat_meshes[key]
 	else:
 		var vertices := PackedVector3Array()
@@ -147,9 +177,13 @@ func display(origin: Vector3, heading: Vector3, radius: float, angle: float, rev
 		# 仅复用局部角度模板，不缓存当前墙体命中或地面裁切结果。
 		if _radial_angle != angle:
 			_radial_angle = angle
+			var steps := maxi(ANGLES, ceili(angle / 180.0 * ANGLES))
+			if steps != _angular_steps:
+				_build_indices(steps)
+				_clipped = null
 			_radials.clear()
-			for angular in ANGLES + 1:
-				var theta := lerpf(-half, half, float(angular) / ANGLES)
+			for angular in _angular_steps + 1:
+				var theta := lerpf(-half, half, float(angular) / _angular_steps)
 				_radials.append(Vector3(sin(theta), 0.0, -cos(theta)))
 		var space := get_world_3d().direct_space_state if not flat else null
 		if not flat:
@@ -166,7 +200,7 @@ func display(origin: Vector3, heading: Vector3, radius: float, angle: float, rev
 			for ring in RINGS + 1:
 				var distance := limit * float(ring) / RINGS
 				var point := radial * distance
-				point.y = rules.effect_height if flat_ground else path.ground_position(origin + global_basis * point).y - origin.y + rules.effect_height
+				point.y = effect_height if flat_ground else path.ground_position(origin + global_basis * point).y - origin.y + effect_height
 				vertices.append(point)
 				var pixel := Vector2(radial.x * (-1.0 if reverse else 1.0), radial.z) * distance / radius * art_radius
 				uvs.append(Vector2(0.5, 0.5) + pixel / canvas)

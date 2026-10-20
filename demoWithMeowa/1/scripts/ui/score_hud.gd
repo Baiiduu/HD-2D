@@ -104,7 +104,7 @@ func _awarded(amount: int, kind: StringName, details: Dictionary) -> void:
 		_kind = kind
 		_details = details.duplicate()
 	_pending += amount
-	var priority := {&"kill": 0, &"performance": 1, &"wave": 2}
+	var priority := {&"kill": 0, &"burst": 1, &"wave": 2}
 	if int(priority.get(kind, 0)) >= int(priority.get(_kind, 0)):
 		_kind = kind
 		_details = details.duplicate()
@@ -117,7 +117,7 @@ func _commit() -> void:
 	_gain.text = "+%s" % _format(_pending)
 	var separate_title := wave_style and wave_style.compact_clear_enabled and score.session.is_endless()
 	var wave_hint := "第 %d 波完成" % int(_details.get("wave", 0)) if not separate_title else ""
-	_hint.text = wave_hint if _kind == &"wave" else ("弹射连杀 %d" % int(_details.get("kills", 0)) if _kind == &"performance" else "")
+	_hint.text = wave_hint if _kind == &"wave" else ""
 	_feedback_time = 0.85 if _kind == &"wave" else 0.62
 	_pending = 0
 	# 在入账时确定变化位，逐帧计数不反复触发起跳。

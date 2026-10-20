@@ -1,0 +1,11 @@
+[gd_resource type="ORMMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/models/city_repair_shop/textures/repair_shop_albedo.png" id="1_stn8w"]
+[ext_resource type="Texture2D" path="res://assets/models/city_repair_shop/textures/repair_shop_orm.png" id="2_n68e4"]
+
+[resource]
+resource_name = "RepairShopAtlas"
+albedo_texture = ExtResource("1_stn8w")
+orm_texture = ExtResource("2_n68e4")
+texture_filter = 0
+texture_repeat = false

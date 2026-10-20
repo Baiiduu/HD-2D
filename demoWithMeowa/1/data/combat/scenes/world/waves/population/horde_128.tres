@@ -15,7 +15,7 @@ metadata/_custom_type_script = "uid://dig3yvspfwrug"
 [sub_resource type="Resource" id="Resource_68p4h"]
 script = ExtResource("2_tq264")
 skill_definition = ExtResource("4_qiowe")
-skill_level = 4
+skill_level = 0
 metadata/_custom_type_script = "uid://dig3yvspfwrug"
 
 [sub_resource type="Resource" id="Resource_10m1j"]

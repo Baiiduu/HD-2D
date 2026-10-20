@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="CoreSoundBank" format=3 uid="uid://30fxbanawuh5"]
+
+[ext_resource type="Script" uid="uid://caw36su4f2yr5" path="res://scripts/audio/core_sound_bank.gd" id="bank"]
+[ext_resource type="Resource" uid="uid://hmnosxw3mmpy" path="res://data/audio/core_sound_bank.tres" id="base"]
+[ext_resource type="AudioStream" uid="uid://brsgs6dnpwx1q" path="res://assets/meowa/audio/kill_feedback/creature_death_thump.wav" id="creature_thump"]
+[ext_resource type="AudioStream" uid="uid://boq5hh3joufyh" path="res://assets/meowa/audio/combat_actions/player_hurt_notice.wav" id="hurt_notice"]
+[ext_resource type="AudioStream" uid="uid://8j17g1tjer5m" path="res://assets/meowa/audio/core_pack/bounce_metal_body.wav" id="metal_body"]
+[ext_resource type="AudioStream" uid="uid://boby86r041yxx" path="res://assets/meowa/audio/core_pack/charge_ready_gathering.wav" id="ready"]
+[ext_resource type="AudioStream" uid="uid://drycyle4ni2h1" path="res://assets/meowa/audio/core_pack/creature_death_02.wav" id="retired_creature_2"]
+[ext_resource type="AudioStream" uid="uid://c508s1vsykjib" path="res://assets/meowa/audio/core_pack/defeat.wav" id="retired_defeat"]
+[ext_resource type="AudioStream" uid="uid://nae4yli420au" path="res://assets/meowa/audio/core_pack/enemy_hit_hard_01.wav" id="retired_hard_1"]
+[ext_resource type="AudioStream" uid="uid://g1hqph1qunll" path="res://assets/meowa/audio/core_pack/player_hurt_01.wav" id="retired_hurt_1"]
+[ext_resource type="AudioStream" uid="uid://c80mi6ipvrcga" path="res://assets/meowa/audio/core_pack/player_hurt_02.wav" id="retired_hurt_2"]
+[ext_resource type="AudioStream" uid="uid://dt2cach35w7a2" path="res://assets/meowa/audio/kill_feedback/soft_landing.wav" id="retired_landing"]
+[ext_resource type="AudioStream" uid="uid://dfpkuss31oab" path="res://assets/meowa/audio/core_pack/launch_01.wav" id="retired_launch"]
+[ext_resource type="AudioStream" uid="uid://n02ogbfv2hmp" path="res://assets/meowa/audio/core_pack/bounce_metal_02.wav" id="retired_metal_2"]
+[ext_resource type="AudioStream" uid="uid://dji1yffln6kwx" path="res://assets/meowa/enemies/pot_brood/death.mp3" id="retired_pot"]
+[ext_resource type="AudioStream" uid="uid://gkqmurgs7o6t" path="res://assets/meowa/audio/core_pack/slime_death_01.wav" id="retired_slime_1"]
+[ext_resource type="AudioStream" uid="uid://dfltdfdro8twm" path="res://assets/meowa/audio/core_pack/slime_death_02.wav" id="retired_slime_2"]
+[ext_resource type="AudioStream" uid="uid://bmavffyfbt1x3" path="res://assets/meowa/audio/core_pack/bounce_stone_02.wav" id="retired_stone_2"]
+[ext_resource type="AudioStream" uid="uid://dbo5ayqf64qtk" path="res://assets/meowa/audio/core_pack/bounce_stone_03.wav" id="retired_stone_3"]
+[ext_resource type="AudioStream" uid="uid://b84a1jvxj7br" path="res://assets/meowa/audio/core_pack/storm_strike_02.wav" id="retired_storm_2"]
+[ext_resource type="AudioStream" uid="uid://dnnob0yi23upo" path="res://assets/meowa/audio/core_pack/bounce_wood_02.wav" id="retired_wood_2"]
+
+[resource]
+script = ExtResource("bank")
+cues = {
+&"bounce_metal": Array[AudioStream]([ExtResource("metal_body"), ExtResource("retired_metal_2")]),
+&"charge_ready": Array[AudioStream]([ExtResource("ready")]),
+&"creature_death": Array[AudioStream]([ExtResource("creature_thump"), ExtResource("retired_creature_2")]),
+&"kill_air": Array[AudioStream]([]),
+&"player_hurt": Array[AudioStream]([ExtResource("retired_hurt_1"), ExtResource("retired_hurt_2"), ExtResource("hurt_notice")])
+}
+base_bank = ExtResource("base")
+excluded_clips = Array[AudioStream]([ExtResource("retired_launch"), ExtResource("retired_stone_2"), ExtResource("retired_stone_3"), ExtResource("retired_wood_2"), ExtResource("retired_metal_2"), ExtResource("retired_storm_2"), ExtResource("retired_hurt_1"), ExtResource("retired_hurt_2"), ExtResource("hurt_notice"), ExtResource("retired_defeat"), ExtResource("retired_hard_1"), ExtResource("retired_creature_2"), ExtResource("retired_slime_1"), ExtResource("retired_slime_2"), ExtResource("retired_pot"), ExtResource("retired_landing")])

@@ -54,7 +54,7 @@ func burst(point: Vector3, direction: Vector3, pixel: float, settings: PlayerAct
 		var velocity := launch_velocity(direction, settings.hit_debris_speed_multiplier * (1.2 if lethal else 1.0))
 		var life := clampf(settings.hit_debris_seconds, 0.15, 0.6) * _random.randf_range(0.8, 1.0)
 		var size := pixel * 6.0 * _random.randf_range(1.1 if lethal else 0.9, 1.7 if lethal else 1.5)
-		_emit(point, velocity, size, life, _random.randf_range(0.86, 1.0))
+		_emit(point, velocity, size, life, Color(1.0, _random.randf_range(0.86, 1.0), 0.78))
 	multimesh.visible_instance_count = _written
 
 func rebound(point: Vector3, impact: RicochetImpact, pixel: float, settings: PlayerActionVisuals) -> void:
@@ -74,12 +74,27 @@ func rebound(point: Vector3, impact: RicochetImpact, pixel: float, settings: Pla
 		var speed := settings.bounce_particle_speed * lerpf(0.45, 1.0, strength)
 		var velocity := heading * speed * _random.randf_range(0.65, 1.0) + Vector3.UP * _random.randf_range(0.6, 1.6)
 		var life := settings.bounce_particle_seconds * _random.randf_range(0.8, 1.0)
-		_emit(point + normal * (pixel * 4.5 + 0.015), velocity, pixel * 6.0, life, _random.randf_range(0.86, 1.0))
+		_emit(point + normal * (pixel * 4.5 + 0.015), velocity, pixel * 6.0, life, Color(1.0, _random.randf_range(0.86, 1.0), 0.78))
 	multimesh.visible_instance_count = _written
 
-func _emit(point: Vector3, velocity: Vector3, size: float, life: float, green: float) -> void:
+## 人物使用独立小批次与红色方片，其余怪物／反弹实例仍沿用原生图集和原参数。
+func hurt_burst(point: Vector3, right: Vector3, front: Vector3, pixel: float, settings: PlayerActionVisuals) -> void:
+	if not active: clear()
+	show()
+	var seconds := clampf(settings.hurt_particle_seconds, 0.15, 0.45)
+	var speed := pixel * clampf(settings.hurt_particle_spread_pixels, 6.0, 24.0) / seconds
+	for index in clampi(settings.hurt_particle_count, 1, 12):
+		var side := -1.0 if index % 2 == 0 else 1.0
+		var start := point + right * pixel * side * _random.randf_range(3.0, 7.0) + Vector3.UP * pixel * _random.randf_range(-3.0, 5.0)
+		var velocity := right * side * speed * _random.randf_range(0.5, 1.0) + Vector3.UP * speed * _random.randf_range(0.2, 0.8) + front * speed * _random.randf_range(-0.08, 0.12)
+		var size := clampf(roundf(settings.hurt_particle_size_pixels * _random.randf_range(0.55, 1.35)), 1.0, 3.0)
+		var tint := settings.hurt_particle_color * _random.randf_range(0.72, 1.0)
+		_emit(start, velocity, size * pixel, seconds * _random.randf_range(0.8, 1.0), tint)
+	multimesh.visible_instance_count = _written
+
+func _emit(point: Vector3, velocity: Vector3, size: float, life: float, tint: Color) -> void:
 	_transforms[_cursor] = Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * size), point)
-	_colors[_cursor] = Color(1.0, green, 0.78, life)
+	_colors[_cursor] = Color(tint.r, tint.g, tint.b, life)
 	_launches[_cursor] = Color(velocity.x, velocity.y, velocity.z, clock)
 	# 上传的出生时刻／寿命是 float32；向后留舍入余量，避免早于 shader 丢弃。
 	var end := float(_launches[_cursor].a) + float(_colors[_cursor].a)

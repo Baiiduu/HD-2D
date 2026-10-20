@@ -2,6 +2,7 @@ extends Node
 ## World is already alive behind the opaque menu. Start only releases that same map.
 const MENU = preload("res://scenes/ui/main_menu.tscn")
 const REQUEST = preload("res://scripts/world/world_entry_request.gd")
+const FEEDBACK_WARMUP := preload("res://scripts/world/combat_feedback_warmup.gd")
 @export var show_on_world_start := true
 @export var prewarm_entry := true
 
@@ -18,6 +19,9 @@ var _warmup_started := false
 var _frames_left := 2
 var _entry_warmed := false
 var _returning := false
+var _feedback_warmup: Node
+var _render_state := {}
+var _refreshing_render := false
 
 func _ready() -> void:
 	set_process(false)
@@ -33,6 +37,7 @@ func open_menu() -> bool:
 	_warmup_started = false
 	_warming_entry = false
 	_frames_left = 2
+	_refreshing_render = false
 	var world := get_parent()
 	_entry = world.get_node("WorldEntry") as WorldEntry
 	# This node precedes WorldEntry in the scene, so no direct-run intro races the menu.
@@ -72,6 +77,14 @@ func _present_menu() -> void:
 	menu.auto_prepare_world = false
 	add_child(menu)
 	menu.set_game_prepared(false)
+	for page in [menu._graphics_page, get_parent().get_node("GameSettingsUI")._graphics_page]:
+		if not page.settings_applied.is_connected(_wake_rendering): page.settings_applied.connect(_wake_rendering)
+	if not get_viewport().size_changed.is_connected(_wake_rendering): get_viewport().size_changed.connect(_wake_rendering)
+	if not _feedback_warmup:
+		_feedback_warmup = FEEDBACK_WARMUP.new()
+		_feedback_warmup.name = "CombatFeedbackWarmup"
+		add_child(_feedback_warmup)
+		_feedback_warmup.start(get_parent())
 	if DisplayServer.get_name() != "headless": RenderingServer.frame_post_draw.connect(_rendered)
 	if _returning: _reset_run_after_menu_draw.call_deferred()
 	set_process(true)
@@ -102,10 +115,13 @@ func _process(_delta: float) -> void:
 	if DisplayServer.get_name() == "headless": _frames_left -= 1
 	if _frames_left > 0: return
 	if not wave.feedback_prewarm_ready(): return
+	if not _feedback_warmup.completed: return
 	game_ready = true
+	_refreshing_render = false
+	_suspend_rendering()
 	set_process(false)
 	_disconnect_render()
-	if is_instance_valid(menu): menu.set_game_prepared(true)
+	if is_instance_valid(menu) and not menu.flow.busy: menu.set_game_prepared(true)
 
 func _rendered() -> void:
 	if _warmup_started and not _warming_entry: _frames_left -= 1
@@ -113,6 +129,7 @@ func _rendered() -> void:
 func begin_game() -> bool:
 	if not game_ready or started or not is_instance_valid(menu): return false
 	started = true
+	_resume_rendering()
 	# Restore the original HUD state before entry captures it for its own reveal.
 	for hud: CanvasLayer in _hud_visibility:
 		if is_instance_valid(hud): hud.visible = _hud_visibility[hud]
@@ -130,8 +147,43 @@ func begin_game() -> bool:
 	old_menu.queue_free()
 	return true
 
+func _suspend_rendering() -> void:
+	if not _render_state.is_empty(): return
+	var effects := get_parent().get_node("MapEffects")
+	var post: CanvasItem = effects.get_node("PostProcess/Screen")
+	var reflection := effects.get_node("WaterReflection")
+	var aurora := effects.get_node("Aurora")
+	_render_state = {"viewport":get_viewport(), "disable_3d":get_viewport().disable_3d,
+		"post":post, "post_visible":post.visible, "reflection":reflection, "reflection_suspended":reflection.render_suspended,
+		"aurora":aurora, "aurora_suspended":aurora.render_suspended}
+	get_viewport().disable_3d = true
+	post.hide()
+	reflection.render_suspended = true
+	aurora.render_suspended = true
+
+func _resume_rendering() -> void:
+	if _render_state.is_empty(): return
+	if is_instance_valid(_render_state.viewport): _render_state.viewport.disable_3d = _render_state.disable_3d
+	if is_instance_valid(_render_state.post): _render_state.post.visible = _render_state.post_visible
+	if is_instance_valid(_render_state.reflection): _render_state.reflection.render_suspended = _render_state.reflection_suspended
+	if is_instance_valid(_render_state.aurora): _render_state.aurora.render_suspended = _render_state.aurora_suspended
+	_render_state.clear()
+
+func _wake_rendering() -> void:
+	if not is_inside_tree() or started or not is_instance_valid(menu): return
+	if _render_state.is_empty() and not _refreshing_render: return
+	_resume_rendering()
+	_refreshing_render = true
+	game_ready = false
+	_frames_left = 2
+	if not menu.flow.busy: menu.set_game_prepared(false)
+	if DisplayServer.get_name() != "headless" and not RenderingServer.frame_post_draw.is_connected(_rendered):
+		RenderingServer.frame_post_draw.connect(_rendered)
+	set_process(true)
+
 func _disconnect_render() -> void:
 	if RenderingServer.frame_post_draw.is_connected(_rendered): RenderingServer.frame_post_draw.disconnect(_rendered)
 
 func _exit_tree() -> void:
+	_resume_rendering()
 	_disconnect_render()

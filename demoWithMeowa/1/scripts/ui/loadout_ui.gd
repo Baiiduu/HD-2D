@@ -18,7 +18,19 @@ const GREEN := Color("92d5b0")
 @export var wave_session: Node
 ## 角色基础属性与训练规则；与训练小屋共享。
 @export var training_rules: TrainingRules = preload("res://data/rpg/training_rules.tres")
+## 由地图战斗配置选择；关闭后仍载入原存档，但不应用装备属性或旧技能加成。
+@export var equipment_bonuses_enabled := true
 @export_group("装备与技能界面")
+## 关闭玩家入口，保留角色状态、局内成长和存档；预览场景可独立开放。
+@export var player_access_enabled := true:
+	set(value):
+		player_access_enabled = value
+		if not value and menu_open and _motion:
+			_motion.disable_motion()
+			if menu_open: _finish_close()
+		if _hud: _hud.management_enabled = value
+		if _item_bar: _item_bar.player_access_enabled = value
+		_sync_bottom_bars()
 ## 打开/关闭界面的按键；ESC 也可关闭。
 @export var toggle_key: Key = KEY_TAB
 ## 只折叠底部快捷栏；背包、属性、战斗和输入状态不受影响。
@@ -150,6 +162,7 @@ func _ready() -> void:
 		push_error("装备与技能目录配置无效。")
 		return
 	state = LoadoutState.new(catalog, skill_slot_count, training_rules)
+	state.equipment_bonuses_enabled = equipment_bonuses_enabled
 	var had_save := save_enabled and FileAccess.file_exists(save_path)
 	var loaded := had_save and state.load_from_path(save_path)
 	_save_blocked = had_save and not loaded
@@ -192,7 +205,7 @@ func _ready() -> void:
 	_save()
 
 func _input(event: InputEvent) -> void:
-	if not visible or not state or not event is InputEventKey or not event.pressed or event.echo:
+	if not player_access_enabled or not visible or not state or not event is InputEventKey or not event.pressed or event.echo:
 		return
 	if not menu_open and get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null:
 		return
@@ -208,6 +221,7 @@ func _unhandled_key_input(_event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func open_menu(page := 0) -> void:
+	if not player_access_enabled: return
 	if not menu_open and get_tree().get_first_node_in_group(&"gameplay_input_blockers") != null:
 		return
 	if wave_session and not wave_session.management_allowed():
@@ -498,9 +512,11 @@ func _build_ui() -> void:
 	_fx.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_book.add_child(_fx)
 	_hud = $SkillHUD as SkillHUD
+	_hud.management_enabled = player_access_enabled
 	_hud.reparent(_root)
 	_hud.slot_pressed.connect(_open_skill_from_hud)
 	_item_bar = $ItemQuickbar as ItemQuickbar
+	_item_bar.player_access_enabled = player_access_enabled
 	_item_bar.audio = _audio
 	_item_bar.reparent(_root)
 	_item_bar.bind_state(state,_hud)
@@ -543,9 +559,9 @@ func _fit_window() -> void:
 func _sync_bottom_bars() -> void:
 	if not is_instance_valid(_bottom_toggle): return
 	_bottom_toggle.text = "展开装备栏" if bottom_bars_collapsed else "隐藏装备栏"
-	_bottom_toggle.visible = not menu_open
+	_bottom_toggle.visible = player_access_enabled and not menu_open
 	if _hud: _hud.visible = not bottom_bars_collapsed and not menu_open
-	if _item_bar: _item_bar.visible = not bottom_bars_collapsed and (not menu_open or (current_page == 0 and _equipment_tab == 1))
+	if _item_bar: _item_bar.visible = player_access_enabled and not bottom_bars_collapsed and (not menu_open or (current_page == 0 and _equipment_tab == 1))
 
 func _tab_pressed(tab: int) -> void:
 	var previous_tab := 2 if current_page == 1 else _equipment_tab
@@ -955,5 +971,6 @@ func _session_skill_details() -> void:
 	_description(slots[0].description if not slots.is_empty() else "开始战斗时选择一个初始技能，升级时可学习其它技能或强化已有技能。")
 
 func _open_skill_from_hud(id: String) -> void:
+	if not player_access_enabled: return
 	selected_skill = id
 	open_menu(1)

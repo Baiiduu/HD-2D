@@ -2,6 +2,8 @@
 class_name PlazaProp
 extends Node3D
 
+const COLLISION_SURFACE := preload("res://scripts/core/collision_surface.gd")
+
 const STATIC_BATCH = preload("res://scripts/rendering/static_geometry_batch.gd")
 
 ## 广场道具共用本地网格合批与贴地；生成物不写进场景文件。
@@ -152,7 +154,7 @@ func _ring(center: Vector3, radius: float, thickness: float, key: String, rotati
 	mesh.ring_segments = 6
 	_append(mesh, key, center, rotation, Vector2(TAU * radius, PI * thickness))
 
-func _body(label: String) -> StaticBody3D:
+func _body(label: String, surface: StringName = &"stone") -> StaticBody3D:
 	var body := StaticBody3D.new()
 	body.name = label
 	body.collision_layer = 1
@@ -160,14 +162,17 @@ func _body(label: String) -> StaticBody3D:
 	# Generated bindings are immutable between build() calls, which remove the
 	# old subtree. Direct native binding edits must revoke the obstacle raster first.
 	body.set_meta(&"obstacle_layout_managed", true)
+	COLLISION_SURFACE.mark(body, surface)
 	_generated.add_child(body)
 	return body
 
-func _collider(body: StaticBody3D, shape: Shape3D, center: Vector3) -> void:
+func _collider(body: StaticBody3D, shape: Shape3D, center: Vector3, surface: StringName = &"") -> CollisionShape3D:
 	var collision := CollisionShape3D.new()
 	collision.shape = shape
 	collision.position = center
+	if surface != &"": COLLISION_SURFACE.mark(collision, surface)
 	body.add_child(collision)
+	return collision
 
 func _lantern(label: String, lamp_center: Vector3, energy: float, color: Color, halo: float) -> Node3D:
 	var lamp: Node3D = LANTERN.instantiate()

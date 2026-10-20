@@ -31,13 +31,13 @@ func input_and_art_checks() -> void:
 		sword.rules.frames = original.frames
 		var target := enemy(Vector3(1, 0, 0))
 		check(sword.request_manual(Vector3.RIGHT), "新旧剑光共用真实出手入口")
-		sword._physics_process(0.10)
+		sword._physics_process(sword.rules.windup_for(false) + sword.rules.sweep_seconds * 0.5)
 		comparison.append([target.health, damage_events.size(), sword._age, sword._since_strike])
 	check(comparison[0] == comparison[1], "切换原生剑光不改变扣血、同刀去重和真实攻击时钟")
 	await reset()
 	sword.rules = native
 	check(sword.request_manual(Vector3.RIGHT), "无图集原生剑光真实出手")
-	sword._physics_process(0.10)
+	sword._physics_process(native.windup_for(false) + native.sweep_seconds * 0.5)
 	var effect := sword._effect
 	var material := effect._material
 	var mesh := effect.mesh

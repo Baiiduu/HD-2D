@@ -1,0 +1,122 @@
+{
+  "atlas_size": 512,
+  "padding_px": 3,
+  "world_instance_scale": 0.5,
+  "native_pixels_per_world_meter_target": 80,
+  "regions": {
+    "globe": [
+      8,
+      8,
+      264,
+      130
+    ],
+    "base_top": [
+      8,
+      147,
+      264,
+      263
+    ],
+    "deck_face": [
+      104,
+      232,
+      72,
+      40
+    ],
+    "base_side": [
+      280,
+      8,
+      99,
+      25
+    ],
+    "silver": [
+      280,
+      49,
+      83,
+      81
+    ],
+    "rail": [
+      280,
+      147,
+      231,
+      25
+    ],
+    "pedestal": [
+      280,
+      184,
+      100,
+      103
+    ],
+    "cyan": [
+      388,
+      188,
+      49,
+      50
+    ],
+    "amber": [
+      453,
+      188,
+      51,
+      50
+    ],
+    "dark": [
+      388,
+      254,
+      115,
+      115
+    ],
+    "panel": [
+      280,
+      303,
+      58,
+      33
+    ],
+    "stone_edge": [
+      280,
+      360,
+      100,
+      25
+    ]
+  },
+  "approved_reference": "source/approved_reference.png",
+  "approved_top_reference": "source/approved_top_reference.png",
+  "representation": "opaque static mesh; emission mask in ORM alpha",
+  "source_regions_may_not_be_resampled": true,
+  "source_canvas_size": 1024,
+  "native_crop": [
+    0,
+    0,
+    512,
+    512
+  ],
+  "globe_surface": {
+    "albedo": "globe_albedo.png",
+    "orm": "globe_orm.png",
+    "material": "globe_material.tres",
+    "size": [
+      996,
+      498
+    ],
+    "source": "source/globe_master.png",
+    "native_crop": [
+      14,
+      30,
+      996,
+      498
+    ],
+    "approved_reference": "source/approved_globe_reference.png",
+    "original_uv_rect_px": [
+      10,
+      10,
+      260,
+      126
+    ],
+    "longitude_offset": -0.3,
+    "representation": "opaque satin aurora globe; selective emission; existing mesh UVs retained",
+    "packed_channels": {
+      "r": "star_phase_zero_is_steady",
+      "g": "roughness",
+      "b": "aurora_flow_mask_with_22px_gold_guard",
+      "a": "selective_emission"
+    }
+  }
+}

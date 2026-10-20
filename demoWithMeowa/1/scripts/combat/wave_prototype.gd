@@ -85,6 +85,11 @@ var skill_draft: RunSkillDraft:
 	set(value):
 		batch_crowd_enabled = value
 		_sync_batch_crowd_index()
+## 达到同场数量后只降低普通决策频率；0 保留原频率。
+@export_range(0, 4096, 1) var pursuit_throttle_threshold := 0:
+	set(value):
+		pursuit_throttle_threshold = maxi(0, value)
+		_sync_batch_crowd_index()
 ## 普通追击用原生局部寻路，减少目标移动时的整图构建；关闭恢复共享追击树。
 @export var native_chase_enabled := false:
 	set(value):
@@ -241,11 +246,38 @@ var _reachability_last: Dictionary[int, float] = {}
 var _preview_state: Dictionary = {}
 var combat_frozen := false
 var combat_modifiers := RunCombatModifiers.new()
+@export var growth_rules: RunGrowthRules
+var _survival := RunSurvival.new()
+var _strike_speed_tier := -1
+var _strike_flight_serial := -1
+
 var _combat_nodes: Array[Node] = []
 var _frozen_modes: Dictionary = {}
 var _clearing_wave := false
 var _wave_finish_deadline := 0
 var _prepared_feedback: EnemyFeedbackPool
+
+## 出手时读取剩余动能；飞行弹丸与千手后续刀使用同一份快照。
+func attack_snapshot(flight_sword := false, remaining_speed := -1.0) -> CombatAttackSnapshot:
+	var snapshot := CombatAttackSnapshot.new()
+	var body := player.body_ricochet if is_instance_valid(player) else null
+	var flying := (body != null and body.flying) or remaining_speed >= 0.0
+	snapshot.remaining_speed = maxf(0.0, remaining_speed if remaining_speed >= 0.0 else body.flight_speed if flying else 0.0)
+	snapshot.speed_damage_multiplier = combat_modifiers.speed_damage_multiplier(snapshot.remaining_speed, flying)
+	if growth_rules and flying:
+		if body and body.flight_serial != _strike_flight_serial:
+			_strike_speed_tier = -1
+			_strike_flight_serial = body.flight_serial
+		_strike_speed_tier = growth_rules.speed_tier(snapshot.remaining_speed, _strike_speed_tier)
+	else: _strike_speed_tier = -1
+	snapshot.strikes = combat_modifiers.strike_count(_strike_speed_tier, flying and flight_sword)
+	if growth_rules: snapshot.additional_strike_damage_ratio = growth_rules.additional_strike_damage_ratio
+	return snapshot
+
+func _growth_damage(event: CombatDamageEvent) -> void:
+	if not growth_rules or not combat_active() or not is_instance_valid(player) or player.current_health <= 0.0: return
+	_survival.rules = growth_rules
+	player.heal(_survival.recovery(event, combat_modifiers, player.max_health, player.max_health - player.current_health))
 
 func _init() -> void:
 	_enemy_roster.spatial_index = CROWD_BATCH_INDEX.new()
@@ -299,6 +331,7 @@ func _prepare_feedback_pool() -> void:
 	reserve.name = "EnemyFeedbackReserve"
 	add_child(reserve)
 	_prepared_feedback = EnemyFeedbackPool.new()
+	_prepared_feedback.terrain = terrain
 	_prepared_feedback.name = "EnemyFeedbackPool"
 	reserve.add_child(_prepared_feedback)
 	_prepared_feedback.start_prewarm(visuals, visuals.feedback_prewarm_deaths, visuals.feedback_prewarm_contacts)
@@ -307,6 +340,7 @@ func feedback_prewarm_ready() -> bool:
 	return not is_instance_valid(_prepared_feedback) or _prepared_feedback.prewarm_ready()
 
 func _sync_batch_crowd_index() -> void:
+	_spatial_index.pursuit_throttle_threshold = pursuit_throttle_threshold
 	if _spatial_index is CROWD_BATCH_INDEX:
 		(_spatial_index as CROWD_BATCH_INDEX).batch_enabled = batch_crowd_enabled
 
@@ -459,6 +493,8 @@ func _set_phase(value: Phase) -> void:
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed or event.echo: return
+	# Maps with settings reserve Escape for that UI and its active child dialogs.
+	if (event.physical_keycode == KEY_ESCAPE or event.keycode == KEY_ESCAPE) and get_parent().has_node("GameSettingsUI"): return
 	if event.physical_keycode == KEY_ESCAPE and phase == Phase.RESULT:
 		return_home()
 		get_viewport().set_input_as_handled()
@@ -505,6 +541,8 @@ func start_run() -> bool:
 	_hide_preview()
 	var generation := _generation
 	combat_modifiers.reset()
+	_survival.reset()
+	_strike_speed_tier = -1
 	combat_modifiers.damage_disabled = _run_population != null and _run_population.simulation_mode
 	if combat_modifiers.damage_disabled and skills and skills.is_enabled() and not skills.apply_simulation_loadout(_run_population.simulation_skills):
 		_finish("挑战配置错误 · 无法应用模拟技能配置")
@@ -942,6 +980,7 @@ func _physics_process(delta: float) -> void:
 	# 最后一击已完成；收尾镜头不延长有效战斗时间或影响计时得分。
 	if is_wave_finish_pending(): return
 	_wave_clock += delta
+	_survival.advance(delta)
 	if is_instance_valid(_spawn_shadows): _spawn_shadows.advance(_wave_clock)
 	_process_spawns()
 	if phase != Phase.BATTLE or combat_frozen: return
@@ -1029,6 +1068,8 @@ func _damage_player(amount: float, generation: int) -> bool:
 		# 保留怪物命中资格、真实碰撞与共享受击间隔，只跳过最终扣血。
 		_hurt_clock = hurt_interval
 		return true
+	_survival.rules = growth_rules
+	amount = _survival.incoming_damage(amount, player.body_ricochet != null and player.body_ricochet.flying and player.body_ricochet.orbiting)
 	player.take_damage(amount)
 	_hurt_clock = hurt_interval
 	show_notice("受击 -%d" % ceili(amount))
@@ -1252,6 +1293,7 @@ func _materialize_enemy(definition: WaveEnemyDefinition, spawn: Vector3, batch: 
 		enemy.free()
 		return false
 	enemy.defeated.connect(_enemy_defeated)
+	enemy.damaged.connect(_growth_damage)
 	enemy.tree_exiting.connect(_enemy_exiting.bind(enemy))
 	enemy.position = to_local(spawn + Vector3.UP * 0.03)
 	if enemy is SlimeEnemy: enemy.ground_movement_enabled = slime_ground_movement_enabled
@@ -1379,6 +1421,8 @@ func retreat() -> void:
 func _finish(reason: String, result := Outcome.ERROR, keep_presentations := false) -> void:
 	if phase == Phase.RESULT: return
 	combat_modifiers.reset()
+	_survival.reset()
+	_strike_speed_tier = -1
 	_preparing_wave = false
 	_starting_run = false
 	set_combat_frozen(false)
@@ -1464,6 +1508,8 @@ func reset_for_menu() -> void:
 		set_combat_frozen(false)
 		_cleanup_attacks()
 		combat_modifiers.reset()
+	_survival.reset()
+	_strike_speed_tier = -1
 	_spawn_state.clear()
 	wave = 0
 	completed_waves = 0

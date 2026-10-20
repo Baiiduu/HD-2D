@@ -47,6 +47,7 @@ func _ready() -> void:
 	process_priority = 2
 	_ring = _make_plane()
 	_aim = AimPathPreview.new()
+	_aim.defer_display_updates = true
 	_aim.name = "CollisionPath"
 	add_child(_aim)
 	_ring_material = _ring.material_override
@@ -84,6 +85,26 @@ func _make_plane() -> MeshInstance3D:
 	plane.material_override = material
 	add_child(plane)
 	return plane
+
+func prepare_feedback(player: Player, body: PlayerRicochet, visuals: PlayerActionVisuals) -> void:
+	_player = player
+	_body = body
+	_visuals = visuals
+	_pixel = player.sprite.pixel_size * player.sprite.global_basis.x.length()
+	var reference := player.animations.get_frame_texture(&"idle",0) if player.animations and player.animations.has_animation(&"idle") else player.sprite.texture
+	if reference != _foot_texture:
+		_foot_texture = reference
+		var image := reference.get_image() if reference else null
+		_foot_pixel = reference.get_height()*0.5-image.get_used_rect().end.y if image and not image.is_empty() else 0.0
+	var count := visuals.charge_mote_count if visuals.charge_dynamic_enabled else MOTE_COUNT
+	_motes.multimesh.instance_count = count
+	if visuals.charge_wind_enabled:
+		if not _wind:
+			_wind = PlayerChargeWind.new()
+			add_child(_wind)
+		_wind.synchronize(visuals, _pixel, 0.0, 0.0)
+	if player.motion_feedback: player.motion_feedback.foot_pivot(player.global_position)
+	stop()
 
 func display(player: Player, body: PlayerRicochet, visuals: PlayerActionVisuals) -> void:
 	_player = player

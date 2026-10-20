@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/network/leaderboard_configuration.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+endpoint = "https://47.95.170.204:18443"
+board_id = "world-demo-v1"
+certificate_name = "leaderboard.hd2d.internal"
+trusted_ca_pem = "-----BEGIN CERTIFICATE-----\nMIIEIzCCAougAwIBAgIUdQ1aV/4GwAQZHUy/vHXjrstwF3YwDQYJKoZIhvcNAQEL\nBQAwGTEXMBUGA1UEAwwOSEQyRCBEZW1vIFJvb3QwHhcNMjYxMDIwMDMwNjM5WhcN\nMzYxMDE3MDMwNjM5WjAZMRcwFQYDVQQDDA5IRDJEIERlbW8gUm9vdDCCAaIwDQYJ\nKoZIhvcNAQEBBQADggGPADCCAYoCggGBAJQYPdw5N00438Rbq0KdEZk47PVCQua/\n5ffm+hEzA/Eu2ZllH7tdOePMiVX6LqJf3mMOEehVyOt1LJG/xCR6Pf38ZkWQ9BrL\n5mDRpStiYFT5YGrSldXnTabEz5VG63E+Cw2BbuN81kK5a3gABtDFQSZaqA82eRH6\nRCUrXTlfvxyX5Veeh+5tNJzBFkzJBaiTdKdrTQSgovAUurgnlT138nrFb11l8euN\nS6zFX6lHddUwpq1BWmYbCO5rl2GQqUwcZgmHJLO9NT6jmN08GR4xsW0ynCas4ULU\nCDz9550gsDjJVi95rBPFOEal3UNK3q7DFBWKOE2zwbDxlKptv5h2HUOLohwsg71f\njyIe/+YwhJzSRxOv+Y0oALEHiDh0/wg4KD0NNDEonktfQMyCudANMesMx14a8eDh\nlWkuJibkRe5yD9UU+RjOxrH0XzFIlUiHa3q7XicfH+o1/CgpZnT7BND3QmlcKSuU\nNJyori0FZRc6FUDKUTU75RhlBMzDDUcOxwIDAQABo2MwYTAdBgNVHQ4EFgQUUC1H\nn2UyUgYQYsXk0d3t0PODSf0wHwYDVR0jBBgwFoAUUC1Hn2UyUgYQYsXk0d3t0POD\nSf0wDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwDQYJKoZIhvcNAQEL\nBQADggGBAH4vthQBpcqSddO5J0GAp5w9TRAwlNOa2q9RJQv/8C3bqQOD/0D1HNoS\n+8/A1QFq5vWDOXRlc6Ce1wpaaZcy52HXYE8FrvwnNz/VSmS/ln4iv1MGt6Bt+K5a\nNmInQP0G7gzP+Hg2Ez6s69lLy4+NE1y8igeTprWlMkOxCCZaNTvo66YUhLBTaChn\nJba3HmyQpKU8fvEfWhA0DiXDuQi02pe36NkkgPT9M2y4eCYI7qBp6Sa7d+76uK6G\nbkAn+rO0TqLFC5hBc/+eLMWd21OCRXxLBqgO1Px48P6RdCkjyb/H6rnMHmtUZTwb\ngk3zxRMjzK5UahwcWWgA9KiRnT5bCKl2HhbslwCat9chiH0IFm0wJnR9ruNpCanW\no1AGjyiOpxlJxJBRENe7evIJjtIlTUct30r/sWozicGBX3SZ2XHmNKDzJeXlHdTq\nVH3gvHgifOpct23PkE38TKv9//BytpCXJLKPr/m8k3UQdIlWuli1wkYHF60aMh7i\nQ4iGVV7reA==\n-----END CERTIFICATE-----\n"

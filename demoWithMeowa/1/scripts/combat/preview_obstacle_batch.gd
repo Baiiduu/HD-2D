@@ -61,20 +61,30 @@ func proves(from: Vector3, to: Vector3) -> bool:
 
 static func _native_bounds(shape: RID, transform: Transform3D) -> AABB:
 	var kind := PhysicsServer3D.shape_get_type(shape)
-	if kind not in [PhysicsServer3D.SHAPE_BOX, PhysicsServer3D.SHAPE_SPHERE, PhysicsServer3D.SHAPE_CAPSULE, PhysicsServer3D.SHAPE_CYLINDER]: return AABB(Vector3.INF, Vector3.ZERO)
+	if kind not in [PhysicsServer3D.SHAPE_BOX, PhysicsServer3D.SHAPE_SPHERE, PhysicsServer3D.SHAPE_CAPSULE, PhysicsServer3D.SHAPE_CYLINDER, PhysicsServer3D.SHAPE_CONVEX_POLYGON]: return AABB(Vector3.INF, Vector3.ZERO)
 	var data: Variant = PhysicsServer3D.shape_get_data(shape)
 	var half := Vector3.ZERO
+	var local := AABB()
 	match kind:
 		PhysicsServer3D.SHAPE_BOX: half = data
 		PhysicsServer3D.SHAPE_SPHERE: half = Vector3.ONE * float(data)
 		PhysicsServer3D.SHAPE_CAPSULE, PhysicsServer3D.SHAPE_CYLINDER:
 			half = Vector3(data.radius, data.height * 0.5, data.radius)
+		PhysicsServer3D.SHAPE_CONVEX_POLYGON:
+			# Read the current server vertices, including native edits without a
+			# Resource.changed signal. Their enclosing box only proves absence.
+			if not data is PackedVector3Array or data.is_empty(): return AABB(Vector3.INF, Vector3.ZERO)
+			local = AABB(data[0], Vector3.ZERO)
+			for point: Vector3 in data:
+				if not point.is_finite(): return AABB(Vector3.INF, Vector3.ZERO)
+				local = local.expand(point)
 		_: return AABB(Vector3.INF, Vector3.ZERO)
 	if not half.is_finite() or minf(half.x, minf(half.y, half.z)) < 0.0: return AABB(Vector3.INF, Vector3.ZERO)
 	var scale := Vector3(transform.basis.x.length(), transform.basis.y.length(), transform.basis.z.length())
 	if minf(scale.x, minf(scale.y, scale.z)) <= 0.0: return AABB(Vector3.INF, Vector3.ZERO)
 	var axes := Basis(transform.basis.x / scale.x, transform.basis.y / scale.y, transform.basis.z / scale.z)
 	if not axes.is_equal_approx(axes.orthonormalized()): return AABB(Vector3.INF, Vector3.ZERO)
-	if kind != PhysicsServer3D.SHAPE_BOX and (not is_equal_approx(scale.x, scale.y) or not is_equal_approx(scale.x, scale.z)): return AABB(Vector3.INF, Vector3.ZERO)
-	var local := AABB(-half, half * 2.0).grow(maxf(0.0, PhysicsServer3D.shape_get_margin(shape)))
+	if kind not in [PhysicsServer3D.SHAPE_BOX, PhysicsServer3D.SHAPE_CONVEX_POLYGON] and (not is_equal_approx(scale.x, scale.y) or not is_equal_approx(scale.x, scale.z)): return AABB(Vector3.INF, Vector3.ZERO)
+	if kind != PhysicsServer3D.SHAPE_CONVEX_POLYGON: local = AABB(-half, half * 2.0)
+	local = local.grow(maxf(0.0, PhysicsServer3D.shape_get_margin(shape)))
 	return (transform * local).grow(0.01)

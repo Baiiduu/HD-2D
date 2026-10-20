@@ -62,18 +62,21 @@ func get_attack_stats(level := -1, modifiers: RunCombatModifiers = null) -> Dict
 	var data := skill_definition.level_data(level) if skill_definition else null
 	var values: Dictionary = data.parameters if data else {}
 	if not modifiers and session: modifiers = session.combat_modifiers
+	var reach := modifiers.range_multiplier() if modifiers and modifiers.growth_rules else 1.0
 	return {"damage": damage * values.get("damage_multiplier", 1.0) * (modifiers.damage_multiplier() if modifiers else 1.0),
-		"distance": attack_range * values.get("distance_multiplier", 1.0),
+		"distance": attack_range * values.get("distance_multiplier", 1.0) * reach,
 		"interval": maxf(0.15, attack_interval * (modifiers.interval_multiplier() if modifiers else 1.0)),
 		"speed": flight_speed * values.get("speed_multiplier", 1.0),
 		"targets": maxi(1, pierce_targets + int(values.get("extra_targets", 0.0))),
-		"width": hit_width * values.get("width_multiplier", 1.0),
-		"visual_width": values.get("visual_width_multiplier", 1.0)}
+		"width": hit_width * values.get("width_multiplier", 1.0) * reach,
+		"visual_width": values.get("visual_width_multiplier", 1.0) * reach}
 
 func get_combat_stats(modifiers: RunCombatModifiers = null) -> Dictionary:
 	if not enabled or skill_level <= 0: return {}
 	var stats := get_attack_stats(skill_level, modifiers)
-	return {"name": "雷光贯穿", "damage": stats.damage, "interval": stats.interval}
+	var result := {"name": "雷光贯穿", "damage": stats.damage, "interval": stats.interval}
+	if session and session.growth_rules: result.range = stats.distance
+	return result
 
 func describe_skill_upgrade(from_level: int, to_level: int) -> String:
 	var after := get_attack_stats(to_level)
@@ -134,6 +137,7 @@ func fire() -> bool:
 	var origin := session._path.ground_position(session.player.global_position)
 	var target := nearest_target(origin, stats)
 	if not target: return false
+	stats.damage *= session.attack_snapshot().speed_damage_multiplier
 	var direction := target.global_position - origin
 	direction.y = 0.0
 	direction = direction.normalized() if not direction.is_zero_approx() else Vector3.FORWARD
@@ -150,6 +154,12 @@ func fire() -> bool:
 	_cooldown = stats.interval
 	shot_started.emit(direction)
 	return true
+
+func prepare_feedback() -> void:
+	if not effect_scene or not _effects.is_empty(): return
+	var effect := _acquire_effect()
+	effect.prepare_feedback()
+	_release_effect(effect)
 
 func _acquire_effect() -> LightPierceEffect:
 	if not _idle_effects.is_empty(): return _idle_effects.pop_back()

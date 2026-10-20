@@ -32,6 +32,8 @@ var neighbor_reuses := 0
 var neighbor_search_pairs := 0
 var _planner := BatchPlanner.new()
 var _plan_frame := -1
+var _plan_cohort := -1
+var _plan_epoch := -1
 var _fallback_frame := -1
 var _forces := PackedVector3Array()
 var native_kernel: RefCounted:
@@ -42,6 +44,8 @@ var native_kernel: RefCounted:
 
 func _reset_plan() -> void:
 	_plan_frame = -1
+	_plan_cohort = -1
+	_plan_epoch = -1
 	_fallback_frame = -1
 	_forces.clear()
 	_planner.clear()
@@ -88,17 +92,23 @@ func remove(enemy: WaveEnemy) -> void:
 func legacy_separation(enemy: WaveEnemy, radius: float) -> Vector3:
 	return super.separation(enemy, radius)
 
-func _prepare_current_step(frame: int) -> void:
+func _prepare_current_step(frame: int, cohort := -1) -> void:
 	# No await/callback occurs during planning. The packed input describes one
 	# common current snapshot even though later movement commits mutate it.
-	var planner: RefCounted = native_kernel if native_kernel else _planner
-	_forces = planner.plan(_cells, _positions, _ids, _active, _spacing, _bodies, CELL_SIZE, _crowd_revision)
+	var planner: RefCounted = native_kernel if native_kernel and cohort < 0 else _planner
+	if cohort < 0:
+		_forces = planner.plan(_cells, _positions, _ids, _active, _spacing, _bodies, CELL_SIZE, _crowd_revision)
+	else:
+		_forces = _planner.plan(_cells, _positions, _ids, _active, _spacing, _bodies, CELL_SIZE, _crowd_revision, cohort)
 	# The optional kernel may reject an unsupported packet. Never publish a
 	# short force array to callers; keep the established script implementation.
 	if _forces.size() != _positions.size():
 		_forces = _planner.plan(_cells, _positions, _ids, _active, _spacing, _bodies, CELL_SIZE, _crowd_revision)
+		planner = _planner
 	_plan_frame = frame
-	if diagnostics_enabled and not native_kernel:
+	_plan_cohort = cohort
+	_plan_epoch = pursuit_epoch
+	if diagnostics_enabled and planner == _planner:
 		batch_builds += 1
 		plan_candidate_pairs += _planner.candidate_pairs
 		plan_accepted_pairs += _planner.accepted_pairs
@@ -107,6 +117,18 @@ func _prepare_current_step(frame: int) -> void:
 		neighbor_search_pairs += _planner.search_pairs
 
 func separation(enemy: WaveEnemy, radius: float) -> Vector3:
+	# 特殊退步等仍读当前局部邻居；不能为少量逐帧请求重算整个普通怪群。
+	if pursuit_is_throttled(): return super.separation(enemy, radius)
+	return _cached_separation(enemy, radius)
+
+func pursuit_separation(enemy: WaveEnemy, radius: float) -> Vector3:
+	if not pursuit_is_throttled(): return separation(enemy, radius)
+	if get_script() != load("res://scripts/combat/crowd_batch_enemy_spatial_index.gd"): return separation(enemy, radius)
+	# 新生、恢复或进入停靠区可立即重判，即使不在自己的组；只查询该怪物。
+	if not pursuit_due(enemy): return super.separation(enemy, radius)
+	return _cached_separation(enemy, radius, Engine.get_physics_frames() % 2)
+
+func _cached_separation(enemy: WaveEnemy, radius: float, cohort := -1) -> Vector3:
 	if radius <= 0.0: return Vector3.ZERO
 	if not batch_enabled: return super.separation(enemy, radius)
 	var frame := Engine.get_physics_frames()
@@ -128,6 +150,6 @@ func separation(enemy: WaveEnemy, radius: float) -> Vector3:
 		_fallback_frame = frame
 		if diagnostics_enabled: fallback_calls += 1
 		return super.separation(enemy, radius)
-	if _plan_frame != frame: _prepare_current_step(frame)
+	if _plan_frame != frame or _plan_cohort != cohort or _plan_epoch != pursuit_epoch: _prepare_current_step(frame, cohort)
 	if diagnostics_enabled: batch_queries += 1
 	return _forces[slot]

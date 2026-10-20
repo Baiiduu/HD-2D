@@ -38,6 +38,13 @@ func _ready() -> void:
 		_pieces.append(_new_quad(material))
 	stop()
 
+func prepare_feedback() -> void:
+	if _surface: return
+	_surface = MIRROR_SURFACE.new()
+	add_child(_surface)
+	_surface.reflected.connect(glint)
+	_surface.stop()
+
 func attach(target: WaveEnemy, surface_normal: Vector3) -> void:
 	stop()
 	enemy = target

@@ -48,6 +48,8 @@ func signature(value: PlayerSword) -> PackedByteArray:
 	var hits := []
 	for hit in value._pending_hits:
 		var row: Dictionary = hit.duplicate()
+		# 局内计分批次是新增的伤害元数据，不属于旧扫掠几何对照。
+		row.erase("score_batch")
 		row.enemy = hit.enemy.get_instance_id()
 		hits.append(row)
 	return var_to_bytes([value._hits.keys(), hits])
@@ -118,6 +120,9 @@ func freeze_checks() -> void: pass
 func legacy_clip(origin: Vector3, heading: Vector3, radius: float, angle: float, reverse: bool, rules: PlayerSwordRules) -> Array:
 	var vertices := PackedVector3Array()
 	var uvs := PackedVector2Array()
+	var effect_height := rules.effect_height
+	if rules.effect_mode == PlayerSwordRules.SlashVisual.NATIVE_RIBBON and rules.ribbon_visual:
+		effect_height = maxf(0.08, effect_height + rules.ribbon_visual.ribbon_height_offset)
 	var basis := Basis(Vector3.UP, atan2(-heading.x, -heading.z))
 	var flat: bool = sword._surface.flat_ground(origin, radius)
 	var half := deg_to_rad(angle * 0.5)
@@ -134,7 +139,7 @@ func legacy_clip(origin: Vector3, heading: Vector3, radius: float, angle: float,
 		for ring in 5:
 			var distance := limit * float(ring) / 4
 			var point := radial * distance
-			point.y = rules.effect_height if flat else session._path.ground_position(origin + basis * point).y - origin.y + rules.effect_height
+			point.y = effect_height if flat else session._path.ground_position(origin + basis * point).y - origin.y + effect_height
 			vertices.append(point)
 			var pixel := Vector2(radial.x * (-1.0 if reverse else 1.0), radial.z) * distance / radius
 			uvs.append(Vector2(0.5, 0.5) + pixel / Vector2(2, 2))

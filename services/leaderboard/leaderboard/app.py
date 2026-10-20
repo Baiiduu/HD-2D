@@ -1,5 +1,6 @@
 import hashlib
 import json
+import re
 import secrets
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
@@ -15,10 +16,10 @@ from sqlalchemy.orm import Session
 
 from .config import Settings
 from .database import build_engine, write_transaction
-from .models import Base, BestScore, Board, Submission
+from .models import Base, BestScore, Board, Device, Submission
 from .schemas import (
     BoardCreate, BoardId, BoardView, PlayerId, RankedScore,
-    ScorePage, ScoreSubmit, SubmissionView,
+    DemoScoreSubmit, ScorePage, ScoreSubmit, SubmissionView,
 )
 
 
@@ -161,9 +162,8 @@ def create_app(settings: Settings | None = None):
         boards = session.scalars(select(Board).order_by(Board.id).offset(offset).limit(limit))
         return [board_view(board) for board in boards]
 
-    @application.post("/v1/leaderboards/{board_id}/scores", response_model=SubmissionView,
-                      dependencies=[Depends(require_writer)], tags=["Scores"])
-    def submit_score(board_id: BoardId, payload: ScoreSubmit, session: Database):
+    def save_score(board_id: str, payload: ScoreSubmit, session: Session,
+                   device_id: str | None = None, device_hash: str | None = None):
         canonical = json.dumps(payload.model_dump(mode="json"), sort_keys=True,
                                ensure_ascii=False, separators=(",", ":"), allow_nan=False)
         fingerprint = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
@@ -171,6 +171,16 @@ def create_app(settings: Settings | None = None):
         with write_transaction(session):
             # Board-first locking gives all writes the same order on PostgreSQL.
             board = find_board(session, board_id, lock=True)
+            if device_id is not None:
+                if board.sort_order != "desc":
+                    fail(503, "demo_not_configured", "Demo scores require a descending leaderboard")
+                # Registration and score commit share the board lock and transaction.
+                # A device UUID alone never grants access to an existing identity.
+                device = session.get(Device, device_id)
+                if device is None:
+                    session.add(Device(id=device_id, token_hash=device_hash, created_at=now_utc()))
+                elif not secrets.compare_digest(device.token_hash, device_hash):
+                    fail(401, "device_unauthorized", "Device credential does not match")
             receipt = session.get(Submission, (board_id, submission_id))
             if receipt is not None:
                 if receipt.payload_hash != fingerprint:
@@ -195,6 +205,30 @@ def create_app(settings: Settings | None = None):
             )
             session.add(receipt)
         return submission_view(receipt, replayed=False)
+
+    @application.post("/v1/leaderboards/{board_id}/scores", response_model=SubmissionView,
+                      dependencies=[Depends(require_writer)], tags=["Scores"])
+    def submit_score(board_id: BoardId, payload: ScoreSubmit, session: Database):
+        return save_score(board_id, payload, session)
+
+    @application.post("/v1/demo/scores", response_model=SubmissionView, tags=["Demo"])
+    def submit_demo_score(
+        request: Request, payload: DemoScoreSubmit, session: Database,
+        credential: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer)],
+    ):
+        board_id = request.app.state.settings.demo_board_id
+        if not board_id:
+            fail(503, "demo_disabled", "Anonymous demo submissions are disabled")
+        if credential is None or not re.fullmatch(r"[0-9a-f]{64}", credential.credentials):
+            fail(401, "device_unauthorized", "A device credential is required")
+        device_id = str(payload.device_id)
+        score = ScoreSubmit(
+            **payload.model_dump(exclude={"device_id", "metadata"}),
+            player_id="demo:" + device_id,
+            metadata={**payload.metadata, "verification": "client_reported"},
+        )
+        return save_score(board_id, score, session, device_id,
+                          hashlib.sha256(credential.credentials.encode()).hexdigest())
 
     @application.get("/v1/leaderboards/{board_id}/scores", response_model=ScorePage, tags=["Scores"])
     def list_scores(board_id: BoardId, session: ReadDatabase,

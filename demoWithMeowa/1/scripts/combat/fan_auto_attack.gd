@@ -85,6 +85,8 @@ var _spin_time := 0.0
 var _spin_hits: Dictionary[int, float] = {}
 var _extra_meshes: Array[MeshInstance3D] = []
 var _strike_modifiers: RunCombatModifiers
+var _attack_snapshot: CombatAttackSnapshot
+var _spin_angle := 0.0
 var _mesh_indices := PackedInt32Array()
 var _flat_mesh: ArrayMesh
 var _flat_mesh_key := Vector3(-1, -1, -1)
@@ -116,6 +118,7 @@ func get_attack_stats(level := -1, modifiers: RunCombatModifiers = null) -> Dict
 		"rotation_speed": maxf(values.get("rotation_speed", 210.0), 0.0),
 		"hit_interval": maxf(values.get("hit_interval", 0.4), 0.05),
 		"blades": clampi(int(values.get("spin_blades", 1.0)), 1, 4)}
+	stats.motion_scale = 1.0
 	if not modifiers and session:
 		modifiers = _strike_modifiers if _strike_modifiers and (_swinging or _fading) else session.combat_modifiers
 	if modifiers:
@@ -124,6 +127,10 @@ func get_attack_stats(level := -1, modifiers: RunCombatModifiers = null) -> Dict
 		stats.interval *= modifiers.interval_multiplier()
 		# 旋转攻击只缩短同体命中间隔，不重复加速旋转。
 		stats.hit_interval *= modifiers.interval_multiplier()
+		if modifiers.growth_rules:
+			stats.motion_scale = modifiers.interval_multiplier()
+			stats.rotation_speed /= stats.motion_scale
+	if _attack_snapshot and (_swinging or _fading): stats.damage *= _attack_snapshot.speed_damage_multiplier
 	return stats
 
 ## 成长卡读取真实收益；后续武器只回传自己支持的属性键。
@@ -133,7 +140,7 @@ func get_combat_stats(modifiers: RunCombatModifiers = null) -> Dictionary:
 	var stats := get_attack_stats(skill_level, modifiers)
 	var shortest: float = windup_time + stats.sweeps * (sweep_time + fade_time) + (stats.sweeps - 1) * stats.gap
 	return {"name": "扇击", "damage": stats.damage, "range": stats.range,
-		"interval": stats.hit_interval if stats.rotation else maxf(stats.interval, shortest)}
+		"interval": stats.hit_interval if stats.rotation else maxf(stats.interval, shortest * stats.motion_scale)}
 
 func describe_skill_upgrade(from_level: int, to_level: int) -> String:
 	var modifiers: RunCombatModifiers = session.combat_modifiers if session else null
@@ -205,8 +212,10 @@ func cancel_current() -> void:
 	_spinning = false
 	_spin_audio_clock = 0.0
 	_spin_time = 0.0
+	_spin_angle = 0.0
 	_spin_hits.clear()
 	_strike_modifiers = null
+	_attack_snapshot = null
 	if _mesh:
 		_mesh.visible = false
 		_mesh.transform = Transform3D.IDENTITY
@@ -257,8 +266,9 @@ func start_swing() -> bool:
 	_combo_index = 0
 	# 固定本次扫击的增益；成长选择后，下一次起手应用新值。
 	_strike_modifiers = session.combat_modifiers.preview_after(null)
+	_attack_snapshot = session.attack_snapshot()
 	var stats := get_attack_stats()
-	_cooldown = maxf(stats.interval, windup_time + stats.sweeps * (sweep_time + fade_time) + (stats.sweeps - 1) * stats.gap)
+	_cooldown = maxf(stats.interval, (windup_time + stats.sweeps * (sweep_time + fade_time) + (stats.sweeps - 1) * stats.gap) * stats.motion_scale)
 	_elapsed = 0.0
 	_swinging = true
 	_fading = false
@@ -285,7 +295,7 @@ func _line_clear(from: Vector3, to: Vector3) -> bool:
 
 func _advance_swing(delta: float) -> void:
 	var previous := clampf((_elapsed - windup_time) / maxf(sweep_time, 0.01), 0.0, 1.0)
-	_elapsed += delta
+	_elapsed += delta / float(get_attack_stats().motion_scale)
 	if _elapsed < windup_time: return
 	var progress := clampf((_elapsed - windup_time) / maxf(sweep_time, 0.01), 0.0, 1.0)
 	if _swinging:
@@ -374,6 +384,7 @@ func _stop_audio() -> void:
 ## 连续旋转仍逐个检查传播路径，双刃共享同体命中间隔。
 func _advance_spin(delta: float) -> void:
 	var stats := get_attack_stats()
+	stats.damage *= session.attack_snapshot().speed_damage_multiplier
 	_spinning = true
 	_spin_time += delta
 	_spin_audio_clock = maxf(_spin_audio_clock - delta, 0.0)
@@ -394,13 +405,14 @@ func _advance_spin(delta: float) -> void:
 	var effects: Array[MeshInstance3D] = [_mesh]
 	effects.append_array(_extra_meshes)
 	var travelled := deg_to_rad(stats.rotation_speed * delta)
+	_spin_angle += travelled
 	var flat_surface := _unclipped_flat_surface(origin, stats.range)
 	for index in effects.size():
 		var effect := effects[index]
 		if index >= stats.blades:
 			effect.visible = false
 			continue
-		var basis := Basis(Vector3.UP, deg_to_rad(stats.rotation_speed * _spin_time) + TAU * index / stats.blades)
+		var basis := Basis(Vector3.UP, _spin_angle + TAU * index / stats.blades)
 		effect.global_position = origin
 		effect.global_basis = basis
 		_apply_spin_hits(origin, basis, travelled, stats)

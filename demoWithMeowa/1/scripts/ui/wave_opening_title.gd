@@ -1,8 +1,8 @@
 class_name WaveOpeningTitle
 extends Control
 
-## 开战与清波复用原生像素字体、数字和金线，由同一个真实时间轴推进。
-const FONT = preload("res://assets/fonts/fusion_pixel/fusion-pixel-12px-monospaced-zh_hans.ttf")
+## 开战与清波复用手绘中文字体、像素数字和金线，由同一个真实时间轴推进。
+const FONT = preload("res://assets/fonts/maoken_assorted_sans/MaokenAssortedSans.ttf")
 const NUMBER_FONT = preload("res://assets/fonts/press_start_2p/PressStart2P-Regular.ttf")
 var _labels: Array[Label] = []
 var _rest: Array[Vector2] = []

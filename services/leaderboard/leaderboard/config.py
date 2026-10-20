@@ -1,4 +1,5 @@
 import os
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -11,6 +12,8 @@ class Settings:
     database_url: str = field(default="sqlite:///./var/leaderboard.sqlite3", repr=False)
     api_token: str = field(default="", repr=False)
     database_password: str | None = field(default=None, repr=False)
+    demo_board_id: str = ""
+    database_pool_size: int = 3
 
     @classmethod
     def from_environment(cls) -> "Settings":
@@ -20,9 +23,15 @@ class Settings:
             database_url=os.getenv("LEADERBOARD_DATABASE_URL", cls.database_url),
             api_token=os.getenv("LEADERBOARD_API_TOKEN", ""),
             database_password=os.getenv("LEADERBOARD_DATABASE_PASSWORD"),
+            demo_board_id=os.getenv("LEADERBOARD_DEMO_BOARD_ID", ""),
+            database_pool_size=int(os.getenv("LEADERBOARD_DB_POOL_SIZE", "3")),
         )
 
     def validate(self) -> None:
+        if not 1 <= self.database_pool_size <= 16:
+            raise ValueError("LEADERBOARD_DB_POOL_SIZE must be between 1 and 16")
+        if self.demo_board_id and not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,63}", self.demo_board_id):
+            raise ValueError("Invalid LEADERBOARD_DEMO_BOARD_ID")
         if self.api_token and len(self.api_token) < 32:
             raise ValueError("LEADERBOARD_API_TOKEN must contain at least 32 characters")
         if self.api_token.startswith("replace-with-"):

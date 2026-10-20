@@ -9,6 +9,12 @@ const QUICK_SLOT_COUNT := 8
 
 var catalog: LoadoutCatalog
 var training_rules: TrainingRules
+## 地图运行规则，不写入存档；正式战斗可保留旧装备但不结算其数值。
+var equipment_bonuses_enabled := true:
+	set(value):
+		if equipment_bonuses_enabled == value: return
+		equipment_bonuses_enabled = value
+		changed.emit()
 var training_points := 0
 var _training_levels: Dictionary[String, int] = {"health": 0, "attack": 0, "defense": 0}
 var _owned: Array[String] = []
@@ -289,6 +295,7 @@ func preview_attribute_totals(id: String) -> Dictionary[String, float]:
 
 func _attribute_totals_for(equipment_ids: Array[String]) -> Dictionary[String, float]:
 	var totals: Dictionary[String, float] = {}
+	if not equipment_bonuses_enabled: return totals
 	for id in equipment_ids:
 		var entry := catalog.get_equipment(id) if catalog else null
 		if entry:
@@ -297,6 +304,7 @@ func _attribute_totals_for(equipment_ids: Array[String]) -> Dictionary[String, f
 	return totals
 
 func get_skill_bonus(id: String) -> float:
+	if not equipment_bonuses_enabled: return 0.0
 	var total := 0.0
 	for equipment_id in _equipped:
 		var entry := catalog.get_equipment(equipment_id) if catalog else null

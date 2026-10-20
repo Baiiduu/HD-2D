@@ -62,6 +62,14 @@ func _ready() -> void:
 	EFFECT_LAYER.set_parameter(_patch_material, "energy", effect_energy)
 	set_process(false)
 
+func prepare_feedback() -> void:
+	if not _pool.is_empty(): return
+	_impacts.prepare_feedback()
+	for index in 4:
+		show_link(Vector3.ZERO, Vector3(3.0, 0.0, index * 0.5))
+	show_patch(PackedVector3Array([Vector3.ZERO, Vector3.RIGHT, Vector3.BACK, Vector3.LEFT]))
+	stop()
+
 func _material(texture: Texture2D) -> ShaderMaterial:
 	var result := EFFECT_LAYER.material(SHADER)
 	EFFECT_LAYER.set_parameter(result, "effect_texture", texture)
@@ -76,7 +84,7 @@ func _mesh(material: ShaderMaterial) -> MeshInstance3D:
 	add_child(node)
 	return node
 
-func show_link(from: Vector3, to: Vector3, strength := 1.0, kind: Kind = Kind.CHAIN) -> void:
+func show_link(from: Vector3, to: Vector3, strength := 1.0, kind: Kind = Kind.CHAIN, visual_scale := 1.0) -> void:
 	if from.distance_squared_to(to) < 0.0025: return
 	var bolt: Dictionary = _pool.pop_back() if not _pool.is_empty() else {"parts": [], "head": _mesh(_head_material)}
 	bolt.from = from
@@ -84,20 +92,21 @@ func show_link(from: Vector3, to: Vector3, strength := 1.0, kind: Kind = Kind.CH
 	bolt.age = 0.0
 	bolt.strength = strength
 	bolt.kind = kind
+	bolt.visual_scale = visual_scale
 	bolt.phase = float(_bolts.size() * 7 + _pool.size() * 13)
-	var slices := ceili(from.distance_to(to) / (pixel_size * arc_texture.get_width()))
+	var slices := ceili(from.distance_to(to) / (pixel_size * arc_texture.get_width() * visual_scale))
 	while bolt.parts.size() < slices: bolt.parts.append(_mesh(_arc_material))
 	_bolts.append(bolt)
 	_update_bolt(bolt, get_viewport().get_camera_3d())
 	set_process(true)
 
-func show_hit(point: Vector3, sky_strike := false) -> void:
-	_impacts.show_hit(point)
+func show_hit(point: Vector3, sky_strike := false, visual_scale := 1.0) -> void:
+	_impacts.show_hit(point, visual_scale)
 	if sky_strike:
 		var end := point + Vector3.UP * impact_height
-		show_link(end + Vector3(0.45, sky_height, -0.25), end, 0.9, Kind.SKY)
+		show_link(end + Vector3(0.45, sky_height, -0.25), end, 0.9, Kind.SKY, visual_scale)
 
-func show_patch(points: PackedVector3Array) -> void:
+func show_patch(points: PackedVector3Array, visual_scale := 1.0) -> void:
 	if not patch_enabled or points.size() < 2 or not impact_frames: return
 	if not impact_frames.has_animation(&"impact") or impact_frames.get_frame_count(&"impact") == 0: return
 	var frame := impact_frames.get_frame_texture(&"impact", 0)
@@ -107,6 +116,7 @@ func show_patch(points: PackedVector3Array) -> void:
 		var patch: Dictionary = _patch_pool.pop_back() if not _patch_pool.is_empty() else {"mesh": _mesh(_patch_material)}
 		patch.point = point + Vector3.UP * patch_height
 		patch.age = 0.0
+		patch.visual_scale = visual_scale
 		patch.mesh.set_instance_shader_parameter("phase", floorf(point.x / pixel_size) * 0.13 + floorf(point.z / pixel_size) * 0.37)
 		_patches.append(patch)
 		_update_patch(patch, get_viewport().get_camera_3d())
@@ -125,7 +135,7 @@ func _update_patch(patch: Dictionary, camera: Camera3D) -> void:
 	var mesh: MeshInstance3D = patch.mesh
 	mesh.global_position = patch.point
 	var basis := camera.global_basis if camera else Basis.IDENTITY
-	mesh.global_basis = Basis(basis.x * _patch_pixels.x * pixel_size, basis.y * _patch_pixels.y * pixel_size, basis.z)
+	mesh.global_basis = Basis(basis.x * _patch_pixels.x * pixel_size * float(patch.visual_scale), basis.y * _patch_pixels.y * pixel_size * float(patch.visual_scale), basis.z)
 	mesh.set_instance_shader_parameter("frame_rect", Vector4(rect.position.x, rect.position.y, rect.size.x, rect.size.y))
 	mesh.set_instance_shader_parameter("progress", progress)
 	mesh.set_instance_shader_parameter("intensity", patch_opacity * effect_opacity)
@@ -159,8 +169,9 @@ func _update_bolt(bolt: Dictionary, camera: Camera3D) -> void:
 	if side.is_zero_approx(): side = Vector3.RIGHT
 	var reveal := minf(1.0, float(bolt.age) / maxf(reveal_seconds, 0.001) + 0.12)
 	var visible_length := length * reveal
-	var tile_length := pixel_size * arc_texture.get_width()
-	var width := pixel_size * arc_texture.get_height()
+	var scale: float = bolt.visual_scale
+	var tile_length := pixel_size * arc_texture.get_width() * scale
+	var width := pixel_size * arc_texture.get_height() * scale
 	var fade := 1.0 - smoothstep(0.18, 1.0, float(bolt.age) / arc_duration)
 	for index in bolt.parts.size():
 		var node: MeshInstance3D = bolt.parts[index]
@@ -176,9 +187,9 @@ func _update_bolt(bolt: Dictionary, camera: Camera3D) -> void:
 	var head: MeshInstance3D = bolt.head
 	head.visible = float(bolt.strength) > 0.5 and reveal < 1.0
 	if head.visible:
-		var head_width := pixel_size * head_texture.get_width()
+		var head_width := pixel_size * head_texture.get_width() * scale
 		head.global_position = bolt.from + direction * (visible_length - head_width * 0.44)
-		head.global_basis = Basis(direction * head_width, side * pixel_size * head_texture.get_height(), direction.cross(side))
+		head.global_basis = Basis(direction * head_width, side * pixel_size * head_texture.get_height() * scale, direction.cross(side))
 		head.set_instance_shader_parameter("intensity", fade * effect_opacity * float(bolt.strength))
 
 func _recycle(bolt: Dictionary) -> void:

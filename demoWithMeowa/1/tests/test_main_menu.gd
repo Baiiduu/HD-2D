@@ -13,6 +13,18 @@ func check(value: bool, label: String) -> void:
 		failures.append(label)
 		printerr("FAIL: ", label)
 
+func escape_key(echo := false) -> void:
+	var event := InputEventKey.new()
+	event.keycode = KEY_ESCAPE
+	event.physical_keycode = KEY_ESCAPE
+	event.pressed = true
+	event.echo = echo
+	Input.parse_input_event(event)
+	event = event.duplicate()
+	event.pressed = false
+	event.echo = false
+	Input.parse_input_event(event)
+
 func run() -> void:
 	var timing_path := "res://scripts/ui/main_menu_timeline.gd"
 	var flow_path := "res://scripts/ui/main_menu_flow.gd"
@@ -62,22 +74,45 @@ func run() -> void:
 		menu.auto_prepare_world = false
 		root.add_child(menu)
 		for i in 4: await process_frame
-		check(menu.buttons.size() == 3, "Menu exposes start, settings and quit")
+		check(menu.buttons.size() == 4 and menu.buttons[2].text == "排行榜", "Menu exposes an independent leaderboard entry")
 		check(not menu.flow.busy and menu.stage != null, "Stage animation does not claim menu input")
 		var exploration := load("res://data/audio/music/exploration.tres") as BgmTrack
 		check(is_equal_approx(menu._music.volume_db, exploration.volume_db), "Standalone menu shares the exploration track gain instead of a separate music level")
 		menu.open_settings()
 		check(menu.flow.modal_open and menu.settings_panel.visible, "Settings owns navigation while the stage stays alive")
-		check(menu._controls_page.buttons.size() >= 17, "Main menu shares the complete controls page")
+		var volume_sliders: Array = menu.settings_panel.find_children("*", "HSlider", true, false)
+		for index in 5:
+			check(volume_sliders[index].min_value == 0 and volume_sliders[index].max_value == 100, "Main-menu volume uses 0–100")
+		volume_sliders[0].value = 0
+		check(menu._mix_manager.mix.is_bus_muted(&"Music"), "Main-menu zero volume mutes the shared music bus")
+		volume_sliders[0].value = 50
+		check(is_equal_approx(menu._mix_manager.mix.bus_volume_percent(&"Music"), 50.0), "Main-menu volume applies the same percentage model")
+		volume_sliders[0].value = 100
+		check(menu._controls_page.buttons.size() >= 16 and not menu._controls_page.buttons.has(&"inventory"), "Main menu shares available controls while hiding the unopened backpack")
 		var settings_tabs: TabContainer = menu._controls_page.get_parent().get_parent()
+		check(settings_tabs.get_tab_count() == 4, "Leaderboard is no longer a settings tab")
 		settings_tabs.current_tab = settings_tabs.get_tab_count() - 1
 		menu._controls_page.begin_capture(&"toggle_rain", 0)
 		var stage_time: float = menu.stage.timeline.time
 		await process_frame
 		check(menu.stage.timeline.time > stage_time, "Settings does not pause the performance")
-		menu.close_settings()
+		escape_key()
+		await process_frame
+		check(menu.flow.modal_open and not menu._controls_page.is_capturing(), "Main-menu Esc cancels rebinding before closing settings")
+		escape_key(true)
+		await process_frame
+		check(menu.flow.modal_open, "Held Esc does not close settings after cancelling capture")
+		escape_key()
+		await process_frame
 		check(not menu.flow.modal_open and not menu.settings_panel.visible, "Back restores the menu without changing scenes")
 		check(not menu._controls_page.is_capturing(), "Closing main-menu settings cancels pending key capture")
+		menu._activate(2)
+		check(menu.flow.modal_open and menu._leaderboard_window.visible and not menu.settings_panel.visible, "Main-menu leaderboard opens independently from settings")
+		menu.start_game()
+		check(not menu.flow.busy, "Viewing the leaderboard cannot start a game underneath it")
+		escape_key()
+		await process_frame
+		check(not menu._leaderboard_window.visible and not menu.flow.modal_open, "Esc returns from leaderboard to main menu")
 		var request = load("res://scripts/world/world_entry_request.gd")
 		request.request()
 		menu.flow.begin()

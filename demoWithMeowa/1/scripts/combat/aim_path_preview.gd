@@ -24,6 +24,9 @@ var _height := 0.0
 var _skip := 0.0
 var _width := 1.0
 var _opacity := 0.45
+## 正式蓄力由优先级 3 的显示阶段提交；独立调用保留即时显示。
+var defer_display_updates := false
+var _appearance: Array = []
 
 func _ready() -> void:
 	_users += 1
@@ -38,6 +41,7 @@ func _ready() -> void:
 	_lines.material_override = _line_material
 	_contact_material = ShaderMaterial.new()
 	_contact_material.shader = preload("res://shaders/combat/aim_marker.gdshader")
+	_contact_material.set_shader_parameter("size_pixels", Vector2.ONE * 6.0)
 	_contacts.material_override = _contact_material
 	_target = MeshInstance3D.new()
 	_target.mesh = _quad
@@ -74,18 +78,22 @@ func display(data: AimPathData, camera: Camera3D, pixel: float, height: float,
 	_skip = skip_distance
 	_width = width
 	_opacity = opacity
-	for material in [_line_material, _contact_material, _target_material]:
-		material.set_shader_parameter("tint", tint)
-		material.set_shader_parameter("opacity", opacity)
-	_line_material.set_shader_parameter("dash_period", _pixel * 14.0)
-	_target_material.set_shader_parameter("opacity", minf(0.8, opacity * 1.4))
+	var appearance: Array = [tint, opacity, pixel]
+	if appearance != _appearance:
+		_appearance = appearance
+		for material in [_line_material, _contact_material, _target_material]:
+			material.set_shader_parameter("tint", tint)
+			material.set_shader_parameter("opacity", opacity)
+		_line_material.set_shader_parameter("dash_period", _pixel * 14.0)
+		_target_material.set_shader_parameter("opacity", minf(0.8, opacity * 1.4))
 	show()
 	set_process(true)
-	_process(0.0)
+	if not defer_display_updates: _process(0.0)
 
 func mark_target(sprite: Sprite3D) -> void:
 	_target_sprite = sprite
-	_update_target()
+	if not is_instance_valid(sprite): _target.hide()
+	elif not defer_display_updates: _update_target()
 
 func stop() -> void:
 	hide()
@@ -120,7 +128,6 @@ func _process(_delta: float) -> void:
 	var contact_count := route.contacts.size() + route.crowd_contacts.size()
 	if _contacts.multimesh.instance_count < contact_count: _contacts.multimesh.instance_count = contact_count
 	_contacts.multimesh.visible_instance_count = contact_count
-	_contact_material.set_shader_parameter("size_pixels", Vector2.ONE * 6.0)
 	for index in contact_count:
 		var point := route.contacts[index] if index < route.contacts.size() else route.crowd_contacts[index - route.contacts.size()]
 		_contacts.multimesh.set_instance_transform(index, Transform3D(camera_basis.scaled_local(Vector3.ONE * _pixel * 6.0), point + Vector3.UP * _height))

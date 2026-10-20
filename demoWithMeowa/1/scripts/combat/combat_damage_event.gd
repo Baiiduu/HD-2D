@@ -1,6 +1,8 @@
 class_name CombatDamageEvent
 extends RefCounted
 
+const ScoreBatch = preload("res://scripts/combat/score_attack_batch.gd")
+
 ## 已结算的命中快照；显示层只读，不持有怪物或武器节点。
 var amount := 0.0
 var requested_amount := 0.0
@@ -10,8 +12,11 @@ var direction := Vector3.ZERO
 ## 刀锋实际扫过方向，仅供表现；为空时沿用命中方向，不参与伤害或外力。
 var slash_direction := Vector3.ZERO
 var source: StringName = &""
+var attack_snapshot: CombatAttackSnapshot
 ## 本次发射的稳定编号；0 为普通攻击或飞行结束后的延迟技能伤害。
 var flight_id := 0
+## Shared pure-data context for this sword/patch; never owns scene nodes.
+var score_batch: ScoreBatch
 ## 表现标签，与伤害公式独立；未知标签回退普通样式。
 var style: StringName = &"normal"
 var lethal := false
@@ -33,7 +38,9 @@ static func from_hit(enemy: WaveEnemy, dealt: float, requested: float, context: 
 	event.slash_direction = context.get("slash_direction", Vector3.ZERO)
 	if not event.slash_direction.is_finite(): event.slash_direction = Vector3.ZERO
 	event.source = context.get("source", &"")
+	event.attack_snapshot = context.get("attack_snapshot") as CombatAttackSnapshot
 	event.flight_id = maxi(0, int(context.get("flight_id", 0)))
+	event.score_batch = context.get("score_batch") as ScoreBatch
 	event.style = context.get("style", &"normal")
 	event.lethal = enemy.health <= 0.0
 	return event

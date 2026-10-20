@@ -49,9 +49,11 @@ var _bursts: Array[Dictionary] = []
 var _collision := ProjectileCollision.new()
 var _trail_point := Vector3.ZERO
 var _trail_heading := Vector3.ZERO
+var _score: RunScore
 
 func _ready() -> void:
 	process_physics_priority = 30
+	_score = session.get_node_or_null("RunScore") as RunScore
 	session.register_combat_node(self)
 	session.phase_changed.connect(_phase_changed)
 	_bind_body.call_deferred()
@@ -82,11 +84,13 @@ func get_attack_stats(level := -1, modifiers: RunCombatModifiers = null) -> Dict
 	var values: Dictionary = data.parameters if data else {}
 	if not modifiers and session: modifiers = session.combat_modifiers
 	var reach := modifiers.range_multiplier() if modifiers else 1.0
+	var limit := max_propagation_radius * (reach if modifiers and modifiers.growth_rules else 1.0)
 	return {"damage": damage * values.get("damage_multiplier", 1.0) * (modifiers.damage_multiplier() if modifiers else 1.0),
 		"interval": maxf(0.08, attack_interval * values.get("interval_multiplier", 1.0) * (modifiers.interval_multiplier() if modifiers else 1.0)),
-		"range": minf(max_propagation_radius, trigger_radius * values.get("range_multiplier", 1.0) * reach),
-		"spread": minf(max_propagation_radius, spread_radius * values.get("range_multiplier", 1.0) * reach),
-		"max_radius": max_propagation_radius,
+		"range": minf(limit, trigger_radius * values.get("range_multiplier", 1.0) * reach),
+		"spread": minf(limit, spread_radius * values.get("range_multiplier", 1.0) * reach),
+		"max_radius": limit,
+		"visual_scale": reach if modifiers and modifiers.growth_rules else 1.0,
 		"layers": maxi(1, spread_layers + int(values.get("extra_layers", 0.0))),
 		"targets": maxi(1, targets_per_layer + int(values.get("extra_targets", 0.0))),
 		"layer_interval": maxf(0.02, layer_interval)}
@@ -126,7 +130,8 @@ func _launched(_direction: Vector3, _speed: float, _charge: float) -> void:
 func _travelled(start: Vector3, end: Vector3, heading: Vector3, seconds: float) -> void:
 	if not _active() or _flight_stats.is_empty(): return
 	var timing := _body.motion_timing(seconds)
-	_segments.append({"start": start, "end": end, "heading": heading, "seconds": seconds, "speed": timing.x, "deceleration": timing.y})
+	var energy := _body.energy_timing()
+	_segments.append({"start": start, "end": end, "heading": heading, "seconds": seconds, "speed": timing.x, "deceleration": timing.y, "energy_speed": energy.x, "energy_deceleration": energy.y})
 	_frame_flight_seconds += seconds
 	_refresh_processing()
 
@@ -184,6 +189,7 @@ func _trace_piece(piece: Dictionary) -> bool:
 		piece.elapsed = elapsed
 		if not _active(): return false
 		if _until_pulse > 0.000001: break
+		if session.growth_rules: _flight_stats = get_attack_stats()
 		var fraction := PlayerRicochetRules.segment_fraction(elapsed, seconds, piece.get("speed", 0.0), piece.get("deceleration", 0.0))
 		var point := start.lerp(end, fraction)
 		var entry := _first_contact(point, end, float(_flight_stats.range))
@@ -199,7 +205,8 @@ func _trace_piece(piece: Dictionary) -> bool:
 		_until_pulse = float(_flight_stats.interval)
 		var speed := maxf(0.0, float(piece.get("speed", 0.0)) - float(piece.get("deceleration", 0.0)) * elapsed)
 		var motion: Vector3 = piece.heading * speed if speed > 0.0 else (end - start) / maxf(seconds, 0.000001)
-		if not discharge(point, _flight_stats, motion): _until_pulse = 0.0
+		var energy_speed := maxf(0.0, float(piece.energy_speed) - float(piece.energy_deceleration) * elapsed) if piece.has("energy_speed") else -1.0
+		if not discharge(point, _flight_stats, motion, energy_speed): _until_pulse = 0.0
 		if not _active(): return false
 		if elapsed >= seconds: break
 	# 电痕来自真实折线路段，不跨过转角画一条直线，也不产生额外伤害。
@@ -269,9 +276,11 @@ func _plan_layer(frontier: Array[Dictionary], radius: float, seen: Dictionary, c
 	return result
 
 ## 每轮独立预留与去重；跨轮可再次命中，不与旧雷潮共享记录。飞行调度负责冷却。
-func discharge(origin: Vector3, stats: Dictionary = {}, motion_velocity: Variant = null) -> bool:
+func discharge(origin: Vector3, stats: Dictionary = {}, motion_velocity: Variant = null, remaining_speed := -1.0) -> bool:
 	if not _active(): return false
 	if stats.is_empty(): stats = get_attack_stats()
+	stats = stats.duplicate()
+	stats.damage *= session.attack_snapshot(false, remaining_speed).speed_damage_multiplier
 	var seen := {}
 	var frontier: Array[Dictionary] = [{"id": 0, "point": origin}]
 	var layers: Array = []
@@ -304,6 +313,7 @@ func _deliver_layer(burst: Dictionary) -> void:
 		_finish_burst(burst)
 		return
 	if not burst.has("current"):
+		burst.score_batch = _score.begin_attack() if is_instance_valid(_score) else null
 		burst.current = []
 		burst.cursor = 0
 		burst.patch_points = PackedVector3Array()
@@ -341,13 +351,13 @@ func _deliver_layer(burst: Dictionary) -> void:
 		burst.landed[contact.id] = contact.point
 		# 首片是就地引雷；只有已有怪物向后续怪物传导时才显示连接。
 		if contact.parent != 0:
-			effects.show_link(contact.from + Vector3.UP * contact_height, contact.point + Vector3.UP * contact_height)
-		effects.show_hit(contact.point, index == 0 or (confirmed.size() >= 4 and index == confirmed.size() - 1))
+			effects.show_link(contact.from + Vector3.UP * contact_height, contact.point + Vector3.UP * contact_height, 1.0, RicochetStormEffect.Kind.CHAIN, float(burst.stats.get("visual_scale", 1.0)))
+		effects.show_hit(contact.point, index == 0 or (confirmed.size() >= 4 and index == confirmed.size() - 1), float(burst.stats.get("visual_scale", 1.0)))
 		burst.patch_points.append(contact.point)
 		var before := enemy.health
 		burst.seen[contact.id] = 1
 		var scoring_flight := int(burst.get("flight_id", 0)) if is_instance_valid(_body) and _body.flying and _body.flight_serial == int(burst.get("flight_id", 0)) else 0
-		enemy.take_damage(float(burst.stats.damage), {"source": &"ricochet_storm", "style": &"lightning", "direction": enemy.global_position - contact.from, "flight_id": scoring_flight, "motion_velocity": burst.motion_velocity, "storm_layer": int(burst.next)})
+		enemy.take_damage(float(burst.stats.damage), {"source": &"ricochet_storm", "style": &"lightning", "direction": enemy.global_position - contact.from, "flight_id": scoring_flight, "motion_velocity": burst.motion_velocity, "storm_layer": int(burst.next), "score_batch": burst.get("score_batch")})
 		var dealt := before - enemy.health
 		if dealt > 0.0 or session.combat_modifiers.damage_disabled:
 			burst.presentation_hits += 1
@@ -358,13 +368,16 @@ func _deliver_layer(burst: Dictionary) -> void:
 	# 只把本片实际落雷的位置组成电涌面；不补目标、不扩大伤害或生成假传播线。
 	if burst.presentation_hits > 0:
 		presentation_landed.emit(burst.presentation_sum / burst.presentation_hits, burst.presentation_hits, burst.presentation_kills, int(burst.get("flight_id", 0)))
-	effects.show_patch(burst.patch_points)
+	effects.show_patch(burst.patch_points, float(burst.stats.get("visual_scale", 1.0)))
 	if not confirmed.is_empty():
 		_play_patch_sound(confirmed[0].point, int(burst.next))
 		patch_landed.emit(int(burst.next), confirmed.size())
 	burst.next += 1
 	burst.erase("current")
 	if burst.next >= burst.layers.size(): _finish_burst(burst)
+
+func prepare_feedback() -> void:
+	if effect_scene: _effects().prepare_feedback()
 
 func _effects() -> RicochetStormEffect:
 	if not is_instance_valid(_effect):

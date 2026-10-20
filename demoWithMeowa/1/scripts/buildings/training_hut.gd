@@ -104,11 +104,11 @@ func build() -> void:
 	geometry.add_child(body)
 	body.owner = self
 	_collision(body,"House",Vector3(0,eave_height*0.5,0),Vector3(width,eave_height,depth))
-	_collision(body,"CanopyFloor",Vector3(0,floor_height-0.06,z+canopy_depth*0.5),Vector3(width,0.12,canopy_depth+0.15))
+	_collision(body,"CanopyFloor",Vector3(0,floor_height-0.06,z+canopy_depth*0.5),Vector3(width,0.12,canopy_depth+0.15), &"wood")
 	for side: float in [-1.0,1.0]:
-		_collision(body,"PostLeft" if side < 0 else "PostRight",Vector3(side*(x-0.28),canopy_eave*0.5,front_z-0.12),Vector3(0.38,canopy_eave,0.38))
-	_collision(body,"Bag",Vector3(bag_x,1.34,bag_z),Vector3(0.58,1.22,0.58))
-	_collision(body,"Bench",Vector3(bag_x,0.26,z+0.4),Vector3(1.45,0.52,0.48))
+		_collision(body,"PostLeft" if side < 0 else "PostRight",Vector3(side*(x-0.28),canopy_eave*0.5,front_z-0.12),Vector3(0.38,canopy_eave,0.38), &"wood")
+	_collision(body,"Bag",Vector3(bag_x,1.34,bag_z),Vector3(0.58,1.22,0.58), &"fabric")
+	_collision(body,"Bench",Vector3(bag_x,0.26,z+0.4),Vector3(1.45,0.52,0.48), &"wood")
 	if has_node("InteractionPoint"):
 		$InteractionPoint.position = Vector3(bag_x,0.75,bag_z+0.8)
 	set_meta("triangle_count",_triangle_count+2)

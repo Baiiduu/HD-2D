@@ -18,6 +18,8 @@ func settle(count := 4) -> void:
 
 func run() -> void:
 	var world: Node3D = load("res://scenes/world/world.tscn").instantiate()
+	world.get_node("WorldMainMenu").show_on_world_start = false
+	world.get_node("WorldEntry").preview_on_direct_run = false
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("WavePrototype/RunGrowth").enabled = false
 	# Keep the captured contact geometry independent of later map-scale edits.
@@ -32,6 +34,7 @@ func run() -> void:
 	player.global_position = wave.global_position + Vector3.UP*0.03
 	var skills: RunSkillManager = wave.get_node("RunSkillManager")
 	# This fixture requires mirror_mark, independent of the random opening draw.
+	skills.set_skill_available(&"mirror_mark", true)
 	wave.skill_draft.initial_cards_per_draw = skills.skill_paths.size()
 	check(wave.start_run(), "Actual mirror-skill challenge can start")
 	wave.skill_draft.initial_choice.close()

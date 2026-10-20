@@ -98,6 +98,9 @@ func air_checks(feedback: Variant) -> void:
 	var air: Variant = feedback.get("_air")
 	check(air != null and air.visible and air.amount > 0.0, "高速飞行显示连续绕流表面")
 	if air == null: return
+	check(air.mesh is ArrayMesh, "划过的空气使用开放风片，不能形成圆柱包裹表面")
+	var air_shader: Shader = air.material_override.shader
+	check(not air_shader.code.contains("hint_screen_texture") and not air_shader.code.contains("SCREEN_UV"), "气流不读取或重画背景，避免波纹镜面")
 	check(not feedback._flow.emitting, "空气模式关闭独立笔触粒子")
 	check(air.global_basis.z.is_equal_approx(body.direction), "空气绕流沿实际飞行方向定向")
 	var phase: float = air.phase
@@ -131,5 +134,5 @@ func profile_checks() -> void:
 	check(formal.get("speed_flow_texture") != formal.get("departure_airflow_texture"), "持续速度流线使用独立的干净纹理，不再借用反弹喷气")
 	check(formal.get("speed_flow_mode") == 1, "World 使用连续空气绕流，不用固定流线条数描述空气")
 	var entries: Array[Dictionary] = preload("res://addons/parameter_hub/catalog.gd").new().collect(player)
-	for property in ["surface_wave_enabled", "surface_wave_texture", "surface_wave_radius", "surface_wave_seconds", "surface_wave_energy", "speed_flow_enabled", "speed_flow_mode", "speed_air_distortion_pixels", "speed_flow_texture", "speed_flow_texture_region", "speed_flow_opacity", "speed_flow_length", "speed_flow_lifetime", "speed_flow_radius"]:
+	for property in ["surface_wave_enabled", "surface_wave_texture", "surface_wave_radius", "surface_wave_seconds", "surface_wave_energy", "speed_flow_enabled", "speed_flow_mode", "speed_flow_texture", "speed_flow_texture_region", "speed_flow_opacity", "speed_flow_length", "speed_flow_lifetime", "speed_flow_radius"]:
 		check(entries.any(func(item): return item.property == property and item.common and item.label != property), "参数总览提供中文入口：" + property)

@@ -39,6 +39,24 @@ func _ready() -> void:
 		else: _prepare_flow()
 	set_process(false)
 
+func prepare_feedback() -> void:
+	var settings := _player.action_visuals
+	if not settings: return
+	if settings.speed_flow_enabled:
+		if settings.speed_flow_mode == 1:
+			_prepare_air()
+			_air.synchronize(_player.sprite, Vector3.FORWARD, 1.0, 0.0, settings)
+			_air.stop()
+		else: _prepare_flow()
+	if settings.surface_wave_enabled and settings.surface_wave_texture:
+		var reserve: Array[Decal] = []
+		for index in MAX_WAVES:
+			var decal := _acquire()
+			decal.texture_emission = settings.surface_wave_texture
+			decal.hide()
+			reserve.append(decal)
+		_pool.append_array(reserve)
+
 func _launched(_direction: Vector3, _speed: float, _charge: float) -> void:
 	var settings := _player.action_visuals
 	if settings and (settings.speed_rim_enabled or settings.speed_flow_enabled): set_process(true)
@@ -112,7 +130,7 @@ func _advance_flow(delta: float, settings: PlayerActionVisuals) -> void:
 	var target := 0.0
 	if settings.speed_flow_enabled and settings.speed_flow_texture and _body.flying:
 		var low := maxf(0.0, settings.speed_rim_min_speed)
-		target = smoothstep(low, maxf(low + 0.1, settings.motion_reference_speed), _body.flight_speed)
+		target = smoothstep(low, maxf(low + 0.1, settings.motion_reference_speed), _body.movement_speed)
 	_flow_amount = lerpf(_flow_amount, target, 1.0 - exp(-delta / 0.045))
 	if target <= 0.0: _flow_amount = 0.0
 	if _flow_amount > 0.01:
@@ -160,7 +178,7 @@ func _advance_air(delta: float, settings: PlayerActionVisuals) -> void:
 	var target := 0.0
 	if settings.speed_flow_enabled and _body.flying:
 		var low := maxf(0.0, settings.speed_rim_min_speed)
-		target = smoothstep(low, maxf(low + 0.1, settings.motion_reference_speed), _body.flight_speed)
+		target = smoothstep(low, maxf(low + 0.1, settings.motion_reference_speed), _body.movement_speed)
 	var response := 0.045 if target > _flow_amount else maxf(0.02, settings.speed_flow_lifetime * 0.35)
 	_flow_amount = lerpf(_flow_amount, target, 1.0 - exp(-delta / response))
 	if target == 0.0 and _flow_amount < 0.002: _flow_amount = 0.0
@@ -191,7 +209,7 @@ func advance(delta: float) -> void:
 	if settings.speed_rim_enabled and _body.flying:
 		var low := maxf(0.0, settings.speed_rim_min_speed)
 		var high := maxf(low + 0.1, settings.motion_reference_speed)
-		target = smoothstep(low, high, _body.flight_speed) * maxf(0.0, settings.speed_rim_strength)
+		target = smoothstep(low, high, _body.movement_speed) * maxf(0.0, settings.speed_rim_strength)
 	rim_amount = lerpf(rim_amount, target, 1.0 - exp(-delta / (0.025 if target > rim_amount else 0.055)))
 	if not settings.speed_rim_enabled or (target == 0.0 and rim_amount < 0.002): rim_amount = 0.0
 	_apply_rim(Vector4(rim_amount, settings.speed_rim_width_pixels, _clock, 0.0), _body.direction, settings.speed_rim_color)

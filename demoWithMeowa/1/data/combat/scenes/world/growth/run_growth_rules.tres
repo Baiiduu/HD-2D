@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="RunGrowthRules" format=3]
+
+[ext_resource type="Script" path="res://scripts/growth/run_growth_rules.gd" id="rules"]
+
+[resource]
+script = ExtResource("rules")
+resource_name = "正式地图成长与续航"

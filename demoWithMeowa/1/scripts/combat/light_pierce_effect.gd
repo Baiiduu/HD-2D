@@ -84,6 +84,11 @@ func _ready() -> void:
 	add_child(_light)
 	stop()
 
+func prepare_feedback() -> void:
+	if _impact_pool.size() >= 4: return
+	for index in 4: show_hit(Vector3.ZERO)
+	stop()
+
 func launch(origin: Vector3, direction: Vector3, distance: float, manual_flight := false) -> void:
 	if not is_node_ready(): return
 	stop()
@@ -112,7 +117,7 @@ func advance_flight(distance: float, ended := false) -> void:
 		_flight_ended = true
 	_update_flight(get_viewport().get_camera_3d())
 
-func show_hit(ground_position: Vector3) -> void:
+func show_hit(ground_position: Vector3, size_multiplier := 1.0) -> void:
 	if not is_node_ready() or not impact_frames or not impact_frames.has_animation(impact_animation): return
 	if impact_frames.get_frame_count(impact_animation) == 0: return
 	var impact: Dictionary
@@ -125,13 +130,14 @@ func show_hit(ground_position: Vector3) -> void:
 		impact = _impact_pool.pop_back()
 	impact.position = ground_position + Vector3.UP * impact_height
 	impact.age = 0.0
+	impact.width = impact_width * size_multiplier
 	impact.mesh.global_position = impact.position
 	var camera := get_viewport().get_camera_3d()
 	if camera: impact.mesh.global_basis = camera.global_basis
 	var texture := impact_frames.get_frame_texture(impact_animation, 0)
 	if texture and (not texture is AtlasTexture or texture.atlas):
 		_set_frame(impact.material, texture)
-		_set_size(impact.mesh, impact_width, texture.get_size())
+		_set_size(impact.mesh, impact.width, texture.get_size())
 	_style(impact.material, 1.0)
 	impact.mesh.visible = texture != null and (not texture is AtlasTexture or texture.atlas != null)
 	_impacts.append(impact)
@@ -177,7 +183,7 @@ func _process(delta: float) -> void:
 			continue
 		impact.mesh.visible = true
 		_set_frame(impact.material, texture)
-		_set_size(impact.mesh, impact_width, texture.get_size())
+		_set_size(impact.mesh, impact.width, texture.get_size())
 		impact.mesh.global_position = impact.position
 		if camera: impact.mesh.global_basis = camera.global_basis
 		_style(impact.material, 1.0 - smoothstep(0.55, 1.0, progress))

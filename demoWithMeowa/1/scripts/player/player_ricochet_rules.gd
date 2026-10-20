@@ -38,6 +38,10 @@ extends Resource
 @export_group("偏心回旋（试玩）")
 ## 接群一次后自动沿外围持续绕行，自动朝沿途怪物出剑；右键主动脱离。
 @export var eccentric_enabled := false
+## 只降低持续环绕的实际移速，剩余弹射动能仍正常耗减；1 保留原移速。
+@export_range(0.2, 1.0, 0.05) var orbit_speed_ratio := 1.0
+@export_range(0.0, 0.5, 0.01, "suffix:s") var orbit_enter_seconds := 0.15
+@export_range(0.0, 0.5, 0.01, "suffix:s") var orbit_exit_seconds := 0.12
 ## 首次接入所需的相连成员数；设为 1 时单怪也可形成持续绕行。
 @export_range(1, 3, 1) var eccentric_minimum_members := 3
 ## 仅可形成持续环绕的目标提前捕获；回退普通短弧仍使用原接群距离。
@@ -92,6 +96,19 @@ extends Resource
 func coast_seconds(speed: float) -> float:
 	return maxf(0.0, speed - minimum_bounce_speed) / flight_deceleration
 
+func orbit_blend_after(blend: float, orbiting: bool, seconds: float) -> float:
+	if orbit_speed_ratio >= 1.0: return 0.0
+	var target := 1.0 if orbiting else 0.0
+	var duration := orbit_enter_seconds if orbiting else orbit_exit_seconds
+	return move_toward(blend, target, maxf(0.0, seconds) / duration) if duration > 0.0 else target
+
+func orbit_motion_ratio(blend: float) -> float:
+	return lerpf(1.0, orbit_speed_ratio, smoothstep(0.0, 1.0, blend))
+
+## 实际运动与只读预览共用时间分段，避免过渡期间用长距离换算出错误耗时。
+func orbit_motion_seconds(seconds: float, orbiting: bool, blend: float) -> float:
+	return minf(seconds, 1.0 / 60.0) if orbit_speed_ratio < 1.0 and (orbiting or blend > 0.0) else seconds
+
 func coast_distance(speed: float, seconds: float) -> float:
 	var step := clampf(seconds, 0.0, coast_seconds(speed))
 	return maxf(0.0, speed * step - 0.5 * flight_deceleration * step * step)
@@ -124,6 +141,9 @@ static func segment_time(fraction: float, seconds: float, initial_speed: float, 
 	return 2.0 * distance / maxf(initial_speed + sqrt(maxf(0.0, initial_speed * initial_speed - 2.0 * deceleration * distance)), 0.000001)
 
 func validation_error() -> String:
+	if not is_finite(orbit_speed_ratio) or orbit_speed_ratio < 0.2 or orbit_speed_ratio > 1.0: return "环绕移速比例须在 0.2～1 之间"
+	for value in [orbit_enter_seconds, orbit_exit_seconds]:
+		if not is_finite(value) or value < 0.0: return "环绕进出过渡时间须为有限非负数"
 	for value in [full_charge_seconds, minimum_launch_speed, maximum_launch_speed, minimum_bounce_speed, flight_deceleration, ground_height_tolerance, push_radius, push_seconds, push_height_tolerance, push_group_link_distance, push_group_search_radius]:
 		if not is_finite(value) or value <= 0.0: return "蓄力、飞行、地形与拨怪参数须为有限正数"
 	for value in [recovery_seconds, cooldown_seconds, push_initial_speed, push_stun_seconds, push_chain_min_speed, push_group_edge_margin, bounce_speed_cost]:

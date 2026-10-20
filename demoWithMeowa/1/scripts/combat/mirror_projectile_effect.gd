@@ -18,6 +18,14 @@ func _ready() -> void:
 	_head = _mesh(_head_mesh, _head_material)
 	stop()
 
+func prepare_feedback() -> void:
+	if not _idle_ghosts.is_empty(): return
+	launch(Vector3.ZERO, Vector3.RIGHT, 1.0)
+	move_to(Vector3.RIGHT * 0.5, Vector3.RIGHT)
+	show_contact(Vector3.ZERO)
+	stop()
+	for spark in _sparks: spark.prepare_feedback()
+
 func launch(point: Vector3, direction: Vector3, _strength_value: float) -> void:
 	stop()
 	_position = point

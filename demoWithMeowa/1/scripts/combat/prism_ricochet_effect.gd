@@ -48,6 +48,13 @@ func _ready() -> void:
 	add_child(_light)
 	stop()
 
+func prepare_feedback() -> void:
+	if _feedback: _feedback.prepare_feedback()
+	if _pool.is_empty():
+		launch(Vector3.ZERO, Vector3.RIGHT, 1.0)
+		move_to(Vector3.RIGHT, Vector3.RIGHT)
+		stop()
+
 func launch(position_on_path: Vector3, direction: Vector3, strength: float) -> void:
 	stop()
 	_position = position_on_path

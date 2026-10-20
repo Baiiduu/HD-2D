@@ -1,6 +1,8 @@
 @tool
 extends Node3D
 
+const COLLISION_SURFACE := preload("res://scripts/core/collision_surface.gd")
+
 const ART := "res://assets/meowa/home/"
 const MATERIALS := ["plaster", "brick", "roof", "wood", "stone", "glass"]
 const LUMINA_SURFACE := preload("res://shaders/environment/lumina_building.gdshader")
@@ -376,9 +378,9 @@ func _chimney(x: float, z: float) -> void:
 		var size := Vector3(0.14,0.15,0.76) if offset.x != 0 else Vector3(0.5,0.15,0.14)
 		_box(center + offset + Vector3.UP * 0.92, size, "stone")
 
-func _collision(parent: Node, label: String, center: Vector3, size: Vector3) -> void:
+func _collision(parent: Node, label: String, center: Vector3, size: Vector3, surface: StringName = &"") -> void:
 	var node := CollisionShape3D.new()
-	node.set_meta("movement_surface", GroundAudioSampler.Surface.WOOD if label == "Porch" else GroundAudioSampler.Surface.STONE)
+	COLLISION_SURFACE.mark(node, surface if surface != &"" else (&"wood" if label == "Porch" else &"stone"))
 	node.name = label
 	node.position = center
 	var shape := BoxShape3D.new()

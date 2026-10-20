@@ -14,6 +14,7 @@ def build_engine(settings: Settings):
         # A writer waiting on the board lock must see the previous writer's
         # committed receipts and best scores in its subsequent statements.
         options["isolation_level"] = "READ COMMITTED"
+        options.update(pool_size=settings.database_pool_size, max_overflow=0)
     if url.get_backend_name() == "sqlite":
         options["connect_args"] = {"check_same_thread": False, "timeout": 30}
         if url.database in {None, "", ":memory:"}:

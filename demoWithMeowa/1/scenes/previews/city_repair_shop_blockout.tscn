@@ -1,0 +1,137 @@
+[gd_scene format=3 uid="uid://biy402uovxx17"]
+
+[ext_resource type="Script" uid="uid://c4p56r7qm7y5b" path="res://scripts/camera/follow_camera.gd" id="camera"]
+[ext_resource type="Texture2D" uid="uid://buw0mlg2psmkq" path="res://assets/finalart/idle/idle_01.png" id="character"]
+[ext_resource type="Script" uid="uid://miakc2sqxd25" path="res://scripts/previews/city_repair_shop_preview.gd" id="preview"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/city_repair_shop.tscn" id="repair"]
+[ext_resource type="PackedScene" path="res://scenes/buildings/convenience_24.tscn" id="store"]
+
+[sub_resource type="StandardMaterial3D" id="ground_material"]
+albedo_color = Color(0.29, 0.31, 0.35, 1)
+metallic_specular = 0.0
+
+[sub_resource type="PlaneMesh" id="ground_mesh"]
+size = Vector2(24, 24)
+
+[sub_resource type="Environment" id="environment"]
+background_mode = 1
+background_color = Color(0.16, 0.18, 0.22, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.83, 0.88, 1, 1)
+ambient_light_energy = 0.5
+reflected_light_source = 2
+ssao_enabled = true
+ssao_radius = 0.4
+ssao_intensity = 1.1
+
+[sub_resource type="StyleBoxFlat" id="panel_style"]
+bg_color = Color(0.035, 0.045, 0.065, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.52, 0.49, 0.4, 0.8)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="CityRepairShopBlockoutPreview" type="Node3D" unique_id=1526319926]
+script = ExtResource("preview")
+
+[node name="Samples" type="Node3D" parent="." unique_id=1444143943]
+
+[node name="CityRepairShop" parent="Samples" unique_id=510937 instance=ExtResource("repair")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 2.05, 0, 2.05)
+
+[node name="CurrentConvenienceStore" parent="Samples" unique_id=1660217688 instance=ExtResource("store")]
+transform = Transform3D(-2.1855694e-08, 0, 0.5, 0, 0.5, 0, -0.5, 0, -2.1855694e-08, -2.05, 0, -2.05)
+
+[node name="RepairScaleCharacter" type="Sprite3D" parent="Samples" unique_id=1887405418]
+transform = Transform3D(0.9, 0, 0, 0, 0.9, 0, 0, 0, 0.9, 3.95, 0.542, 2.05)
+pixel_size = 0.02
+billboard = 2
+shaded = true
+alpha_cut = 1
+texture_filter = 0
+texture = ExtResource("character")
+
+[node name="StoreScaleCharacter" type="Sprite3D" parent="Samples" unique_id=399730980]
+transform = Transform3D(0.9, 0, 0, 0, 0.9, 0, 0, 0, 0.9, -0.15, 0.542, -2.05)
+pixel_size = 0.02
+billboard = 2
+shaded = true
+alpha_cut = 1
+texture_filter = 0
+texture = ExtResource("character")
+
+[node name="Ground" type="MeshInstance3D" parent="." unique_id=2092166911]
+material_override = SubResource("ground_material")
+mesh = SubResource("ground_mesh")
+
+[node name="Environment" type="WorldEnvironment" parent="." unique_id=1290803309]
+environment = SubResource("environment")
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1278555255]
+transform = Transform3D(0.8480481, 0.381192, -0.36811286, 0, 0.6946584, 0.7193398, 0.52991927, -0.6100347, 0.58910376, 0, 0, 0)
+light_color = Color(1, 0.96, 0.89, 1)
+light_angular_distance = 0.7
+shadow_enabled = true
+directional_shadow_max_distance = 45.0
+
+[node name="Focus" type="Node3D" parent="." unique_id=1652157053]
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1401555291 node_paths=PackedStringArray("target")]
+current = true
+fov = 28.0
+far = 80.0
+script = ExtResource("camera")
+target = NodePath("../Focus")
+distance = 30.0
+pitch_degrees = 30.627
+yaw_degrees = 135.0
+dof_enabled = false
+
+[node name="ReviewUI" type="CanvasLayer" parent="." unique_id=1160300710]
+
+[node name="Panel" type="PanelContainer" parent="ReviewUI" unique_id=1241623382]
+offset_left = 20.0
+offset_top = 20.0
+theme_override_styles/panel = SubResource("panel_style")
+
+[node name="Margin" type="MarginContainer" parent="ReviewUI/Panel" unique_id=1521102787]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="Rows" type="VBoxContainer" parent="ReviewUI/Panel/Margin" unique_id=438742334]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="Title" type="Label" parent="ReviewUI/Panel/Margin/Rows" unique_id=44073891]
+layout_mode = 2
+theme_override_font_sizes/font_size = 23
+text = "修理铺 · 统一风格检查"
+
+[node name="Description" type="Label" parent="ReviewUI/Panel/Margin/Rows" unique_id=1105562150]
+layout_mode = 2
+text = "修理铺 / 原便利店（正式缩放）与人物对照
+斜面采光天窗 · 顶层检修区 · 共用 1024 图集。Q / E 旋转查看。"
+
+[node name="CurrentView" type="Label" parent="ReviewUI/Panel/Margin/Rows" unique_id=407402183]
+layout_mode = 2
+text = "正式地图距离 · FOV 28° / 30m / 俯角 30.627°"
+
+[node name="Views" type="HBoxContainer" parent="ReviewUI/Panel/Margin/Rows" unique_id=1063472576]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="GameDistance" type="Button" parent="ReviewUI/Panel/Margin/Rows/Views" unique_id=18000443]
+layout_mode = 2
+text = "正式距离 30m"
+
+[node name="CloseView" type="Button" parent="ReviewUI/Panel/Margin/Rows/Views" unique_id=1200796505]
+layout_mode = 2
+text = "近看维修铺 12m"

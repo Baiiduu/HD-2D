@@ -20,13 +20,15 @@ func run() -> void:
 	for property in ["follow_enabled", "follow_max_speed", "follow_max_lag", "edge_pan_speed", "edge_pan_margin"]:
 		required.append("MapEffects/Camera3D:" + property)
 	required.append("WavePrototype/WaveHUD:font_size")
+	for property in ["combo_enabled", "combo_thresholds", "combo_multipliers", "combo_grace_seconds", "combo_decay_seconds", "burst_enabled", "burst_thresholds", "burst_rewards"]:
+		required.append("WavePrototype/RunScore → 规则资源:" + property)
 	required.append("WavePresentation:enabled")
 	required.append("WavePresentation → settings:opening_seconds")
 	for property in ["compact_clear_enabled", "clear_title_size", "clear_title_enter_seconds", "clear_title_exit_seconds", "rest_hint_font_size", "rest_hint_bottom_margin"]:
 		required.append("WavePresentation → settings:" + property)
 	for property in ["animated_opening_enabled", "opening_title_size", "opening_title_top_ratio", "opening_title_enter_seconds", "opening_title_exit_seconds", "opening_title_travel_pixels"]:
 		required.append("WavePresentation → settings:" + property)
-	for property in ["enabled", "occluded_opacity", "detection_interval", "occlusion_fade_seconds", "restore_seconds", "restore_delay"]:
+	for property in ["enabled", "include_scene_props", "occluded_opacity", "detection_interval", "occlusion_fade_seconds", "restore_seconds", "restore_delay"]:
 		required.append("BuildingOcclusion:" + property)
 	for property in ["finish_shot_enabled", "finish_shot_seconds", "finish_slow_scale", "finish_zoom_scale", "finish_contrast"]:
 		required.append("WavePresentation → settings:" + property)
@@ -34,6 +36,12 @@ func run() -> void:
 	required.append("WavePrototype/SkillDraft:initial_cards_per_draw")
 	for system in ["RunGrowth", "SkillDraft", "RunSkillManager"]: required.append("WavePrototype/" + system + ":enabled")
 	required.append("BattleConfiguration → 场景战斗配置:crowd_clearance_distance")
+	required.append("BattleConfiguration → 场景战斗配置:pursuit_throttle_threshold")
+	for property in ["orbit_speed_ratio", "orbit_enter_seconds", "orbit_exit_seconds"]:
+		required.append("BattleConfiguration → 场景战斗配置 → 人物本体弹射规则:" + property)
+	var orbit_parameters := ["orbit_shot_enabled", "orbit_shot_offset_ratio", "orbit_shot_pitch_degrees", "orbit_enter_magnification", "orbit_hold_magnification", "orbit_closeup_enter_seconds", "orbit_closeup_exit_hold_seconds", "orbit_closeup_exit_seconds", "orbit_shot_seconds", "orbit_shot_interval", "orbit_exit_minimum_seconds"]
+	for property in orbit_parameters:
+		required.append("BattleConfiguration → 场景战斗配置 → 弹射镜头反馈配置:" + property)
 	for property in ["eccentric_minimum_members", "crowd_deflection_enabled", "crowd_contact_radius", "crowd_turn_distance", "crowd_exit_outward", "crowd_speed_retention", "crowd_release_clearance"]:
 		required.append("BattleConfiguration → 场景战斗配置 → 人物本体弹射规则:" + property)
 	required.append("MapEffects/GameAudio:max_voices")
@@ -85,15 +93,26 @@ func run() -> void:
 	required.append("BattleConfiguration → 场景战斗配置 → growth_definitions[2]:max_level")
 	for property in ["diminishing_after", "breakthrough_every", "breakthrough_multiplier", "required_levels", "extra_effects"]:
 		required.append("BattleConfiguration → 场景战斗配置 → growth_definitions[0]:" + property)
-	required.append("BattleConfiguration → 场景战斗配置 → growth_definitions[5] → extra_effects[0]:bonus_per_level")
+	required.append("BattleConfiguration → 场景战斗配置 → growth_definitions[8] → extra_effects[0]:bonus_per_level")
+	for property in ["epic_every", "orbit_damage_reduction", "sword_heal_fraction", "sword_heal_cap"]:
+		required.append("BattleConfiguration → 场景战斗配置 → 成长与基础续航规则:" + property)
 	for property in ["damage", "attack_interval", "mark_duration", "reflection_limit", "match_player_pixel_density"]:
 		required.append("WavePrototype/MirrorMarkAutoAttack:" + property)
 	var failures: Array[String] = []
+	var cadence_key := "BattleConfiguration → 场景战斗配置:pursuit_throttle_threshold"
+	if found.has(cadence_key) and (not found[cadence_key].common or found[cadence_key].label == "pursuit_throttle_threshold" or found[cadence_key].category != "战斗与成长"):
+		failures.append("普通追击降频门槛须提供常用中文入口")
 	if not is_equal_approx(scene.get_node("Player").crowd_clearance_distance, 0.12): failures.append("formal map clearance must start at 0.12 m")
 	for name in required:
 		if not found.has(name): failures.append(name)
+	for property in ["combo_multipliers", "combo_grace_seconds", "burst_rewards"]:
+		var name: String = "WavePrototype/RunScore → 规则资源:" + property
+		if found.has(name) and (not found[name].common or found[name].category != "战斗与成长" or found[name].label == property): failures.append("计分参数须进入战斗常用中文入口：" + name)
 	for name in charge_parameters:
 		if found.has(name) and (not found[name].common or found[name].label == found[name].property): failures.append("charge feedback must expose a common Chinese parameter: " + name)
+	for property in orbit_parameters:
+		var name: String = "BattleConfiguration → 场景战斗配置 → 弹射镜头反馈配置:" + property
+		if found.has(name) and (not found[name].common or found[name].label == property or found[name].category != "视觉"): failures.append("orbit shots must expose common Chinese visual parameters: " + name)
 	if found.has("MapEffects/ArtDirection:street_fill_shadows_enabled"):
 		var fill_shadow_entry: Dictionary = found["MapEffects/ArtDirection:street_fill_shadows_enabled"]
 		if not fill_shadow_entry.common or fill_shadow_entry.category != "视觉" or fill_shadow_entry.label != "路灯全向补光阴影开关": failures.append("fill shadow switch must be a common visual parameter in Chinese")

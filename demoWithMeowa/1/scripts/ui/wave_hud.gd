@@ -29,6 +29,7 @@ var _rest_next: Label
 var _start_hint: HBoxContainer
 var _start_key: Label
 var _start_caption: Label
+var _has_settings := false
 
 @export_group("布局与文字")
 ## 到画面上缘的距离，逻辑像素；始终水平居中。
@@ -54,6 +55,7 @@ var _start_caption: Label
 func _ready() -> void:
 	_build_rest_hint()
 	_build_start_hint()
+	_has_settings = session != null and session.get_parent().has_node("GameSettingsUI")
 	get_viewport().size_changed.connect(_update_presentation)
 	_update_presentation()
 	_refresh()
@@ -106,12 +108,12 @@ func _refresh() -> void:
 			_root.visible = _root.visible and session.can_start_run()
 			_set_text("准备" + session.wave_label(1), "按 %s 开始模拟" % key if session.is_horde_simulation() else "按 %s 选择初始技能" % key)
 		WavePrototype.Phase.BATTLE:
-			_set_text(session.wave_label(session.wave), "真实伤害飘字 · 怪物不扣血 · 人物免伤 · ESC 结束模拟" if session.is_horde_simulation() else "")
+			_set_text(session.wave_label(session.wave), ("真实伤害飘字 · 怪物不扣血 · 人物免伤 · ESC 设置" if _has_settings else "真实伤害飘字 · 怪物不扣血 · 人物免伤 · ESC 结束模拟") if session.is_horde_simulation() else "")
 		WavePrototype.Phase.REST:
 			_set_text(session.wave_label(session.completed_waves) + " · 已完成", "休整 · 按 %s 开始第 %d 波" % [key, session.wave + 1])
 		WavePrototype.Phase.RESULT:
 			var title := "挑战完成 · %d / %d 波" % [session.completed_waves, session.wave_count()] if session.outcome == WavePrototype.Outcome.VICTORY else session.result_reason
-			_set_text(title, "%s 重试 · ESC 返回" % OS.get_keycode_string(session.retry_key))
+			_set_text(title, ("%s 重试 · ESC 设置" if _has_settings else "%s 重试 · ESC 返回") % OS.get_keycode_string(session.retry_key))
 
 func _set_text(title: String, hint: String) -> void:
 	if _title.text != title: _title.text = title
@@ -143,7 +145,7 @@ func _rest_label(text: String, key := false) -> Label:
 	label.text = text
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_font_override("font", preload("res://assets/fonts/press_start_2p/PressStart2P-Regular.ttf") if key else preload("res://assets/fonts/fusion_pixel/fusion-pixel-12px-monospaced-zh_hans.ttf"))
+	label.add_theme_font_override("font", preload("res://assets/fonts/press_start_2p/PressStart2P-Regular.ttf") if key else preload("res://assets/fonts/maoken_assorted_sans/MaokenAssortedSans.ttf"))
 	label.add_theme_font_size_override("font_size", 16 if key else 18)
 	label.add_theme_color_override("font_outline_color", Color(0.025, 0.035, 0.055, 0.9))
 	label.add_theme_constant_override("outline_size", 2)

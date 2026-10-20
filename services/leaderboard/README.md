@@ -1,7 +1,11 @@
 # 排行榜接口
 
 独立于 Godot 的 FastAPI 服务，提供榜单管理、最好成绩提交、分页榜单和个人排名。
-正式部署选用 PostgreSQL 18，本地用 SQLite；未绑定计分公式、登录平台或游戏结算。
+正式部署选用 PostgreSQL 18，本地用 SQLite，独立于计分公式与登录平台。
+
+World 已接入匿名试玩榜：结算后手动提交、查询个人最好成绩与分页排行，主菜单和游戏内「设置 → 排行榜」共用入口。客户端上报分数尚未做正式审核；设备凭证只允许写入自己的试玩成绩，不包含管理密钥。
+
+Linux 部署、版本打包、备份和迁移工具在 `deploy/`，不依赖 ECS SDK 或 Workbench。公网入口为独立端口 HTTPS，API 和 PostgreSQL 只监听本机；配置、证书和数据库保留在版本目录之外。部署依赖使用 `requirements-linux.lock`，不替换系统 Python。
 
 Windows 本地启动（Python 3.13+）：
 

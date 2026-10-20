@@ -18,6 +18,7 @@ const SYSTEMS := preload("res://scripts/core/game_system_settings.gd")
 @export_group("成长连接与内容")
 @export var session: Node3D
 @export var rules: ExperienceRules
+@export var progression_rules: RunGrowthRules
 @export var pickup_scene: PackedScene
 ## 静态候选备用；正式地图通过动态来源生成武器与增益选项。
 @export var choice_options: Array[GrowthChoiceOption] = []
@@ -143,6 +144,7 @@ func prepare_draw() -> void:
 	if _draft_started: return
 	_draft_started = true
 	rerolls_left = rerolls_per_run
+	_draw_pool.free_selection = progression_rules != null
 	_draw_pool.reset(draw_seed)
 	_previous_draw.clear()
 
@@ -241,6 +243,15 @@ func _try_open_choice() -> void:
 			push_error("RunGrowth: 成长池需要有效且 ID 唯一的候选；经验保留，未冻结战斗。")
 			session.set_combat_frozen(false)
 			return
+		if progression_rules:
+			_candidate_pool = progression_rules.candidates(_candidate_pool, state.next_choice_level())
+			for index in _candidate_pool.size():
+				var source := _candidate_pool[index]
+				var option := source.duplicate() as GrowthChoiceOption
+				option.growth_level = source.growth_level
+				option.ricochet_growth = source.ricochet_growth
+				option.hide_category = true
+				_candidate_pool[index] = option
 		if _candidate_pool.any(func(option: GrowthChoiceOption): return option.enabled): break
 		var skipped_level := state.next_choice_level()
 		state.complete_choice()
@@ -252,6 +263,7 @@ func _try_open_choice() -> void:
 	choice_options = draw_options(_candidate_pool, cards_per_draw, _previous_draw)
 	_choice_level = state.next_choice_level()
 	choice_ui.title = "等级 %d · 成长选择" % _choice_level
+	if progression_rules and progression_rules.is_epic_level(_choice_level): choice_ui.title = "等级 %d · 史诗成长" % _choice_level
 	choice_ui.confirm_text = "领取成长"
 	choice_ui.choice_hint = "本次领取一张" if state.pending_choices == 1 else "本次领取一张 · 还有 %d 次成长待选" % (state.pending_choices - 1)
 	if not choice_ui.present_choices(choice_options):

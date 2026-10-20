@@ -1,8 +1,10 @@
-[gd_resource type="Resource" script_class="WaveSpawnShadowSettings" format=3]
+[gd_resource type="Resource" script_class="WaveSpawnShadowSettings" format=3 uid="uid://blwq8cffusd8"]
 
-[ext_resource type="Script" path="res://scripts/combat/wave_spawn_shadow_settings.gd" id="1_settings"]
+[ext_resource type="Script" uid="uid://bqhfqjijh5kdu" path="res://scripts/combat/wave_spawn_shadow_settings.gd" id="1_settings"]
 
 [resource]
 resource_name = "怪物落点剪影预告"
 script = ExtResource("1_settings")
 enabled = true
+warning_seconds = 1.4
+fade_seconds = 0.27

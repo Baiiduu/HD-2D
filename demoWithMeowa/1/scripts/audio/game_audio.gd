@@ -3,6 +3,8 @@ extends Node3D
 
 ## 已发生的尸体演出阶段；不由音效层推算或施加物理动作。
 signal death_presentation(stage: StringName, point: Vector3)
+## 实际尸体快照负责起落时机；声音跟随该主体，不持有已死亡怪物。
+signal death_airborne(subject: Node3D, airborne: bool)
 
 enum Kind { ATTACK, HIT, DEATH, DANGER, HURT }
 const PRIORITIES := [40, 10, 5, 80, 100]
@@ -13,6 +15,8 @@ const BUSES := [&"Combat", &"Music", &"Ambience", &"UI", &"Movement"]
 @export var camera: Camera3D
 @export var session: Node
 @export var balance: CombatAudioBalance
+## 地图的素材停用清单也约束直接持有音源的技能／怪物；空值保留兼容行为。
+@export var sound_selection: CoreSoundBank
 @export_group("全局战斗音效")
 @export var enabled := true:
 	set(value):
@@ -178,6 +182,7 @@ func request(event: Dictionary) -> AudioStreamPlayer3D:
 	_update_listener()
 	var source := event.get("source") as Node
 	var clips: Array = event.get("clips", [])
+	if sound_selection: clips = sound_selection.filter_clips(clips)
 	var position: Vector3 = event.get("position", Vector3.ZERO)
 	var cue: StringName = event.get("cue", &"")
 	var kind: int = clampi(event.get("kind", Kind.ATTACK), Kind.ATTACK, Kind.HURT)
@@ -328,6 +333,8 @@ func _apply_mix() -> void:
 	for index in BUSES.size(): values[index] += float(mix.bus_gains.get(String(BUSES[index]), 0.0))
 	values[1] += minf(_charge_music_duck, _kill_music_duck)
 	values[2] += minf(_charge_ambience_duck, _kill_ambience_duck)
+	var mute_offset := values.size()
+	for bus in BUSES: values.append(mix.is_bus_muted(bus))
 	if values == _mix_values: return
 	_mix_values = values
 	for index in BUSES.size():
@@ -338,6 +345,7 @@ func _apply_mix() -> void:
 			AudioServer.set_bus_name(bus, BUSES[index])
 			AudioServer.set_bus_send(bus, &"Master")
 		AudioServer.set_bus_volume_db(bus, values[index])
+		AudioServer.set_bus_mute(bus, values[mute_offset + index])
 	var combat := AudioServer.get_bus_index(&"Combat")
 	if AudioServer.get_bus_effect_count(combat) == 0: AudioServer.add_bus_effect(combat, AudioEffectCompressor.new())
 	var compressor := AudioServer.get_bus_effect(combat, 0) as AudioEffectCompressor

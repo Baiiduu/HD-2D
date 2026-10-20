@@ -3,9 +3,11 @@ extends Node
 
 @export var session: WavePrototype
 @export var rules: RunScoreRules
+@export var online_demo_enabled := false
 var state := RunScoreState.new()
 var _lethal := {}
-var _body: PlayerRicochet
+var _completed_wave_time := 0.0
+var _counting_wave := false
 
 func _ready() -> void:
 	if not rules: rules = RunScoreRules.new()
@@ -15,24 +17,28 @@ func _ready() -> void:
 	session.phase_changed.connect(_phase_changed)
 	session.wave_cleared.connect(state.record_wave)
 	session.enemy_spawned.connect(_watch)
-	_bind_body.call_deferred()
-
-func _bind_body() -> void:
-	if not is_instance_valid(session.player): return
-	_body = session.player.body_ricochet
-	if _body: _body.launched.connect(_launched)
 
 func _begin() -> void:
 	_lethal.clear()
+	_completed_wave_time = 0.0
+	_counting_wave = false
 	state.begin(int(session.get_run_state().run_id), rules, session.is_horde_simulation())
+	if online_demo_enabled: get_node("/root/LeaderboardClient").begin_run()
 
 func _phase_changed(phase: WavePrototype.Phase) -> void:
+	if _counting_wave: _completed_wave_time += session._wave_clock
+	_counting_wave = phase == WavePrototype.Phase.BATTLE
 	if phase != WavePrototype.Phase.READY: return
 	_lethal.clear()
+	_completed_wave_time = 0.0
 	state.reset()
 
-func _launched(_direction: Vector3, _speed: float, _charge: float) -> void:
-	state.begin_flight(_body.flight_serial)
+func combat_time() -> float:
+	return _completed_wave_time + (session._wave_clock if _counting_wave else 0.0)
+
+## Optional attack context for weapons; one allocation per sword/patch, not hit.
+func begin_attack() -> RunScoreState.AttackBatch:
+	return state.begin_attack(combat_time()) if session.combat_active() else null
 
 func _watch(enemy: WaveEnemy) -> void:
 	if not state.active or state.simulation: return
@@ -53,8 +59,9 @@ func _defeated(enemy: WaveEnemy, serial: int) -> void:
 	_lethal.erase(id)
 	if serial != state.run_id or not enemy.dead or not event: return
 	var allowed := enemy.definition != null and enemy.definition.enemy_id not in state.rules.performance_excluded
-	state.record_kill(id, state.rules.points_for(enemy.definition), allowed, event.source, event.flight_id)
+	state.record_kill(id, state.rules.points_for(enemy.definition), allowed, event.score_batch, combat_time())
 
 func _finish(_reason: String) -> void:
 	state.finish(session.completed_waves, session.outcome in [WavePrototype.Outcome.VICTORY, WavePrototype.Outcome.DEFEAT, WavePrototype.Outcome.RETREAT])
+	if online_demo_enabled: get_node("/root/LeaderboardClient").capture_run(state.snapshot())
 	_lethal.clear()

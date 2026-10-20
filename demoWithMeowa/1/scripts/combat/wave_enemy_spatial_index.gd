@@ -23,6 +23,24 @@ var _max_crowd_spacing := 0.0
 ## Birth, removal, activation, body and spacing changes always do.
 var _crowd_revision := 0
 var candidate_checks := 0
+## 地图独立开关；0 保留原频率。只调度普通决策，空间提交／命中查询始终实时。
+var pursuit_throttle_threshold := 0:
+	set(value):
+		value = maxi(0, value)
+		if pursuit_throttle_threshold == value: return
+		pursuit_throttle_threshold = value
+		pursuit_epoch += 1
+var pursuit_epoch := 0
+
+func pursuit_is_throttled() -> bool:
+	return pursuit_throttle_threshold > 0 and _entries.size() >= pursuit_throttle_threshold
+
+func pursuit_due(enemy: WaveEnemy) -> bool:
+	var slot: int = _entries.get(enemy, -1)
+	return not pursuit_is_throttled() or slot < 0 or slot % 2 == Engine.get_physics_frames() % 2
+
+func pursuit_separation(enemy: WaveEnemy, radius: float) -> Vector3:
+	return separation(enemy, radius)
 
 func _key(point: Vector3) -> Vector2i:
 	return Vector2i(floori(point.x / CELL_SIZE), floori(point.z / CELL_SIZE))
@@ -80,6 +98,7 @@ func remove(enemy: WaveEnemy) -> void:
 	_crowd_revision += 1
 
 func clear() -> void:
+	pursuit_epoch += 1
 	_cells.clear()
 	_entries.clear()
 	_owners.clear()

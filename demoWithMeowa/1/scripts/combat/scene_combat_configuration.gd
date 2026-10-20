@@ -4,6 +4,7 @@ extends Resource
 ## 每张地图拥有独立配置资源；共用战斗代码，不修改其它地图的平衡值。
 
 @export_group("人物基础战斗")
+@export var equipment_bonuses_enabled := true
 @export var ricochet_rules: PlayerRicochetRules
 @export var sword_rules: PlayerSwordRules
 @export var action_visuals: PlayerActionVisuals
@@ -22,10 +23,13 @@ extends Resource
 @export var centralized_enemy_updates := false
 @export var native_swarm_enabled := false
 @export var batch_crowd_enabled := true
+## 0 关闭；达到同场数量后，普通追击／避让按两组隔帧决策（60Hz 物理下为 30Hz）。
+@export_range(0, 4096, 1) var pursuit_throttle_threshold := 0
 @export var native_chase_enabled := true
 @export var slime_ground_movement_enabled := true
 @export_group("经验与成长")
 @export var experience_rules: ExperienceRules
+@export var growth_rules: RunGrowthRules
 @export var growth_definitions: Array[GrowthBuffDefinition] = []
 @export var skill_definitions: Array[CombatSkillDefinition] = []
 @export var cards_per_draw := 3
@@ -45,6 +49,7 @@ extends Resource
 ## 仅检查数据，不修改资源或实例化地图。空的可选槽与空池继续使用原有禁用／回退规则。
 func validation_errors() -> PackedStringArray:
 	var errors := PackedStringArray()
+	if pursuit_throttle_threshold < 0: errors.append("pursuit_throttle_threshold: 不能为负数")
 	for property in ["crowd_clearance_distance", "storm_damage", "storm_trigger_radius", "storm_spread_radius", "storm_max_propagation_radius", "storm_layer_interval"]:
 		var value: float = get(property)
 		if not is_finite(value) or value < 0.0: errors.append(property + ": 须为有限非负数")
@@ -54,7 +59,7 @@ func validation_errors() -> PackedStringArray:
 		if int(get(property)) < 1: errors.append(property + ": 须至少为 1")
 	for property in ["rerolls_per_run", "storm_spread_layers"]:
 		if int(get(property)) < 0: errors.append(property + ": 不能为负数")
-	for property in ["ricochet_rules", "sword_rules", "flight_trail_settings", "enemy_catalog", "default_enemy", "population_rules", "health_growth_rules", "spawn_shadow_settings"]:
+	for property in ["ricochet_rules", "sword_rules", "flight_trail_settings", "enemy_catalog", "default_enemy", "population_rules", "health_growth_rules", "spawn_shadow_settings", "growth_rules"]:
 		var resource: Resource = get(property)
 		if resource:
 			var error: String = resource.validation_error()

@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="WaveMeleeEnemyDefinition" format=3]
+[gd_resource type="Resource" script_class="WaveMeleeEnemyDefinition" format=3 uid="uid://cdl3rm50c677s"]
 
-[ext_resource type="PackedScene" path="res://scenes/enemies/slime.tscn" id="1_5ic0r"]
-[ext_resource type="Script" path="res://scripts/combat/wave_melee_enemy_definition.gd" id="2_05tl4"]
+[ext_resource type="PackedScene" uid="uid://nonwwjcstfxt" path="res://scenes/enemies/slime.tscn" id="1_5ic0r"]
+[ext_resource type="Script" uid="uid://by1kmgh56klxh" path="res://scripts/combat/wave_melee_enemy_definition.gd" id="2_05tl4"]
 
 [resource]
 script = ExtResource("2_05tl4")

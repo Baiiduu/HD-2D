@@ -1,6 +1,11 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/buildings/tree_planter.gd" id="planter"]
+[ext_resource type="Texture2D" path="res://assets/meowa/buildings/tree_planter/city_panels.png" id="panels"]
+[ext_resource type="Texture2D" path="res://assets/meowa/buildings/tree_planter/city_cap.png" id="cap"]
 
 [node name="TreePlanter" type="Node3D"]
 script = ExtResource("planter")
+lamp_enabled = false
+city_panel_texture = ExtResource("panels")
+cap_texture = ExtResource("cap")

@@ -1,15 +1,13 @@
 [gd_resource type="Resource" script_class="SceneCombatConfiguration" format=3 uid="uid://ds6biif7vb0p3"]
 
-[ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/wave_slime.tres" id="1_f4f21"]
+[ext_resource type="Resource" uid="uid://cdl3rm50c677s" path="res://data/combat/scenes/world/enemies/wave_slime.tres" id="1_f4f21"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/enemy_catalog.tres" id="2_t1aap"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/growth/experience_rules.tres" id="3_0s6kd"]
 [ext_resource type="Script" uid="uid://6cmgrb0pgn4m" path="res://scripts/growth/growth_buff_definition.gd" id="4_g1065"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/growth/damage.tres" id="5_60sod"]
 [ext_resource type="Resource" uid="uid://cps0blcw3e3lt" path="res://data/combat/scenes/world/growth/cooldown.tres" id="6_7je1c"]
-[ext_resource type="Resource" path="res://data/combat/scenes/world/growth/range.tres" id="7_dh7xf"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/growth/ricochet/launch_speed.tres" id="8_xdffn"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/growth/ricochet/flight_duration.tres" id="9_sl6nf"]
-[ext_resource type="Resource" uid="uid://d21vu77chknp5" path="res://data/combat/scenes/world/growth/ricochet/charge_efficiency.tres" id="10_dbngj"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/waves/endless_health_growth.tres" id="11_tuslj"]
 [ext_resource type="Script" uid="uid://bfqun1m8bf8a6" path="res://scripts/combat/damage_number_style.gd" id="12_y75ug"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/combat/damage_numbers/normal.tres" id="13_ysycs"]
@@ -33,11 +31,19 @@
 [ext_resource type="Resource" uid="uid://bd8sa76co577a" path="res://data/combat/scenes/world/player/action_visuals.tres" id="scene_action_visuals"]
 [ext_resource type="Resource" uid="uid://cp56vpgfvqd8h" path="res://data/combat/scenes/world/player/flight_trail.tres" id="scene_flight_trail_settings"]
 [ext_resource type="Resource" uid="uid://b05nj64putm5m" path="res://data/combat/scenes/world/player/ricochet_camera.tres" id="scene_ricochet_camera_settings"]
-[ext_resource type="Resource" path="res://data/combat/scenes/world/waves/spawn_shadows.tres" id="spawn_shadows"]
+[ext_resource type="Resource" uid="uid://blwq8cffusd8" path="res://data/combat/scenes/world/waves/spawn_shadows.tres" id="spawn_shadows"]
+
+[ext_resource type="Resource" path="res://data/combat/scenes/world/growth/run_growth_rules.tres" id="growth_rules"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/growth/epic/global_range.tres" id="epic_global_range"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/growth/epic/speed_damage.tres" id="epic_speed_damage"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/growth/epic/multistrike.tres" id="epic_multistrike"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/growth/epic/heavy_strike.tres" id="epic_heavy_strike"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/growth/epic/omnivamp.tres" id="epic_omnivamp"]
 
 [resource]
 resource_name = "正式战斗配置"
 script = ExtResource("19_ow8ov")
+equipment_bonuses_enabled = false
 ricochet_rules = ExtResource("18_2ssx0")
 sword_rules = ExtResource("26_mqf1j")
 action_visuals = ExtResource("scene_action_visuals")
@@ -46,10 +52,12 @@ ricochet_camera_settings = ExtResource("scene_ricochet_camera_settings")
 enemy_catalog = ExtResource("2_t1aap")
 default_enemy = ExtResource("1_f4f21")
 population_rules = ExtResource("17_vryv6")
+pursuit_throttle_threshold = 80
 spawn_shadow_settings = ExtResource("spawn_shadows")
 health_growth_rules = ExtResource("11_tuslj")
 waves = Array[ExtResource("27_yidwm")]([ExtResource("28_gfhx2"), ExtResource("29_s6xoj"), ExtResource("30_au3ot")])
 experience_rules = ExtResource("3_0s6kd")
-growth_definitions = Array[ExtResource("4_g1065")]([ExtResource("5_60sod"), ExtResource("6_7je1c"), ExtResource("7_dh7xf"), ExtResource("8_xdffn"), ExtResource("9_sl6nf"), ExtResource("10_dbngj")])
+growth_rules = ExtResource("growth_rules")
+growth_definitions = Array[ExtResource("4_g1065")]([ExtResource("5_60sod"), ExtResource("6_7je1c"), ExtResource("8_xdffn"), ExtResource("9_sl6nf"), ExtResource("epic_global_range"), ExtResource("epic_speed_damage"), ExtResource("epic_multistrike"), ExtResource("epic_heavy_strike"), ExtResource("epic_omnivamp")])
 skill_definitions = Array[ExtResource("20_i3d7y")]([ExtResource("21_t2ujw"), ExtResource("22_788ih"), ExtResource("23_5megx"), ExtResource("24_2rwn7"), ExtResource("25_ieqm8")])
 number_styles = Array[ExtResource("12_y75ug")]([ExtResource("13_ysycs"), ExtResource("14_qevsi"), ExtResource("15_6mle7"), ExtResource("16_ltva0")])

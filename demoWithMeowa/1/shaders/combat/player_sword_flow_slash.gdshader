@@ -9,6 +9,9 @@ uniform float leading_angle = 0.0;
 uniform float trail_angle = 1.675;
 uniform float band_width = 0.54;
 uniform float inner_ratio = 0.42;
+uniform bool hilt_enabled = false;
+uniform vec2 hilt_offset = vec2(-0.08, -0.24);
+uniform float hilt_width_ratio = 0.25;
 uniform float pixel_size = 0.016;
 uniform float visual_age = 0.0;
 uniform float sweep_seconds = 0.1;
@@ -69,6 +72,7 @@ void fragment() {
 	float span = max(trail_angle, 0.001);
 	vec2 head = vec2(sin(leading_angle), -cos(leading_angle)) * (attack_radius - pixel_size);
 	vec2 root = vec2(sin(leading_angle - span), -cos(leading_angle - span)) * attack_radius * inner_ratio;
+	if (hilt_enabled) { root = hilt_offset; }
 	vec2 control = vec2(sin(leading_angle - span * 0.68), -cos(leading_angle - span * 0.68)) * attack_radius * 0.88;
 	vec2 chord = head - root;
 	float along = clamp(dot(point - root, chord) / max(dot(chord, chord), 0.00001), 0.0, 1.0);
@@ -84,7 +88,7 @@ void fragment() {
 	vec2 tangent = normalize(mix(control - root, head - control, along));
 	float tail = 1.0 - along;
 	float reached = step(0.001, along) * step(along, 0.999);
-	float width = max(0.001, band_width * mix(0.55, 1.0, sin(along * 3.141593)));
+	float width = max(0.001, band_width * mix(hilt_enabled ? hilt_width_ratio : 0.55, 1.0, sin(along * 3.141593)));
 	float across = 0.5 + dot(point - curve, vec2(-tangent.y, tangent.x)) / width;
 	vec2 uv = vec2(along, across);
 	float clock = visual_age * flow_speed;

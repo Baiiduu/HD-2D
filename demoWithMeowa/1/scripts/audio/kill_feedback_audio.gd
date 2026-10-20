@@ -12,9 +12,13 @@ var enabled := true
 var _groups: Array[Dictionary] = []
 var _cooldown := 0.0
 var _duck_remaining := 0.0
+var _air_voices: Dictionary = {}
+var _air_source: AudioStream
+var _air_loop: AudioStreamWAV
 
 func _ready() -> void:
 	audio.death_presentation.connect(_presentation)
+	audio.death_airborne.connect(_airborne_changed)
 	session.phase_changed.connect(_phase_changed)
 	session.run_started.connect(clear)
 	set_process(false)
@@ -68,6 +72,8 @@ func _process(delta: float) -> void:
 		return
 	if session.combat_frozen: return
 	var step := maxf(0.0, delta)
+	if not rules.air_motion_enabled: _clear_air()
+	else: _advance_air(step / maxf(Engine.time_scale, 0.001))
 	_cooldown = maxf(0.0, _cooldown - step)
 	if _duck_remaining > 0.0:
 		_duck_remaining = maxf(0.0, _duck_remaining - step)
@@ -79,22 +85,81 @@ func _process(delta: float) -> void:
 		if group.remaining <= 0.0:
 			_accent(group)
 			_groups.remove_at(index)
-	if _groups.is_empty() and _duck_remaining <= 0.0 and _cooldown <= 0.0: set_process(false)
+	if _groups.is_empty() and _duck_remaining <= 0.0 and _cooldown <= 0.0 and _air_voices.is_empty(): set_process(false)
+
+func _airborne_changed(subject: Node3D, airborne: bool) -> void:
+	if not is_instance_valid(subject): return
+	var id := subject.get_instance_id()
+	if not airborne:
+		if _air_voices.has(id):
+			_air_voices[id].remaining = rules.air_fade_out_seconds if rules else 0.0
+			set_process(true)
+		return
+	if not _available() or not rules.air_motion_enabled or session.phase != WavePrototype.Phase.BATTLE: return
+	if _air_voices.has(id):
+		if _air_voices[id].remaining < 0.0: return
+		audio.stop_cue(subject, &"core:kill_air")
+		_air_voices.erase(id)
+	var clips := bank.clips_for(&"kill_air")
+	if clips.is_empty() or not clips[0] is AudioStreamWAV: return
+	if _air_source != clips[0]:
+		_air_source = clips[0]
+		_air_loop = _air_source.duplicate() as AudioStreamWAV
+		_air_loop.set_meta(&"mix_source_path", _air_source.resource_path)
+		_air_loop.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		# 音源在 1.58–1.60 秒交叠到 0.30–0.32 秒，慢放只续接中段。
+		_air_loop.loop_begin = roundi(.32 * _air_loop.mix_rate)
+		_air_loop.loop_end = roundi(1.60 * _air_loop.mix_rate)
+	var gain := volume_db + rules.air_gain_db
+	var voice := audio.request({"source":subject, "cue":&"core:kill_air", "clips":[_air_loop],
+		"kind":GameAudio.Kind.DEATH, "priority":15, "position":subject.global_position,
+		"follow_source":true, "merge_group":&"kill_air", "volume_db":gain})
+	if voice:
+		_air_voices[id] = {"subject":weakref(subject), "remaining":-1.0, "gain":gain}
+		set_process(true)
+
+func _advance_air(delta: float) -> void:
+	for id in _air_voices.keys():
+		var item: Dictionary = _air_voices[id]
+		var subject := item.subject.get_ref() as Node3D
+		if not is_instance_valid(subject) or not subject.is_inside_tree():
+			if is_instance_valid(subject): audio.stop_cue(subject, &"core:kill_air")
+			_air_voices.erase(id)
+			continue
+		var gain: float = volume_db + rules.air_gain_db
+		if item.remaining < 0.0: item.gain = gain
+		if item.remaining >= 0.0:
+			item.remaining = maxf(0.0, item.remaining - delta)
+			if item.remaining <= 0.0:
+				audio.stop_cue(subject, &"core:kill_air")
+				_air_voices.erase(id)
+				continue
+			gain = item.gain + linear_to_db(item.remaining / maxf(rules.air_fade_out_seconds, .001))
+		if not audio.set_cue_volume(subject, &"core:kill_air", gain): _air_voices.erase(id)
+
+func _clear_air() -> void:
+	if is_instance_valid(audio):
+		for item in _air_voices.values():
+			var subject := item.subject.get_ref() as Node3D
+			if is_instance_valid(subject): audio.stop_cue(subject, &"core:kill_air")
+	_air_voices.clear()
 
 func _presentation(stage: StringName, point: Vector3) -> void:
 	if not _available() or session.phase != WavePrototype.Phase.BATTLE: return
 	match stage:
-		&"air": _play(&"kill_air", point, 15, 0.0, 1.0, &"kill_air")
+		&"air":
+			if not rules.air_motion_enabled: _play(&"kill_air", point, 15, 0.0, 1.0, &"kill_air")
 		&"land", &"wall": _play(&"kill_land", point, 12, -3.0 if stage == &"wall" else 0.0, 1.0, &"kill_land")
 
 func _phase_changed(phase: int) -> void:
 	if phase == WavePrototype.Phase.REST:
 		for group in _groups: _accent(group)
 		_groups.clear()
-		if _duck_remaining > 0.0 or _cooldown > 0.0: set_process(true)
+		if _duck_remaining > 0.0 or _cooldown > 0.0 or not _air_voices.is_empty(): set_process(true)
 	elif phase != WavePrototype.Phase.BATTLE: clear()
 
 func clear() -> void:
+	_clear_air()
 	_groups.clear()
 	_cooldown = 0.0
 	_duck_remaining = 0.0

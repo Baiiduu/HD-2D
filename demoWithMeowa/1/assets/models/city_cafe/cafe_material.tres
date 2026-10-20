@@ -1,0 +1,16 @@
+[gd_resource type="ORMMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/models/city_cafe/textures/cafe_albedo.png" id="albedo"]
+[ext_resource type="Texture2D" path="res://assets/models/city_cafe/textures/cafe_normal.png" id="normal"]
+[ext_resource type="Texture2D" path="res://assets/models/city_cafe/textures/cafe_orm.png" id="orm"]
+
+[resource]
+resource_name = "CafeAtlas"
+albedo_texture = ExtResource("albedo")
+orm_texture = ExtResource("orm")
+normal_enabled = true
+normal_scale = 0.45
+normal_texture = ExtResource("normal")
+metallic_specular = 0.25
+texture_filter = 0
+texture_repeat = false

@@ -1,16 +1,47 @@
 class_name PlayerAirEnvelope
 extends MeshInstance3D
+const BODY_LAYOUT := preload("res://scripts/rendering/sprite_body_layout.gd")
 
-## 连续的空气绕流表面；只消费真实速度，不生成独立风条或改动人物。
+## 开放曲面上的薄风纹，只消费真实速度，不折射背景或改动人物。
+static var _wind_mesh: ArrayMesh
 var phase := 0.0
 var amount := 0.0
 var _material: ShaderMaterial
-var _body_layouts: Dictionary = {}
+var _shape_profile: Array = []
 
 func _ready() -> void:
+	if not _wind_mesh: _wind_mesh = _build_wind_mesh()
+	mesh = _wind_mesh
 	_material = material_override.duplicate() as ShaderMaterial
 	material_override = _material
 	stop()
+
+static func _build_wind_mesh() -> ArrayMesh:
+	var vertices := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var sides := PackedVector2Array()
+	var indices := PackedInt32Array()
+	# Independent open surfaces have no seam or faces spanning the body.
+	for side in [-1.0, 1.0]:
+		var first := vertices.size()
+		for index in 25:
+			var u := float(index) / 24.0
+			for v in [0.0, 1.0]:
+				vertices.append(Vector3(u, v - 0.5, side))
+				uvs.append(Vector2(u, v))
+				sides.append(Vector2(side, 0.0))
+			if index < 24:
+				var a := first + index * 2
+				indices.append_array(PackedInt32Array([a, a + 1, a + 2, a + 1, a + 3, a + 2]))
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_TEX_UV2] = sides
+	arrays[Mesh.ARRAY_INDEX] = indices
+	var result := ArrayMesh.new()
+	result.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return result
 
 func synchronize(source: Sprite3D, heading: Vector3, strength: float, delta: float, settings: PlayerActionVisuals) -> void:
 	amount = strength
@@ -23,13 +54,21 @@ func synchronize(source: Sprite3D, heading: Vector3, strength: float, delta: flo
 	global_transform = Transform3D(Basis(side, Vector3.UP, forward), source.get_global_transform_interpolated().origin)
 	_material.set_shader_parameter(&"flow_phase", phase)
 	_material.set_shader_parameter(&"flow_amount", amount)
-	_material.set_shader_parameter(&"opacity", settings.speed_flow_opacity)
-	_material.set_shader_parameter(&"flow_radius", settings.speed_flow_radius)
-	_material.set_shader_parameter(&"flow_length", settings.speed_flow_length)
-	_material.set_shader_parameter(&"distortion_pixels", settings.speed_air_distortion_pixels)
-	var radius := settings.speed_flow_radius + 0.08
+	var region := settings.speed_flow_texture_region
+	var radius := settings.speed_flow_radius
 	var length := settings.speed_flow_length
-	custom_aabb = AABB(Vector3(-radius, -radius * 1.6, -length * 0.8 - 0.1), Vector3(radius * 2.0, radius * 3.2, length + 0.2))
+	var brush_region := Vector4(region.position.x, region.position.y, region.size.x, region.size.y)
+	# 热调资源按实际值比较；方向、余速、位置与当前帧遮罩仍逐帧更新。
+	var profile: Array = [settings.speed_flow_opacity, radius, length, settings.speed_flow_texture, brush_region]
+	if profile != _shape_profile:
+		_shape_profile = profile
+		_material.set_shader_parameter(&"opacity", settings.speed_flow_opacity)
+		_material.set_shader_parameter(&"flow_radius", radius)
+		_material.set_shader_parameter(&"flow_length", length)
+		_material.set_shader_parameter(&"flow_brush", settings.speed_flow_texture)
+		_material.set_shader_parameter(&"brush_region", brush_region)
+		var padding := radius * 0.6
+		custom_aabb = AABB(Vector3(-radius - padding, -radius - padding, -length - padding), Vector3((radius + padding) * 2.0, (radius + padding) * 2.0, length * 1.22 + padding * 2.0))
 	show()
 	_sync_body_mask(source)
 
@@ -47,21 +86,7 @@ func _sync_body_mask(source: Sprite3D) -> void:
 	_material.set_shader_parameter(&"body_mask_enabled", enabled)
 	_material.set_shader_parameter(&"body_mask_margin_pixels", 1.0)
 	if not enabled: return
-	var key: Array = [source.texture, source.texture.get_rid(), source.texture.get_size(), source.get_item_rect(), source.pixel_size,
-		source.axis, source.hframes, source.vframes, source.frame, source.region_enabled, source.region_rect, source.flip_h, source.flip_v]
-	var texture := source.texture
-	while texture is AtlasTexture:
-		var atlas := texture as AtlasTexture
-		key.append_array([atlas.region, atlas.margin, atlas.atlas, atlas.atlas.get_size() if atlas.atlas else Vector2.ZERO])
-		texture = atlas.atlas
-	if not _body_layouts.has(key):
-		var arrays := RenderingServer.mesh_surface_get_arrays(source.get_base(), 0)
-		var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
-		var uvs: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
-		if _body_layouts.size() >= 64: _body_layouts.clear()
-		_body_layouts[key] = [vertices[0], vertices[1] - vertices[0], vertices[3] - vertices[0],
-			uvs[0], uvs[1] - uvs[0], uvs[3] - uvs[0]]
-	var layout: Array = _body_layouts[key]
+	var layout: Array = BODY_LAYOUT.sample(source)
 	_material.set_shader_parameter(&"body_texture", source.texture)
 	_material.set_shader_parameter(&"body_transform", source.get_global_transform_interpolated())
 	_material.set_shader_parameter(&"body_motion_lean", source.get_meta("motion_lean", Vector3.ZERO))

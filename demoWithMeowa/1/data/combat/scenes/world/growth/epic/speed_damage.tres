@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="GrowthBuffDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/growth/growth_buff_definition.gd" id="definition"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/journal/symbols/boot.png" id="icon"]
+
+[resource]
+script = ExtResource("definition")
+id = &"E02"
+title = "动能超载"
+description = "弹射余速越高，最终伤害越高；每次出手读取当下动能。"
+icon = ExtResource("icon")
+category = 3
+epic = true
+attribute = 18
+bonus_per_level = 1.0
+max_level = 0

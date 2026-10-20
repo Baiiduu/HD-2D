@@ -40,9 +40,8 @@ class BoardView(BaseModel):
     created_at: datetime
 
 
-class ScoreSubmit(RequestModel):
+class ScorePayload(RequestModel):
     submission_id: UUID
-    player_id: PlayerId
     score: Score
     display_name: Annotated[str | None, Field(max_length=48)] = None
     metadata: dict = Field(default_factory=dict)
@@ -59,6 +58,15 @@ class ScoreSubmit(RequestModel):
         if len(encoded) > 8192:
             raise ValueError("Metadata must not exceed 8192 UTF-8 bytes")
         return value
+
+
+class ScoreSubmit(ScorePayload):
+    player_id: PlayerId
+
+
+class DemoScoreSubmit(ScorePayload):
+    device_id: UUID
+    score: Annotated[StrictInt, Field(ge=0, le=2**53 - 1)]
 
 
 class SubmissionView(BaseModel):

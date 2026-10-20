@@ -87,16 +87,18 @@ var _applying := false
 var _refreshing := false
 var _windowed_size := Vector2i(1280, 800)
 var _native_scale := 1.0
+signal settings_applied
 
 func configure(scene: Node, settings_theme: Theme) -> void:
 	world = scene
 	window = get_window()
 	theme = settings_theme
 	add_theme_constant_override("separation", 12)
-	# Let the formal map's deferred Style, weather and resource binding finish first.
-	await get_tree().process_frame
-	await get_tree().process_frame
-	if not is_inside_tree(): return
+	# 排在地图的延迟 Style／天气绑定之后，同轮完成，不先绘制两帧默认画质。
+	_finish_configure.call_deferred()
+
+func _finish_configure() -> void:
+	if not is_inside_tree() or not is_instance_valid(world): return
 	var art := world.get_node_or_null("MapEffects/ArtDirection")
 	var environment_node := world.get_node_or_null("MapEffects/WorldEnvironment") as WorldEnvironment
 	var player := world.get_node_or_null("Player") as Player
@@ -108,6 +110,13 @@ func configure(scene: Node, settings_theme: Theme) -> void:
 	if window.mode == Window.MODE_WINDOWED: _windowed_size = window.size
 	for spec in SPECS:
 		if available(spec): defaults[spec.key] = read_value(spec)
+	# 内嵌菜单稍后创建，沿用地图入口捕获的原始默认值。
+	var settings := world.get_node_or_null("GameSettingsUI")
+	var baseline: Variant = settings.get("_graphics_page") if settings else null
+	if is_instance_valid(baseline) and baseline != self and baseline.configured:
+		defaults = baseline.defaults.duplicate()
+		_native_scale = baseline._native_scale
+		_windowed_size = baseline._windowed_size
 	_build()
 	configured = true
 	if art and art.has_signal("applied"): art.applied.connect(_on_art_applied)
@@ -140,14 +149,10 @@ func value_for(key: String) -> Variant:
 	return null
 
 func _build() -> void:
-	var note := Label.new()
-	note.text = "修改即时生效并保存。全屏保持铺满屏幕，降低场景分辨率可减轻 GPU 负担；界面保持清晰。"
-	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	add_child(note)
 	var embedded := "--wid" in OS.get_cmdline_args()
 	if embedded:
 		var hint := Label.new()
-		hint.text = "编辑器内嵌运行仍可调整场景分辨率；切换全屏请使用独立运行窗口。"
+		hint.text = "全屏请使用独立窗口。"
 		hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		add_child(hint)
 	var previous := ""
@@ -209,7 +214,7 @@ func _build() -> void:
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	add_child(_status)
 	var reset := Button.new()
-	reset.text = "恢复本页场景默认设置"
+	reset.text = "恢复默认"
 	reset.pressed.connect(reset_defaults)
 	add_child(reset)
 	_save_timer = Timer.new()
@@ -272,6 +277,7 @@ func apply_settings() -> void:
 	_applying = false
 	refresh_resolution()
 	sync_controls()
+	settings_applied.emit()
 
 func _apply_environment_overrides() -> void:
 	for spec in SPECS:
@@ -307,7 +313,7 @@ func refresh_resolution() -> void:
 		if candidate == height: select.select(select.item_count - 1)
 	if height == 0: select.select(0)
 	var scene_pixels := Vector2i(Vector2(pixels) * window.scaling_3d_scale)
-	_status.text = "输出：%d × %d · 场景：%d × %d\n较低分辨率会降低清晰度；阴影提交与 CPU 逻辑仍有独立开销。" % [pixels.x, pixels.y, scene_pixels.x, scene_pixels.y]
+	_status.text = "显示 %d × %d · 渲染 %d × %d" % [pixels.x, pixels.y, scene_pixels.x, scene_pixels.y]
 	_refreshing = false
 
 func sync_controls() -> void:
@@ -343,7 +349,7 @@ func save_settings() -> Error:
 		if overrides.has(spec.key): config.set_value(section, spec.key, overrides[spec.key])
 		elif config.has_section_key(section, spec.key): config.erase_section_key(section, spec.key)
 	var result := config.save(config_path)
-	if result != OK and _status: _status.text += "\n本次修改已生效，但未能保存显示设置。"
+	if result != OK and _status: _status.text += "\n设置未能保存。"
 	return result
 
 func reset_defaults() -> void:
