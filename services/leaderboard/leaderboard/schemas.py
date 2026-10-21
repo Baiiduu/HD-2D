@@ -67,6 +67,19 @@ class ScoreSubmit(ScorePayload):
 class DemoScoreSubmit(ScorePayload):
     device_id: UUID
     score: Annotated[StrictInt, Field(ge=0, le=2**53 - 1)]
+    privacy_version: Literal["2026-10-21"]
+    public_consent: Literal[True]
+
+    @field_validator("public_consent", mode="before")
+    @classmethod
+    def explicit_public_consent(cls, value):
+        if value is not True:
+            raise ValueError("An explicit public-display consent is required")
+        return value
+
+
+class DemoDataDelete(RequestModel):
+    device_id: UUID
 
 
 class SubmissionView(BaseModel):

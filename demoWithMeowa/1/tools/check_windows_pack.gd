@@ -13,10 +13,17 @@ func _initialize() -> void:
 	call_deferred("_check_pack")
 
 func _check_pack() -> void:
+	_expect(ProjectSettings.get_setting("application/config/name") == "回弹", "Wrong game name")
+	var legacy_user_dir := OS.get_data_dir().path_join("Godot/app_userdata/四境 · HD-2D").simplify_path()
+	_expect(OS.get_user_data_dir().simplify_path() == legacy_user_dir, "Renaming must preserve existing Windows saves and leaderboard identity")
 	_expect(ProjectSettings.get_setting("application/run/main_scene") == "res://scenes/world/world.tscn", "Wrong main scene")
 	_expect(ResourceLoader.load("res://scenes/world/world.tscn") is PackedScene, "World cannot be loaded from the pack")
 	_expect(ResourceLoader.load("res://data/world/world_surface.res") != null, "Painted terrain is missing")
 	_expect(ResourceLoader.load("res://data/combat/scenes/world/configuration.tres") != null, "World combat configuration is missing")
+	var privacy_text := FileAccess.get_file_as_string("res://data/legal/privacy_policy.txt")
+	_expect(privacy_text.contains("回弹隐私政策") and privacy_text.contains("2026年10月21日") and privacy_text.contains("撤回并删除"), "Offline privacy policy is missing or out of date")
+	var privacy_model = load("res://scripts/network/leaderboard_state.gd").new()
+	_expect(not privacy_model.upload_authorized() and privacy_model.device_id.is_empty(), "Release leaderboard must default to no upload and no generated identity")
 	for path in MANIFESTS:
 		var document: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
 		_expect(document is Dictionary, "Missing or invalid manifest: " + path)

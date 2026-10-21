@@ -17,7 +17,7 @@ $stamp = Get-Date -Format 'yyyyMMdd-HHmmss-fff'
 $build = Join-Path $OutputDirectory $stamp
 $bundle = Join-Path $build 'game'
 $logs = Join-Path $LogDirectory $stamp
-$zip = Join-Path $build 'HD2D-windows-x64.zip'
+$zip = Join-Path $build '回弹-Windows-x64.zip'
 $previousEnvironment = @{}
 foreach ($key in @('APPDATA', 'LOCALAPPDATA', 'TEMP', 'TMP', 'XDG_CACHE_HOME')) {
     $previousEnvironment[$key] = [Environment]::GetEnvironmentVariable($key)
@@ -38,13 +38,13 @@ try {
     if (!(Test-Path -LiteralPath $template)) {
         throw "Install the matching Windows export templates under: $(Split-Path -Parent $template)"
     }
-    $executable = Join-Path $bundle 'HD2D.exe'
+    $executable = Join-Path $bundle '回弹.exe'
     $exportLog = Join-Path $logs 'export.log'
     & $engine --headless --path $project --export-release 'Windows Desktop' $executable *> $exportLog
     if ($LASTEXITCODE -ne 0 -or (Select-String -LiteralPath $exportLog -Pattern 'SCRIPT ERROR:|^ERROR:' -Quiet)) {
         throw "Export failed. See $exportLog"
     }
-    $pack = Join-Path $bundle 'HD2D.pck'
+    $pack = Join-Path $bundle '回弹.pck'
     if (!(Test-Path -LiteralPath $executable) -or !(Test-Path -LiteralPath $pack)) { throw 'Export did not produce both EXE and PCK.' }
     $checkLog = Join-Path $logs 'pack-check.log'
     $licenses = Join-Path $bundle 'licenses'
@@ -65,11 +65,14 @@ try {
     $summary = [ordered]@{
         created_at = (Get-Date -Format o)
         engine = $version
-        executable = 'HD2D.exe'
+        executable = '回弹.exe'
         package = $zip
         sha256 = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash
         bytes = (Get-Item -LiteralPath $zip).Length
         data_check = 'passed'
+        privacy_policy_version = '2026-10-21'
+        privacy_policy_url = 'https://huitan-privacy.jessegames.chatgpt.site/'
+        leaderboard_upload_default = 'disabled'
         manual_playtest = 'pending'
         taptap_startup_sdk = 'not_integrated'
         logs = $logs

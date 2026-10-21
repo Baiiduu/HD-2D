@@ -15,6 +15,7 @@ func _initialize() -> void:
 		return
 	var state = Model.new()
 	state.create_identity()
+	state.grant_consent(true, true)
 	var identity: String = state.device_id
 	check(identity.length() == 36 and state.device_token.length() == 64, "匿名身份使用随机 UUID 与独立 256 位凭证")
 	state.nickname = "测试玩家"

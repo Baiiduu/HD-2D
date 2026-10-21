@@ -1,0 +1,10 @@
+[mcp_servers.godot_mcp]
+command = 'C:/Program Files/nodejs/node.exe'
+args = ['D:/.codexfile/tools/godot-mcp/node_modules/@yanhuifair/godot-mcp/dist/index.js', '-p', 'D:/Project/HD-2DMap/demoWithMeowa/1', '-g', 'D:/Project/godot/Godot_v4.7.2/Godot_v4.7.2-stable_win64_console.exe']
+startup_timeout_sec = 30
+tool_timeout_sec = 45
+
+[mcp_servers.godot_mcp.env]
+TEMP = 'D:/.codexfile/tmp'
+TMP = 'D:/.codexfile/tmp'
+npm_config_cache = 'D:/.codexfile/cache/npm'

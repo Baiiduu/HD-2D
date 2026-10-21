@@ -8,6 +8,7 @@ const GraphicsPage = preload("res://scripts/ui/graphics_settings_page.gd")
 const CameraPage = preload("res://scripts/ui/camera_settings_page.gd")
 const ControlsPage = preload("res://scripts/ui/controls_settings_page.gd")
 const LeaderboardWindow = preload("res://scripts/ui/leaderboard_window.gd")
+const PrivacyDialog = preload("res://scripts/ui/privacy_policy_dialog.gd")
 const MENU_SIZE := Vector2(360, 620)
 const FONT = preload("res://assets/fonts/maoken_assorted_sans/MaokenAssortedSans.ttf")
 const CORE = preload("res://data/audio/core_sound_bank.tres")
@@ -45,6 +46,8 @@ var _graphics_page: VBoxContainer
 var _camera_page: VBoxContainer
 var _controls_page: VBoxContainer
 var _leaderboard_window: Control
+var _privacy_dialog: AcceptDialog
+var _privacy_link: LinkButton
 var _loading := false
 var _selected := 0
 var _opacity := 0.0
@@ -191,6 +194,16 @@ func _build_menu() -> void:
 	_footer.add_theme_color_override("font_outline_color", Color("101723"))
 	_footer.add_theme_constant_override("outline_size", 2)
 	_footer.name = "Footer"
+	_privacy_dialog = PrivacyDialog.new()
+	add_child(_privacy_dialog)
+	_privacy_link = LinkButton.new()
+	_privacy_link.name = "PrivacyPolicy"
+	_privacy_link.text = "隐私政策"
+	_privacy_link.add_theme_font_size_override("font_size", 18)
+	_privacy_link.add_theme_color_override("font_color", Color("e8dcc2"))
+	_privacy_link.pressed.connect(func():
+		if not flow.busy and not flow.modal_open: _privacy_dialog.popup_centered(Vector2i(760, 580)))
+	_surface.add_child(_privacy_link)
 
 func _draw_panel() -> void:
 	var rect := Rect2(Vector2.ZERO, MENU_SIZE)
@@ -220,6 +233,7 @@ func _layout() -> void:
 	# Scale around the panel center without moving its safe area.
 	_panel.position += (_panel.scale - Vector2.ONE) * _panel.pivot_offset
 	_footer.position = Vector2((size.x - 500) * 0.5, size.y - 35)
+	_privacy_link.position = Vector2(maxf(16.0, size.x - 150.0), size.y - 64.0)
 	if _settings_dim: _settings_dim.size = size
 	if settings_panel:
 		var fit := maxf(0.2, minf(1.0, minf((size.x - 32) / 700.0, (size.y - 32) / 640.0)))

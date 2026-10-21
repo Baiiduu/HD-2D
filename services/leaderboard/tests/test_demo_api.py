@@ -25,7 +25,8 @@ def demo(settings):
 
 def payload(device=None, **changes):
     return {'device_id': str(device or uuid4()), 'submission_id': str(uuid4()),
-            'score': 120, 'display_name': '玩家', 'metadata': {}, **changes}
+            'score': 120, 'display_name': '玩家', 'metadata': {},
+            'privacy_version': '2026-10-21', 'public_consent': True, **changes}
 
 
 def send(client, body, token=DEVICE_TOKEN):

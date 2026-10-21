@@ -28,6 +28,23 @@ class Device(Base):
     created_at: Mapped[datetime] = mapped_column(utc_datetime)
 
 
+class DemoConsent(Base):
+    __tablename__ = "demo_consents"
+
+    device_id: Mapped[str] = mapped_column(String(36), ForeignKey("demo_devices.id"), primary_key=True)
+    policy_version: Mapped[str] = mapped_column(String(40))
+    accepted_at: Mapped[datetime] = mapped_column(utc_datetime)
+
+
+class RevokedCredential(Base):
+    __tablename__ = "revoked_demo_credentials"
+
+    # No device UUID, nickname, score or profile is retained in this table.
+    # It prevents in-flight/old requests from registering a deleted identity again.
+    token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    revoked_at: Mapped[datetime] = mapped_column(utc_datetime)
+
+
 class BestScore(Base):
     __tablename__ = "best_scores"
     __table_args__ = (Index("ix_best_scores_board_score", "board_id", "score"),)

@@ -29,7 +29,10 @@ func run() -> void:
 	await process_frame
 	check(page.pending.text.contains("自动"), "排行榜说明结算自动上传")
 	var buttons: Array = page.find_children("*", "Button", true, false)
-	check(buttons.size() == 3, "排行榜仅有刷新和翻页按钮，没有保存或提交按钮")
+	check(page._enable.disabled and not page._upload_choice.button_pressed and not page._publish_choice.button_pressed, "上传与公开默认不勾选，不能直接启用")
+	check(buttons.filter(func(button): return button.text in ["提交成绩", "保存成绩"]).is_empty(), "排行榜没有手动提交或保存成绩按钮")
+	check(page._privacy_dialog.get_node("PolicyText").text.contains("回弹隐私政策"), "游戏内可离线查阅同版本政策")
+	client.set_upload_consent(true, true)
 	client.begin_run()
 	client.capture_run({"total": 12, "active": false, "simulation": false, "eligible_for_submission": true})
 	check("12" in page.pending.text and "自动" in page.pending.text, "结算更新自动上传状态")

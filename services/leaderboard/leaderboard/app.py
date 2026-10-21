@@ -10,16 +10,16 @@ from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy import func, select, text
+from sqlalchemy import delete, func, select, text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from .config import Settings
 from .database import build_engine, write_transaction
-from .models import Base, BestScore, Board, Device, Submission
+from .models import Base, BestScore, Board, Device, Submission, DemoConsent, RevokedCredential
 from .schemas import (
     BoardCreate, BoardId, BoardView, PlayerId, RankedScore,
-    DemoScoreSubmit, ScorePage, ScoreSubmit, SubmissionView,
+    DemoDataDelete, DemoScoreSubmit, ScorePage, ScoreSubmit, SubmissionView,
 )
 
 
@@ -85,9 +85,17 @@ def better_than(board: Board, score: int):
     return BestScore.score > score if board.sort_order == "desc" else BestScore.score < score
 
 
+def publicly_visible():
+    consent = select(DemoConsent.device_id).where(
+        BestScore.player_id == "demo:" + DemoConsent.device_id,
+        DemoConsent.policy_version == "2026-10-21",
+    ).exists()
+    return ~BestScore.player_id.like("demo:%") | consent
+
+
 def rank_of(session: Session, board: Board, score: int):
     return 1 + session.scalar(select(func.count()).select_from(BestScore).where(
-        BestScore.board_id == board.id, better_than(board, score)
+        BestScore.board_id == board.id, publicly_visible(), better_than(board, score)
     ))
 
 
@@ -163,7 +171,8 @@ def create_app(settings: Settings | None = None):
         return [board_view(board) for board in boards]
 
     def save_score(board_id: str, payload: ScoreSubmit, session: Session,
-                   device_id: str | None = None, device_hash: str | None = None):
+                   device_id: str | None = None, device_hash: str | None = None,
+                   privacy_version: str | None = None):
         canonical = json.dumps(payload.model_dump(mode="json"), sort_keys=True,
                                ensure_ascii=False, separators=(",", ":"), allow_nan=False)
         fingerprint = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
@@ -172,6 +181,8 @@ def create_app(settings: Settings | None = None):
             # Board-first locking gives all writes the same order on PostgreSQL.
             board = find_board(session, board_id, lock=True)
             if device_id is not None:
+                if session.get(RevokedCredential, device_hash) is not None:
+                    fail(401, "device_revoked", "This credential has been revoked")
                 if board.sort_order != "desc":
                     fail(503, "demo_not_configured", "Demo scores require a descending leaderboard")
                 # Registration and score commit share the board lock and transaction.
@@ -179,8 +190,16 @@ def create_app(settings: Settings | None = None):
                 device = session.get(Device, device_id)
                 if device is None:
                     session.add(Device(id=device_id, token_hash=device_hash, created_at=now_utc()))
+                    session.flush()
                 elif not secrets.compare_digest(device.token_hash, device_hash):
                     fail(401, "device_unauthorized", "Device credential does not match")
+                consent = session.get(DemoConsent, device_id)
+                if consent is None:
+                    session.add(DemoConsent(device_id=device_id, policy_version=privacy_version,
+                                            accepted_at=now_utc()))
+                elif consent.policy_version != privacy_version:
+                    consent.policy_version = privacy_version
+                    consent.accepted_at = now_utc()
             receipt = session.get(Submission, (board_id, submission_id))
             if receipt is not None:
                 if receipt.payload_hash != fingerprint:
@@ -223,12 +242,38 @@ def create_app(settings: Settings | None = None):
             fail(401, "device_unauthorized", "A device credential is required")
         device_id = str(payload.device_id)
         score = ScoreSubmit(
-            **payload.model_dump(exclude={"device_id", "metadata"}),
+            **payload.model_dump(exclude={"device_id", "metadata", "privacy_version", "public_consent"}),
             player_id="demo:" + device_id,
             metadata={**payload.metadata, "verification": "client_reported"},
         )
         return save_score(board_id, score, session, device_id,
-                          hashlib.sha256(credential.credentials.encode()).hexdigest())
+                          hashlib.sha256(credential.credentials.encode()).hexdigest(), payload.privacy_version)
+
+    @application.post("/v1/demo/privacy/delete", status_code=204, tags=["Demo"])
+    def delete_demo_data(
+        payload: DemoDataDelete, session: Database,
+        credential: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer)],
+    ):
+        if credential is None or not re.fullmatch(r"[0-9a-f]{64}", credential.credentials):
+            fail(401, "device_unauthorized", "A device credential is required")
+        device_id = str(payload.device_id)
+        fingerprint = hashlib.sha256(credential.credentials.encode()).hexdigest()
+        with write_transaction(session):
+            # Match the board-first order used by submissions. Serialize deletion
+            # with all affected boards so delayed submissions cannot win a race.
+            list(session.scalars(select(Board).order_by(Board.id).with_for_update()))
+            device = session.get(Device, device_id)
+            if device is not None and not secrets.compare_digest(device.token_hash, fingerprint):
+                fail(401, "device_unauthorized", "Device credential does not match")
+            if session.get(RevokedCredential, fingerprint) is None:
+                session.add(RevokedCredential(token_hash=fingerprint, revoked_at=now_utc()))
+            if device is not None:
+                player_id = "demo:" + device_id
+                session.execute(delete(BestScore).where(BestScore.player_id == player_id))
+                session.execute(delete(Submission).where(Submission.player_id == player_id))
+                session.execute(delete(DemoConsent).where(DemoConsent.device_id == device_id))
+                session.delete(device)
+        return Response(status_code=204)
 
     @application.get("/v1/leaderboards/{board_id}/scores", response_model=ScorePage, tags=["Scores"])
     def list_scores(board_id: BoardId, session: ReadDatabase,
@@ -236,10 +281,10 @@ def create_app(settings: Settings | None = None):
                     offset: Annotated[int, Query(ge=0, le=10000)] = 0):
         board = find_board(session, board_id)
         score_order = BestScore.score.desc() if board.sort_order == "desc" else BestScore.score.asc()
-        entries = list(session.scalars(select(BestScore).where(BestScore.board_id == board_id)
+        entries = list(session.scalars(select(BestScore).where(BestScore.board_id == board_id, publicly_visible())
                        .order_by(score_order, BestScore.achieved_at, BestScore.player_id)
                        .offset(offset).limit(limit)))
-        total = session.scalar(select(func.count()).select_from(BestScore).where(BestScore.board_id == board_id))
+        total = session.scalar(select(func.count()).select_from(BestScore).where(BestScore.board_id == board_id, publicly_visible()))
         ranked = []
         if entries:
             rank = rank_of(session, board, entries[0].score)
@@ -253,7 +298,8 @@ def create_app(settings: Settings | None = None):
                      response_model=RankedScore, tags=["Scores"])
     def player_score(board_id: BoardId, player_id: PlayerId, session: ReadDatabase):
         board = find_board(session, board_id)
-        entry = session.get(BestScore, (board_id, player_id))
+        entry = session.scalar(select(BestScore).where(BestScore.board_id == board_id,
+            BestScore.player_id == player_id, publicly_visible()))
         if entry is None:
             fail(404, "score_not_found", "Player has no score on this leaderboard")
         return ranked_view(entry, rank_of(session, board, entry.score))

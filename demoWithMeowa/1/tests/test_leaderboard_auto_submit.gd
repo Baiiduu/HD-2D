@@ -34,6 +34,7 @@ func run() -> void:
 	root.add_child(client)
 	await process_frame
 	client.network_enabled = true # Recording transport never opens a connection.
+	client.set_upload_consent(true, true)
 	for invalid in [{"active": true}, {"simulation": true}, {"eligible_for_submission": false}]:
 		client.capture_run({"total": 1, "active": false, "simulation": false, "eligible_for_submission": true}.merged(invalid, true))
 	check(client.requests.is_empty(), "战斗中、模拟及异常结束不触发自动提交")
@@ -79,6 +80,7 @@ func run() -> void:
 	root.add_child(broken)
 	await process_frame
 	broken.model = UnwritableState.new()
+	broken.model.grant_consent(true, true)
 	broken.network_enabled = true
 	broken.save_enabled = true
 	finish(broken, 12)
@@ -87,6 +89,7 @@ func run() -> void:
 	var offline := RecordingClient.new()
 	root.add_child(offline)
 	await process_frame
+	offline.set_upload_consent(true, true)
 	finish(offline, 500)
 	finish(offline, 100)
 	var path := "D:/.codexfile/work/leaderboard-flow-20261020/queued.cfg"

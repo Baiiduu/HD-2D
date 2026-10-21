@@ -1,4 +1,4 @@
-# HD-2D Godot 原型
+# 回弹
 
 当前开发项目在 **[demoWithMeowa/1](demoWithMeowa/1/README.md)**，使用 Godot 4.7.2。玩法方向是节奏舒缓、波次间可休整的生存游戏；具体内容以设计文档和已确认的实现范围为准。
 

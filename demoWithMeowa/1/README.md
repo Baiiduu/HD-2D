@@ -84,7 +84,7 @@ World 的「设置 → 画质与显示」集中提供显示、抗锯齿、阴影
 
 ## Windows 试玩包
 
-`export_presets.cfg` 的 `Windows Desktop` 使用 x86_64 Release、独立 PCK，入口为正式 World；版本字段暂为 `0.1.0.0`。保留当前画质、玩法与存档设置，排除测试、开发工具和预览入口，单独纳入植被与法线动态读取的三份 JSON。发布前统一确认游戏名、图标与版本，改名时检查存档和匿名排行榜身份迁移。
+游戏名称为「回弹」。`export_presets.cfg` 的 `Windows Desktop` 使用 x86_64 Release、独立 PCK，入口为正式 World；版本字段暂为 `0.1.0.0`。保留当前画质和玩法，使用固定自定义路径继续读取原 Windows 存档目录 `Godot/app_userdata/四境 · HD-2D`，避免名称变化导致设置、存档和匿名排行榜身份重建。排除测试、开发工具和预览入口，单独纳入植被与法线动态读取的三份 JSON；发布前确认图标与版本。
 
 安装与项目一致的 Godot 4.7.2 标准版导出模板至 `D:\.codexfile\cache\godot\Godot\export_templates\4.7.2.stable`，至少包含 `version.txt`、`windows_release_x86_64.exe` 及其随附依赖。在 Windows 的 PowerShell 7 执行：
 
@@ -92,6 +92,8 @@ World 的「设置 → 画质与显示」集中提供显示、抗锯齿、阴影
 ./tools/build_windows.ps1 -GodotPath 'D:\Project\godot\Godot_v4.7.2\Godot_v4.7.2-stable_win64_console.exe'
 ```
 
-输出在仓库 `dist/windows/<时间>/`：`game/` 为完整运行目录，`HD2D-windows-x64.zip` 为上传包，`build.json` 包含 SHA-256、检查结果和待验收状态；导出日志位于 `D:\.codexfile\work\windows-builds`。脚本只运行无界面导出与包内数据检查，不启动地图窗口；用同版本引擎在空目录读取实际 PCK，核对正式地图、手绘地表与动态素材，并附带 Godot 和字体许可。导出过程保持 Godot 配置、模板缓存和临时数据在 D:，结束后恢复环境变量。
+输出在仓库 `dist/windows/<时间>/`：`game/` 为完整运行目录，`回弹-Windows-x64.zip` 为上传包，`build.json` 包含 SHA-256、检查结果和待验收状态；导出日志位于 `D:\.codexfile\work\windows-builds`。脚本只运行无界面导出与包内数据检查，不启动地图窗口；用同版本引擎在空目录读取实际 PCK，核对正式地图、手绘地表与动态素材，并附带 Godot 和字体许可。导出过程保持 Godot 配置、模板缓存和临时数据在 D:，结束后恢复环境变量。
 
-上传 TapTap「PC 包体管理」时选择 ZIP，可执行文件填 `HD2D.exe`，启动参数留空；包体解析后，从 TapTap PC 下载并人工验证首次启动、核心操作、波次选卡、结算、重试、设置、联网失败和更新保留存档。当前尚未接入 TapTap 启动校验；生成包用于内部自测，不代表已经满足公开测试提审要求。排行榜服务端单独部署，不将 Python、数据库、私钥、管理凭据或本机存档打入客户端包。官方流程见 [PC 传包说明](https://developer.taptap.cn/docs/pc-store/guide/pc-bundle/)。
+包内包含 `data/legal/privacy_policy.txt` 离线政策，主菜单及「设置 → 排行榜」均可阅读，并可打开同版本公开网页。排行榜默认关闭上传，需分别确认上传与公开展示；旧版未授权队列不会继续补交。停止上传后清空待传队列并保留已有公开记录；「撤回并删除数据」通过本人凭据删除服务端记录并支持断网恢复，不清除游戏设置。客户端、政策和服务端接口需同步发布，见 [排行榜接口](../../docs/technical/leaderboard-api.md#隐私授权与数据删除)。
+
+上传 TapTap「PC 包体管理」时选择 ZIP，可执行文件填 `回弹.exe`，启动参数留空；包体解析后，从 TapTap PC 下载并人工验证首次启动、核心操作、波次选卡、结算、重试、设置、联网失败和更新保留存档。当前尚未接入 TapTap 启动校验；生成包用于内部自测，不代表已经满足公开测试提审要求。排行榜服务端单独部署，不将 Python、数据库、私钥、管理凭据或本机存档打入客户端包。官方流程见 [PC 传包说明](https://developer.taptap.cn/docs/pc-store/guide/pc-bundle/)。
