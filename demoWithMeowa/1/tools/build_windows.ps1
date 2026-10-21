@@ -48,8 +48,9 @@ try {
     if (!(Test-Path -LiteralPath $executable) -or !(Test-Path -LiteralPath $pack)) { throw 'Export did not produce both EXE and PCK.' }
     $checkLog = Join-Path $logs 'pack-check.log'
     $licenses = Join-Path $bundle 'licenses'
-    # The exported executable reads its PCK; the checker is external and never shipped.
-    & $executable --headless --script (Join-Path $PSScriptRoot 'check_windows_pack.gd') -- $licenses *> $checkLog
+    # Release templates have no --script option. Read the real PCK with the same
+    # engine from an empty directory, so loose project files cannot hide omissions.
+    & $engine --headless --path $logs --main-pack $pack --script (Join-Path $PSScriptRoot 'check_windows_pack.gd') -- $licenses *> $checkLog
     if ($LASTEXITCODE -ne 0 -or !(Select-String -LiteralPath $checkLog -Pattern 'WINDOWS_PACK_CHECK .*"failures":\[\]' -Quiet) -or
         (Select-String -LiteralPath $checkLog -Pattern 'SCRIPT ERROR:|^ERROR:' -Quiet)) {
         throw "Exported-pack data check failed. See $checkLog"
