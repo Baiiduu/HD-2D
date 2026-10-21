@@ -3,6 +3,7 @@
 [ext_resource type="Texture2D" uid="uid://b8u4ctltnix8t" path="res://assets/meowa/combat/prism_ricochet/shard.png" id="1_ji5oj"]
 [ext_resource type="Script" uid="uid://dgnmk10av1ee6" path="res://scripts/combat/combat_skill_level.gd" id="2_hxas8"]
 [ext_resource type="Script" uid="uid://bys5inomsbf0o" path="res://scripts/combat/combat_skill_definition.gd" id="3_414ob"]
+[ext_resource type="Texture2D" uid="uid://dxv2s3wnv5mf8" path="res://assets/illustrations/skills/prism_ricochet.png" id="illustration"]
 
 [sub_resource type="AtlasTexture" id="icon"]
 atlas = ExtResource("1_ji5oj")
@@ -103,4 +104,5 @@ id = &"prism_ricochet"
 display_name = "棱光弹射"
 description = "棱晶命中怪物、墙体或镜印时，按真实接触面连续反射。"
 icon = SubResource("icon")
+illustration = ExtResource("illustration")
 levels = Array[ExtResource("2_hxas8")]([SubResource("Resource_yud15"), SubResource("Resource_d35fk"), SubResource("Resource_boe3a"), SubResource("Resource_12lbv"), SubResource("Resource_lbbrv"), SubResource("Resource_rg5sf"), SubResource("Resource_8ua2l"), SubResource("Resource_th5m2")])

@@ -2,22 +2,16 @@
 
 [ext_resource type="Script" path="res://scripts/growth/growth_buff_definition.gd" id="definition"]
 [ext_resource type="Texture2D" path="res://assets/meowa/ui/journal/symbols/star.png" id="icon"]
-[ext_resource type="Script" path="res://scripts/growth/growth_buff_effect.gd" id="effect"]
-
-[sub_resource type="Resource" id="cap"]
-script = ExtResource("effect")
-attribute = 22
-bonus_per_level = 0.05
-
+[ext_resource type="Texture2D" path="res://assets/illustrations/growth/omnivamp.png" id="illustration"]
 [resource]
 script = ExtResource("definition")
 id = &"E05"
 title = "全能吸血"
-description = "所有攻击按实际伤害恢复生命；吸血效率与独立每秒上限同步成长。"
+description = "所有攻击按实际伤害回血\n无每秒恢复上限"
 icon = ExtResource("icon")
+illustration = ExtResource("illustration")
 category = 3
 epic = true
 attribute = 21
 bonus_per_level = 0.03
 max_level = 0
-extra_effects = Array[ExtResource("effect")]([SubResource("cap")])

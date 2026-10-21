@@ -148,6 +148,8 @@ func run() -> void:
 	feedback._physics_process(0.3)
 	check(playing(&"core:charge_ready") and audio.get_debug_state().played == played, "满蓄只提示一次，保持蓄力不反复响铃")
 	check(player.body_ricochet.release_charge(), "真实发射成功")
+	# 地图基础初速可独立调整；以本次真实速度建立高低速声音对照。
+	feedback.flight_reference_speed = player.body_ricochet.movement_speed
 	check(playing(&"core:launch") and not playing(&"core:charge_loop"), "发射停止蓄力循环并播放发射声")
 	feedback._physics_process(0.5)
 	var flight_loops := audio._voices.filter(func(slot): return slot.active and slot.cue == &"core:flight_loop")
@@ -238,7 +240,7 @@ func run() -> void:
 	# 最后一击特写归位后才进入选卡；音效测试不等待真实镜头时长。
 	world.get_node("WavePresentation").advance(3.1)
 	reset_audio()
-	growth._grant_experience(10)
+	growth._grant_experience(growth.state.required_experience() - growth.state.experience)
 	check(wave.combat_frozen and ui_cues.has(&"level_up") and ui_cues.has(&"experience"), "拾取引发升级时经验和升级提示在战斗冻结中可播放")
 	var rerolls := growth.rerolls_left
 	growth.choice_ui.request_reroll()

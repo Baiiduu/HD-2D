@@ -15,6 +15,7 @@ var _last_end := Vector3.INF
 var _to_next := 0.0
 var _serial := 0
 var _bounds := AABB()
+var _profile: Array = []
 
 func _ready() -> void:
 	top_level = true
@@ -97,15 +98,20 @@ func advance(clock: float, settings: PlayerActionVisuals) -> void:
 		clear()
 		return
 	material.set_shader_parameter("effect_clock", clock)
-	material.set_shader_parameter("energy", settings.fire_trail_energy)
-	material.set_shader_parameter("spark_amount", settings.fire_trail_spark_amount)
-	material.set_shader_parameter("body_mask_margin_pixels", settings.fire_trail_body_clearance_pixels)
-	material.set_shader_parameter("pixels_per_meter", settings.fire_trail_pixels_per_meter)
-	material.set_shader_parameter("fire_brush", settings.fire_trail_brush)
-	material.set_shader_parameter("flow_strength", settings.fire_trail_flow_strength)
-	material.set_shader_parameter("flow_speed", settings.fire_trail_flow_speed)
 	var region := settings.fire_trail_brush_region
-	material.set_shader_parameter("brush_region", Vector4(region.position.x, region.position.y, region.size.x, region.size.y))
+	var brush_region := Vector4(region.position.x, region.position.y, region.size.x, region.size.y)
+	var profile: Array = [settings.fire_trail_energy,settings.fire_trail_spark_amount,settings.fire_trail_body_clearance_pixels,
+		settings.fire_trail_pixels_per_meter,settings.fire_trail_brush,settings.fire_trail_flow_strength,settings.fire_trail_flow_speed,brush_region]
+	if profile != _profile:
+		_profile = profile
+		material.set_shader_parameter("energy", settings.fire_trail_energy)
+		material.set_shader_parameter("spark_amount", settings.fire_trail_spark_amount)
+		material.set_shader_parameter("body_mask_margin_pixels", settings.fire_trail_body_clearance_pixels)
+		material.set_shader_parameter("pixels_per_meter", settings.fire_trail_pixels_per_meter)
+		material.set_shader_parameter("fire_brush", settings.fire_trail_brush)
+		material.set_shader_parameter("flow_strength", settings.fire_trail_flow_strength)
+		material.set_shader_parameter("flow_speed", settings.fire_trail_flow_speed)
+		material.set_shader_parameter("brush_region", brush_region)
 	while count > 0 and clock >= _ends[_head]:
 		_transforms[_head] = EMPTY
 		batch.multimesh.set_instance_transform(_head, EMPTY)

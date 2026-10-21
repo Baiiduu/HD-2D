@@ -25,8 +25,11 @@ func _initialize() -> void:
 	var pool: Array[GrowthChoiceOption] = [ordinary, unlock, upgrade]
 	check(rules.candidates(pool, 4) == [ordinary, upgrade], "Owned epics upgrade in ordinary rounds")
 	check(rules.candidates(pool, 5) == [unlock], "Milestones prefer new epic mechanics")
-	check(rules.candidates([ordinary, upgrade], 10) == [upgrade], "Exhausted unlocks fall back to epic upgrades")
-	check(rules.candidates([ordinary], 15) == [ordinary], "Empty epic pool never blocks progression")
+	check(rules.candidates([ordinary, upgrade], 15) == [upgrade], "Exhausted unlocks still offer valid epic upgrades")
+	check(rules.candidates([ordinary], 15) == [ordinary], "An exhausted epic tier falls back to eligible common cards")
+	check(rules.candidates([ordinary, upgrade], 10) == [upgrade], "An exhausted legendary tier falls back to eligible epic cards")
+	check(rules.candidates([ordinary], 20) == [ordinary], "An exhausted legendary and epic pool still offers eligible common cards")
+	check(rules.candidates([], 20).is_empty(), "A milestone skips only when its entire eligible fallback pool is empty")
 	var state := RunGrowthState.new()
 	state.level = 7
 	state.pending_choices = 4
@@ -78,18 +81,14 @@ func _initialize() -> void:
 	vamp.id = &"vamp"
 	vamp.attribute = A.LIFESTEAL
 	vamp.bonus_per_level = 0.03
-	var cap := GrowthBuffEffect.new()
-	cap.attribute = A.LIFESTEAL_CAP
-	cap.bonus_per_level = 0.05
-	vamp.extra_effects = [cap]
 	mods.apply_buff(vamp)
 	hit.source = &"A02"
 	hit.amount = 1000
-	check(is_equal_approx(survival.recovery(hit, mods, 100, 50), 5.0), "Omnivamp uses actual damage with a separate cap")
+	check(is_equal_approx(survival.recovery(hit, mods, 100, 50), 30.0), "Omnivamp uses actual damage without a per-second cap")
 	survival.reset()
 	hit.amount = 10
-	check(is_equal_approx(survival.recovery(hit, mods, 100, 0.1), 0.1), "Only actual missing health consumes the healing budget")
-	check(is_equal_approx(survival.vamp_used(), 0.1), "Full health cannot spend recovery budget")
+	check(is_equal_approx(survival.recovery(hit, mods, 100, 0.1), 0.1), "Omnivamp restores only actual missing health")
+	check(survival.recovery(hit, mods, 100, 0.0) == 0.0, "Full health cannot receive surplus healing")
 	check(rules.speed_tier(8.1, 0) == 0 and rules.speed_tier(8.5, 0) == 1 and rules.speed_tier(7.9, 1) == 1, "Tier hysteresis prevents threshold flicker")
 	mods.reset()
 	var area: GrowthBuffDefinition = load("res://data/combat/scenes/world/growth/epic/global_range.tres")

@@ -10,6 +10,8 @@ F5 启动 World，采用普通战斗：Game Manager 的升级、抽卡和局内�
 
 `Player/CharacterSkillManager` 只管理本体弹射与 `Dash`；Dash 沿用 `PlayerBlink` 和 `blink` 输入，即 Shift 闪身，无需抽卡。基础剑术是独立基础动作，`WavePrototype/RunSkillManager` 管理五种局内可选技能，`SkillDraft` 管理选卡交互，`RunGrowth` 管理经验和升级。旧 `RunSkills` 脚本保留兼容入口。
 
+游戏内设置及人物属性页通过 `GameSettingsUI` 暂停场景树，关闭或退出恢复原先的暂停状态，独立的升级冻结不被解除。人物物理停工期间不采样按键，恢复前调用 `PlayerRicochet.discard_blocked_input(current_movement_mask)` 吸收移动边沿并清除积压的蓄力／发射／攻击／瞄准请求，同时清空闪身输入缓冲；该接口不推进位移、动能或冷却。BGM 与 UI 保持独立处理，战斗音效沿公共池的原暂停逻辑处理；不得通过设置 `Engine.time_scale=0` 暂停菜单。
+
 `tests/test_world_startup.gd` 检查落盘项目开关、World 的实际资源绑定、极光材质与时钟、初选和首次升级，并确认 City 独立配置保留；统一测试入口为 `tools/run_tests.ps1 -Test test_world_startup -UseProjectSystemSwitches`。该回归只检查无界面逻辑与数据，画面、动画和战斗手感仍须人工试玩。
 
 ## 接入入口

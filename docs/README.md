@@ -6,14 +6,13 @@
 
 | 目录 | 内容 |
 | --- | --- |
-| `gameplay/` | 波次、攻击、成长、人物动作与保留的玩法原型 |
+| `gameplay/` | 波次、攻击、成长与人物动作 |
 | `visuals/` | 地图、材质、光影、植被与环境表现 |
 | `ui/` | 界面、HUD 与交互说明 |
 | `audio/` | 动作和 UI 声音说明，战斗声音接口见自动扇击文档 |
 | `technical/` | 参数入口、性能、制作教程与问题反馈 |
-| `media/` | 实机截图、动画、试听，保留各功能原有预览目录名 |
+| `media/` | 功能截图、动画与试听；不保留旧地图过程截图 |
 | `references/` | 已确认参考、原始美术试作、界面部件展示与反馈证据；试作不代表正式采用 |
-| `archive/` | 已结束的历史设计 |
 
 当前项目入口和代码目录见 [仓库说明](../README.md) 与 [Godot 目录说明](../demoWithMeowa/1/README.md)。
 
@@ -27,8 +26,6 @@
 | [伤害数字框架](gameplay/damage-numbers.md) | 真实伤害事件、可替换样式、弹跳错位、旋转投影、冻结与节点复用 |
 | [战斗内容候选](combat-core-design.md) | 原自动攻击方案的怪物、攻击、增益与构筑讨论池；具体数量与规则继续讨论 |
 | [趣味海克斯提案](hex-system-proposal.md) | 阵法边界、地陷、庇护与上一局援场等候选，尚未接入 |
-| [南侧战斗区域搭建参考](gameplay/battle-area-plan.md) | 保留早期扩展布局和试走基线；当前范围与入口见正式地图说明 |
-| [波次循环灰盒](gameplay/wave-graybox.md) | 操作、敌人与基础攻击参数；挑战 UI 当前默认隐藏 |
 | [怪物刷新与波次基础](gameplay/wave-spawning.md) | 小股与怪潮交替、首波十只集中进场、整批容量预留、安全刷新与扩展接口 |
 | [怪物接入与大规模框架](gameplay/enemy-framework.md) | 统一怪物目录与数值、正式渐进 128 档、1～10 倍生命成长、512／768 扩展档位及待验收性能目标 |
 | [A01 自动扇击](gameplay/fan-auto-attack.md) | 本局技能框架、八级扇击／连斩／持续旋转、真实升级卡与实机动画 |
@@ -47,18 +44,14 @@
 | [正式地图说明](../demoWithMeowa/1/scenes/world/README.md) | 当前战斗核心、弹射障碍与手绘地表 |
 | [地表画笔](../demoWithMeowa/1/addons/terrain_painter/README.md) | 地表绘制、画笔配置、保存与撤销 |
 | [编辑器地图切换](../demoWithMeowa/1/addons/map_switcher/README.md) | 打开、运行与设置默认开发地图 |
-| [训练小屋](gameplay/training-hut.md) | 保留原型的交互、属性、建筑参数与存档；已退出正式地图 |
 | [第一只史莱姆](gameplay/first-slime.md) | 外观、巡逻与追踪；正式战斗使用波次组件的生命与接触伤害 |
-| [种植操作](gameplay/farming.md) | 保留的锄地、播种、浇水原型；本次 Demo 暂不纳入 |
-| [种植交互提示](ui/farming-ui.md) | 保留的像素提示原型；本次 Demo 暂不纳入 |
-| [3D 豌豆射手视觉原型](gameplay/peashooter.md) | 保留的体积与材质预览；本次 Demo 暂不纳入 |
 
 ## 人物与界面
 
 | 文档 | 内容 |
 | --- | --- |
 | [动态主菜单](ui/main-menu.md) | 回弹标题、分层弹射与近景击飞、按钮反馈、设置及入场交接 |
-| [人物跳跃与下落](gameplay/player-jump.md) | 动画、跳跃物理与台阶通行 |
+| [人物跳跃与下落](gameplay/player-jump.md) | World 暂时关闭跳跃与自动迈步，保留原型动作和参数参考 |
 | [人物瞬移闪身](gameplay/player-dodge.md) | 位移、碰撞、残影、音效与环境反馈 |
 | [人物受光](visuals/character-lighting.md) | 侧光、背光与亮边参数 |
 | [玩家与怪物遮挡轮廓](visuals/player-occlusion.md) | 建筑遮挡、动画帧采样与轮廓参数 |
@@ -75,41 +68,30 @@
 
 | 文档 | 内容 |
 | --- | --- |
-| [项目视觉设计](visuals/visual-design.md) | Lumina 原则在当前家园、连续地图与战斗内容中的应用、实际基准和后续视觉优先级 |
+| [项目视觉设计](visuals/visual-design.md) | 当前同高战区、城市建筑、光影与战斗可读性的视觉基线 |
 | [城市建筑制作规范](visuals/building-production-guide.md) | 三视图、风格与各面布局先确认，整套贴图一次生成，模型、UV、材质、人工验收与积分说明 |
 | [Meowa 音效制作与接入指南](audio/meowa-sfx-production-guide.md) | 画面特征与提示词审核、即时起声、成套音色、变体一致性、响度、积分控制与实战验收 |
-| [草地与光照明暗层次](visuals/value-lighting-sample.md) | 保留草底中间色、拓宽草花色阶、暖主光与冷色半球补光，以及原版切换与同机位实机 |
-| [雾与后处理细调](visuals/fog-post-sample.md) | 四种 Style 的近处去灰、远雾、泛光、暗部提亮与暗角；独立恢复、参数及小院／战区同机位对照 |
-| [Style 主光与后处理修复](visuals/style-light-repair.md) | 修复三种风格共用暖主光的回归，保留原始实际光影；实机前后对照 |
-| [原始光影增强](visuals/original-light-refinement.md) | 改善昏暗、强化明暗交界、统一主光与局部暖光方向；独立开关与实机对照 |
 | [HD-2D 视觉复刻教程](technical/hd2d-visual-tutorial.md) | 分阶段实现方法、提示词、参数与拍摄检查 |
 | [地图局部光斑](visuals/map-accent-light.md) | 保留的氛围参数与预览；正式地图关闭自动地面光斑 |
 | [远景空气光](visuals/atmospheric-light.md) | 保留的光束、辉光与体积散射参数；正式地图关闭远景装饰灯 |
 | [草地光影](visuals/grass-lighting.md) | 草丛受光、程序化法线与旋转时的阴影 |
-| [像素美术统一样板](visuals/pixel-art-sample.md) | 草地、卵石路、墙面、屋瓦的像素尺度、实机对比与检查器材质切换 |
-| [材质色阶统一](visuals/pixel-color-ramps.md) | 四类材质各五档底色、同机位实机对比与色板调节 |
-| [草地与花草样板](visuals/foliage-visual-sample.md) | 草底对比、花草五色色阶、同色花簇与密度；实机对比及恢复入口 |
-| [小院浓绿林缘样板](visuals/courtyard-foliage.md) | 八种 Meowa 蕨草、阔叶和长草、局部茂密铺设与边缘过渡；开关和同机位实机 |
-| [环境动态的时段与区域差异](visuals/environment-dynamics.md) | 自然风、光点的时段渐变和家园／战区差异，保留统一雨量；参数与动态实机 |
-| [边缘、植被与受光](visuals/surface-integration.md) | 路边草缘、台地衔接、簇内层次及地表／建筑／人物独立法线；实机图与恢复参数 |
+| [环境动态的时段与区域差异](visuals/environment-dynamics.md) | 共享自然风与光点倍率、地图独立区域配置，保留统一雨量 |
 | [萤火虫](visuals/fireflies.md) | 光点颜色、亮度、大小与明暗变化 |
 | [水面与湿地面光照](visuals/water-lighting.md) | 水体波光，以及当前战区的薄湿膜、路灯／点光源倒影与波纹参数 |
 | [泡沫与水花](visuals/water-foam.md) | 颜色、尺度、岸边与瀑布落点 |
 | [瀑布表现](visuals/waterfall-visuals.md) | 水帘与首版实现说明 |
-| [日照演示](visuals/daylight-preview.md) | 保留作对照的可选功能，默认关闭 |
 | [BGM 与风声](../demoWithMeowa/1/assets/meowa/audio/README.md) | 音源、循环淡化与试听 |
 | [全局战斗音效](gameplay/fan-auto-attack.md#全局战斗音效管理) | 共享预算、优先级、密集合并、人物听觉中心、分组混音及新攻击接入 |
 | [细雨与天气](../demoWithMeowa/1/assets/meowa/weather/README.md) | 雨声、镜头水滴及天气配置 |
 
 ## 历史参考与反馈
 
-- [仙门灯会历史方案](archive/lantern-festival-design.md)：保留早期设计供参考，不作为当前世界题材或实现要求。
 - [本体弹射概念图](references/body-ricochet/)：蓄力、动作与场景玩法参考；当前运动框架见人物本体弹射文档，参考图不作为动画帧。
 - [Meowa 动画反馈](technical/meowa-animation-feedback.md)：原始观察、调用证据与已接入结果。[证据包](references/meowa-animation-feedback.zip) 和 [原始证据目录](references/meowa-animation-feedback/) 保留。
 - 已确认的界面参考与提取组件：[装备与技能](references/equipment-skills-reference/)、[背包](references/inventory-reference/)、[人物属性条](references/player-bars-reference/) 与 [技能栏参考图](media/skill-hud-preview/reference.png)。
 
 ## 目录维护
 
-功能说明和仍被引用的实机图片、动画、试听保留在这里。一次性截图、检查脚本、分析结果和临时下载放到 `D:\.codexfile\work\<任务名>`；历史设计放到 `archive/`，并标明适用范围。
+功能说明和仍被引用的实机图片、动画、试听保留在这里。一次性截图、检查脚本、分析结果和临时下载放到 `D:\.codexfile\work\<任务名>`。过时地图方案与过程截图不再保留；历史可从 Git 记录追溯。
 
 功能文档记录当前用法、接口和必要对照，避免重复总体设计或堆积任务流水。未接入的玩法标明提案，保留原型与历史参考注明适用范围。

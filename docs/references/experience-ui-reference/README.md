@@ -62,4 +62,4 @@
 
 ## 输入参考与提示词
 
-背景来自 [当前战区实机](../../media/pixel-color-preview/battle-after.png)；卡片风格来自 [已确认参考](../upgrade-ui-reference/reference-v3.png)，布局同时参考 [现有成长界面](../../media/run-growth-preview/level-up.png)。生成采用 imagegen 内置工具，完整提示词见 [prompts.md](prompts.md)。
+背景来自 ；卡片风格来自 [已确认参考](../upgrade-ui-reference/reference-v3.png)，布局同时参考 。生成采用 imagegen 内置工具，完整提示词见 [prompts.md](prompts.md)。

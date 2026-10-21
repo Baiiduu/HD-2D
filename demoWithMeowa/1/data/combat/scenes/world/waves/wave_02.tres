@@ -2,14 +2,13 @@
 
 [ext_resource type="Script" uid="uid://i1xql6e8gpsr" path="res://scripts/combat/wave_spawn_entry.gd" id="1_1ibui"]
 [ext_resource type="Resource" uid="uid://cdl3rm50c677s" path="res://data/combat/scenes/world/enemies/wave_slime.tres" id="2_hjidt"]
-[ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/leaf_charger.tres" id="3_a5tku"]
-[ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/lantern_spitter.tres" id="4_d07nv"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/enemies/bell_frog.tres" id="3_frog"]
 [ext_resource type="Script" uid="uid://caklrlj8ospwr" path="res://scripts/combat/wave_definition.gd" id="5_6e18b"]
 
 [sub_resource type="Resource" id="Resource_5lodd"]
 script = ExtResource("1_1ibui")
 enemy = ExtResource("2_hjidt")
-count = 6
+count = 1
 start_delay = 0.6
 interval = 0.55
 spawn_zone_ids = PackedStringArray("WestNorth", "WestSouth")
@@ -17,29 +16,29 @@ spawn_zone_ids = PackedStringArray("WestNorth", "WestSouth")
 [sub_resource type="Resource" id="Resource_gf685"]
 script = ExtResource("1_1ibui")
 mixed_horde = true
-count = 14
-start_delay = 8.0
-batch_size = 14
+count = 13
+start_delay = 9.0
+batch_size = 13
 interval = 9.0
 spawn_zone_ids = PackedStringArray("EastNorth", "EastSouth")
 
 [sub_resource type="Resource" id="Resource_3yr3l"]
 script = ExtResource("1_1ibui")
-enemy = ExtResource("3_a5tku")
-count = 4
-start_delay = 12.0
-interval = 3.2
+mixed_horde = true
+count = 13
+start_delay = 0.6
+interval = 0.5
 spawn_zone_ids = PackedStringArray("WestNorth", "EastSouth")
 
 [sub_resource type="Resource" id="Resource_88ipu"]
 script = ExtResource("1_1ibui")
-enemy = ExtResource("4_d07nv")
-count = 4
-start_delay = 16.0
+enemy = ExtResource("3_frog")
+count = 1
+start_delay = 14.0
 interval = 4.0
 spawn_zone_ids = PackedStringArray("EastNorth", "SouthWest")
 
 [resource]
 script = ExtResource("5_6e18b")
-description = "28 只：6 只史莱姆试探、14 只目录混合怪潮、4 冲锋虫与 4 花兽穿插"
-entries = Array[ExtResource("1_1ibui")]([SubResource("Resource_5lodd"), SubResource("Resource_gf685"), SubResource("Resource_3yr3l"), SubResource("Resource_88ipu")])
+description = "28 只：1 只史莱姆、13 只混编小股、13 只混编怪潮，后段加入 1 只辅助蛙"
+entries = Array[ExtResource("1_1ibui")]([SubResource("Resource_5lodd"), SubResource("Resource_3yr3l"), SubResource("Resource_gf685"), SubResource("Resource_88ipu")])

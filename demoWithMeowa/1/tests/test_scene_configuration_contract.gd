@@ -28,6 +28,18 @@ func run() -> void:
 	root.add_child(world)
 	await frames()
 	var player := world.get_node("Player") as Player
+	var storm := world.get_node("WavePrototype/RicochetStorm") as RicochetStorm
+	check(is_equal_approx(profile.storm_damage, 20.0) and is_equal_approx(storm.get_attack_stats(1).damage, 20.0), "World binds twenty base storm damage into the actual first-level attack")
+	check(is_equal_approx(storm.get_attack_stats(4).damage, 32.0), "World retains storm skill-level scaling on top of the new twenty-damage base")
+	var ricochet_growth := RunCombatModifiers.new()
+	var speed_growth: GrowthBuffDefinition = load("res://data/combat/scenes/world/growth/ricochet/launch_speed.tres")
+	var momentum_growth: GrowthBuffDefinition = load("res://data/combat/scenes/world/growth/ricochet/flight_duration.tres")
+	for rank in 6:
+		var stats := player.body_ricochet.get_stats(ricochet_growth)
+		var seconds: float = (stats.maximum_launch_speed - profile.ricochet_rules.minimum_bounce_speed) / stats.flight_deceleration
+		check(is_equal_approx(seconds, [5.0, 7.8125, 11.25, 15.3125, 20.0, 28.203125][rank]), "Actual launch stats reach the twenty-second build at rank four in each direction and continue growing: %d" % rank)
+		ricochet_growth.apply_buff(speed_growth)
+		ricochet_growth.apply_buff(momentum_growth)
 	var loadout := world.get_node("LoadoutUI") as LoadoutUI
 	check(not profile.equipment_bonuses_enabled and not loadout.state.equipment_bonuses_enabled, "World binds disabled equipment bonuses before loading character state")
 	check(loadout.state.get_attribute_totals().is_empty() and player.max_health == loadout.training_rules.base_health, "World spawns with actual base health despite retained starter equipment")
@@ -47,7 +59,7 @@ func run() -> void:
 	check(not run_manager.candidates().any(func(option): return String(option.id).begins_with("skill:mirror_mark:")), "World upgrades cannot offer mirror cards")
 	var draft := world.get_node("WavePrototype/SkillDraft") as RunSkillDraft
 	check(draft.present_initial_choice(), "Remaining World skills still open the starting draw")
-	check(draft._initial_pool.size() == 2 and not draft._initial_offered.has(&"initial:mirror_mark"), "Starting draw contains the two remaining available skills")
+	check(draft._initial_pool.size() == 3 and draft._initial_cards.any(func(option): return option.id == &"initial_buff:L01") and not draft._initial_offered.has(&"initial:mirror_mark"), "Starting draw contains two remaining skills and the legendary growth")
 	var growth := world.get_node("WavePrototype/RunGrowth") as RunGrowth
 	var rerolls := growth.rerolls_left
 	draft.initial_choice.request_reroll()

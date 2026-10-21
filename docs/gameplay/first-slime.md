@@ -4,9 +4,7 @@
 
 原展示模式完成外观、待机与跳动动画、巡逻、发现玩家后追踪、失去视线或超过活动边界后返回。地图独立展示实例靠近玩家后停下，不造成伤害。
 
-同一场景已接入 [核心波次](wave-graybox.md)，战斗实例持续追击，接触造成伤害，可受伤和死亡。基础生命下通常两次一级扇击命中击杀，无尽生命成长与增益会改变所需次数。以下巡逻约定继续适用于保留的展示模式。
-
-![早期小院布局中的史莱姆](../media/slime-preview/in-map.png)
+正式战斗的怪物登记、数值与状态规则见[怪物接入框架](enemy-framework.md)，波次节奏见[无尽波次](endless-waves.md)。下文巡逻约定仅适用于保留的史莱姆展示原型。
 
 ## 行为
 
@@ -46,7 +44,6 @@
 - 动画资源：`demoWithMeowa/1/assets/meowa/slime/animations.tres`
 - 原始方向图、Meowa 动画与帧图集：`assets/meowa/slime/views`、`source`、`frames`
 - [八方向外观](../media/slime-preview/directions.png)、[正面跳动动画](../media/slime-preview/hop.gif)
-- [旋转至 -45°](../media/slime-preview/view-minus45.png)、[旋转至 90°](../media/slime-preview/view-90.png)
 
 实机截图保留现有相机 FOV 30°、距离 11 米、俯角 10°、焦点高度 0.75 米与深度景深；只移动人物观察位置及旋转水平朝向，没有新增演示地图或改动植被布局。
 

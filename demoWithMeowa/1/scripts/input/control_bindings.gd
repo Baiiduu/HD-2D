@@ -15,6 +15,7 @@ const SPECS := [
 	{"id": &"jump", "label": "跳跃", "group": "战斗", "keys": [KEY_SPACE], "mouse": true},
 	{"id": &"interact", "label": "交互／开始与继续波次", "group": "界面与环境", "keys": [KEY_F]},
 	{"id": &"inventory", "label": "人物与背包", "group": "界面与环境", "keys": [KEY_TAB]},
+	{"id": &"character", "label": "人物属性", "group": "界面与环境", "keys": [KEY_C]},
 	{"id": &"cycle_style", "label": "切换光影风格", "group": "界面与环境", "keys": [KEY_R]},
 	{"id": &"toggle_rain", "label": "下雨开关", "group": "界面与环境", "keys": [KEY_G]},
 	{"id": &"retry", "label": "结算后重试", "group": "界面与环境", "keys": [KEY_T]},

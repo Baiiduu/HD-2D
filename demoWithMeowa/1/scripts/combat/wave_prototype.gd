@@ -152,6 +152,9 @@ var skill_draft: RunSkillDraft:
 @export_range(2.0, 30.0, 1.0, "suffix:s") var spawn_block_timeout := 10.0
 ## 包含该波延迟分裂/召唤的总登记数量，防止无界追加。
 @export_range(1, 4096, 1) var max_spawns_per_wave := 512
+@export_group("人物暴击")
+@export_range(0.0, 1.0, 0.01) var critical_chance := 0.0
+@export_range(1.0, 10.0, 0.1) var critical_multiplier := 2.0
 @export_group("战斗保护")
 ## 无路线或跌落持续达到此时间后结束挑战，可重试，避免残怪永久卡波。
 @export_range(3.0, 30.0, 1.0, "suffix:s") var unreachable_timeout := 10.0
@@ -226,6 +229,7 @@ var _pending: int:
 var _wave_clock := 0.0
 var _hurt_clock := 0.0
 var _random := RandomNumberGenerator.new()
+var _critical_random := RandomNumberGenerator.new()
 var _ui: WavePrototypeUI
 var _notice := ""
 var _notice_clock := 0.0
@@ -257,7 +261,15 @@ var _clearing_wave := false
 var _wave_finish_deadline := 0
 var _prepared_feedback: EnemyFeedbackPool
 
-## 出手时读取剩余动能；飞行弹丸与千手后续刀使用同一份快照。
+## 预览当前刀数但不推进出手档位，供只读人物面板使用。
+func current_sword_strikes() -> int:
+	var body := player.body_ricochet if is_instance_valid(player) else null
+	var flying := body != null and body.flying
+	var previous := _strike_speed_tier if body and body.flight_serial == _strike_flight_serial else -1
+	var tier := growth_rules.speed_tier(body.flight_speed, previous) if growth_rules and flying else -1
+	return combat_modifiers.strike_count(tier, flying)
+
+## 出手快照会推进刀数档位；只读人物面板使用 current_sword_strikes。
 func attack_snapshot(flight_sword := false, remaining_speed := -1.0) -> CombatAttackSnapshot:
 	var snapshot := CombatAttackSnapshot.new()
 	var body := player.body_ricochet if is_instance_valid(player) else null
@@ -298,6 +310,7 @@ func _ready() -> void:
 	_sync_batch_crowd_index()
 	_sync_native_swarm()
 	_random.seed = random_seed
+	_critical_random.seed = random_seed ^ 0x43524954
 	_ui = UI_SCRIPT.new()
 	_ui.controller = self
 	_ui.visible = show_ui
@@ -534,6 +547,7 @@ func start_run() -> bool:
 	outcome = Outcome.NONE
 	result_reason = ""
 	_random.seed = random_seed
+	_critical_random.seed = random_seed ^ 0x43524954
 	if not _prepare_run():
 		_starting_run = false
 		return false
@@ -542,6 +556,9 @@ func start_run() -> bool:
 	var generation := _generation
 	combat_modifiers.reset()
 	_survival.reset()
+	if skill_draft and not skill_draft.apply_initial_growth():
+		_starting_run = false
+		return false
 	_strike_speed_tier = -1
 	combat_modifiers.damage_disabled = _run_population != null and _run_population.simulation_mode
 	if combat_modifiers.damage_disabled and skills and skills.is_enabled() and not skills.apply_simulation_loadout(_run_population.simulation_skills):
@@ -980,6 +997,7 @@ func _physics_process(delta: float) -> void:
 	# 最后一击已完成；收尾镜头不延长有效战斗时间或影响计时得分。
 	if is_wave_finish_pending(): return
 	_wave_clock += delta
+	combat_modifiers.advance_temporary(delta)
 	_survival.advance(delta)
 	if is_instance_valid(_spawn_shadows): _spawn_shadows.advance(_wave_clock)
 	_process_spawns()
@@ -1278,6 +1296,7 @@ func _materialize_enemy(definition: WaveEnemyDefinition, spawn: Vector3, batch: 
 	enemy.configure_wave({
 		"native_swarm": _native_for(enemy),
 		"health_loss_disabled":combat_modifiers.damage_disabled,
+		"critical_chance":critical_chance, "critical_multiplier":critical_multiplier, "critical_random":_critical_random,
 		"enemy_occlusion_outline_enabled":enemy_occlusion_outline_enabled,
 		"wave":wave, "health_multiplier":get_enemy_health_multiplier() if definition.health_growth_enabled else 1.0,
 		"player": player, "terrain": terrain, "camera": player.movement_camera,
@@ -1319,6 +1338,7 @@ func _enemy_defeated(enemy: WaveEnemy) -> void:
 	_unreachable.erase(enemy.get_instance_id())
 	_reachability_last.erase(enemy.get_instance_id())
 	kills += 1
+	if phase == Phase.BATTLE: combat_modifiers.record_kill()
 	enemy_defeated.emit(enemy)
 	enemy_defeated_at.emit(enemy.global_position, enemy.experience_reward)
 	changed.emit()
@@ -1401,6 +1421,7 @@ func _clear_wave() -> void:
 	if is_wave_finish_pending(): return
 	if not _clearing_wave:
 		_clearing_wave = true
+		combat_modifiers.clear_temporary()
 		_cleanup_attacks(true)
 		var generation := _generation
 		wave_clearing.emit()

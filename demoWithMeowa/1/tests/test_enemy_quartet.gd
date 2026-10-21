@@ -329,7 +329,7 @@ func run() -> void:
 			if entry.mixed_horde:
 				for data in wave._horde_pool: ids[data.enemy_id] = true
 			else: ids[entry.enemy.enemy_id] = true
-		check(ids.size() == 5 and not ids.has(&"mini_slime"), "首波起及无尽模板包含五种主体，幼体只从分裂进入")
+		check(ids.size() == (4 if number == 1 else 5) and not ids.has(&"mini_slime"), "首波混编四种主怪，后续穿插辅助蛙，幼体只从分裂进入")
 	var parameters: Array[Dictionary] = preload("res://addons/parameter_hub/catalog.gd").new().collect(world)
 	for property in ["charge_speed", "projectile_speed", "child_enemy_id", "boost_seconds"]:
 		check(parameters.any(func(item): return item.property == property and item.category == "战斗与成长"), "新怪物参数可从统一编辑器入口调整：" + property)

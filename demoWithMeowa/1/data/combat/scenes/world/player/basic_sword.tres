@@ -21,4 +21,5 @@ effect_energy = 0.08
 arc_width = 0.25
 meowa_stretch_enabled = true
 meowa_visibility_strength = 1.0
+single_sound_per_swing = true
 sweep_sounds = Array[AudioStream]([ExtResource("common_hit_1"), ExtResource("common_hit_2"), ExtResource("common_hit_3")])

@@ -5,3 +5,5 @@
 [resource]
 script = ExtResource("rules")
 resource_name = "正式地图成长与续航"
+soften_damage_growth = true
+damage_growth_exponent = 0.5

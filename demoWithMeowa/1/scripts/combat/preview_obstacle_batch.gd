@@ -59,6 +59,50 @@ func proves(from: Vector3, to: Vector3) -> bool:
 	proved_rays += 1
 	return true
 
+## 水平扇面共用一次角度判定；0 为已证明无障碍，1 仍须原生精查。
+## 障碍包围盒在本次 cover() 内读取，不保存到下一次显示或物理步。
+func fan_candidates(from: Vector3, basis: Basis, radius: float, angle: float, steps: int) -> PackedByteArray:
+	var result := PackedByteArray()
+	result.resize(steps + 1)
+	result.fill(1)
+	var extent := Vector3(radius, 0.0, radius)
+	if not _bounded or angle <= 0.0 or angle > TAU + 0.000001: return result
+	if not _bounds.has_point(from - extent) or not _bounds.has_point(from + extent): return result
+	if not basis.y.is_equal_approx(Vector3.UP) or not basis.is_equal_approx(basis.orthonormalized()): return result
+	result.fill(0)
+	var inverse := basis.inverse()
+	var half := angle * 0.5
+	var increment := angle / steps
+	for obstacle in _obstacles:
+		var low := obstacle.position
+		var high := obstacle.end
+		if from.y < low.y or from.y > high.y: continue
+		if from.x >= low.x and from.x <= high.x and from.z >= low.z and from.z <= high.z:
+			result.fill(1)
+			return result
+		var anchor := NAN
+		var first := INF
+		var last := -INF
+		# 盒外观察凸矩形的方向锥小于半圈，四角围出所有可能命中的方向。
+		for x in [low.x, high.x]:
+			for z in [low.z, high.z]:
+				var local := inverse * (Vector3(x, from.y, z) - from)
+				var theta := atan2(local.x, -local.z)
+				if is_nan(anchor): anchor = theta
+				theta = anchor + wrapf(theta - anchor, -PI, PI)
+				first = minf(first, theta)
+				last = maxf(last, theta)
+		if last - first >= PI - 0.0001:
+			result.fill(1)
+			return result
+		for shift in [-TAU, 0.0, TAU]:
+			# 两端多保留一个原采样方向，含掠过边角及浮点舍入的余量。
+			var begin := maxi(0, floori((first + shift + half) / increment) - 1)
+			var end := mini(steps, ceili((last + shift + half) / increment) + 1)
+			for index in range(begin, end + 1): result[index] = 1
+	proved_rays += result.count(0)
+	return result
+
 static func _native_bounds(shape: RID, transform: Transform3D) -> AABB:
 	var kind := PhysicsServer3D.shape_get_type(shape)
 	if kind not in [PhysicsServer3D.SHAPE_BOX, PhysicsServer3D.SHAPE_SPHERE, PhysicsServer3D.SHAPE_CAPSULE, PhysicsServer3D.SHAPE_CYLINDER, PhysicsServer3D.SHAPE_CONVEX_POLYGON]: return AABB(Vector3.INF, Vector3.ZERO)

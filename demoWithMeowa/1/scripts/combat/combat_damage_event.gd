@@ -19,6 +19,9 @@ var flight_id := 0
 var score_batch: ScoreBatch
 ## 表现标签，与伤害公式独立；未知标签回退普通样式。
 var style: StringName = &"normal"
+## Real critical result; a visual-only critical label never creates extra damage.
+var critical := false
+var critical_multiplier := 1.0
 var lethal := false
 ## 模拟命中保留实际扣血 amount = 0；飘字使用完整攻击数值，不按剩余生命截断。
 var simulated := false
@@ -26,7 +29,7 @@ var simulated := false
 func display_amount() -> float:
 	return requested_amount if simulated else amount
 
-static func from_hit(enemy: WaveEnemy, dealt: float, requested: float, context: Dictionary) -> CombatDamageEvent:
+static func from_hit(enemy: WaveEnemy, dealt: float, requested: float, context: Dictionary, critical := false, multiplier := 1.0) -> CombatDamageEvent:
 	var event := CombatDamageEvent.new()
 	event.amount = dealt
 	event.requested_amount = requested
@@ -41,6 +44,8 @@ static func from_hit(enemy: WaveEnemy, dealt: float, requested: float, context: 
 	event.attack_snapshot = context.get("attack_snapshot") as CombatAttackSnapshot
 	event.flight_id = maxi(0, int(context.get("flight_id", 0)))
 	event.score_batch = context.get("score_batch") as ScoreBatch
-	event.style = context.get("style", &"normal")
+	event.critical = critical
+	event.critical_multiplier = multiplier
+	event.style = &"critical" if critical else context.get("style", &"normal")
 	event.lethal = enemy.health <= 0.0
 	return event

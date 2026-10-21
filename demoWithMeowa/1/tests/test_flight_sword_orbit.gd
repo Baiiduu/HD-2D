@@ -127,7 +127,7 @@ func input_and_art_checks() -> void:
 	check(material.shader.resource_path.ends_with("player_sword_orbit.gdshader"), "弹射使用独立极坐标环绕材质")
 	check(material.get_shader_parameter("stroke_texture") == formal.flight_ribbon_visual.ribbon_brush, "环绕材质复用原生 Meowa 笔触")
 	var mesh := effect.mesh
-	check(mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX].size() == 129 * 5, "整圈加密角度模板，保持原半圈的墙体裁切精度")
+	check(mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX].size() == 129 * 3, "整圈保留 129 个原始角度采样，只移除透明中心的两圈顶点")
 	var phase: float = material.get_shader_parameter("leading_angle")
 	session.set_combat_frozen(true)
 	sword._physics_process(0.5)

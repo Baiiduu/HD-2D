@@ -35,8 +35,8 @@ func run() -> void:
 	check(rules.validation_error().is_empty(), "正式成长规则合法")
 	for pair in [[1, 1.0], [3, 1.0], [4, 1.15], [10, 2.05], [20, 3.55], [62, 9.85], [63, 10.0], [1000000000, 10.0]]:
 		check(is_equal_approx(rules.multiplier(pair[0]), pair[1]), "起始波、线性增幅和十倍封顶准确")
-	rules.maximum_multiplier = 11.0
-	check(not rules.validation_error().is_empty(), "不允许配置超过十倍")
+	rules.maximum_multiplier = 101.0
+	check(not rules.validation_error().is_empty(), "不允许配置超过安全百倍上限")
 	rules.maximum_multiplier = 0.9
 	check(not rules.validation_error().is_empty(), "不允许上限低于下限")
 	rules.maximum_multiplier = 10.0
@@ -54,6 +54,44 @@ func run() -> void:
 	rules.bonus_per_wave = 1e-300
 	check(rules.multiplier(1000000000) == 1.0, "极小正增幅不溢出步数")
 	rules.bonus_per_wave = 0.15
+	var late := WaveHealthGrowthRules.new()
+	late.maximum_multiplier = 100.0
+	late.late_start_wave = 10
+	late.late_bonus_per_wave = 0.15
+	check(is_equal_approx(late.multiplier(9), rules.multiplier(9)), "复合成长起始前保留原有线性生命")
+	check(is_equal_approx(late.multiplier(10), rules.multiplier(10) * 1.15), "后期起始波准确增加首层复合生命")
+	check(is_equal_approx(late.multiplier(11), rules.multiplier(11) * 1.15 * 1.15), "后期每波叠乘且线性基底继续更新")
+	check(late.multiplier(1000000000) == 100.0, "极大波号在指数运算前封顶")
+	late.bonus_per_wave = 0.0
+	check(is_equal_approx(late.multiplier(10), 1.15), "关闭线性增幅仍可独立使用后期成长")
+	late.late_bonus_per_wave = -0.01
+	check(not late.validation_error().is_empty(), "拒绝负复合增幅")
+	late.late_bonus_per_wave = INF
+	check(not late.validation_error().is_empty(), "拒绝非有限复合增幅")
+	late.late_bonus_per_wave = 1.01
+	check(not late.validation_error().is_empty(), "拒绝超过安全范围的复合增幅")
+	late.late_bonus_per_wave = 0.15
+	late.late_start_wave = 0
+	check(not late.validation_error().is_empty(), "拒绝非正复合起始波")
+	var sustained := WaveHealthGrowthRules.new()
+	sustained.sustained_start_wave = 10
+	sustained.sustained_bonus_per_wave = 0.1
+	sustained.sustained_maximum_multiplier = 100.0
+	check(is_equal_approx(sustained.multiplier(9), rules.multiplier(9)), "成型后成长起始前不改原曲线")
+	check(is_equal_approx(sustained.multiplier(10), rules.multiplier(10) * 1.1) and is_equal_approx(sustained.multiplier(11), rules.multiplier(11) * 1.2), "成型后额外增幅按波数线性累计，不逐波复利")
+	check(sustained.multiplier(1000000000) == 100.0, "成型后成长使用独立安全上限")
+	sustained.sustained_start_wave = 0
+	check(sustained.multiplier(1000000000) == rules.multiplier(1000000000), "关闭成型后成长完全恢复原曲线")
+	sustained.sustained_start_wave = -1
+	check(not sustained.validation_error().is_empty(), "拒绝负成型后成长起始波")
+	sustained.sustained_start_wave = 10
+	for value in [-0.1, INF, NAN, 1.01]:
+		sustained.sustained_bonus_per_wave = value
+		check(not sustained.validation_error().is_empty(), "拒绝无效成型后成长增幅")
+	sustained.sustained_bonus_per_wave = 0.1
+	for value in [5.0, 1001.0, INF, NAN]:
+		sustained.sustained_maximum_multiplier = value
+		check(not sustained.validation_error().is_empty(), "成型后上限覆盖前段且有限有界")
 	world = load("res://scenes/world/world.tscn").instantiate()
 	world.get_node("WorldEntry").preview_on_direct_run = false
 	world.get_node("WavePresentation").enabled = false
@@ -69,6 +107,7 @@ func run() -> void:
 	profile.population_rules.max_active = 128
 	profile.population_rules.enemies_per_wave_increment = 16
 	profile.population_rules.max_wave_enemies = 384
+	profile.health_growth_rules = WaveHealthGrowthRules.new()
 	profile.default_enemy = profile.default_enemy.duplicate()
 	profile.default_enemy.health = 20.0
 	root.add_child(world)
@@ -145,7 +184,7 @@ func run() -> void:
 	check(wave._spawn_enemy() and wave.enemies[-1].health == ordinary_health, "有限模式不意外应用无尽成长")
 	wave._finish("test reset")
 	wave.return_home()
-	rules.maximum_multiplier = 11.0
+	rules.maximum_multiplier = 101.0
 	check(not start() and wave.outcome == WavePrototype.Outcome.ERROR and wave.enemies.is_empty() and wave._pending == 0, "无效规则在开局前明确失败并清理")
 	for audio in world.find_children("*", "AudioStreamPlayer", true, false): audio.stop()
 	await create_timer(0.1).timeout

@@ -6,7 +6,7 @@
 
 - 引擎：`three@0.170.0`，后处理用 `postprocessing@6.36.4` 和 `n8ao@1.9.4`，构建用 Vite 5
 - 美术素材：运行与构建读取当前目录的 `public/`，不再依赖外部素材目录。已有共享素材和道具已原样复制，来源、尺寸与 SHA-256 见 `assets/asset-catalog.json`。广场与远景来源见 `public/opening/provenance.json`。天空和雾使用 shader，广场远景使用原生 Meowa 图集；原四境的程序化远山与粒子保留。
-- 《仙门灯会·异变》的早期方案保留在 [历史设计文档](../../docs/archive/lantern-festival-design.md)。本次在用户授权的参考方向内制作第一块环境；建筑美术与后续区域继续先沟通。第一块环境见 [实现与美术来源](assets/opening-environment.md)。
+- 这是早期 Three.js 环境原型，仅作效果实现对照；当前 Godot 玩法以[设计文档](../../docs/rpg-game-design.md)为准。原型素材来源见[实现与美术来源](assets/opening-environment.md)。
 
 ## 运行
 

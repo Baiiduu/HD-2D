@@ -7,6 +7,8 @@ var _random := RandomNumberGenerator.new()
 var _preferred_ricochet: StringName = &""
 var _followup_misses := 0
 var free_selection := false
+var rarity_weights: Dictionary = {}
+var guaranteed_rarity := -1
 
 func reset(seed_value := 0) -> void:
 	clear_followup()
@@ -40,7 +42,10 @@ func can_redraw(pool: Array[GrowthChoiceOption], shown: Array[GrowthChoiceOption
 	var ids := {}
 	for option in shown: ids[option.id] = true
 	var remaining := _available(pool)
-	if free_selection: return remaining.any(func(option: GrowthChoiceOption): return not ids.has(option.id))
+	if free_selection:
+		if shown.size() == 1 and remaining.any(func(option): return option.get_card_rarity() == guaranteed_rarity):
+			remaining = remaining.filter(func(option): return option.get_card_rarity() == guaranteed_rarity)
+		return remaining.any(func(option: GrowthChoiceOption): return not ids.has(option.id))
 	var eligible: Array[GrowthChoiceOption] = []
 	var slots := shown.size()
 	var skills: Array[GrowthChoiceOption] = remaining.filter(_is_skill)
@@ -61,6 +66,12 @@ func draw(pool: Array[GrowthChoiceOption], count: int, previous: Array[GrowthCho
 	var avoid := {}
 	for option in previous: avoid[option.id] = true
 	var result: Array[GrowthChoiceOption] = []
+	if free_selection and count > 0 and guaranteed_rarity >= 0:
+		var guaranteed: Array[GrowthChoiceOption] = remaining.filter(func(option): return option.get_card_rarity() == guaranteed_rarity)
+		if not guaranteed.is_empty():
+			var option := _pick(guaranteed, avoid)
+			result.append(option)
+			remaining.erase(option)
 	var skills: Array[GrowthChoiceOption] = remaining.filter(_is_skill)
 	if not free_selection and count > 0 and not skills.is_empty():
 		var skill := _pick(skills, avoid)
@@ -85,7 +96,11 @@ func draw(pool: Array[GrowthChoiceOption], count: int, previous: Array[GrowthCho
 	return result
 
 func _available(pool: Array[GrowthChoiceOption]) -> Array[GrowthChoiceOption]:
-	return pool.filter(func(option: GrowthChoiceOption): return option != null and option.enabled)
+	return pool.filter(func(option: GrowthChoiceOption): return option != null and option.enabled and _weight(option) > 0.0)
+
+func _weight(option: GrowthChoiceOption) -> float:
+	var value: float = rarity_weights.get(option.get_card_rarity(), 1.0)
+	return value if is_finite(value) and value > 0.0 else 0.0
 
 func _is_skill(option: GrowthChoiceOption) -> bool:
 	return option.category in [GrowthChoiceOption.Category.LEARN_SKILL, GrowthChoiceOption.Category.UPGRADE_SKILL]
@@ -101,4 +116,11 @@ func _pick(options: Array[GrowthChoiceOption], avoid: Dictionary) -> GrowthChoic
 	for option in options:
 		if not avoid.has(option.id): fresh.append(option)
 	var source := fresh if not fresh.is_empty() else options
-	return source[_random.randi_range(0, source.size() - 1)]
+	if rarity_weights.is_empty(): return source[_random.randi_range(0, source.size() - 1)]
+	var total := 0.0
+	for option in source: total += _weight(option)
+	var roll := _random.randf() * total
+	for option in source:
+		roll -= _weight(option)
+		if roll < 0.0: return option
+	return source[-1]

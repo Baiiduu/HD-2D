@@ -31,6 +31,9 @@ static func build(source: String, functions: Array[String]) -> RefCounted:
 		var comments := RegEx.new()
 		comments.compile("//[^\\n]*")
 		body = comments.sub(body, "", true)
+		var loop := RegEx.new()
+		loop.compile("for\\s*\\(int\\s+(\\w+)\\s*=\\s*0;\\s*\\1\\s*<\\s*(\\d+);\\s*\\1\\+\\+\\)")
+		body = loop.sub(body, "for $1 in range($2)", true)
 		body = body.replace("{", "{\n").replace("}", "\n}\n").replace(";", ";\n")
 		depth = 1
 		for raw in body.split("\n", false):
@@ -68,6 +71,8 @@ static func build(source: String, functions: Array[String]) -> RefCounted:
 				var condition := line.substr(4, close - 4)
 				var statement := line.substr(close + 1).strip_edges()
 				line = "if " + condition + ":" + (" " + statement if not statement.is_empty() else "")
+			elif line.begins_with("for "):
+				line += ":"
 			assert(not line.contains("?"), "Unsupported shader expression: " + line)
 			code += "\t".repeat(depth) + line + "\n"
 			if block: depth += 1
@@ -96,6 +101,7 @@ var body_cover = 0.0
 var mask_calls = 0
 var texture_calls = 0
 var noise_calls = 0
+var length_calls = 0
 var ink_mode = 1
 func vec2(x, y = null):
 	return Vector2(x, x if y == null else y)
@@ -104,7 +110,9 @@ func vec3(x, y = null, z = null):
 func vec4(x, y, z, w):
 	return Vector4(x,y,z,w)
 func dot(a, b): return a.dot(b)
-func length(value): return value.length()
+func length(value):
+	length_calls += 1
+	return value.length()
 func fract(value): return value - floor(value)
 func step(edge, value): return 0.0 if value < edge else 1.0
 func rgb(value): return Vector3(value.x, value.y, value.z)

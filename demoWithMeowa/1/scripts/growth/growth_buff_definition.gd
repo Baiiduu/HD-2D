@@ -6,6 +6,7 @@ const Attribute := GrowthBuffEffect.Attribute
 const RICOCHET_PROPERTIES := GrowthBuffEffect.RICOCHET_PROPERTIES
 
 @export_group("本局属性增益")
+@export var available_at_start := false
 ## 主属性与附加效果统一授予；弹射参数仍在开始蓄力时固定本次快照。
 @export var attribute: Attribute = Attribute.DAMAGE
 ## 同类相加：通常 0.2 为 +20% 效率，速度保留 0.05 为 +5 个百分点。

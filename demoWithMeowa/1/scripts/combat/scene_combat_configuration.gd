@@ -11,6 +11,10 @@ extends Resource
 @export var flight_trail_settings: PlayerFlightTrailSettings
 @export var ricochet_camera_settings: RicochetCameraSettings
 @export var crowd_clearance_distance := 0.12
+@export_group("人物暴击")
+## Fixed map base; equipment and run growth do not modify these values.
+@export_range(0.0, 1.0, 0.01) var critical_chance := 0.0
+@export_range(1.0, 10.0, 0.1) var critical_multiplier := 2.0
 @export_group("怪物与波次")
 @export var enemy_catalog: WaveEnemyCatalog
 @export var default_enemy: WaveEnemyDefinition
@@ -50,6 +54,10 @@ extends Resource
 func validation_errors() -> PackedStringArray:
 	var errors := PackedStringArray()
 	if pursuit_throttle_threshold < 0: errors.append("pursuit_throttle_threshold: 不能为负数")
+	if not is_finite(critical_chance) or critical_chance < 0.0 or critical_chance > 1.0:
+		errors.append("critical_chance: 须为 0～1 的有限概率")
+	if not is_finite(critical_multiplier) or critical_multiplier < 1.0 or critical_multiplier > 10.0:
+		errors.append("critical_multiplier: 须为 1～10 的有限倍率")
 	for property in ["crowd_clearance_distance", "storm_damage", "storm_trigger_radius", "storm_spread_radius", "storm_max_propagation_radius", "storm_layer_interval"]:
 		var value: float = get(property)
 		if not is_finite(value) or value < 0.0: errors.append(property + ": 须为有限非负数")

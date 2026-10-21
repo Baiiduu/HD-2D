@@ -50,6 +50,8 @@ func signature(value: PlayerSword) -> PackedByteArray:
 		var row: Dictionary = hit.duplicate()
 		# 局内计分批次是新增的伤害元数据，不属于旧扫掠几何对照。
 		row.erase("score_batch")
+		# 成长快照另由千手集成测试覆盖，不属于旧几何对照。
+		row.erase("attack_snapshot")
 		row.enemy = hit.enemy.get_instance_id()
 		hits.append(row)
 	return var_to_bytes([value._hits.keys(), hits])

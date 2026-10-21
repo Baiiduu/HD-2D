@@ -479,7 +479,7 @@ BGM 参考 -18 dB、淡入 3 秒、循环交叉淡化 6 秒，用两个 AudioStr
 | 水与反射 | [water.gdshader](D:/Project/HD-2DMap/demoWithMeowa/1/shaders/water/water.gdshader)、[planar_water_reflection.gd](D:/Project/HD-2DMap/demoWithMeowa/1/scripts/rendering/planar_water_reflection.gd)、[water-lighting.md](D:/Project/HD-2DMap/docs/visuals/water-lighting.md)、[water-foam.md](D:/Project/HD-2DMap/docs/visuals/water-foam.md) |
 | 瀑布 | [waterfall.gdshader](D:/Project/HD-2DMap/demoWithMeowa/1/shaders/water/waterfall.gdshader)、[waterfall-visuals.md](D:/Project/HD-2DMap/docs/visuals/waterfall-visuals.md) |
 | 天气与雨水 | [weather.gd](D:/Project/HD-2DMap/demoWithMeowa/1/scripts/world/weather.gd)、[rain_streak.gdshader](D:/Project/HD-2DMap/demoWithMeowa/1/shaders/environment/rain_streak.gdshader)、[rain_surface.gdshaderinc](D:/Project/HD-2DMap/demoWithMeowa/1/shaders/includes/rain_surface.gdshaderinc) |
-| 萤火虫与日照 | [firefly.gdshader](D:/Project/HD-2DMap/demoWithMeowa/1/shaders/environment/firefly.gdshader)、[daylight_preview.gd](D:/Project/HD-2DMap/demoWithMeowa/1/scripts/world/daylight_preview.gd)、[daylight-preview.md](D:/Project/HD-2DMap/docs/visuals/daylight-preview.md) |
+| 萤火虫与日照 | [firefly.gdshader](D:/Project/HD-2DMap/demoWithMeowa/1/shaders/environment/firefly.gdshader)、[daylight_preview.gd](D:/Project/HD-2DMap/demoWithMeowa/1/scripts/world/daylight_preview.gd)、[参数总览与 Style](parameters-and-styles.md) |
 | BGM | [bgm.gd](D:/Project/HD-2DMap/demoWithMeowa/1/scripts/audio/bgm.gd) |
 
 ## 每节通用的完成检查

@@ -1,5 +1,36 @@
 extends "res://tests/test_core_feedback_audio.gd"
 
+func single_swing_voice(sword: PlayerSword, target: WaveEnemy, guard: WaveEnemy) -> void:
+	check(sword.rules.get("single_sound_per_swing") == true, "World 每刀出手只播放一次声音，命中不另播")
+	check(not load("res://data/player/basic_sword.tres").single_sound_per_swing, "共享剑术保留旧声音模式")
+	for flying in [false, true]:
+		sword.cancel()
+		reset_audio()
+		sword._begin(Vector3.RIGHT, flying)
+		check(audio.get_debug_state().active == 1 and playing(&"basic_sword_swing"), "普通／弹射空挥均只播放一条出手声：%s" % flying)
+		var played: int = audio.get_debug_state().played
+		var before := target.health
+		feedback.hit_material_layer_enabled = true
+		for enemy in [target, guard]:
+			sword._pending_hits.append({"enemy": enemy, "damage": 1.0, "flying": flying,
+				"heading": Vector3.RIGHT, "origin": player.global_position, "time": 0.0})
+		sword._drain_hits()
+		check(target.health == before - 1.0, "合并声音不影响真实剑术伤害")
+		check(audio.get_debug_state().played == played and audio.get_debug_state().active == 1,
+			"同刀命中多怪不会在出手声后叠加主音或材质层：%s" % flying)
+		check(not playing(&"core:enemy_hit_common") and not playing(&"core:enemy_hit_soft") and not playing(&"basic_sword_hit"), "受伤回调和攻击组件都不重复出声")
+		var original_hits := sword.rules.hit_sounds
+		sword.rules.hit_sounds = load("res://data/player/basic_sword.tres").hit_sounds
+		sword._play_sound(true, target.global_position)
+		check(audio.get_debug_state().played == played, "即使保留旧命中音源也不追加第二条")
+		sword.rules.hit_sounds = original_hits
+		reset_audio()
+		target.take_damage(1.0, {"source": &"flight_sword" if flying else &"basic_sword"})
+		check(audio.get_debug_state().active == 0, "出手声结束后的延迟命中也不会补播第二条")
+	sword.cancel()
+	feedback.hit_material_layer_enabled = false
+	reset_audio()
+
 func physical_bounces() -> void:
 	var bank := feedback.sounds
 	var entries := bank.audition_entries()
@@ -27,6 +58,9 @@ func physical_bounces() -> void:
 	target.health = 100000.0
 	sword.rules.enabled = true
 	sword.set_physics_process(false)
+	single_swing_voice(sword, target, guard)
+	# 旧模式仍支持真实命中主音与可选材质层，供独立地图使用。
+	sword.rules.single_sound_per_swing = false
 	reset_audio()
 	sword._play_sound(false, player.global_position)
 	check(playing(&"basic_sword_swing") and not playing(&"core:enemy_hit_common"), "空挥只有新出手声，没有通用怪物命中声")
@@ -89,6 +123,7 @@ func physical_bounces() -> void:
 	check(audio.get_debug_state().active == 0, "冻结期间不创建新的统一命中声")
 	wave.set_combat_frozen(false)
 	reset_audio()
+	sword.rules.single_sound_per_swing = true
 	target.take_damage(target.health + 1.0, {"source": &"basic_sword"})
 	check(playing(&"core:kill_slime") and not playing(&"core:enemy_hit_common"), "致死优先击杀确认，不叠满普通命中")
 	var kills := audio._voices.filter(func(slot): return slot.active and slot.cue == &"core:kill_slime")

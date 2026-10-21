@@ -69,6 +69,7 @@ func release_world(world: Node) -> void:
 
 ## 保留尚未开放操作的旧键位与存档，只隐藏玩家入口。
 func action_available(action: StringName) -> bool:
+	if action == &"character": return is_instance_valid(_world) and _world.has_node("CharacterPanel")
 	if action != &"inventory": return true
 	if not is_instance_valid(_world): return false
 	var loadout := _world.get_node_or_null("LoadoutUI")

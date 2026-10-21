@@ -245,6 +245,7 @@ func candidates() -> Array[GrowthChoiceOption]:
 		option.title = "%s\nLv.1" % definition.display_name if level == 0 else "%s\nLv.%d → Lv.%d" % [definition.display_name, level, level + 1]
 		option.description = _components[id].describe_skill_upgrade(level, level + 1)
 		option.icon = definition.icon
+		option.illustration = definition.illustration
 		option.category = GrowthChoiceOption.Category.LEARN_SKILL if level == 0 else GrowthChoiceOption.Category.UPGRADE_SKILL
 		_offered[option.id] = {"skill": id, "from": level, "to": level + 1}
 		result.append(option)

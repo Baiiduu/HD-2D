@@ -59,11 +59,21 @@ func nearby_slots_into(point: Vector3, radius: float,
 func _scan_neighbors(point: Vector3, radius: float,
 		excluded: Dictionary[int, bool], result: Array[int]) -> void:
 	result.clear()
+	if cells.is_empty(): return
 	var first_point := point - Vector3(radius, 0.0, radius)
 	var last_point := point + Vector3(radius, 0.0, radius)
 	var first := Vector2i(floori(first_point.x / cell_size), floori(first_point.z / cell_size))
 	var last := Vector2i(floori(last_point.x / cell_size), floori(last_point.z / cell_size))
 	var squared := radius * radius
+	if source._wide_query(first, last):
+		for key in source._ordered_occupied_cells():
+			if key.y < first.y or key.y > last.y or key.x < first.x or key.x > last.x: continue
+			for candidate: int in cells[key]:
+				if excluded.has(ids[candidate]): continue
+				var position := positions[candidate]
+				var offset := Vector2(position.x - point.x, position.z - point.z)
+				if offset.length_squared() <= squared: result.append(candidate)
+		return
 	for z in range(first.y, last.y + 1):
 		for x in range(first.x, last.x + 1):
 			for candidate: int in cells.get(Vector2i(x, z), EMPTY_CELL):

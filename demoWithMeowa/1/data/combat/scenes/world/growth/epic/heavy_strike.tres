@@ -2,13 +2,15 @@
 
 [ext_resource type="Script" path="res://scripts/growth/growth_buff_definition.gd" id="definition"]
 [ext_resource type="Texture2D" path="res://assets/meowa/ui/journal/symbols/sword.png" id="icon"]
+[ext_resource type="Texture2D" path="res://assets/illustrations/growth/heavy_strike.png" id="illustration"]
 
 [resource]
 script = ExtResource("definition")
 id = &"E04"
 title = "一拳超人"
-description = "攻击频率减半，初次单击伤害变为三倍；续级只增强重击。"
+description = "提高所有攻击伤害，降低攻击频率"
 icon = ExtResource("icon")
+illustration = ExtResource("illustration")
 category = 3
 epic = true
 attribute = 20

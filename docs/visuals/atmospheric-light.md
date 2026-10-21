@@ -4,8 +4,6 @@
 
 可见光束现在位于地图北侧的远景中，与可玩区域的受光分开。前景补光的体积雾能量始终为零；新增雾体也排除整张地图及周围 8 米。光束轮廓使用正常深度遮挡，人物、花草、建筑和道路会挡住后面的光束。地表柔和受光、原有路灯金色颗粒和水面表现保留。
 
-实机预览：[正向](../media/distant-atmosphere-preview/front.png) · [Q 45°](../media/distant-atmosphere-preview/q45.png) · [E 45°](../media/distant-atmosphere-preview/e45.png) · [侧面 90°](../media/distant-atmosphere-preview/side90.png) · [背面 180°](../media/distant-atmosphere-preview/back180.png) · [街区](../media/distant-atmosphere-preview/city.png) · [下雨](../media/distant-atmosphere-preview/rain.png)。
-
 远景光位固定在世界中。转向其他方位时，光束会自然移出视野；不会为了保持可见而移动到人物前方。Position 控制地表补光中心和三组远景光位的横向分布，远景纵向距离由地图北侧边缘计算。
 
 ## Godot 调节

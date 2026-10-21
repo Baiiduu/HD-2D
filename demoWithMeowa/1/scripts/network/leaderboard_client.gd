@@ -21,6 +21,8 @@ var _retry_timer: Timer
 var _retry_seconds := 2.0
 
 func _ready() -> void:
+	# Settings pauses gameplay; its leaderboard and pending uploads remain available.
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	save_enabled = DisplayServer.get_name() != "headless"
 	network_enabled = save_enabled
 	if save_enabled:

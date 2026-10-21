@@ -1,5 +1,6 @@
 class_name RicochetStorm
 extends Node3D
+const CARD_TEXT := preload("res://scripts/ui/growth_choice_text.gd")
 
 ## 本体弹射专属技能；每次放电分层同时命中，完整批次先选定传播路径。
 signal discharge_started(point: Vector3)
@@ -102,10 +103,16 @@ func get_combat_stats(modifiers: RunCombatModifiers = null) -> Dictionary:
 
 func describe_skill_upgrade(from_level: int, to_level: int) -> String:
 	var after := get_attack_stats(to_level)
-	if from_level == 0:
-		return "弹射中周期引发雷潮\n每片最多 %d 只 · 扩散 %d 层\n每只伤害 %.1f · 间隔 %.2f 秒\n切入 %.2f 米 · 传导 %.1f 米\n最远 %.1f 米 · 每轮每怪一次\n下一轮可再次命中" % [after.targets, after.layers, after.damage, after.interval, after.range, after.spread, after.max_radius]
+	after.total_targets = after.targets * after.layers
 	var before := get_attack_stats(from_level)
-	return "雷伤 %.1f → %.1f\n每片 %d → %d 只\n扩散 %d → %d 层\n间隔 %.2f → %.2f 秒\n%s" % [before.damage, after.damage, before.targets, after.targets, before.layers, after.layers, before.interval, after.interval, skill_definition.level_data(to_level).description]
+	before.total_targets = before.targets * before.layers
+	if from_level == 0:
+		return CARD_TEXT.compose("弹射近敌时释放雷潮\n每轮每怪一次\n下一轮可再次命中", PackedStringArray([
+			"伤害 %s · 间隔 %s 秒" % [CARD_TEXT.number(after.damage, 1), CARD_TEXT.number(after.interval)],
+			"每轮最多%d只 · 最远%s米" % [after.total_targets, CARD_TEXT.number(after.max_radius, 1)]]))
+	return CARD_TEXT.skill("", false, before, after, [
+		["damage", "雷电伤害", 1, ""], ["total_targets", "每轮上限", 0, " 只"], ["interval", "释放间隔", 2, " 秒"],
+		["range", "触发距离", 2, " 米"], ["max_radius", "扩散最远", 1, " 米"]])
 
 func _active() -> bool:
 	return enabled and skill_level > 0 and session._path_ready and session.combat_active()

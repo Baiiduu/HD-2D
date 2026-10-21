@@ -415,6 +415,8 @@ func _enemy_damaged(event: CombatDamageEvent, enemy: WaveEnemy) -> void:
 		if _kills and _kills.record(event, enemy.definition.enemy_id if enemy.definition else &""): return
 	# 雷潮已经按片播放完整电声，避免每个受击者再叠身体命中。
 	if event.source == &"ricochet_storm": return
+	# 单刀声音已由出手统一负责；不按命中目标数量或声音是否结束补播。
+	if event.source in [&"basic_sword", &"flight_sword"] and is_instance_valid(player) and player.sword and player.sword.rules.single_sound_per_swing: return
 	var hard := enemy.definition is PotBroodDefinition
 	var material: StringName = &"enemy_hit_hard" if hard else &"enemy_hit_soft"
 	var gain := enemy_volume_db - action_volume_db

@@ -49,7 +49,7 @@ func run() -> void:
 	current_scene = world
 	for index in 12: await process_frame
 	var settings = world.get_node("GameSettingsUI")
-	check("排行榜" in settings.PAGE_NAMES and settings._tabs.size() == 6, "游戏内排行榜保留在设置导航")
+	check("排行榜" in settings.PAGE_NAMES and settings._tabs.size() == settings.PAGE_NAMES.size(), "游戏内排行榜保留在完整设置导航")
 	if not "排行榜" in settings.PAGE_NAMES:
 		world.queue_free()
 		page.queue_free()
@@ -59,11 +59,11 @@ func run() -> void:
 		return
 	settings.open_menu()
 	settings._tabs[5].pressed.emit()
-	check(settings.menu_open and settings._leaderboard_page.is_visible_in_tree() and settings._page_heading.text == "排行榜" and settings.is_in_group(&"gameplay_input_blockers"), "设置内排行榜页只占输入，不暂停世界")
+	check(settings.menu_open and paused and settings._leaderboard_page.is_visible_in_tree() and settings._page_heading.text == "排行榜" and settings.is_in_group(&"gameplay_input_blockers"), "排行榜在设置暂停期间保持可用")
 	check(settings.get_children().filter(func(child): return child is Button and child.text == "排行榜").is_empty(), "游戏画面不再显示独立排行榜按钮")
 	key(KEY_ESCAPE)
 	await process_frame
-	check(not settings.menu_open and get_first_node_in_group(&"gameplay_input_blockers") == null, "Esc 从排行榜页关闭设置，不同时重新打开")
+	check(not settings.menu_open and not paused and get_first_node_in_group(&"gameplay_input_blockers") == null, "Esc 从排行榜页关闭设置并恢复游戏，不同时重新打开")
 	settings.open_menu()
 	settings.select_page(4)
 	settings._controls_page.begin_capture(&"toggle_rain", 0)

@@ -31,6 +31,6 @@ World 的 `MapEffects/WorldEnvironment` 默认开启 SSAO、SSIL、SSR；游戏�
 - 26 个动画帧的左右翻转、材质开关、参数设为 0、水面倒影同步、保存重开通过检查。
 - 同一位置的相机 -45°、0°、45° 对照中，绘制调用数分别仍为 346、311、308。后台编辑器负载变化较大，不以当前帧耗时推断性能百分比；新增开销主要是轮廓的四次邻近透明度采样。
 
-预览：[原效果](../media/character-lighting-preview/before.png)、[适配后](../media/character-lighting-preview/after.png)、[旋转预览](../media/character-lighting-preview/orbit.gif)。预览暂停雨与粒子、关闭景深并固定水面时间，以便观察受光差异；运行默认效果保留。
+预览：、、。预览暂停雨与粒子、关闭景深并固定水面时间，以便观察受光差异；运行默认效果保留。
 
 这是二维贴片的受光近似。人物各部位的精确体积、材质粗糙度与自遮挡，仍需要对应的角色法线或真正的三维几何。

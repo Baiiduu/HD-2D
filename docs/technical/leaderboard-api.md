@@ -28,7 +28,9 @@
 
 [已确认参考图](../references/score-ui/score-hud-direction-v1.png) · [实际数字动效，演示数值](../media/score-ui-preview/score-counter.webp) · [声音设置](../media/score-ui-preview/settings-audio.png) · [环绕设置](../media/score-ui-preview/settings-orbit.png)
 
-`tests/test_run_score.gd` 检查基础计分、去重和结算资格；`test_run_score_combo.gd` 检查倍率、固定奖励、批次隔离、余量与懒更新；`test_run_score_clock.gd` 检查跨波、冻结和无逐帧处理。剑术、奔雷及正式地图用例覆盖真实伤害传递、冻结恢复和隐藏奖励名，联网用例检查分项快照与幂等提交。界面观感与整场 CPU 开销仍由正式地图人工验收，逻辑测试不能替代。
+选卡、管理界面或入场隐藏得分栏时，待合并加分与已播放动效保留进度，恢复可见后继续显示；真实分数仍即时入账。新加分提示从首个可见帧开始计时，偶发长帧不会在创建提示的同一帧将其耗尽，重试仍清空上一局提示。
+
+`tests/test_run_score.gd` 检查基础计分、去重和结算资格；`test_run_score_combo.gd` 检查倍率、固定奖励、批次隔离、余量与懒更新；`test_run_score_clock.gd` 检查跨波、冻结和无逐帧处理；`test_score_gain_visibility.gd` 检查隐藏恢复、长帧、最终清波合并与重试清理。剑术、奔雷及正式地图用例覆盖真实伤害传递、冻结恢复和隐藏奖励名，联网用例检查分项快照与幂等提交。界面观感与整场 CPU 开销仍由正式地图人工验收，逻辑测试不能替代。
 
 正式部署选用 **FastAPI + PostgreSQL 18 + SQLAlchemy／psycopg 3**，直接运行 Python 服务并连接原生 PostgreSQL，本地开发保留 SQLite。先用一个 API 进程与一个数据库，无需增加 Redis 或常驻游戏房间服。PostgreSQL 18 处于正式支持周期，后续小版本更新按维护流程进行。[官方版本状态](https://www.postgresql.org/support/versioning/)
 
@@ -159,11 +161,11 @@ Invoke-RestMethod -Uri "$baseUri/demo-score-v1/players/local:test-player"
 
 ### 游戏内入口与设备凭证
 
-主菜单有独立「排行榜」按钮；World 游戏内仍通过「设置 → 排行榜」查看，不额外添加游戏内独立按钮。页面可修改后续提交使用的昵称、查询个人最好及每页 20 条的排行，没有保存或提交成绩按钮。真实已结束且有资格的挑战自动提交，结算不强制弹出排行榜；战斗中、模拟和异常中断不生成新提交，City 不自动开启。游戏内页面只占用输入，不暂停场景。主菜单 Esc 关闭排行榜，游戏内 Esc 打开／关闭设置；改键捕获时先取消改键，同一次按键不会继续关闭设置、撤退或重置结算。
+主菜单有独立「排行榜」按钮；World 游戏内仍通过「设置 → 排行榜」查看，不额外添加游戏内独立按钮。页面可修改后续提交使用的昵称、查询个人最好及每页 20 条的排行，没有保存或提交成绩按钮。真实已结束且有资格的挑战自动提交，结算不强制弹出排行榜；战斗中、模拟和异常中断不生成新提交，City 不自动开启。游戏内页面沿用设置的场景暂停，BGM 与 UI 继续；`LeaderboardClient` 及其 HTTP 请求和退避计时独立处理，暂停期间仍可查询及补交。主菜单 Esc 关闭排行榜，游戏内 Esc 打开／关闭设置；改键捕获时先取消改键，同一次按键不会继续关闭设置、撤退或重置结算。
 
 `LeaderboardClient` 是独立 autoload，无帧轮询。有效结算后立即自动提交；连接忙时排队，失败或超时保存在本机并按 2、4、8 秒逐步退避，最多每 60 秒重试。身份或请求校验错误保留数据和错误提示，不持续重试。没有待上传成绩时启动不请求网络；有待上传队列时启动自动补交。多局按先后顺序持久化，后一局低分不会覆盖断网期间的高分。同局 UUID、昵称和完整请求在首次发送前冻结，重试与重启均复用，不重复记分。后续改名用于下一份尚未冻结的提交；昵称留空时使用默认设备昵称。上传成功后刷新榜单与个人最好，失败重试不弹窗。
 
-匿名设备在本机产生随机 UUID 和独立 256 位令牌，保存于 `user://leaderboard.cfg`。`POST /v1/demo/scores` 只接受 `device_id`、提交 UUID、非负整数成绩、昵称及附加信息；首次有效提交绑定身份，服务端仅存令牌 SHA-256。以后覆盖同一设备须匹配原令牌，不接受任意 `player_id` 或 `board_id`。它只写入 `LEADERBOARD_DEMO_BOARD_ID` 配置的试玩榜；默认关闭，且不会授予创建榜单、删除成绩或其它榜单写权限。服务端添加 `verification=client_reported`，客户端资格标记不构成反作弊。重装并丢弃本机凭证后不会自动找回旧身份。
+匿名设备在本机产生随机 UUID 和独立 256 位令牌，保存于 `user://leaderboard.cfg`。身份不读取硬件序列号，也不以昵称区分；同一系统用户下共用这份数据的游戏实例共用身份，换设备或删除身份文件则建立新身份，保留用户数据的更新／重装可继续沿用。成绩集中存放在服务器，同一服务地址和榜单 ID 的不同设备共同查询每位玩家的最好成绩；目前尚无账号登录或跨设备找回身份。`POST /v1/demo/scores` 只接受 `device_id`、提交 UUID、非负整数成绩、昵称及附加信息；首次有效提交绑定身份，服务端仅存令牌 SHA-256。以后覆盖同一设备须匹配原令牌，不接受任意 `player_id` 或 `board_id`。它只写入 `LEADERBOARD_DEMO_BOARD_ID` 配置的试玩榜；默认关闭，且不会授予创建榜单、删除成绩或其它榜单写权限。服务端添加 `verification=client_reported`，客户端资格标记不构成反作弊。
 
 连接参数集中在 `demoWithMeowa/1/data/network/leaderboard.tres`：HTTPS 地址、榜单 ID、证书名称与公开 CA。当前使用独立端口 `18443`，暂不使用 `xiuman.org`。Godot 使用 `TLSOptions.client` 校验 CA 和证书名称，未关闭 TLS 验证；CA 私钥离线保存，客户端仅带公开证书。浏览器未安装这份专用 CA 时不会默认信任该入口；这版用于原生 Godot Demo，Web 导出及平台登录另行接入。
 

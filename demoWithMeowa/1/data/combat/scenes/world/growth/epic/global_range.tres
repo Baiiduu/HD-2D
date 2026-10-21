@@ -2,13 +2,15 @@
 
 [ext_resource type="Script" path="res://scripts/growth/growth_buff_definition.gd" id="definition"]
 [ext_resource type="Texture2D" path="res://assets/meowa/ui/journal/symbols/sword.png" id="icon"]
+[ext_resource type="Texture2D" path="res://assets/illustrations/growth/global_range.png" id="illustration"]
 
 [resource]
 script = ExtResource("definition")
 id = &"E01"
 title = "空间扩张"
-description = "所有适用攻击的真实范围与特效同步扩大；仍贴近怪群外沿。"
+description = "扩大普攻、弹射挥剑与技能范围"
 icon = ExtResource("icon")
+illustration = ExtResource("illustration")
 category = 3
 epic = true
 attribute = 2

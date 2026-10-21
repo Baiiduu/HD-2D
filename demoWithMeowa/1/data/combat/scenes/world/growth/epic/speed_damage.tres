@@ -2,13 +2,15 @@
 
 [ext_resource type="Script" path="res://scripts/growth/growth_buff_definition.gd" id="definition"]
 [ext_resource type="Texture2D" path="res://assets/meowa/ui/journal/symbols/boot.png" id="icon"]
+[ext_resource type="Texture2D" path="res://assets/illustrations/growth/kinetic_overload.png" id="illustration"]
 
 [resource]
 script = ExtResource("definition")
 id = &"E02"
 title = "动能超载"
-description = "弹射余速越高，最终伤害越高；每次出手读取当下动能。"
+description = "弹射期间，余速越高伤害越高"
 icon = ExtResource("icon")
+illustration = ExtResource("illustration")
 category = 3
 epic = true
 attribute = 18

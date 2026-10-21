@@ -8,7 +8,7 @@ var pending: Label
 var _refresh: Button
 var _previous: Button
 var _next: Button
-var _rows: VBoxContainer
+var _rows: GridContainer
 
 func _ready() -> void:
 	client = get_node("/root/LeaderboardClient")
@@ -34,10 +34,14 @@ func _ready() -> void:
 	pending.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status = _label("")
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	var header := _label("排名　　玩家　　　　　　　　　　最高分")
-	header.add_theme_color_override("font_color", Color("fff0d4"))
-	_rows = VBoxContainer.new()
+	_rows = GridContainer.new()
+	_rows.columns = 3
+	_rows.add_theme_constant_override("h_separation", 18)
+	_rows.add_theme_constant_override("v_separation", 8)
 	add_child(_rows)
+	for column in 3:
+		var header := _cell(["排名", "玩家", "最高分"][column], column)
+		header.add_theme_color_override("font_color", Color("fff0d4"))
 	var paging := HBoxContainer.new()
 	add_child(paging)
 	_previous = _button(paging, "上一页", func(): client.refresh_scores(client.offset - 20))
@@ -59,6 +63,23 @@ func _button(parent: Node, text: String, action: Callable) -> Button:
 	parent.add_child(button)
 	return button
 
+func _cell(text: String, column: int) -> Label:
+	var cell := Label.new()
+	cell.text = text
+	match column:
+		0:
+			cell.custom_minimum_size.x = 64
+		1:
+			cell.custom_minimum_size.x = 80
+			cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			cell.clip_text = true
+			cell.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		2:
+			cell.custom_minimum_size.x = 128
+			cell.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_rows.add_child(cell)
+	return cell
+
 func activate() -> void:
 	if not is_node_ready(): return
 	sync()
@@ -77,19 +98,12 @@ func sync() -> void:
 	_previous.disabled = client.busy or client.offset <= 0
 	_next.disabled = client.busy or client.offset + 20 >= client.total or client.offset >= 10000
 	# Rows are rebuilt only when response/state changes, never in the frame loop.
-	for child in _rows.get_children():
+	for child in _rows.get_children().slice(3):
 		_rows.remove_child(child)
 		child.queue_free()
 	for entry in client.entries:
 		if not entry is Dictionary: continue
-		var row := HBoxContainer.new()
-		_rows.add_child(row)
 		var display_name: Variant = entry.get("display_name")
 		var texts := [str(int(entry.get("rank", 0))), display_name if display_name is String else "玩家", str(int(entry.get("score", 0)))]
-		for text in texts:
-			var cell := Label.new()
-			cell.text = text
-			cell.custom_minimum_size.x = 80
-			cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			cell.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-			row.add_child(cell)
+		for column in 3:
+			_cell(texts[column], column)

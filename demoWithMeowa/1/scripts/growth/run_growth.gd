@@ -151,10 +151,21 @@ func prepare_draw() -> void:
 func draw_options(pool: Array[GrowthChoiceOption], count: int, previous: Array[GrowthChoiceOption] = []) -> Array[GrowthChoiceOption]:
 	if not _draft_enabled: return []
 	prepare_draw()
+	_configure_draw()
 	return _draw_pool.draw(pool, count, previous) if _draw_pool.valid_pool(pool) else []
 
 func can_reroll(pool: Array[GrowthChoiceOption], shown: Array[GrowthChoiceOption]) -> bool:
+	_configure_draw()
 	return _draft_enabled and rerolls_left > 0 and _draw_pool.can_redraw(pool, shown)
+
+func _configure_draw() -> void:
+	_draw_pool.rarity_weights = {}
+	_draw_pool.guaranteed_rarity = -1
+	if not progression_rules: return
+	if _choice_level > 1 and not progression_rules.is_epic_level(_choice_level) and not progression_rules.is_legendary_level(_choice_level):
+		_draw_pool.rarity_weights = progression_rules.ordinary_rarity_weights
+	if progression_rules.is_legendary_level(_choice_level) or (_choice_level == 0 and progression_rules.guarantee_initial_legendary):
+		_draw_pool.guaranteed_rarity = GrowthChoiceOption.Rarity.LEGENDARY
 
 func redraw_options(pool: Array[GrowthChoiceOption], shown: Array[GrowthChoiceOption], count: int) -> Array[GrowthChoiceOption]:
 	if not can_reroll(pool, shown): return []
@@ -260,10 +271,14 @@ func _try_open_choice() -> void:
 	if state.pending_choices == 0:
 		session.set_combat_frozen(false)
 		return
-	choice_options = draw_options(_candidate_pool, cards_per_draw, _previous_draw)
 	_choice_level = state.next_choice_level()
+	var previous: Array[GrowthChoiceOption] = []
+	if not progression_rules: previous = _previous_draw
+	choice_options = draw_options(_candidate_pool, cards_per_draw, previous)
 	choice_ui.title = "等级 %d · 成长选择" % _choice_level
-	if progression_rules and progression_rules.is_epic_level(_choice_level): choice_ui.title = "等级 %d · 史诗成长" % _choice_level
+	if progression_rules and (progression_rules.is_epic_level(_choice_level) or progression_rules.is_legendary_level(_choice_level)):
+		if choice_options.any(func(option): return option.get_card_rarity() == GrowthChoiceOption.Rarity.LEGENDARY): choice_ui.title = "等级 %d · 传说成长" % _choice_level
+		elif choice_options.all(func(option): return option.get_card_rarity() == GrowthChoiceOption.Rarity.EPIC): choice_ui.title = "等级 %d · 史诗成长" % _choice_level
 	choice_ui.confirm_text = "领取成长"
 	choice_ui.choice_hint = "本次领取一张" if state.pending_choices == 1 else "本次领取一张 · 还有 %d 次成长待选" % (state.pending_choices - 1)
 	if not choice_ui.present_choices(choice_options):

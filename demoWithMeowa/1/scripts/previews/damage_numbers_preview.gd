@@ -1,6 +1,6 @@
 extends Node3D
 
-## 样式预览：直接重放真实扣血，重击／暴击标签不代表已经新增对应战斗规则。
+## 样式预览只重放扣血数字；显式标签不参与正式地图的真实暴击掷骰。
 @onready var world: Node3D = $CurrentWorld
 @onready var wave: WavePrototype = $CurrentWorld/WavePrototype
 var _targets: Array[WaveEnemy] = []

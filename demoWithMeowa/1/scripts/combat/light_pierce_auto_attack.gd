@@ -1,5 +1,6 @@
 class_name LightPierceAutoAttack
 extends Node3D
+const CARD_TEXT := preload("res://scripts/ui/growth_choice_text.gd")
 
 ## A02：锁定起手方向的直线贯穿；每发独立记录命中，物理扫掠驱动视觉。
 signal shot_started(direction: Vector3)
@@ -80,16 +81,11 @@ func get_combat_stats(modifiers: RunCombatModifiers = null) -> Dictionary:
 
 func describe_skill_upgrade(from_level: int, to_level: int) -> String:
 	var after := get_attack_stats(to_level)
-	if from_level == 0:
-		return "直线贯穿 %d 只敌人\n伤害 %s\n射程 %.1f 米\n自动锁敌，墙体阻挡" % [after.targets, str(snappedf(after.damage, 0.1)), after.distance]
 	var before := get_attack_stats(from_level)
-	var lines := PackedStringArray(["伤害 %s → %s" % [str(snappedf(before.damage, 0.1)), str(snappedf(after.damage, 0.1))]])
-	if before.targets != after.targets: lines.append("贯穿 %d → %d 只" % [before.targets, after.targets])
-	if before.distance != after.distance: lines.append("射程 %.1f → %.1f 米" % [before.distance, after.distance])
-	if before.speed != after.speed: lines.append("飞速 %.1f → %.1f 米/秒" % [before.speed, after.speed])
-	if before.width != after.width: lines.append("宽度 %.2f → %.2f 米" % [before.width, after.width])
-	lines.append(skill_definition.level_data(to_level).description)
-	return "\n".join(lines)
+	var fields := [["damage", "伤害", 1, ""], ["targets", "贯穿上限", 0, " 只"], ["distance", "射程", 1, " 米"], ["interval", "间隔", 2, " 秒"]]
+	if from_level > 0:
+		fields.append_array([["speed", "飞行速度", 1, " 米/秒"], ["width", "贯穿宽度", 2, " 米"]])
+	return CARD_TEXT.skill("自动锁敌，直线贯穿\n墙体会阻挡雷光" if from_level == 0 else "", from_level == 0, before, after, fields)
 
 func _refresh_processing() -> void:
 	set_physics_process(enabled and skill_level > 0 and session.phase == WavePrototype.Phase.BATTLE)

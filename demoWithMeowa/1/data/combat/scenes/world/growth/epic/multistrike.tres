@@ -2,13 +2,15 @@
 
 [ext_resource type="Script" path="res://scripts/growth/growth_buff_definition.gd" id="definition"]
 [ext_resource type="Texture2D" path="res://assets/meowa/ui/journal/symbols/sword.png" id="icon"]
+[ext_resource type="Texture2D" path="res://assets/illustrations/growth/multistrike.png" id="illustration"]
 
 [resource]
 script = ExtResource("definition")
 id = &"E03"
 title = "千手"
-description = "弹射挥剑随余速追加真实斩击，追加刀各造成原刀 1/3 伤害。"
+description = "弹射挥剑追加连斩\n余速越高，刀数越多"
 icon = ExtResource("icon")
+illustration = ExtResource("illustration")
 category = 3
 epic = true
 attribute = 19

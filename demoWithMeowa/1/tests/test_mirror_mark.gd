@@ -90,7 +90,9 @@ func run() -> void:
 	check(wave.skill_draft.initial_cards_per_draw == 3, "正式开局仍是抽三张，而非新增技能后展示全部")
 	wave.skill_draft.initial_cards_per_draw = 100
 	check(wave.start_run() and wave.phase == WavePrototype.Phase.READY, "开局等待实际技能选择")
-	check(wave.skill_draft._initial_pool.size() == skills._components.size() and wave.skill_draft._initial_offered.has(&"initial:mirror_mark"), "镜印进入完整初始池并兼容新增技能")
+	# 开局池现可同时包含传说增益；单独核对全部技能，不把增益牌误算成多余技能。
+	var starting_skills := wave.skill_draft._initial_pool.filter(func(option): return option.category == GrowthChoiceOption.Category.LEARN_SKILL)
+	check(starting_skills.size() == skills._components.size() and wave.skill_draft._initial_offered.has(&"initial:mirror_mark"), "镜印进入完整初始技能池并兼容增益牌")
 	wave.skill_draft.initial_choice.close()
 	wave.skill_draft._choose_initial(&"initial:mirror_mark")
 	check(wave.phase == WavePrototype.Phase.BATTLE and skills.get_level(&"mirror_mark") == 1, "初始选择实际学习镜印并开始波次")

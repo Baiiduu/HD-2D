@@ -33,9 +33,15 @@ func get_combat_stats(modifiers: RunCombatModifiers = null) -> Dictionary:
 func describe_skill_upgrade(from_level: int, to_level: int) -> String:
 	var after := get_attack_stats(to_level)
 	if from_level == 0:
-		return "命中造成伤害、贴印并立即反射\n每次 %d 枚 · 伤害 %s\n最多反射 %d 次 · 镜印 %.1f 秒\n镜印可反射人物与弹射弹丸\n同一弹丸对每只怪物只伤害一次" % [after.count, str(snappedf(after.damage, 0.1)), after.bounces, after.mark_duration]
+		return CARD_TEXT.compose("镜梭命中贴印并反弹\n人物与弹丸可借镜反射", PackedStringArray([
+			"伤害 %s · 齐射 %d 枚" % [CARD_TEXT.number(after.damage, 1), after.count],
+			"每枚反射 %d 次" % after.bounces,
+			"镜印持续 %s 秒" % CARD_TEXT.number(after.mark_duration, 1),
+			"释放间隔 %s 秒" % CARD_TEXT.number(after.interval)]))
 	var before := get_attack_stats(from_level)
-	return "伤害 %s → %s · 反射 %d → %d 次\n齐射 %d → %d 枚 · 镜印 %.1f → %.1f 秒\n%s" % [str(snappedf(before.damage, 0.1)), str(snappedf(after.damage, 0.1)), before.bounces, after.bounces, before.count, after.count, before.mark_duration, after.mark_duration, skill_definition.level_data(to_level).description]
+	return CARD_TEXT.skill("", false, before, after, [
+		["damage", "伤害", 1, ""], ["count", "齐射", 0, " 枚"], ["bounces", "每枚反射", 0, " 次"],
+		["mark_duration", "镜印持续", 1, " 秒"], ["interval", "间隔", 2, " 秒"], ["distance", "飞行距离", 1, " 米"]])
 
 func _physics_process(delta: float) -> void:
 	if not _active(): return

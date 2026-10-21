@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/growth/growth_buff_effect.gd" id="1_pv6c0"]
 [ext_resource type="Texture2D" path="res://assets/meowa/ui/journal/symbols/boot.png" id="2_h8b66"]
 [ext_resource type="Script" path="res://scripts/growth/growth_buff_definition.gd" id="3_3ckla"]
+[ext_resource type="Texture2D" uid="uid://cb0fg1n6fw3pp" path="res://assets/illustrations/growth/launch_speed.png" id="illustration"]
 
 [resource]
 script = ExtResource("3_3ckla")
@@ -10,5 +11,7 @@ attribute = 3
 bonus_per_level = 0.2
 id = &"R01"
 title = "弹射速度"
+description = "提高人物弹射的发射速度"
 icon = ExtResource("2_h8b66")
+illustration = ExtResource("illustration")
 category = 3

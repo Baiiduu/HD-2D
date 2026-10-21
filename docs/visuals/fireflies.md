@@ -17,4 +17,4 @@ Godot 主场景选择 **ArtDirection → 萤火虫**，编辑器和运行时均�
 
 材质采用小亮核、圆形透明衰减和宽而淡的光晕，关闭全局 Glow 也不会显示方形面片。独立明暗相位使用实例编号，透明轮廓使用 UV 与 Alpha；内建变量和透明输出见 [Godot 空间着色器文档](https://docs.godotengine.org/en/4.7/tutorials/shaders/shader_reference/spatial_shader.html)。
 
-已验证三个区域接入、实时调节、开关与无泛光时的透明轮廓；8 个 Inspector 字段及编辑器实时调节通过检查。实机预览：[修改前](../media/firefly-preview/before.png)、[修改后](../media/firefly-preview/after.png)、[漂浮与明暗变化](../media/firefly-preview/fireflies.gif)。预览使用当前相机配置，暂时关闭镜头水滴便于观察光点。
+已验证三个区域接入、实时调节、开关与无泛光时的透明轮廓；8 个 Inspector 字段及编辑器实时调节通过检查。实机预览：、、。预览使用当前相机配置，暂时关闭镜头水滴便于观察光点。

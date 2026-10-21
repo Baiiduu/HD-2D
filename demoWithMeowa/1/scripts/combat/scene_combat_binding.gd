@@ -15,6 +15,8 @@ func _enter_tree() -> void:
 	if loadout: loadout.equipment_bonuses_enabled = configuration.equipment_bonuses_enabled
 	_bind_skills(configuration, wave.run_skill_manager)
 	player.crowd_clearance_distance = configuration.crowd_clearance_distance
+	wave.critical_chance = configuration.critical_chance
+	wave.critical_multiplier = configuration.critical_multiplier
 	for property in ["enemy_catalog", "default_enemy", "population_rules", "health_growth_rules", "spawn_shadow_settings", "waves", "endless_mode", "max_active_enemies", "centralized_enemy_updates", "native_swarm_enabled", "batch_crowd_enabled", "pursuit_throttle_threshold", "native_chase_enabled", "slime_ground_movement_enabled"]:
 		wave.set(property, configuration.get(property))
 	var growth := wave.get_node("RunGrowth") as RunGrowth

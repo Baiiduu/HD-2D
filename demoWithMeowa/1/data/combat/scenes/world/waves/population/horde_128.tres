@@ -25,12 +25,18 @@ skill_level = 8
 metadata/_custom_type_script = "uid://dig3yvspfwrug"
 
 [resource]
-resource_name = "正式怪潮 128 · 渐进容量"
+resource_name = "正式怪潮 80 · 渐进容量"
 script = ExtResource("1_sbixa")
 simulation_enemy_count = 50
 simulation_skills = Array[ExtResource("2_tq264")]([SubResource("Resource_7oshb"), SubResource("Resource_68p4h"), SubResource("Resource_10m1j")])
-role_limits = PackedInt32Array(128, 12, 4, 1)
+first_active_limit = 24
+growth_start_wave = 4
+active_growth_per_wave = 12
+max_active = 80
+role_limits = PackedInt32Array(128, 64, 4, 1)
+enemies_per_wave_increment = 20
 max_wave_enemies = 512
 max_queued_per_wave = 1024
 max_interval_reduction = 0.75
 min_spawn_interval = 0.08
+surround_start_wave = 2

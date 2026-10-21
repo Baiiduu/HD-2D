@@ -67,6 +67,7 @@ func run() -> void:
 		if node is UIAudio or node is CoreFeedbackAudio: node.enabled = false
 	var profile := world.get_node("BattleConfiguration").configuration as SceneCombatConfiguration
 	profile = profile.duplicate() as SceneCombatConfiguration
+	profile.experience_rules = ExperienceRules.new()
 	profile.sword_rules = null
 	profile.growth_rules = null
 	profile.population_rules = null

@@ -8,16 +8,6 @@
 
 对照 benchmark 的 `threejs/src/water.js` 与 `particles.js`：采用了水帘弯曲、两种尺度的水纹、顶部/底部泡沫分区和局部飞溅的思路；保留 Godot 现有真实灯光与材质管线，没有照搬 three.js 的手动灯光计算。
 
-## 预览
-
-![同机位修改前后](../media/waterfall-preview/comparison.png)
-
-![实际运行的瀑布动画](../media/waterfall-preview/motion.gif)
-
-![侧面近景](../media/waterfall-preview/close.png)
-
-比较图冻结材质时间为 0.75 秒，使用正式相机的 10°俯角；关闭天气、景深、临时隐藏场景粒子，方便观察。动图使用同一机位，保持其它材质静止，瀑布按真实时间运行，48 帧。近景仅在验证进程中换了相机位置，未修改正式相机设置。
-
 ## 调节
 
 场景根节点 `ArtDirection` → **瀑布** 分组，支持检查器实时调节与逐项恢复默认值。

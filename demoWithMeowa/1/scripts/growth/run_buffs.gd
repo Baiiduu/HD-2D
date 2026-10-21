@@ -2,20 +2,22 @@ class_name RunBuffs
 extends Node
 
 const A := GrowthBuffDefinition.Attribute
+const CARD_TEXT := preload("res://scripts/ui/growth_choice_text.gd")
 const LABELS := {
 	A.DAMAGE: "伤害", A.COOLDOWN: "间隔减幅", A.RANGE: "攻击范围", A.ATTACK_SPEED: "攻速",
 	A.RICOCHET_SPEED: "弹射初速", A.RICOCHET_DURATION: "飞行耗速", A.RICOCHET_BOUNCES: "碰撞耗速",
 	A.RICOCHET_RETENTION: "最低保速", A.CHARGE_EFFICIENCY: "蓄满", A.RECOVERY_EFFICIENCY: "收势",
 	A.RICOCHET_COOLDOWN_EFFICIENCY: "发射间隔", A.PUSH_RADIUS: "拨怪范围", A.PUSH_FORCE: "推力",
 	A.PUSH_DURATION: "推力持续", A.PUSH_STUN: "眩晕", A.MOVE_SPEED: "移动", A.PICKUP_RADIUS: "吸取范围",
-	A.MOMENTUM_EFFICIENCY: "耗速倍率",
-	A.SPEED_DAMAGE: "动能增伤强度", A.MULTISTRIKE: "额外斩击基数", A.HEAVY_STRIKE: "重击伤害",
-	A.LIFESTEAL: "全能吸血", A.LIFESTEAL_CAP: "每秒恢复上限",
+	A.MOMENTUM_EFFICIENCY: "速度损耗",
+	A.SPEED_DAMAGE: "动能增伤", A.MULTISTRIKE: "每次挥剑", A.HEAVY_STRIKE: "伤害",
+	A.LIFESTEAL: "吸血比例",
+	A.KILL_HASTE: "每层加速",
 }
 
 @export_group("本局增益")
 @export var session: Node3D
-## 正式池登记三种通用成长与三种弹射成长；0 级上限表示持续成长。
+## 地图独立登记各品阶增益；0 级上限表示持续成长。
 @export var definitions: Array[GrowthBuffDefinition] = []
 
 var _offered: Dictionary[StringName, GrowthBuffDefinition] = {}
@@ -29,7 +31,8 @@ func _clear_offered() -> void:
 	_offered.clear()
 
 func _attribute_changed(attribute: A, preview: RunCombatModifiers) -> bool:
-	if attribute in [A.SPEED_DAMAGE, A.MULTISTRIKE, A.HEAVY_STRIKE, A.LIFESTEAL, A.LIFESTEAL_CAP]:
+	if attribute == A.LIFESTEAL_CAP: return false
+	if attribute in [A.SPEED_DAMAGE, A.MULTISTRIKE, A.HEAVY_STRIKE, A.LIFESTEAL, A.KILL_HASTE]:
 		if not session.combat_modifiers.growth_rules: return false
 		var current: RunCombatModifiers = session.combat_modifiers
 		var rules := current.growth_rules
@@ -86,10 +89,11 @@ func _has_effect(definition: GrowthBuffDefinition) -> bool:
 		if gains[attribute] > 0.0 and changes: has_benefit = true
 	return has_benefit
 
-func candidates() -> Array[GrowthChoiceOption]:
+func candidates(initial_only := false) -> Array[GrowthChoiceOption]:
 	_offered.clear()
 	var result: Array[GrowthChoiceOption] = []
 	for definition in definitions:
+		if initial_only and (not definition or not definition.available_at_start): continue
 		if not definition or not _has_effect(definition): continue
 		if _offered.has(definition.id):
 			push_error("RunBuffs: 增益 ID 不可重复：%s" % definition.id)
@@ -104,6 +108,8 @@ func candidates() -> Array[GrowthChoiceOption]:
 		if definition.is_breakthrough(level): rank += " · 突破"
 		option.title = "%s\n%s" % [definition.title, rank]
 		option.icon = definition.icon
+		option.illustration = definition.illustration
+		option.rarity = definition.rarity
 		option.category = GrowthChoiceOption.Category.GLOBAL_BUFF
 		option.ricochet_growth = definition.is_ricochet()
 		option.description = _description(definition)
@@ -117,6 +123,9 @@ func candidates() -> Array[GrowthChoiceOption]:
 		result.append(option)
 	return result
 
+func offered_definition(id: StringName) -> GrowthBuffDefinition:
+	return _offered.get(id)
+
 func _value(attribute: A, modifiers: RunCombatModifiers) -> float:
 	match attribute:
 		A.DAMAGE: return modifiers.damage_multiplier()
@@ -127,7 +136,8 @@ func _value(attribute: A, modifiers: RunCombatModifiers) -> float:
 		A.PICKUP_RADIUS: return (session.get_node("RunGrowth") as RunGrowth).get_attraction_radius(modifiers)
 		A.MOMENTUM_EFFICIENCY: return 1.0 / modifiers.multiplier(attribute)
 		A.HEAVY_STRIKE: return modifiers.multiplier(attribute)
-		A.SPEED_DAMAGE, A.MULTISTRIKE, A.LIFESTEAL, A.LIFESTEAL_CAP: return modifiers.bonus(attribute)
+		A.SPEED_DAMAGE: return modifiers.speed_damage_strength()
+		A.MULTISTRIKE, A.LIFESTEAL, A.KILL_HASTE: return modifiers.bonus(attribute)
 	var stats: Dictionary = session.player.body_ricochet.get_stats(modifiers)
 	if attribute == A.RICOCHET_RETENTION:
 		return minf(stats.bounce_speed_retention, stats.crowd_speed_retention) if session.player.ricochet_rules.crowd_deflection_enabled else stats.bounce_speed_retention
@@ -136,7 +146,7 @@ func _value(attribute: A, modifiers: RunCombatModifiers) -> float:
 func _format_value(attribute: A, value: float, include_unit := true) -> String:
 	match attribute:
 		A.DAMAGE, A.RANGE, A.ATTACK_SPEED, A.HEAVY_STRIKE: return "×%.2f" % value
-		A.SPEED_DAMAGE, A.LIFESTEAL, A.LIFESTEAL_CAP: return "%.1f%%" % (value * 100.0)
+		A.SPEED_DAMAGE, A.LIFESTEAL, A.KILL_HASTE: return "%.1f%%" % (value * 100.0)
 		A.MULTISTRIKE: return "%d" % roundi(value)
 		A.COOLDOWN, A.RICOCHET_RETENTION, A.MOMENTUM_EFFICIENCY: return "%d%%" % roundi(value * 100.0)
 		A.RICOCHET_DURATION: return "%.2f%s" % [value, "米/秒²" if include_unit else ""]
@@ -147,20 +157,39 @@ func _format_value(attribute: A, value: float, include_unit := true) -> String:
 func _description(definition: GrowthBuffDefinition) -> String:
 	var current: RunCombatModifiers = session.combat_modifiers
 	var preview := current.preview_after(definition)
-	var lines := PackedStringArray()
-	if not definition.description.is_empty(): lines.append(definition.description)
+	var summary := definition.description
+	var rows := PackedStringArray()
+	var rules := current.growth_rules
 	var gains := current.gains_for(definition)
 	for attribute in gains:
 		if not _attribute_changed(attribute, preview): continue
+		if attribute == A.SPEED_DAMAGE:
+			for entry in [["低速增伤", rules.speed_damage_low], ["高速增伤", rules.speed_damage_high]]:
+				rows.append("%s %s%% → %s%%" % [entry[0], CARD_TEXT.number((current.speed_damage_multiplier(entry[1], true) - 1.0) * 100.0, 1), CARD_TEXT.number((preview.speed_damage_multiplier(entry[1], true) - 1.0) * 100.0, 1)])
+			continue
+		if attribute == A.MULTISTRIKE:
+			rows.append("每次挥剑 %s → %s 刀" % [_strike_counts(current), _strike_counts(preview)])
+			rows.append("追加刀伤害 %s%%" % CARD_TEXT.number(rules.additional_strike_damage_ratio * 100.0, 1))
+			continue
 		var label: String = LABELS[attribute]
 		if gains[attribute] < 0.0: label = "代价·" + label
-		lines.append("%s\n%s → %s" % [label, _format_value(attribute, _value(attribute, current), false), _format_value(attribute, _value(attribute, preview))])
-	if definition.attribute == A.MOMENTUM_EFFICIENCY: lines.append("飞行与碰撞损失同步降低")
-	var level := current.level_for(definition.id) + 1
-	if definition.is_breakthrough(level): lines.append("突破加成 ×%.1f" % definition.breakthrough_multiplier)
-	if definition.is_ricochet(): lines.append("下次蓄力生效")
-	elif definition.attribute == A.ATTACK_SPEED: lines.append("攻击间隔与判定动作同步提速")
-	return "\n".join(lines)
+		var before := current.damage_multiplier() if attribute == A.HEAVY_STRIKE else _value(attribute, current)
+		var after := preview.damage_multiplier() if attribute == A.HEAVY_STRIKE else _value(attribute, preview)
+		rows.append("%s %s → %s" % [label, _format_value(attribute, before, false), _format_value(attribute, after)])
+	if definition.attribute == A.HEAVY_STRIKE:
+		if not is_equal_approx(current.interval_multiplier(), preview.interval_multiplier()):
+			rows.append("攻速 ×%.2f → ×%.2f" % [1.0 / current.interval_multiplier(), 1.0 / preview.interval_multiplier()])
+		else: summary = "继续提高伤害，攻速不再降低"
+	if definition.attribute == A.KILL_HASTE and rules:
+		rows.append("每层 %s 秒 · 最多 %d 层" % [CARD_TEXT.number(rules.kill_haste_seconds, 1), rules.kill_haste_max_stacks])
+		rows.append("满层加速 %s%% → %s%%" % [CARD_TEXT.number(current.bonus(A.KILL_HASTE) * rules.kill_haste_max_stacks * 100.0, 1), CARD_TEXT.number(preview.bonus(A.KILL_HASTE) * rules.kill_haste_max_stacks * 100.0, 1)])
+	if definition.is_ricochet(): summary += "\n下次蓄力时生效"
+	return CARD_TEXT.compose(summary, rows)
+
+func _strike_counts(modifiers: RunCombatModifiers) -> String:
+	var least := modifiers.strike_count(0, true)
+	var most := modifiers.strike_count(modifiers.growth_rules.strike_speed_thresholds.size(), true)
+	return str(least) if least == most else "%d～%d" % [least, most]
 
 func _choose(_level: int, id: StringName) -> void:
 	if not _offered.has(id): return

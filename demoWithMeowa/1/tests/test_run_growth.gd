@@ -13,10 +13,12 @@ class SessionProbe extends Node3D:
 	enum Phase { READY, BATTLE, REST, RESULT }
 	var player := Node3D.new()
 	var _path := FlatPath.new()
+	var combat_modifiers := RunCombatModifiers.new()
 	var combat_frozen := false
 	var frames := 0
 	func _process(_delta: float) -> void: frames += 1
 	func set_combat_frozen(value: bool) -> void: combat_frozen = value
+	func is_wave_finish_pending() -> bool: return false
 
 var checks := 0
 
@@ -34,10 +36,13 @@ func run() -> void:
 	root.add_child(session)
 	var growth: RunGrowth = load("res://scenes/growth/run_growth.tscn").instantiate()
 	growth.session = session
+	# 固定逻辑用例的经验曲线，不随场景平衡资源调整而改变断言。
+	growth.rules = ExperienceRules.new()
 	session.add_child(growth)
 	growth.set_physics_process(false)
 	growth.choice_ui.open_duration = 0.0
 	growth.choice_ui.hover_duration = 0.0
+	growth.choice_ui._audio.enabled = false
 	var choices: Array[Array] = []
 	growth.growth_chosen.connect(func(level: int, id: StringName): choices.append([level, id]))
 	check(not growth.active and growth.state.level == 1, "No experience outside an active run")

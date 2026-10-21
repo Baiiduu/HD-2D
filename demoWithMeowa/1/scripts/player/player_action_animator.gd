@@ -68,6 +68,9 @@ func cancel_bounce() -> void:
 func cancel_normal_attack() -> void:
 	if _attack == &"normal_attack": cancel_attack()
 
+func cancel_flight_attack() -> void:
+	if _attack == &"flight_attack": cancel_attack()
+
 ## 普攻只按真实起手／扫刃／收刀时钟读取原帧，不追踪剑尖或重做人物素材。
 func sync_normal_attack(age: float, phases: Vector3, frame_breaks: Vector2, flip: bool) -> void:
 	if _attack != &"normal_attack": return

@@ -44,6 +44,4 @@ Godot 场景：`demoWithMeowa/1/scenes/previews/four_realms.tscn`。
 
 ## 早期光影对照
 
-[原始效果](../media/grass-lighting-preview/before.png) · [新版效果](../media/grass-lighting-preview/after.png) · [QE 旋转](../media/grass-lighting-preview/orbit.gif)
-
 预览暂停风、雨、粒子、人物动画和景深，以便比较材质与旋转稳定性；正式场景保留这些设置。

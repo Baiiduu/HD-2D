@@ -45,6 +45,7 @@ float brush(vec2 uv) {
 }
 
 float motes(vec2 point) {
+	if (spark_strength == 0.0) { return 0.0; }
 	float result = 0.0;
 	// 显式年龄驱动的六枚解析亮点；随同一节点复用、冻结和实时裁切。
 	for (int i = 0; i < 6; i++) {
@@ -53,6 +54,7 @@ float motes(vec2 point) {
 		float age = visual_age - sweep_seconds * phase;
 		float life = 0.10 + hash(id + 4.0) * 0.08;
 		float live = step(0.0, age) * (1.0 - step(life, age));
+		if (live == 0.0) { continue; }
 		float angle = -attack_angle * 0.5 + attack_angle * phase;
 		vec2 direction = vec2(sin(angle), -cos(angle));
 		vec2 tangent = vec2(-direction.y, direction.x);

@@ -17,6 +17,8 @@ signal menu_changed(open: bool)
 @export var audio_page: AudioMixUI
 @export var orbit_page: CanvasLayer
 @export var save_graphics_settings := true
+## World 使用独立人物面板，其它地图保留原来的属性页。
+@export var include_character_page := true
 @export_group("界面音效")
 @export var ui_sounds: UISoundBank = preload("res://data/audio/ui_sounds.tres")
 var _ui_audio: UIAudio
@@ -45,8 +47,11 @@ var _character_page: VBoxContainer
 var _controls: Node
 var _return_button: Button
 var _returning_to_menu := false
+var _pause_tree: SceneTree
+var _previous_pause := false
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_controls = get_node("/root/GameControls")
 	_controls.configure_world(get_parent())
 	_ui_audio = preload("res://scenes/audio/ui_audio.tscn").instantiate()
@@ -54,6 +59,8 @@ func _ready() -> void:
 	add_child(_ui_audio)
 	layer = 40
 	_build()
+	var character := get_parent().get_node_or_null("CharacterPanel")
+	if character: character.panel_changed.connect(func(open: bool): _launcher.visible = not open and not menu_open)
 	_embed.call_deferred()
 	get_viewport().size_changed.connect(_fit)
 	_fit()
@@ -123,6 +130,7 @@ func _build() -> void:
 	_canvas.add_child(_fps_toggle)
 	_tabs.resize(PAGE_NAMES.size())
 	var order := [6, 0, 2, 3, 4, 5, 1]
+	if not include_character_page: order.erase(6)
 	for slot in order.size():
 		var index: int = order[slot]
 		var button := _button(["声音", "调试", "画质", "镜头", "按键", "排行榜", "人物"][index], select_page.bind(index, true), &"")
@@ -175,9 +183,10 @@ func _build() -> void:
 	pages.add_child(_controls_page)
 	_leaderboard_page = LEADERBOARD_PAGE.new()
 	pages.add_child(_leaderboard_page)
-	_character_page = CHARACTER_PAGE.new()
-	pages.add_child(_character_page)
-	_character_page.configure(get_parent())
+	if include_character_page:
+		_character_page = CHARACTER_PAGE.new()
+		pages.add_child(_character_page)
+		_character_page.configure(get_parent())
 	var enabled := CheckBox.new()
 	enabled.text = "开启环绕调试"
 	enabled.toggled.connect(func(value: bool):
@@ -252,20 +261,23 @@ func _fit() -> void:
 	_canvas.position = (viewport - DESIGN_SIZE * fit_scale) * 0.5
 
 func select_page(index: int, audible := false) -> void:
+	if index == 6 and not include_character_page: return
 	var changed := _selected != index
 	_selected = clampi(index, 0, PAGE_NAMES.size() - 1)
 	_page_heading.text = PAGE_NAMES[_selected]
 	if changed: _scroll.scroll_vertical = 0
 	if _selected != 4: _controls_page.cancel_capture()
-	for item in _tabs.size(): _tabs[item].set_pressed_no_signal(item == _selected)
+	for item in _tabs.size():
+		if _tabs[item]: _tabs[item].set_pressed_no_signal(item == _selected)
 	_audio_host.visible = _selected == 0
 	_orbit_host.visible = _selected == 1
 	_graphics_page.visible = _selected == 2
 	_camera_page.visible = _selected == 3
 	_controls_page.visible = _selected == 4
 	_leaderboard_page.visible = _selected == 5
-	_character_page.visible = _selected == 6
-	if _selected == 6: _character_page.refresh()
+	if _character_page:
+		_character_page.visible = _selected == 6
+		if _selected == 6: _character_page.refresh()
 	if menu_open and _selected == 5: _leaderboard_page.activate()
 	if _selected == 4: _controls_page.sync_controls()
 	if _selected == 3: _camera_page.sync_controls()
@@ -279,6 +291,9 @@ func open_menu() -> void:
 		if not (blocker is WavePrototype and blocker.phase == WavePrototype.Phase.RESULT): return
 	menu_open = true
 	add_to_group(&"gameplay_input_blockers")
+	_pause_tree = get_tree()
+	_previous_pause = _pause_tree.paused
+	_pause_tree.paused = true
 	_root.show()
 	if _appearance: _appearance.kill()
 	_canvas.modulate.a = 0.0
@@ -299,8 +314,19 @@ func close_menu(audible := true) -> void:
 	_root.hide()
 	_launcher.show()
 	remove_from_group(&"gameplay_input_blockers")
+	_restore_pause()
 	menu_changed.emit(false)
 	if audible: _ui_audio.play_action(&"close")
+
+func _restore_pause() -> void:
+	if not is_instance_valid(_pause_tree): return
+	# Character physics was stopped too: absorb current keys without advancing combat.
+	var player := get_parent().get_node_or_null("Player") as Player
+	if is_instance_valid(player):
+		if is_instance_valid(player.body_ricochet): player.body_ricochet.discard_blocked_input(_controls.movement_mask())
+		if player._blink: player._blink.discard_buffered_input()
+	_pause_tree.paused = _previous_pause
+	_pause_tree = null
 
 func return_to_main_menu() -> void:
 	if not menu_open or _returning_to_menu: return
@@ -360,6 +386,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if weather and _graphics_page.set_option("rain", not weather.raining): get_viewport().set_input_as_handled()
 
 func _exit_tree() -> void:
+	_restore_pause()
 	if is_instance_valid(_controls): _controls.release_world(get_parent())
 
 func _unhandled_input(_event: InputEvent) -> void:

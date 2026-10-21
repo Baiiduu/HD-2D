@@ -6,6 +6,8 @@ const CELL_SIZE := 1.0
 const EMPTY_CELL: Array = []
 
 var _cells: Dictionary = {}
+var _ordered_cells: Array[Vector2i] = []
+var _cell_order_dirty := true
 ## 稳定整数槽位；移除即撤桶并归还槽位，仍在每次 update 时读取实时参数。
 ## 只保存与旧记录相同精度的值：Vector3 与 float64，不能把间距／体型降为 float32。
 var _entries: Dictionary[WaveEnemy, int] = {}
@@ -80,8 +82,12 @@ func update(enemy: WaveEnemy) -> void:
 	if registered:
 		var previous := _slot_cells[slot]
 		_cells[previous].erase(slot)
-		if _cells[previous].is_empty(): _cells.erase(previous)
-	if not _cells.has(key): _cells[key] = []
+		if _cells[previous].is_empty():
+			_cells.erase(previous)
+			_cell_order_dirty = true
+	if not _cells.has(key):
+		_cells[key] = []
+		_cell_order_dirty = true
 	_cells[key].append(slot)
 	_slot_cells[slot] = key
 
@@ -90,7 +96,9 @@ func remove(enemy: WaveEnemy) -> void:
 	if slot < 0: return
 	var key := _slot_cells[slot]
 	_cells[key].erase(slot)
-	if _cells[key].is_empty(): _cells.erase(key)
+	if _cells[key].is_empty():
+		_cells.erase(key)
+		_cell_order_dirty = true
 	_entries.erase(enemy)
 	_owners[slot] = null
 	_active[slot] = 0
@@ -100,6 +108,8 @@ func remove(enemy: WaveEnemy) -> void:
 func clear() -> void:
 	pursuit_epoch += 1
 	_cells.clear()
+	_ordered_cells.clear()
+	_cell_order_dirty = true
 	_entries.clear()
 	_owners.clear()
 	_slot_cells.clear()
@@ -120,11 +130,38 @@ func synchronize(enemies: Array[WaveEnemy]) -> void:
 func swept_bodies(start: Vector3, end: Vector3, radius: float) -> Array[WaveEnemy]:
 	return nearby((start + end) * 0.5, TerrainPath.horizontal_distance(start, end) * 0.5 + radius + _max_crowd_spacing * 0.5)
 
+## 大范围稀疏查询改查有怪的格子，避免范围成长后遍历整片空桶。
+## 排序只跟随占用格变化，保留原 z/x/桶内顺序；不缓存怪物位置。
+func _wide_query(first: Vector2i, last: Vector2i) -> bool:
+	return (last.x - first.x + 1) * (last.y - first.y + 1) > maxi(64, _cells.size() * 8)
+
+func _ordered_occupied_cells() -> Array[Vector2i]:
+	if _cell_order_dirty:
+		_ordered_cells.assign(_cells.keys())
+		_ordered_cells.sort_custom(_cell_precedes)
+		_cell_order_dirty = false
+	return _ordered_cells
+
+static func _cell_precedes(a: Vector2i, b: Vector2i) -> bool:
+	return a.y < b.y or (a.y == b.y and a.x < b.x)
+
 func nearby(point: Vector3, radius: float) -> Array[WaveEnemy]:
 	var result: Array[WaveEnemy] = []
+	if _cells.is_empty(): return result
 	var first := _key(point - Vector3(radius, 0.0, radius))
 	var last := _key(point + Vector3(radius, 0.0, radius))
 	var squared := radius * radius
+	if _wide_query(first, last):
+		for key in _ordered_occupied_cells():
+			if key.y < first.y or key.y > last.y or key.x < first.x or key.x > last.x: continue
+			for slot: int in _cells[key]:
+				candidate_checks += 1
+				var enemy := _owners[slot]
+				if not is_instance_valid(enemy) or enemy.dead: continue
+				var position := enemy.global_position
+				var offset := Vector2(position.x - point.x, position.z - point.z)
+				if offset.length_squared() <= squared: result.append(enemy)
+		return result
 	for z in range(first.y, last.y + 1):
 		for x in range(first.x, last.x + 1):
 			for slot: int in _cells.get(Vector2i(x, z), EMPTY_CELL):
@@ -140,9 +177,22 @@ func nearby(point: Vector3, radius: float) -> Array[WaveEnemy]:
 ## 不缓存位置或挡墙结果，候选顺序及精确距离判定与 nearby 一致。
 func nearby_into(point: Vector3, radius: float, excluded: Dictionary[int, bool], result: Array[WaveEnemy]) -> void:
 	result.clear()
+	if _cells.is_empty(): return
 	var first := _key(point - Vector3(radius, 0.0, radius))
 	var last := _key(point + Vector3(radius, 0.0, radius))
 	var squared := radius * radius
+	if _wide_query(first, last):
+		for key in _ordered_occupied_cells():
+			if key.y < first.y or key.y > last.y or key.x < first.x or key.x > last.x: continue
+			for slot: int in _cells[key]:
+				candidate_checks += 1
+				if excluded.has(_ids[slot]): continue
+				var enemy := _owners[slot]
+				if not is_instance_valid(enemy) or enemy.dead: continue
+				var position := enemy.global_position
+				var offset := Vector2(position.x - point.x, position.z - point.z)
+				if offset.length_squared() <= squared: result.append(enemy)
+		return
 	for z in range(first.y, last.y + 1):
 		for x in range(first.x, last.x + 1):
 			for slot: int in _cells.get(Vector2i(x, z), EMPTY_CELL):

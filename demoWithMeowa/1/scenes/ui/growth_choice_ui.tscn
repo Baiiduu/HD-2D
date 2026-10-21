@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/growth_choice_ui.gd" id="ui"]
 [ext_resource type="Script" path="res://scripts/ui/growth_choice_option.gd" id="option"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" path="res://assets/meowa/ui/upgrade/divider.png" id="divider"]
 [ext_resource type="Texture2D" path="res://assets/meowa/ui/upgrade/button.png" id="button"]
 [ext_resource type="PackedScene" path="res://scenes/audio/ui_audio.tscn" id="audio"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/settings_kinetic/brush_red.png" id="ink_brush"]
 
 [sub_resource type="Resource" id="preview_a"]
 script = ExtResource("option")
@@ -57,6 +58,12 @@ mouse_filter = 2
 
 [node name="Header" type="Control" parent="Root/Content"]
 mouse_filter = 2
+
+[node name="InkBrush" type="TextureRect" parent="Root/Content/Header"]
+visible = false
+mouse_filter = 2
+texture = ExtResource("ink_brush")
+expand_mode = 1
 
 [node name="Title" type="Label" parent="Root/Content/Header"]
 mouse_filter = 2

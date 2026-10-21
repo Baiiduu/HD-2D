@@ -71,6 +71,8 @@ enum SlashVisual { FRAME_ANIMATION, THIN_ARC, MEOWA_ARC, NATIVE_RIBBON }
 @export_range(0.005, 0.05, 0.001, "suffix:m") var arc_pixel_size := 0.016
 @export_group("共用战斗声音")
 @export var audio_enabled := true
+## 出手声同时覆盖空挥与命中，真实伤害不再追加攻击或怪物受击声。
+@export var single_sound_per_swing := false
 @export var sweep_sounds: Array[AudioStream] = []
 @export var hit_sounds: Array[AudioStream] = []
 @export_range(-40.0, 6.0, 0.5) var audio_volume_db := -13.0

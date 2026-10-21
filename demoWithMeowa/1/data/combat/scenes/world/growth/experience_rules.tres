@@ -4,3 +4,5 @@
 
 [resource]
 script = ExtResource("1_7wm1j")
+first_level_experience = 20
+per_level_increase = 10

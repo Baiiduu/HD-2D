@@ -134,6 +134,13 @@ func run() -> void:
 	mob.health_loss_disabled = true
 	mob.take_damage(100, {"source": &"A02"})
 	check(is_equal_approx(player.current_health, 50.3), "Simulated hits cannot restore life")
+	mob.health_loss_disabled = false
+	mob.health = 3000
+	player.current_health = 10
+	mob.take_damage(1000, {"source": &"A02"})
+	check(is_equal_approx(player.current_health, 40.0), "A real large hit heals beyond the former omnivamp-per-second limit")
+	mob.take_damage(1000, {"source": &"A02"})
+	check(is_equal_approx(player.current_health, 70.0), "A second immediate real hit still grants full lifesteal without advancing time")
 	var fragile := enemy(Vector3(1, 0, 0), 5)
 	fragile.damaged.connect(session._growth_damage)
 	session._survival.reset()

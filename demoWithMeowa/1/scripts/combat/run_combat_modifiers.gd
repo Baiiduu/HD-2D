@@ -7,11 +7,15 @@ var _bonuses: Dictionary[int, float] = {}
 ## 巨量怪潮模拟只关闭怪物扣血；基础剑术、技能和成长仍计算真实攻击数值。
 var damage_disabled := false
 var growth_rules: RunGrowthRules
+var _haste_clock := 0.0
+var _haste_expiry := PackedFloat64Array()
 
 func reset() -> void:
 	damage_disabled = false
 	levels.clear()
 	_bonuses.clear()
+	_haste_expiry.clear()
+	_haste_clock = 0.0
 	emit_changed()
 
 func level_for(id: StringName) -> int:
@@ -53,6 +57,8 @@ func preview_after(definition: GrowthBuffDefinition) -> RunCombatModifiers:
 	preview._bonuses = _bonuses.duplicate()
 	preview.damage_disabled = damage_disabled
 	preview.growth_rules = growth_rules
+	preview._haste_clock = _haste_clock
+	preview._haste_expiry = _haste_expiry.duplicate()
 	preview.apply_buff(definition)
 	return preview
 
@@ -64,7 +70,11 @@ func interval_multiplier() -> float:
 	return heavy * maxf(0.01, 1.0 - bonus(GrowthBuffDefinition.Attribute.COOLDOWN)) / multiplier(GrowthBuffDefinition.Attribute.ATTACK_SPEED)
 
 func speed_damage_multiplier(speed: float, flying: bool) -> float:
-	return 1.0 + bonus(GrowthBuffDefinition.Attribute.SPEED_DAMAGE) * growth_rules.speed_damage_bonus(speed) if flying and growth_rules else 1.0
+	return 1.0 + speed_damage_strength() * growth_rules.speed_damage_bonus(speed) if flying and growth_rules else 1.0
+
+func speed_damage_strength() -> float:
+	var value := bonus(GrowthBuffDefinition.Attribute.SPEED_DAMAGE)
+	return growth_rules.damage_growth_bonus(value, 1.0) if growth_rules else value
 
 func strike_count(speed_tier: int, flying: bool) -> int:
 	var rank := roundi(bonus(GrowthBuffDefinition.Attribute.MULTISTRIKE))
@@ -74,7 +84,45 @@ func range_multiplier() -> float:
 	return multiplier(GrowthBuffDefinition.Attribute.RANGE)
 
 func multiplier(attribute: GrowthBuffDefinition.Attribute) -> float:
-	return maxf(0.1, 1.0 + bonus(attribute))
+	var value := bonus(attribute)
+	if growth_rules and attribute == GrowthBuffDefinition.Attribute.HEAVY_STRIKE: value = growth_rules.damage_growth_bonus(value, 2.0)
+	var result := maxf(0.1, 1.0 + value)
+	return result * haste_speed_multiplier() if attribute == GrowthBuffDefinition.Attribute.MOVE_SPEED else result
+
+func record_kill() -> void:
+	if not growth_rules or damage_disabled or bonus(GrowthBuffDefinition.Attribute.KILL_HASTE) <= 0.0: return
+	if _haste_expiry.size() >= growth_rules.kill_haste_max_stacks: _haste_expiry = _haste_expiry.slice(1)
+	_haste_expiry.append(_haste_clock + growth_rules.kill_haste_seconds)
+	emit_changed()
+
+func advance_temporary(seconds: float) -> void:
+	if _haste_expiry.is_empty(): return
+	_haste_clock += maxf(0.0, seconds)
+	var count := 0
+	while count < _haste_expiry.size() and _haste_expiry[count] <= _haste_clock: count += 1
+	if count > 0:
+		_haste_expiry = _haste_expiry.slice(count)
+		emit_changed()
+
+func clear_temporary() -> void:
+	if _haste_expiry.is_empty(): return
+	_haste_expiry.clear()
+	emit_changed()
+
+func haste_stacks(after_seconds := 0.0) -> int:
+	if after_seconds <= 0.0 and (_haste_expiry.is_empty() or _haste_expiry[0] > _haste_clock + 0.000001): return _haste_expiry.size()
+	var count := 0
+	for expiry in _haste_expiry:
+		if expiry > _haste_clock + after_seconds + 0.000001: count += 1
+	return count
+
+func haste_speed_multiplier(after_seconds := 0.0) -> float:
+	return 1.0 + haste_stacks(after_seconds) * bonus(GrowthBuffDefinition.Attribute.KILL_HASTE)
+
+func next_haste_expiry(after_seconds := 0.0) -> float:
+	for expiry in _haste_expiry:
+		if expiry > _haste_clock + after_seconds + 0.000001: return expiry - _haste_clock - after_seconds
+	return INF
 
 ## 蓄力、收尾与发射冷却以效率相除，避免叠到零；不加速动作动画。
 func ricochet_value(attribute: GrowthBuffDefinition.Attribute, base: float) -> float:

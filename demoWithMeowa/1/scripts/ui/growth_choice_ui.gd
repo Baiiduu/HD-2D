@@ -10,6 +10,10 @@ signal cards_turned
 signal cards_redrawn
 
 const CARD := preload("res://scenes/ui/growth_choice_card.tscn")
+const FONT := preload("res://assets/fonts/maoken_assorted_sans/MaokenAssortedSans.ttf")
+const RED_BRUSH := preload("res://assets/meowa/ui/settings_kinetic/brush_red.png")
+const DARK_BRUSH := preload("res://assets/meowa/ui/settings_kinetic/brush_dark.png")
+const LEGACY_BUTTON := preload("res://assets/meowa/ui/upgrade/button.png")
 
 @export_group("布局")
 ## 单张卡片的逻辑宽度；高度按美术比例计算，窄窗口整体缩小。
@@ -25,6 +29,9 @@ const CARD := preload("res://scenes/ui/growth_choice_card.tscn")
 	set(value): button_width = maxf(value, 1.0); _update_presentation()
 
 @export_group("视觉与文字")
+## 正式地图采用斜切笔触卡框；旧预览与 City 保留原样式。
+@export var ink_style := false:
+	set(value): ink_style = value; _update_presentation()
 ## 只淡化卡片内页，青铜边框与光边保持清晰；0 透出世界，1 保留原底纹。
 @export_range(0.0, 1.0, 0.05) var background_opacity := 0.86:
 	set(value): background_opacity = value; _update_presentation()
@@ -73,6 +80,8 @@ var _dealing: Tween
 var cards_revealed := true
 var _rerolls_left := 0
 var _can_reroll := false
+var _applied_ink_style: Variant = null
+var _hover_target: BaseButton
 
 @onready var _root: Control = $Root
 @onready var _content: Control = $Root/Content
@@ -84,10 +93,12 @@ var _can_reroll := false
 
 func _ready() -> void:
 	var ui_theme := Theme.new()
+	ui_theme.default_font = FONT
 	_root.theme = ui_theme
 	get_viewport().size_changed.connect(_update_presentation)
 	_confirm.pressed.connect(confirm_selection)
 	_reroll.pressed.connect(request_reroll)
+	for button in [_confirm, _reroll]: _bind_hover_audio(button)
 	if Engine.is_editor_hint():
 		_build_cards(preview_options)
 		_root.show()
@@ -119,7 +130,7 @@ func present_choices(options: Array[GrowthChoiceOption]) -> bool:
 	if open_duration > 0.0:
 		_opening = create_tween()
 		_opening.tween_property(_content, "modulate:a", 1.0, open_duration)
-	_audio.play(&"journal_open")
+	if not redrawing: _audio.play_action(&"open")
 	if redrawing: cards_redrawn.emit()
 	_deal_cards()
 	return true
@@ -164,6 +175,7 @@ func reveal_now() -> void:
 	cards_turned.emit()
 
 func close() -> void:
+	_hover_target = null
 	if _dealing:
 		_dealing.kill()
 		_dealing = null
@@ -182,7 +194,7 @@ func select_option(option_id: StringName) -> bool:
 			if selected_index == index: return true
 			selected_index = index
 			_refresh_selection()
-			_audio.play(&"select")
+			_audio.play_action(&"choice")
 			selection_changed.emit(option_id)
 			return true
 	return false
@@ -196,14 +208,27 @@ func confirm_selection() -> void:
 	if not option or not option.enabled: return
 	var id := option.id
 	close()
-	_audio.play(&"confirm")
+	_audio.play_action(&"confirm")
 	choice_confirmed.emit(id)
 
 func cancel() -> void:
 	if not is_open or not allow_cancel: return
 	close()
-	_audio.play(&"cancel")
+	_audio.play_action(&"close")
 	cancelled.emit()
+
+func _bind_hover_audio(button: BaseButton) -> void:
+	button.gui_input.connect(_hover_audio.bind(button))
+	button.mouse_exited.connect(func():
+		if _hover_target == button: _hover_target = null)
+
+func _hover_audio(event: InputEvent, button: BaseButton) -> void:
+	# A card appearing under a stationary pointer is not a navigation action.
+	if not event is InputEventMouseMotion or Engine.is_editor_hint(): return
+	if not is_open or not cards_revealed or button.disabled or not button.is_visible_in_tree(): return
+	if _hover_target == button: return
+	_hover_target = button
+	_audio.play_action(&"navigate")
 
 func _exit_tree() -> void:
 	close()
@@ -246,6 +271,7 @@ func _move_selection(direction: int) -> void:
 			return
 
 func _build_cards(options: Array[GrowthChoiceOption]) -> void:
+	_hover_target = null
 	if _dealing:
 		_dealing.kill()
 		_dealing = null
@@ -264,6 +290,7 @@ func _build_cards(options: Array[GrowthChoiceOption]) -> void:
 		_rows.add_child(card)
 		_cards.append(card)
 		card.pressed.connect(select_option.bind(option.id))
+		_bind_hover_audio(card)
 		card.set_selection_key(index + 1)
 	_update_presentation()
 	_refresh_selection()
@@ -275,19 +302,24 @@ func _refresh_selection() -> void:
 
 func _update_presentation() -> void:
 	if not is_node_ready(): return
+	_apply_skin()
 	var row_width := _cards.size() * card_width + maxi(_cards.size() - 1, 0) * card_gap
 	var title_label: Label = _content.get_node("Header/Title")
 	title_label.add_theme_font_size_override("font_size", title_font_size)
 	var title_width := maxf(336.0, title_label.get_theme_font("font").get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, title_font_size).x + 24.0)
 	var width := maxf(maxf(640.0, title_width + 296.0), row_width)
-	var card_height := card_width * 1180.0 / 720.0
+	var card_height := card_width * (GrowthChoiceCard.INK_SIZE.y / GrowthChoiceCard.INK_SIZE.x if ink_style else 1180.0 / 720.0)
+	var shared_body_size := content_font_size
 	_rows.position = Vector2((width - row_width) * 0.5, 116)
 	_rows.size = Vector2(row_width, card_height)
 	for index in _cards.size():
 		var card := _cards[index]
 		card.position = Vector2(index * (card_width + card_gap), 0)
 		card.size = Vector2(card_width, card_height)
-		card.configure(_options[index], background_opacity, selection_strength, hover_duration, content_font_size, card_text_color)
+		card.configure(_options[index], background_opacity, selection_strength, hover_duration, content_font_size, card_text_color, ink_style)
+		if ink_style: shared_body_size = mini(shared_body_size, card.get_body_font_size())
+	if ink_style:
+		for card in _cards: card.set_body_font_size(shared_body_size)
 	var header: Control = _content.get_node("Header")
 	header.size = Vector2(width, 100)
 	title_label.text = title
@@ -300,6 +332,9 @@ func _update_presentation() -> void:
 	var divider: TextureRect = header.get_node("Divider")
 	divider.position = Vector2((width - 276) * 0.5, 64)
 	divider.size = Vector2(276, 39)
+	var ink_brush: TextureRect = header.get_node("InkBrush")
+	ink_brush.position = Vector2((width - title_width - 112) * 0.5, -6)
+	ink_brush.size = Vector2(title_width + 112, 84)
 	_hint.position = Vector2(0, _rows.position.y + card_height + 6)
 	_hint.size = Vector2(width, 42)
 	var hint_backing: Panel = _content.get_node("HintBacking")
@@ -327,3 +362,22 @@ func _update_presentation() -> void:
 	_content.scale = Vector2.ONE * factor
 	var actual_size := _content.size * factor
 	_content.position = ((viewport - actual_size) * 0.5 + center_offset).clamp(screen_margin, (viewport - screen_margin - actual_size).max(screen_margin))
+
+func _apply_skin() -> void:
+	if _applied_ink_style == ink_style: return
+	var restoring_legacy: bool = _applied_ink_style == true
+	_applied_ink_style = ink_style
+	if not ink_style and not restoring_legacy: return
+	var header: Control = _content.get_node("Header")
+	for part in ["Left", "Right", "Divider"]: header.get_node(part).visible = not ink_style
+	header.get_node("InkBrush").visible = ink_style
+	_content.get_node("HintBacking").visible = not ink_style
+	for button in [_confirm, _reroll]:
+		for state in ["normal", "hover", "pressed", "hover_pressed", "disabled"]:
+			var skin := StyleBoxTexture.new()
+			skin.texture = (RED_BRUSH if button == _confirm and state != "disabled" else DARK_BRUSH) if ink_style else LEGACY_BUTTON
+			if ink_style and state == "hover": skin.modulate_color = Color(1.2, 1.2, 1.2)
+			button.add_theme_stylebox_override(state, skin)
+		for state in ["font_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color"]:
+			button.add_theme_color_override(state, Color("171b24") if ink_style and button == _confirm else Color("fff0d4"))
+	(header.get_node("Title") as Label).add_theme_color_override("font_color", Color("fff0d4") if ink_style else Color(1, 0.82, 0.53))

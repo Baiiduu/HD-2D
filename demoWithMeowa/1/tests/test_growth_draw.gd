@@ -143,6 +143,7 @@ func run() -> void:
 	world.get_node("WavePrototype/MirrorMarkAutoAttack").enabled = true
 	var wave: WavePrototype = world.get_node("WavePrototype")
 	var profile := world.get_node("BattleConfiguration").configuration.duplicate() as SceneCombatConfiguration
+	profile.experience_rules = ExperienceRules.new()
 	profile.population_rules = profile.population_rules.duplicate(true) as WavePopulationRules
 	profile.population_rules.simulation_mode = false
 	world.get_node("BattleConfiguration").configuration = profile
@@ -168,7 +169,7 @@ func run() -> void:
 	var save_before := wave.loadout.state.export_state().duplicate(true)
 	check(wave.start_run() and wave.skill_draft.initial_choice.is_open and not growth.active, "Initial draw opens before enemies and run experience")
 	var eligible := skills.get_registered_ids().filter(skills.is_skill_available)
-	check(wave.skill_draft.initial_choice._options.size() == 3 and wave.skill_draft._initial_pool.size() == eligible.size() and eligible.size() > 3, "Expanded eligible pool draws three and excludes disabled components")
+	check(wave.skill_draft.initial_choice._options.size() == 3 and wave.skill_draft._initial_pool.size() == eligible.size() + 1 and eligible.size() > 3, "Expanded pool includes the initial legendary and excludes disabled components")
 	var first_draw := ids(wave.skill_draft._initial_cards)
 	wave.skill_draft.initial_choice.request_reroll()
 	check(growth.rerolls_left == 2 and ids(wave.skill_draft._initial_cards) != first_draw, "Initial draw consumes one shared reroll")
@@ -177,7 +178,7 @@ func run() -> void:
 	check(wave.start_run() and ids(wave.skill_draft._initial_cards) == kept and growth.rerolls_left == 2, "Cancel and reopen neither redraw nor refund the budget")
 	var initial_id: StringName
 	for option in wave.skill_draft._initial_cards:
-		if option.id != &"initial:probe": initial_id = option.id; break
+		if String(option.id).begins_with("initial:") and option.id != &"initial:probe": initial_id = option.id; break
 	check(wave.skill_draft.initial_choice.select_option(initial_id), "An actual skill can be learned from the draw")
 	wave.skill_draft.initial_choice.confirm_selection()
 	check(wave.phase == WavePrototype.Phase.BATTLE and growth.active and growth.rerolls_left == 2, "Starting battle preserves initial reroll spending")

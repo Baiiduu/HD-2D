@@ -20,6 +20,9 @@ const SYSTEMS := preload("res://scripts/core/game_system_settings.gd")
 @export_range(1, 6, 1) var initial_cards_per_draw := 3
 
 var _initial_offered: Dictionary[StringName, StringName] = {}
+var _initial_buffs: Dictionary[StringName, GrowthBuffDefinition] = {}
+var _initial_committed := false
+var _pending_initial_buff: GrowthBuffDefinition
 var _initial_pool: Array[GrowthChoiceOption] = []
 var _initial_cards: Array[GrowthChoiceOption] = []
 var _combat_components: Dictionary[StringName, Node] = {}
@@ -37,8 +40,9 @@ func _sync_enabled() -> void:
 	growth.set_draft_enabled(is_enabled())
 
 func should_offer_initial_choice() -> bool:
-	if not is_enabled() or not manager.is_enabled() or manager.has_learned_skill(): return false
-	return manager.get_registered_ids().any(func(id: StringName): return manager.is_skill_available(id))
+	if not is_enabled() or _initial_committed or manager.has_learned_skill(): return false
+	if manager.is_enabled() and manager.get_registered_ids().any(func(id: StringName): return manager.is_skill_available(id)): return true
+	return buffs != null and not buffs.candidates(true).is_empty()
 
 func _ready() -> void:
 	assert(session and manager and growth, "RunSkillDraft 需要明确连接 session、manager 和 growth")
@@ -73,6 +77,7 @@ func _unregister_component(id: StringName) -> void:
 
 func _clear_initial() -> void:
 	_initial_offered.clear()
+	_initial_buffs.clear()
 	_initial_pool.clear()
 	_initial_cards.clear()
 	if is_instance_valid(initial_choice) and initial_choice.is_open: initial_choice.close()
@@ -86,21 +91,26 @@ func _refresh_growth_choices() -> void:
 	if growth.state.pending_choices > 0: growth.refresh_candidates(candidates())
 
 func _end_run(_reason: String) -> void:
+	_initial_committed = false
+	_pending_initial_buff = null
 	_clear_initial()
 
 func _phase_changed(phase: int) -> void:
 	if phase == session.Phase.READY or (phase == session.Phase.RESULT and manager.has_simulation_loadout()):
+		_initial_committed = false
+		_pending_initial_buff = null
 		manager.reset()
 	else:
 		_clear_initial()
 
 ## 选完才请求真正开局，不花费经验、不提前刷怪或播放战斗音效。
 func present_initial_choice() -> bool:
-	if not is_enabled() or not manager.is_enabled() or session.phase != session.Phase.READY or not initial_choice or initial_choice.is_open or manager.has_learned_skill(): return false
+	if not is_enabled() or _initial_committed or session.phase != session.Phase.READY or not initial_choice or initial_choice.is_open or manager.has_learned_skill(): return false
 	# 取消再打开保留原牌与共用重抽次数。
 	if _initial_cards.is_empty():
 		_initial_pool.clear()
 		_initial_offered.clear()
+		_initial_buffs.clear()
 		for id in manager.get_registered_ids():
 			if not manager.is_skill_available(id): continue
 			var component := manager.get_skill(id)
@@ -110,18 +120,25 @@ func present_initial_choice() -> bool:
 			option.title = "%s\nLv.1" % definition.display_name
 			option.description = component.describe_skill_upgrade(0, 1)
 			option.icon = definition.icon
+			option.illustration = definition.illustration
 			option.category = GrowthChoiceOption.Category.LEARN_SKILL
 			_initial_offered[option.id] = id
 			_initial_pool.append(option)
+		if buffs:
+			for option in buffs.candidates(true):
+				var definition := buffs.offered_definition(option.id)
+				option.id = StringName("initial_buff:%s" % option.id)
+				_initial_buffs[option.id] = definition
+				_initial_pool.append(option)
 		_initial_cards = growth.draw_options(_initial_pool, initial_cards_per_draw)
-	initial_choice.title = "初始技能 · 抽卡选择"
-	initial_choice.choice_hint = "学习一张技能，确认后开始战斗 · Esc 返回"
+	initial_choice.title = "开局成长 · 抽卡选择" if not _initial_buffs.is_empty() else "初始技能 · 抽卡选择"
+	initial_choice.choice_hint = "选择一张，确认后开始战斗 · Esc 返回"
 	var opened := initial_choice.present_choices(_initial_cards)
 	if opened: initial_choice.set_draw_status(growth.rerolls_left, growth.can_reroll(_initial_pool, _initial_cards))
 	return opened
 
 func _reroll_initial() -> void:
-	if not is_enabled() or not manager.is_enabled() or not initial_choice.is_open or not initial_choice.cards_revealed or manager.has_learned_skill(): return
+	if not is_enabled() or not initial_choice.is_open or not initial_choice.cards_revealed or manager.has_learned_skill(): return
 	var options := growth.redraw_options(_initial_pool, _initial_cards, initial_cards_per_draw)
 	if options.is_empty(): return
 	_initial_cards = options
@@ -129,11 +146,23 @@ func _reroll_initial() -> void:
 	initial_choice.set_draw_status(growth.rerolls_left, growth.can_reroll(_initial_pool, _initial_cards))
 
 func _choose_initial(option_id: StringName) -> void:
-	if not is_enabled() or not manager.is_enabled() or not _initial_offered.has(option_id) or not _initial_cards.any(func(option: GrowthChoiceOption): return option.id == option_id) or manager.has_learned_skill() or not session.can_start_run(): return
-	var id := _initial_offered[option_id]
-	_initial_offered.clear()
-	if not manager.set_skill_level(id, 1): return
-	if not session.start_run(): manager.reset()
+	if not is_enabled() or not _initial_cards.any(func(option: GrowthChoiceOption): return option.id == option_id) or manager.has_learned_skill() or not session.can_start_run(): return
+	var definition := _initial_buffs.get(option_id) as GrowthBuffDefinition
+	if definition:
+		if not session.combat_modifiers.can_apply(definition): return
+	elif not _initial_offered.has(option_id) or not manager.set_skill_level(_initial_offered[option_id], 1): return
+	_initial_committed = true
+	_pending_initial_buff = definition
+	if not session.start_run():
+		_initial_committed = false
+		_pending_initial_buff = null
+		manager.reset()
+
+## 开局状态重置之后、run_started 通知和第一波之前授予，避免选择被清空。
+func apply_initial_growth() -> bool:
+	var definition := _pending_initial_buff
+	_pending_initial_buff = null
+	return not definition or session.combat_modifiers.apply_buff(definition)
 
 func candidates() -> Array[GrowthChoiceOption]:
 	if not is_enabled(): return []

@@ -23,6 +23,7 @@ var _count_time := 1.0
 var _pending := 0
 var _merge_time := 0.0
 var _feedback_time := 0.0
+var _feedback_unpresented := false
 var _kind: StringName = &"kill"
 var _details := {}
 ## World 统一提供波次视觉配置；数值、入账与加分反馈不受标题样式影响。
@@ -91,6 +92,7 @@ func _state_changed() -> void:
 		_target = state.total
 		_count_time = count_duration
 		_feedback_time = 0.0
+		_feedback_unpresented = false
 		_pulse.fill(0.0)
 		_gain.text = ""
 		_hint.text = ""
@@ -119,6 +121,7 @@ func _commit() -> void:
 	var wave_hint := "第 %d 波完成" % int(_details.get("wave", 0)) if not separate_title else ""
 	_hint.text = wave_hint if _kind == &"wave" else ""
 	_feedback_time = 0.85 if _kind == &"wave" else 0.62
+	_feedback_unpresented = true
 	_pending = 0
 	# 在入账时确定变化位，逐帧计数不反复触发起跳。
 	var before := _format(_display)
@@ -135,9 +138,15 @@ func _process(delta: float) -> void:
 	_root.visible = not score.session.combat_frozen
 	for blocker in get_tree().get_nodes_in_group(&"gameplay_input_blockers"):
 		if blocker != score.session: _root.hide(); break
+	# 真实分数始终即时入账；隐藏期间保留待显示奖励及现有动效进度。
+	if not visible or not _root.is_visible_in_tree(): return
 	if _pending > 0:
 		_merge_time += delta
 		if _merge_time >= merge_window: _commit()
+	# 提交可发生在本帧或隐藏时的结算信号里，首次可见不能消耗之前的帧时长。
+	if _feedback_unpresented:
+		_feedback_unpresented = false
+		delta = 0.0
 	if _count_time < count_duration:
 		_count_time = minf(count_duration, _count_time + delta)
 		var progress := 1.0 - pow(1.0 - _count_time / count_duration, 3.0)

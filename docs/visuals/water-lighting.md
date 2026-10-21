@@ -27,8 +27,6 @@
 
 同机位局部对比，左为第二版，右为最终版：
 
-![人物倒影与波光对比](../media/water-lighting-preview/reflection-balance.png)
-
 这是参考效果的 Godot 适配。两引擎的灯光衰减、泛光、曝光不同，未声称逐像素一致。地图、灯位、相机、整体光照和美术资源未因本次修改而调整。
 
 ## 调节
@@ -58,9 +56,7 @@
 
 第二版波光演示（人物倒影修正前，最终对比见上）：
 
-![水面动态预览](../media/water-lighting-preview/shimmer-motion.gif)
-
-[上一版同机位](../media/water-lighting-preview/shimmer-current-before.png) · [第二版同机位](../media/water-lighting-preview/shimmer-current-camera.png)。两张对比固定水面 shader 的时间为 0.75 秒；其他动态元素不是逐像素冻结。
+ · 。两张对比固定水面 shader 的时间为 0.75 秒；其他动态元素不是逐像素冻结。
 
 实现入口：`demoWithMeowa/1/shaders/water/water.gdshader`、`demoWithMeowa/1/scripts/world/art_direction.gd`。
 

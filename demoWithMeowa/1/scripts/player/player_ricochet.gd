@@ -24,7 +24,7 @@ var direction := Vector3.RIGHT
 var flight_speed := 0.0
 ## 实际移动速度；flight_speed 保留为用于续航与碰撞结算的剩余动能速度。
 var movement_speed: float:
-	get: return flight_speed * (_settings.orbit_motion_ratio(_orbit_speed_blend) if _settings else 1.0) if flying else 0.0
+	get: return flight_speed * (_settings.orbit_motion_ratio(_orbit_speed_blend) if _settings else 1.0) * live_speed_multiplier() if flying else 0.0
 var _orbit_speed_blend := 0.0
 var _motion_timing := Vector2.ZERO
 var _energy_timing := Vector2.ZERO
@@ -108,6 +108,9 @@ func _enabled() -> bool:
 func is_frozen() -> bool:
 	return is_instance_valid(_session) and _session.combat_frozen
 
+func live_speed_multiplier() -> float:
+	return _session.combat_modifiers.haste_speed_multiplier() if is_instance_valid(_session) else 1.0
+
 ## 预览与实际发射共用最终数值。速度同时放大起步／满蓄，保留蓄力差异。
 func get_stats(modifiers: RunCombatModifiers = null) -> Dictionary:
 	var rules := _player.ricochet_rules
@@ -123,6 +126,15 @@ func get_stats(modifiers: RunCombatModifiers = null) -> Dictionary:
 	result[&"crowd_speed_retention"] = modifiers.ricochet_value(GrowthBuffDefinition.Attribute.RICOCHET_RETENTION, rules.crowd_speed_retention) if modifiers else rules.crowd_speed_retention
 	result[&"minimum_bounce_speed"] = rules.minimum_bounce_speed
 	return result
+
+## 只读面板：进行中的动作沿用本次蓄力快照，闲置时显示下一次发射数值。
+func get_attribute_readout() -> Dictionary:
+	var stats := get_stats()
+	var active := state != State.IDLE and _settings != null
+	if active:
+		for property in stats: stats[property] = _settings.get(property)
+	return {"stats": stats, "active_snapshot": active, "state": state,
+		"energy": flight_speed if flying else 0.0, "movement_speed": movement_speed}
 
 func begin_charge(movement: Vector3) -> bool:
 	if not _enabled() or state != State.IDLE or _cooldown > 0.0 or _player._blink.active or not _player.is_on_floor() or _player.current_health <= 0.0 or is_frozen(): return false
@@ -184,6 +196,15 @@ func release_charge() -> bool:
 	_change_state(State.FLYING)
 	launched.emit(direction, flight_speed, fraction)
 	return true
+
+## 场景树暂停期间人物不采样输入；恢复前吸收按键，不推进轨迹或冷却。
+func discard_blocked_input(movement_keys: int) -> void:
+	_movement_keys = movement_keys
+	_movement_active = true
+	_press_pending = false
+	_release_pending = false
+	_attack_pending = false
+	_aim_pending = false
 
 ## 返回 true 表示本帧的位移已由弹射接管；人物普通物理不再重复移动。
 func advance(delta: float, movement: Vector3, input_blocked: bool, movement_keys := -1) -> bool:
@@ -281,7 +302,7 @@ func _advance_flight(delta: float) -> void:
 		_orbit_speed_blend = _settings.orbit_blend_after(_orbit_speed_blend, orbiting, 0.0)
 		var step_seconds := _settings.orbit_motion_seconds(minf(remaining, _settings.coast_seconds(flight_speed)), orbiting, _orbit_speed_blend)
 		var time_sliced := step_seconds < remaining - 0.000001
-		var speed_ratio := _settings.orbit_motion_ratio(_orbit_speed_blend)
+		var speed_ratio := _settings.orbit_motion_ratio(_orbit_speed_blend) * live_speed_multiplier()
 		if step_seconds <= 0.000001:
 			_end_flight(&"speed_depleted")
 			break
@@ -410,7 +431,7 @@ func predict_path(query: BodyPathPrediction, output: AimPathData, max_distance: 
 	query.trace(_player, direction, speed,
 		_settings.coast_seconds(speed), mini(preview_bounces, 1) if followup_distance >= 0.0 else preview_bounces, _settings.bounce_speed_retention,
 		_path, _player.bounds, _settings.ground_height_tolerance, output, max_distance,
-		crowd, _settings, followup_distance)
+		crowd, _settings, followup_distance, _session.combat_modifiers if is_instance_valid(_session) else null)
 	if batch:
 		query.preview_batch_tests = batch.tests
 		query.preview_batch_empty = batch.empty_volumes

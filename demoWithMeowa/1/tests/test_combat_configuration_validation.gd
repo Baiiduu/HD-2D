@@ -23,6 +23,12 @@ func run() -> void:
 	profile.pursuit_throttle_threshold = -1
 	check("pursuit_throttle_threshold" in String(profile.call("validation_error")), "Invalid pursuit threshold reports its owning parameter")
 	profile.pursuit_throttle_threshold = world_profile.pursuit_throttle_threshold
+	profile.critical_chance = 1.01
+	check("critical_chance" in profile.validation_error(), "Critical probability cannot exceed one")
+	profile.critical_chance = world_profile.critical_chance
+	profile.critical_multiplier = NAN
+	check("critical_multiplier" in profile.validation_error(), "Critical damage multiplier must be finite")
+	profile.critical_multiplier = world_profile.critical_multiplier
 	profile.crowd_clearance_distance = NAN
 	check("crowd_clearance_distance" in String(profile.call("validation_error")), "Non-finite scalar input is rejected")
 	profile.crowd_clearance_distance = world_profile.crowd_clearance_distance

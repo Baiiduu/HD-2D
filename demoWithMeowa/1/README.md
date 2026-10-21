@@ -81,3 +81,17 @@ World 的「设置 → 画质与显示」集中提供显示、抗锯齿、阴影
 ```
 
 功能说明和当前实机效果见 [项目文档索引](../../docs/README.md)。一次性验证脚本和日志放到 `D:\.codexfile\work\<任务名>`，不要继续堆放在项目根目录。
+
+## Windows 试玩包
+
+`export_presets.cfg` 的 `Windows Desktop` 使用 x86_64 Release、独立 PCK，入口为正式 World；版本字段暂为 `0.1.0.0`。保留当前画质、玩法与存档设置，排除测试、开发工具和预览入口，单独纳入植被与法线动态读取的三份 JSON。发布前统一确认游戏名、图标与版本，改名时检查存档和匿名排行榜身份迁移。
+
+安装与项目一致的 Godot 4.7.2 标准版导出模板至 `D:\.codexfile\cache\godot\Godot\export_templates\4.7.2.stable`，至少包含 `version.txt`、`windows_release_x86_64.exe` 及其随附依赖。在 Windows 的 PowerShell 7 执行：
+
+```powershell
+./tools/build_windows.ps1 -GodotPath 'D:\Project\godot\Godot_v4.7.2\Godot_v4.7.2-stable_win64_console.exe'
+```
+
+输出在仓库 `dist/windows/<时间>/`：`game/` 为完整运行目录，`HD2D-windows-x64.zip` 为上传包，`build.json` 包含 SHA-256、检查结果和待验收状态；导出日志位于 `D:\.codexfile\work\windows-builds`。脚本只运行无界面导出与包内数据检查，不启动地图窗口；使用导出 EXE 核对正式地图、手绘地表与动态素材，并附带 Godot 和字体许可。导出过程保持 Godot 配置、模板缓存和临时数据在 D:，结束后恢复环境变量。
+
+上传 TapTap「PC 包体管理」时选择 ZIP，可执行文件填 `HD2D.exe`，启动参数留空；包体解析后，从 TapTap PC 下载并人工验证首次启动、核心操作、波次选卡、结算、重试、设置、联网失败和更新保留存档。当前尚未接入 TapTap 启动校验；生成包用于内部自测，不代表已经满足公开测试提审要求。排行榜服务端单独部署，不将 Python、数据库、私钥、管理凭据或本机存档打入客户端包。官方流程见 [PC 传包说明](https://developer.taptap.cn/docs/pc-store/guide/pc-bundle/)。

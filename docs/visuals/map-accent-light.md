@@ -4,8 +4,6 @@
 
 正式地图使用“全局光维持氛围，局部暖光点缀”的组合。已撤回均匀照亮全图的暖色方向补光：草地、道路和花草之间保留暗部，局部亮斑继续使用原有的暖色、斑驳投影与柔和原生阴影。地表光的体积雾能量为零，远景空气光保持原来的独立配置。
 
-实机效果：[出生点](../media/map-accent-preview/spawn.png) · [西侧草地](../media/map-accent-preview/west.png) · [东侧](../media/map-accent-preview/east.png) · [旋转视角](../media/map-accent-preview/east-qe.png) · [北侧](../media/map-accent-preview/north.png) · [南侧](../media/map-accent-preview/south.png)。
-
 ## 调节位置
 
 在正式地图选中 **MapEffects → AtmosphericLight**。运行中可在 Remote Inspector 修改；保存配置请在本地场景 Inspector 修改。

@@ -22,6 +22,10 @@ var dead := false
 var fatal_hit_context: Dictionary = {}
 ## 模拟怪物不扣血、不死亡，仍按真实命中发出反馈事件。
 var health_loss_disabled := false
+## Per-map player critical rules; shared random stream is independent of spawning.
+var critical_chance := 0.0
+var critical_multiplier := 2.0
+var critical_random: RandomNumberGenerator
 var stun_remaining := 0.0
 var definition: WaveEnemyDefinition
 var spatial_index: WaveEnemySpatialIndex
@@ -89,6 +93,9 @@ func _tick_speed_boosts(delta: float) -> void:
 func configure_wave(context: Dictionary, definition: WaveEnemyDefinition, _warning: float) -> void:
 	self.definition = definition
 	health_loss_disabled = context.get("health_loss_disabled", false)
+	critical_chance = context.get("critical_chance", 0.0)
+	critical_multiplier = context.get("critical_multiplier", 2.0)
+	critical_random = context.get("critical_random")
 	spatial_index = context.get("spatial_index")
 	wave_mode = true
 	wave_target = context.player
@@ -187,13 +194,20 @@ func _stunned_tick(_delta: float) -> void:
 func take_damage(amount: float, feedback: Dictionary = {}) -> void:
 	if not wave_mode or dead or spawn_delay > 0.0 or not is_finite(amount) or amount <= 0.0: return
 	if combat_active.is_valid() and not combat_active.call(): return
+	var critical := false
+	if critical_chance > 0.0 and critical_random != null and feedback.get("source", &"") != &"":
+		critical = critical_chance >= 1.0 or critical_random.randf() < critical_chance
+	var multiplier := critical_multiplier if critical else 1.0
+	amount *= multiplier
 	var before := health
 	if not health_loss_disabled: health = maxf(health - amount, 0.0)
 	_damage_feedback()
 	if (health < before or health_loss_disabled) and damaged.has_connections():
-		damaged.emit(CombatDamageEvent.from_hit(self, before - health, amount, feedback))
+		damaged.emit(CombatDamageEvent.from_hit(self, before - health, amount, feedback, critical, multiplier))
 	if health <= 0.0:
 		fatal_hit_context = feedback.duplicate()
+		fatal_hit_context["critical"] = critical
+		fatal_hit_context["critical_multiplier"] = multiplier
 		dead = true
 		if spatial_index: spatial_index.remove(self)
 		# 子类可在此登记待生成幼体；控制器不会提前清波。

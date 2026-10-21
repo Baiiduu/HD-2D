@@ -90,6 +90,50 @@ func advance_flight(seconds: float, step := 1.0 / 60.0) -> void:
 		sword._physics_process(delta)
 		clock += delta
 
+func idle_checks() -> void:
+	await reset()
+	var nearby := enemy(Vector3(1, 0, 0))
+	var multistrike := GrowthBuffDefinition.new()
+	multistrike.id = &"idle_multistrike"
+	multistrike.attribute = GrowthBuffEffect.Attribute.MULTISTRIKE
+	multistrike.bonus_per_level = 1.0
+	for frame in 180: sword._physics_process(1.0 / 60.0)
+	check(strikes.is_empty() and nearby.health == 200.0, "站立且未输入左键时，附近有怪也不自动普攻")
+	for ending in ["cancelled", "speed_depleted"]:
+		for rank in [0, 1]:
+			await reset()
+			session.growth_rules = RunGrowthRules.new()
+			session.combat_modifiers.growth_rules = session.growth_rules
+			if rank > 0:
+				session.combat_modifiers.apply_buff(multistrike)
+			nearby = enemy(Vector3(1, 0, 0), 1000)
+			var body := player.body_ricochet
+			body._settings = player.ricochet_rules.duplicate()
+			body.state = PlayerRicochet.State.FLYING
+			body.flight_speed = 12.0
+			sword._begin(Vector3.RIGHT, true, 12.0)
+			if rank > 0: check(sword._strike_total > 1, "千手用例确实产生追加刀")
+			var started := strikes.size()
+			if ending == "cancelled": body.cancel()
+			else: body._end_flight(&"speed_depleted")
+			sword._physics_process(0.55)
+			check(strikes.size() == started and not sword.swinging, "停止弹射后不在原地续发自动刀：%s / 千手 %d" % [ending, rank])
+			check(nearby.health == 1000.0, "停止后未挥出的刀不再原地伤害附近怪物：%s / 千手 %d" % [ending, rank])
+			check(player.action_animator._attack != &"flight_attack", "停止后撤下飞行挥剑姿态：%s / 千手 %d" % [ending, rank])
+	await reset()
+	nearby = enemy(Vector3(1, 0, 0))
+	player.body_ricochet._settings = player.ricochet_rules.duplicate()
+	player.body_ricochet.state = PlayerRicochet.State.FLYING
+	player.body_ricochet.flight_speed = 12.0
+	sword._begin(Vector3.RIGHT, true)
+	sword._simulate(player.global_position, player.global_position, 0.16, true, Vector3.RIGHT)
+	check(not sword._pending_hits.is_empty(), "停止前的真实扫刃已采集命中")
+	player.body_ricochet.cancel()
+	sword._physics_process(0.4)
+	check(nearby.health == 190.0, "停止弹射仍结算此前真实发生的命中，且不追加原地刀")
+	session.growth_rules = null
+	session.combat_modifiers.growth_rules = null
+
 func manual_checks() -> void:
 	await reset()
 	var front := enemy(Vector3(1, 0, 0))
@@ -434,6 +478,7 @@ func run() -> void:
 		pushes += 1)
 	await settle()
 	session._path.build(terrain, 0.32, [player.get_rid()])
+	await idle_checks()
 	await manual_checks()
 	await attack_speed_checks()
 	await flight_checks()

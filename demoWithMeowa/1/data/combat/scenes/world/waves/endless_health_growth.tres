@@ -3,5 +3,13 @@
 [ext_resource type="Script" path="res://scripts/combat/wave_health_growth_rules.gd" id="1_oq023"]
 
 [resource]
-resource_name = "无尽生命成长 · 1 至 10 倍"
+resource_name = "正式无尽生命 · 前期留白与后期递增"
 script = ExtResource("1_oq023")
+start_wave = 4
+bonus_per_wave = 0.5
+maximum_multiplier = 100.0
+late_start_wave = 5
+late_bonus_per_wave = 0.2
+sustained_start_wave = 22
+sustained_bonus_per_wave = 0.12
+sustained_maximum_multiplier = 1000.0

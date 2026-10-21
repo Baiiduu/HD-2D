@@ -1,5 +1,6 @@
 class_name FanAutoAttack
 extends Node3D
+const CARD_TEXT := preload("res://scripts/ui/growth_choice_text.gd")
 
 const EFFECT_LAYER := preload("res://scripts/rendering/combat_effect_layer.gd")
 
@@ -146,20 +147,17 @@ func describe_skill_upgrade(from_level: int, to_level: int) -> String:
 	var modifiers: RunCombatModifiers = session.combat_modifiers if session else null
 	var before := get_attack_stats(from_level, modifiers)
 	var after := get_attack_stats(to_level, modifiers)
-	if from_level == 0:
-		return "自动攻击近处敌人\n伤害 %s\n范围 %.1f 米\n%s" % [str(snappedf(after.damage, 0.1)), after.range, skill_definition.level_data(to_level).description]
-	var lines := PackedStringArray([
-		"伤害 %s → %s" % [str(snappedf(before.damage, 0.1)), str(snappedf(after.damage, 0.1))],
-		"范围 %.1f → %.1f 米" % [before.range, after.range]])
+	var summary := "自动朝近处敌人挥出扇形斩击" if from_level == 0 else ""
+	var fields := [["damage", "伤害", 1, ""], ["range", "范围", 1, " 米"]]
 	if after.rotation:
-		lines.append("转速 %d°/秒" % after.rotation_speed)
-		lines.append("同体间隔 %.2f 秒" % after.hit_interval)
-		lines.append("%s持续旋转" % ("双刃" if after.blades == 2 else "%d刃" % after.blades))
+		if not before.rotation: summary = "改为持续旋转，攻击周围敌人"
+		fields.append_array([["blades", "刀刃", 0, " 道"], ["hit_interval", "同敌受击间隔", 2, " 秒"], ["rotation_speed", "旋转速度", 0, "°/秒"]])
+		# 转入旋转时，原扇击没有对应的持续旋转数值。
+		if not before.rotation:
+			for key in ["blades", "hit_interval", "rotation_speed"]: before.erase(key)
 	else:
-		if not is_equal_approx(before.angle, after.angle): lines.append("扇角 %d → %d°" % [before.angle, after.angle])
-		if before.sweeps != after.sweeps: lines.append("扫击 %d → %d 段" % [before.sweeps, after.sweeps])
-		lines.append(skill_definition.level_data(to_level).description)
-	return "\n".join(lines)
+		fields.append_array([["sweeps", "连斩", 0, " 段"], ["angle", "扇形角度", 0, "°"]])
+	return CARD_TEXT.skill(summary, from_level == 0, before, after, fields)
 
 func _ready() -> void:
 	for angular in ANGLE_STEPS:

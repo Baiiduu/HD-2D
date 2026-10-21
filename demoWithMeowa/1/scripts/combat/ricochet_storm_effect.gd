@@ -96,6 +96,10 @@ func show_link(from: Vector3, to: Vector3, strength := 1.0, kind: Kind = Kind.CH
 	bolt.phase = float(_bolts.size() * 7 + _pool.size() * 13)
 	var slices := ceili(from.distance_to(to) / (pixel_size * arc_texture.get_width() * visual_scale))
 	while bolt.parts.size() < slices: bolt.parts.append(_mesh(_arc_material))
+	# 本条雷弧的相位与类别在取用池节点时确定，之后只更新揭示、位置和消散。
+	for index in bolt.parts.size():
+		bolt.parts[index].set_instance_shader_parameter("phase", float(bolt.phase) + index * 19.0)
+		bolt.parts[index].set_instance_shader_parameter("show_spine", kind != Kind.TRAIL)
 	_bolts.append(bolt)
 	_update_bolt(bolt, get_viewport().get_camera_3d())
 	set_process(true)
@@ -181,8 +185,6 @@ func _update_bolt(bolt: Dictionary, camera: Camera3D) -> void:
 		node.global_position = bolt.from + direction * (index * tile_length + part_length * 0.5)
 		node.global_basis = Basis(direction * part_length, side * width, direction.cross(side))
 		node.set_instance_shader_parameter("source_rect", Vector4(0, 0, part_length / tile_length, 1))
-		node.set_instance_shader_parameter("phase", float(bolt.phase) + index * 19.0)
-		node.set_instance_shader_parameter("show_spine", bolt.kind != Kind.TRAIL)
 		node.set_instance_shader_parameter("intensity", fade * effect_opacity * float(bolt.strength))
 	var head: MeshInstance3D = bolt.head
 	head.visible = float(bolt.strength) > 0.5 and reveal < 1.0

@@ -22,6 +22,7 @@ var _settings: PlayerSwordRules
 var _hits: Dictionary[int, bool] = {}
 var _pending_hits: Array[Dictionary] = []
 var _pending_pushes: Array[Dictionary] = []
+var _queue_generation := 0
 var _motion: Array[Dictionary] = []
 var _last_position := Vector3.ZERO
 var _manual_held := false
@@ -39,6 +40,8 @@ var _piece_time := 0.0
 var _score: RunScore
 var _strike_index := 0
 var _strike_total := 1
+## -1 为独立查询；0／1 只在一次同步挥扫内表示整片地面的证明结果。
+var _flat_reach_state := -1
 
 func _ready() -> void:
 	player = get_parent() as Player
@@ -187,10 +190,12 @@ func _physics_process(delta: float) -> void:
 	_last_position = player.global_position
 	# 先记录本帧真实运动中的全部刀锋接触，再扣血；升级中断时保留未结算接触。
 	_drain_hits()
+	_stop_inactive_flight_swing(player.body_ricochet.flying)
 	_sync_normal_animation()
 	_update_effect()
 
 func _simulate(start: Vector3, end: Vector3, seconds: float, flying: bool, heading: Vector3, speed := 0.0, deceleration := 0.0, orbiting := false, energy_speed := -1.0, energy_deceleration := 0.0) -> void:
+	_stop_inactive_flight_swing(flying)
 	var time := 0.0
 	while time < seconds - 0.000001:
 		var fraction := PlayerRicochetRules.segment_fraction(time, seconds, speed, deceleration)
@@ -244,6 +249,16 @@ func _simulate(start: Vector3, end: Vector3, seconds: float, flying: bool, headi
 				strike_started.emit(_heading, _flight_swing, _reverse)
 			else: _age = -1.0
 			_effect.hide()
+
+## 停止后的静止时间不再推进飞行刀或千手续刀；已采集的真实接触继续结算。
+func _stop_inactive_flight_swing(flying: bool) -> void:
+	if flying or not _flight_swing: return
+	player.action_animator.cancel_flight_attack()
+	if not swinging: return
+	_age = -1.0
+	_strike_total = 1
+	_strike_index = 0
+	_hits.clear()
 
 func _begin(heading: Vector3, flying: bool, remaining_speed := -1.0) -> void:
 	_settings = rules.duplicate()
@@ -305,8 +320,12 @@ func _can_reach(origin: Vector3, enemy: WaveEnemy) -> bool:
 	var target := _path.ground_position(enemy.global_position)
 	if absf(point.y - target.y) > height or absf(enemy.global_position.y - point.y) > height: return false
 	var length := TerrainPath.horizontal_distance(point, target)
-	var direction := (target - point).normalized()
-	if _collision.ground_limit(_path, point, direction, length, point.y, height) < length - 0.00001: return false
+	# 同帧共享平地证明覆盖整段路径；墙体仍沿原实时射线检查。
+	var flat := _flat_reach_state > 0
+	if _flat_reach_state < 0 and _surface: flat = _surface.flat_ground(point, length)
+	if not flat:
+		var direction := (target - point).normalized()
+		if _collision.ground_limit(_path, point, direction, length, point.y, height) < length - 0.00001: return false
 	return _path.terrain.ray_clear(point + Vector3.UP * 0.45, target + Vector3.UP * 0.45, 1, [player.get_rid()])
 
 func _first_target(start: Vector3, end: Vector3, heading: Vector3, stats: Dictionary, auto_aim := false) -> Dictionary:
@@ -359,6 +378,25 @@ func _collect_hits(start: Vector3, end: Vector3, first: float, last: float, movi
 	var steps := maxi(1, maxi(ceili(TerrainPath.horizontal_distance(start, end) / 0.03), ceili(absf(last - first) * angle / deg_to_rad(2.0))))
 	# 公共查询的覆写可能返回共享列表；切片内只裁减本次自己的候选。
 	var candidates: Array[WaveEnemy] = session.get_nearby_enemies((start + end) * 0.5, _stats.range + TerrainPath.horizontal_distance(start, end) * 0.5).duplicate()
+	# 本调用只采集接触、不扣血，怪物不会在角度切片间移动或死亡。
+	var positions := PackedVector3Array()
+	var ids := PackedInt64Array()
+	var candidate_index := 0
+	while candidate_index < candidates.size():
+		var enemy := candidates[candidate_index]
+		if not _eligible(enemy) or _hits.has(enemy.get_instance_id()):
+			candidates.remove_at(candidate_index)
+			continue
+		positions.append(enemy.global_position)
+		ids.append(enemy.get_instance_id())
+		candidate_index += 1
+	# 一次覆盖整段移动与刀锋半径；拒绝后整批回退，不逐目标重复试证。
+	var previous_flat_state := _flat_reach_state
+	_flat_reach_state = 0
+	if not candidates.is_empty() and _surface:
+		var center := _path.ground_position((start + end) * 0.5)
+		var radius: float = _stats.range + TerrainPath.horizontal_distance(start, end) * 0.5
+		_flat_reach_state = 1 if _surface.flat_ground(center, radius) else 0
 	for index in steps:
 		if candidates.is_empty(): break
 		var a := start.lerp(end, float(index) / steps)
@@ -369,23 +407,29 @@ func _collect_hits(start: Vector3, end: Vector3, first: float, last: float, movi
 		var right := lerpf(-angle * 0.5, angle * 0.5, 1.0 - q if _reverse else q)
 		var tip_a: Vector3 = a + basis * Vector3(sin(left), 0, -cos(left)) * float(_stats.range)
 		var tip_b: Vector3 = b + basis * Vector3(sin(right), 0, -cos(right)) * float(_stats.range)
+		# 保守包围盒包含原有 0.03 米刀厚；只早退绝不可能命中的候选。
+		var minimum := Vector2(minf(minf(a.x, b.x), minf(tip_a.x, tip_b.x)), minf(minf(a.z, b.z), minf(tip_a.z, tip_b.z))) - Vector2.ONE * 0.031
+		var maximum := Vector2(maxf(maxf(a.x, b.x), maxf(tip_a.x, tip_b.x)), maxf(maxf(a.z, b.z), maxf(tip_a.z, tip_b.z))) + Vector2.ONE * 0.031
 		# 已处理目标不再参与剩余切片；顺序和未命中目标的精确采样保持不变。
-		var candidate_index := 0
+		candidate_index = 0
 		while candidate_index < candidates.size():
 			var enemy: WaveEnemy = candidates[candidate_index]
-			if not _eligible(enemy) or _hits.has(enemy.get_instance_id()):
-				candidates.remove_at(candidate_index)
+			var point := positions[candidate_index]
+			if point.x < minimum.x or point.x > maximum.x or point.z < minimum.y or point.z > maximum.y:
+				candidate_index += 1
 				continue
-			var entry := PlayerRicochet.circle_entry(a, b, enemy.global_position, _stats.range)
-			if entry < 0.0 or not swept_blade(enemy.global_position, a, tip_a, tip_b, b):
+			var entry := PlayerRicochet.circle_entry(a, b, point, _stats.range)
+			if entry < 0.0 or not swept_blade(point, a, tip_a, tip_b, b):
 				candidate_index += 1
 				continue
 			var origin := a.lerp(b, entry)
 			if not _can_reach(origin, enemy):
 				candidate_index += 1
 				continue
-			_hits[enemy.get_instance_id()] = true
+			_hits[ids[candidate_index]] = true
 			candidates.remove_at(candidate_index)
+			positions.remove_at(candidate_index)
+			ids.remove_at(candidate_index)
 			var time := PlayerRicochetRules.segment_time((index + entry) / steps, seconds, speed, deceleration)
 			var motion := (end - start).normalized() * maxf(0.0, speed - deceleration * time) if speed > 0.0 else (end - start) / maxf(seconds, 0.000001)
 			var hit_heading := _heading
@@ -397,6 +441,7 @@ func _collect_hits(start: Vector3, end: Vector3, first: float, last: float, movi
 			if _strike_index > 0: damage *= float(_stats.attack_snapshot.additional_strike_damage_ratio)
 			_pending_hits.append({"enemy": enemy, "damage": damage, "origin": origin, "heading": hit_heading, "flying": _flight_swing and moving_flight, "flight_id": player.body_ricochet.flight_serial if _flight_swing and moving_flight else 0, "time":start_time + seconds * (index + entry) / steps,
 				"motion_velocity": motion, "contact_distance": TerrainPath.horizontal_distance(origin, enemy.global_position), "slash_direction": (tip_b - tip_a).normalized(), "score_batch": _stats.get("score_batch"), "attack_snapshot": _stats.get("attack_snapshot")})
+	_flat_reach_state = previous_flat_state
 
 static func swept_blade(point: Vector3, a: Vector3, tip_a: Vector3, tip_b: Vector3, b: Vector3) -> bool:
 	var p := Vector2(point.x, point.z)
@@ -406,9 +451,7 @@ static func swept_blade(point: Vector3, a: Vector3, tip_a: Vector3, tip_b: Vecto
 	var edge_b := Vector2(tip_b.x, tip_b.z)
 	if _triangle(p, root_a, edge_a, edge_b) or _triangle(p, root_a, edge_b, root_b): return true
 	# 刀锋约 0.06 米厚，连续包围两端及外缘，不依赖单帧位置抽样。
-	for edge in [[root_a, edge_a], [edge_a, edge_b], [edge_b, root_b]]:
-		if p.distance_squared_to(Geometry2D.get_closest_point_to_segment(p, edge[0], edge[1])) <= 0.03 * 0.03: return true
-	return false
+	return p.distance_squared_to(Geometry2D.get_closest_point_to_segment(p, root_a, edge_a)) <= 0.03 * 0.03 or p.distance_squared_to(Geometry2D.get_closest_point_to_segment(p, edge_a, edge_b)) <= 0.03 * 0.03 or p.distance_squared_to(Geometry2D.get_closest_point_to_segment(p, edge_b, root_b)) <= 0.03 * 0.03
 
 static func _triangle(p: Vector2, a: Vector2, b: Vector2, c: Vector2) -> bool:
 	if absf((b - a).cross(c - a)) < 0.00000001: return false
@@ -418,11 +461,20 @@ static func _triangle(p: Vector2, a: Vector2, b: Vector2, c: Vector2) -> bool:
 	return (u >= 0.0 and v >= 0.0 and w >= 0.0) or (u <= 0.0 and v <= 0.0 and w <= 0.0)
 
 func _drain_hits() -> void:
-	while not _pending_pushes.is_empty() and _combat_active():
-		var push: Dictionary = _pending_pushes.pop_front()
+	var generation := _queue_generation
+	var consumed := 0
+	while consumed < _pending_pushes.size() and generation == _queue_generation and _combat_active():
+		var push: Dictionary = _pending_pushes[consumed]
+		consumed += 1
 		if _eligible(push.enemy): player.body_ricochet.push_after_sword_hit(push.enemy, push.origin, push.heading)
-	while not _pending_hits.is_empty() and _combat_active():
-		var hit: Dictionary = _pending_hits.pop_front()
+	if consumed > 0 and generation == _queue_generation:
+		if consumed == _pending_pushes.size(): _pending_pushes.clear()
+		else: _pending_pushes = _pending_pushes.slice(consumed)
+	generation = _queue_generation
+	consumed = 0
+	while consumed < _pending_hits.size() and generation == _queue_generation and _combat_active():
+		var hit: Dictionary = _pending_hits[consumed]
+		consumed += 1
 		var enemy: WaveEnemy = hit.enemy
 		if not _eligible(enemy): continue
 		var before := enemy.health
@@ -436,6 +488,10 @@ func _drain_hits() -> void:
 			if session.combat_frozen: _pending_pushes.append(hit)
 			else: player.body_ricochet.push_after_sword_hit(enemy, hit.origin, hit.heading, hit.time)
 		hit_landed.emit(enemy, dealt, hit.flying)
+	# 暂停时只保留尚未结算的后缀；取消换代后的新队列不被旧游标裁掉。
+	if consumed > 0 and generation == _queue_generation:
+		if consumed == _pending_hits.size(): _pending_hits.clear()
+		else: _pending_hits = _pending_hits.slice(consumed)
 
 func _show_melee_contact(enemy: WaveEnemy, heading: Vector3, origin: Vector3) -> void:
 	var visuals := player.action_visuals
@@ -502,6 +558,7 @@ func _update_tails() -> void:
 
 func _play_sound(hit: bool, point: Vector3) -> void:
 	if not rules.audio_enabled or (hit and _hit_sounds >= 2): return
+	if hit and rules.single_sound_per_swing: return
 	var clips: Array[AudioStream] = rules.hit_sounds if hit else rules.sweep_sounds
 	if clips.is_empty(): return
 	if not is_instance_valid(_audio): _audio = get_tree().get_first_node_in_group(&"game_audio") as GameAudio
@@ -540,6 +597,7 @@ func _on_freeze(frozen: bool) -> void:
 		_tap = false
 
 func cancel(reset_clock := true) -> void:
+	_queue_generation += 1
 	if not _flight_swing and _settings and _settings.normal_slash_alignment_enabled:
 		player.action_animator.cancel_normal_attack()
 	_age = -1.0

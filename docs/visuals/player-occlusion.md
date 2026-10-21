@@ -38,13 +38,7 @@
 
 截图保持开发相机基准：距离 11 米、俯角 10°、FOV 30°、深度景深模式、强度 0.02，1280×800 窗口。
 
-- [正式地图建筑后的人物轮廓](D:/Project/HD-2DMap/docs/media/player-occlusion-preview/hidden.png)
-- [局部遮挡测试](D:/Project/HD-2DMap/docs/media/player-occlusion-preview/partial-test.png)
-
 怪物接入后，另完成 36 项原生 D3D12 / Forward+ 检查：无遮挡、完全及局部遮挡、切帧、镜像、旋转镜头和参数开关。无遮挡对照新增像素为 0；图集帧与独立裁出的单帧轮廓对照误差像素均为 0。现有史莱姆行为测试完成 47 项检查，全部通过。
-
-- [正式地图建筑后：玩家与怪物轮廓](D:/Project/HD-2DMap/docs/media/monster-occlusion-preview/hidden.png)
-- [怪物局部遮挡测试](D:/Project/HD-2DMap/docs/media/monster-occlusion-preview/partial.png)
 
 ## 技能与命中特效层级
 

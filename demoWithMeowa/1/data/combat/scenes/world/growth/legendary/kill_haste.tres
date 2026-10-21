@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="GrowthBuffDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/growth/growth_buff_definition.gd" id="definition"]
+[ext_resource type="Texture2D" path="res://assets/meowa/ui/journal/symbols/boot.png" id="icon"]
+[ext_resource type="Texture2D" path="res://assets/illustrations/growth/kill_haste.png" id="illustration"]
+
+[resource]
+script = ExtResource("definition")
+id = &"L01"
+title = "杀怪加速"
+description = "击杀叠加移速与弹射速度\n每层独立计时"
+icon = ExtResource("icon")
+illustration = ExtResource("illustration")
+rarity = 2
+category = 3
+available_at_start = true
+attribute = 23
+bonus_per_level = 0.05
+max_level = 5
+diminishing_after = 0
+breakthrough_every = 0

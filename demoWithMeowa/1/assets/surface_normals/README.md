@@ -9,4 +9,4 @@ Lighting data prepared from unchanged source textures by `tools/build_surface_no
 - `manifest.json` records source paths, SHA-256 hashes, material kinds and atlas grids.
 - Regenerate after changing a source texture. Source images are never written by the script.
 
-Runtime controls and native previews: [surface integration](../../../../docs/visuals/surface-integration.md).
+Runtime controls: [parameters and styles](../../../../docs/technical/parameters-and-styles.md). Source textures, normal maps and regeneration metadata remain unchanged.

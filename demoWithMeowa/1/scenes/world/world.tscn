@@ -112,6 +112,7 @@
 [ext_resource type="Curve3D" path="res://data/visual/world_entry_route.tres" id="world_entry_route"]
 [ext_resource type="Resource" uid="uid://cu5rr4m8pbd7v" path="res://data/visual/world_entry.tres" id="world_entry_settings"]
 [ext_resource type="Script" uid="uid://df5evbr4briqe" path="res://scripts/world/world_main_menu.gd" id="world_main_menu"]
+[ext_resource type="PackedScene" path="res://scenes/ui/character_panel.tscn" id="character_panel"]
 [ext_resource type="Resource" uid="uid://30fxbanawuh5" path="res://data/audio/core_sound_bank_world.tres" id="world_sound_bank"]
 [ext_resource type="Resource" path="res://data/visual/spawn_value_sample_world.tres" id="world_value_lighting"]
 
@@ -924,6 +925,9 @@ wave_session = NodePath("../WavePrototype")
 player_access_enabled = false
 bottom_bars_collapsed = true
 
+[node name="AttributeHUD" parent="LoadoutUI" index="2"]
+show_mana = false
+
 [node name="WavePrototype" parent="." unique_id=224619235 node_paths=PackedStringArray("player", "terrain", "loadout", "return_point", "spawn_zone_root") instance=ExtResource("wave_prototype")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 49.802883)
 player = NodePath("../Player")
@@ -967,6 +971,13 @@ effect_scene = ExtResource("storm_effect_world")
 [node name="RunGrowth" parent="WavePrototype" index="5"]
 choice_options = Array[ExtResource("107_2238k")]([SubResource("empty_a"), SubResource("empty_b")])
 
+[node name="GrowthChoiceUI" parent="WavePrototype/RunGrowth" index="0"]
+ink_style = true
+card_width = 340.0
+card_gap = 28.0
+background_opacity = 0.96
+card_text_color = Color(1, 0.941, 0.831, 1)
+
 [node name="WaveHUD" parent="WavePrototype" index="7"]
 start_hint_enabled = true
 
@@ -975,7 +986,11 @@ number_prewarm = 12
 number_idle_limit = 32
 
 [node name="InitialSkillChoice" parent="WavePrototype/SkillDraft" index="0"]
-background_opacity = 0.72
+ink_style = true
+card_width = 340.0
+card_gap = 28.0
+background_opacity = 0.96
+card_text_color = Color(1, 0.941, 0.831, 1)
 
 [node name="RunScore" parent="WavePrototype" index="11"]
 online_demo_enabled = true
@@ -1395,6 +1410,9 @@ loadout = NodePath("../LoadoutUI")
 script = ExtResource("game_settings_ui")
 audio_page = NodePath("../AudioMixUI")
 orbit_page = NodePath("../OrbitDebugUI")
+include_character_page = false
+
+[node name="CharacterPanel" parent="." instance=ExtResource("character_panel")]
 
 [node name="WorldEntry" type="Node3D" parent="." unique_id=531183836 node_paths=PackedStringArray("camera", "player", "terrain", "flight_path", "hud_layers")]
 script = ExtResource("world_entry")
@@ -1402,7 +1420,7 @@ camera = NodePath("../MapEffects/Camera3D")
 player = NodePath("../Player")
 terrain = NodePath("../Homestead")
 flight_path = NodePath("BuildingFlightPath")
-hud_layers = [NodePath("../LoadoutUI"), NodePath("../WavePrototype/WaveHUD"), NodePath("../WavePrototype/ScoreHUD"), NodePath("../AudioMixUI"), NodePath("../OrbitDebugUI"), NodePath("../GameSettingsUI"), NodePath("../WavePresentation")]
+hud_layers = [NodePath("../LoadoutUI"), NodePath("../WavePrototype/WaveHUD"), NodePath("../WavePrototype/ScoreHUD"), NodePath("../AudioMixUI"), NodePath("../OrbitDebugUI"), NodePath("../GameSettingsUI"), NodePath("../CharacterPanel"), NodePath("../WavePresentation")]
 settings = ExtResource("world_entry_settings")
 preview_on_direct_run = true
 
@@ -1420,6 +1438,8 @@ wave_hud = NodePath("../WavePrototype/WaveHUD")
 settings = ExtResource("wave_presentation_settings")
 
 [editable path="GroundDressing"]
+[editable path="LoadoutUI"]
 [editable path="Player/CharacterSkillManager"]
 [editable path="MapEffects"]
 [editable path="WavePrototype"]
+[editable path="WavePrototype/RunGrowth"]

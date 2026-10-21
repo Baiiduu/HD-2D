@@ -26,6 +26,9 @@ const REFERENCE_WIDTH := 320.0
 @export var mana_fill: Texture2D:
 	set(value): mana_fill = value; _queue_rebuild()
 @export_group("布局")
+## 只控制蓝条显示；隐藏后收起所占高度，经验条沿实际下缘跟随。
+@export var show_mana := true:
+	set(value): show_mana = value; _queue_rebuild()
 ## 每条外框的逻辑像素宽度，包含辉光留白；360 在当前窗口中约为 320 像素。
 @export_range(160.0, 720.0, 1.0, "or_greater") var bar_width := 360.0:
 	set(value): bar_width = maxf(value, 1.0); _queue_rebuild()
@@ -128,7 +131,8 @@ func _rebuild() -> void:
 		label.add_theme_constant_override("outline_size", 2)
 		row.add_child(label)
 		y += maxf(1.0, height + bar_gap) if index == 0 else height
-	size = Vector2(bar_width, y)
+	_bars[1].visible = show_mana
+	size = Vector2(bar_width, y if show_mana else _bars[0].size.y)
 	_update_skins()
 	_refresh_values()
 	update_layout()

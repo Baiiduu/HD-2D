@@ -98,7 +98,7 @@ func run() -> void:
 				battle.retreat()
 				check(battle.phase == WavePrototype.Phase.RESULT, "Return also exercises the result input blocker")
 		settings.open_menu()
-		check(settings.menu_open and not paused and Engine.time_scale == 1.0, "Settings keeps the world running until return is selected")
+		check(settings.menu_open and paused and Engine.time_scale == 1.0, "Settings pauses gameplay without changing the combat time scale")
 		var buttons: Array = settings.find_children("*", "Button", true, false).filter(func(button): return button.text == "返回主菜单")
 		check(buttons.size() == 1, "Settings contains one visible return-to-main-menu button")
 		if buttons.is_empty(): break
@@ -126,7 +126,7 @@ func run() -> void:
 		check(prepared.phase == WavePrototype.Phase.READY and prepared._pending == 0 and prepared.enemies.is_empty() and not prepared.combat_frozen, "Returning clears live enemies, pending spawns and combat freeze")
 		check(prepared.wave == 0 and prepared.kills == 0 and prepared.completed_waves == 0 and prepared.combat_modifiers.levels.is_empty(), "Returned game clears wave counters and shared growth")
 		check(not prepared.run_skill_manager.has_learned_skill() and prepared.get_node("RunGrowth").state.total_experience == 0 and prepared.get_node("RunScore").state.total == 0, "Returned game clears learned skills, experience and score")
-		check(is_instance_valid(settings) and not settings.menu_open and not settings._returning_to_menu, "Gameplay settings release return state for the next visit")
+		check(is_instance_valid(settings) and not settings.menu_open and not settings._returning_to_menu and not paused, "Returning releases the settings pause and return state for the next visit")
 		check(Vector2(prepared.player.velocity.x, prepared.player.velocity.z).is_zero_approx() and prepared.player.current_health == prepared.player.max_health and not prepared.player.body_ricochet.flying, "Returning resets player health, momentum and active movement")
 		menu.start_feedback_seconds = 0.3
 		menu.start_game()

@@ -4,8 +4,6 @@
 
 Meowa 从 [已确认参考图](../media/skill-hud-preview/reference.png) 中提取了一个透明组件，各槽位复用同一美术。`assets/meowa/ui/skill_hud/slot.png` 为裁切后的透明 PNG，保留半透明暗底和辉光像素；`source.png` 保留原始提取产物。参考图用于确认视觉方向，实际游戏使用 Meowa 组件。
 
-![已确认的空槽外框实机样例](../media/skill-hud-preview/world.png)
-
 ## 调整参数
 
 在 Godot 打开 `demoWithMeowa/1/scenes/ui/skill_hud.tscn`，选中根节点 `SkillHUD`。该组件由 `scenes/ui/loadout_ui.tscn` 引用；运行时位于 `LoadoutUI/Root/SkillHUD`。参数可在编辑器设置，也可在运行时的远程检查器调整。

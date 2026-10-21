@@ -11,17 +11,17 @@ var preview_batch_rays := 0
 
 func trace(body: CharacterBody3D, heading: Vector3, speed: float, seconds: float,
 		bounce_limit: int, retention: float, path: TerrainPath, bounds: Rect2,
-		tolerance: float, output: AimPathData, max_distance := 12.0, crowd: PlayerCrowdDeflection = null, speed_rules: PlayerRicochetRules = null, followup_distance := -1.0) -> void:
+		tolerance: float, output: AimPathData, max_distance := 12.0, crowd: PlayerCrowdDeflection = null, speed_rules: PlayerRicochetRules = null, followup_distance := -1.0, modifiers: RunCombatModifiers = null) -> void:
 	_collision.center_certificate_enabled = speed_rules != null and speed_rules.flat_ground_certificate_enabled
 	# body_test_motion 沿用身体的查询层；同步查询结束后还原，早退也不影响正常走路。
 	var mask := PhysicsServer3D.body_get_collision_mask(body.get_rid())
 	PhysicsServer3D.body_set_collision_mask(body.get_rid(), mask | ProjectileCollision.MIRROR_SURFACE.COLLISION_LAYER)
-	_trace(body, heading, speed, seconds, bounce_limit, retention, path, bounds, tolerance, output, max_distance, crowd, speed_rules, followup_distance)
+	_trace(body, heading, speed, seconds, bounce_limit, retention, path, bounds, tolerance, output, max_distance, crowd, speed_rules, followup_distance, modifiers)
 	PhysicsServer3D.body_set_collision_mask(body.get_rid(), mask)
 
 func _trace(body: CharacterBody3D, heading: Vector3, speed: float, seconds: float,
 		bounce_limit: int, retention: float, path: TerrainPath, bounds: Rect2,
-		tolerance: float, output: AimPathData, max_distance: float, crowd: PlayerCrowdDeflection, speed_rules: PlayerRicochetRules, followup_distance: float) -> void:
+		tolerance: float, output: AimPathData, max_distance: float, crowd: PlayerCrowdDeflection, speed_rules: PlayerRicochetRules, followup_distance: float, modifiers: RunCombatModifiers) -> void:
 	output.clear()
 	if not heading.is_finite() or not is_finite(followup_distance): return
 	heading.y = 0.0
@@ -38,6 +38,7 @@ func _trace(body: CharacterBody3D, heading: Vector3, speed: float, seconds: floa
 	var single_response := followup_distance >= 0.0
 	var responded := false
 	var orbit_blend := 0.0
+	var elapsed := 0.0
 	for iteration in 256:
 		var available_seconds := speed_rules.coast_seconds(speed) if speed_rules else seconds
 		var speed_ratio := 1.0
@@ -46,6 +47,9 @@ func _trace(body: CharacterBody3D, heading: Vector3, speed: float, seconds: floa
 			orbit_blend = speed_rules.orbit_blend_after(orbit_blend, orbiting, 0.0)
 			available_seconds = speed_rules.orbit_motion_seconds(available_seconds, orbiting, orbit_blend)
 			speed_ratio = speed_rules.orbit_motion_ratio(orbit_blend)
+		if modifiers:
+			speed_ratio *= modifiers.haste_speed_multiplier(elapsed)
+			available_seconds = minf(available_seconds, modifiers.next_haste_expiry(elapsed))
 		var time_sliced := speed_rules != null and available_seconds < speed_rules.coast_seconds(speed) - 0.000001
 		var available_distance := speed_rules.coast_distance(speed, available_seconds) * speed_ratio if speed_rules else speed * available_seconds
 		var distance := minf(available_distance, max_distance - output.total_distance)
@@ -79,6 +83,7 @@ func _trace(body: CharacterBody3D, heading: Vector3, speed: float, seconds: floa
 			transform.origin += _result.get_travel() if hit else displacement
 		var travel := TerrainPath.horizontal_distance(transform.origin, start)
 		var used := minf(available_seconds, speed_rules.coast_time_for_distance(speed, travel / speed_ratio) if speed_rules else travel / speed)
+		elapsed += used
 		output.append(start, transform.origin, heading, used, crowd != null and crowd.orbiting)
 		if speed_rules:
 			speed = speed_rules.speed_after_coast(speed, used)

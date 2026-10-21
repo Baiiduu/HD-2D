@@ -1,5 +1,6 @@
 class_name PrismRicochetAutoAttack
 extends Node3D
+const CARD_TEXT := preload("res://scripts/ui/growth_choice_text.gd")
 
 signal shot_started(direction: Vector3)
 signal hit_landed(enemy: WaveEnemy, damage: float)
@@ -80,10 +81,14 @@ func get_combat_stats(modifiers: RunCombatModifiers = null) -> Dictionary:
 func describe_skill_upgrade(from_level: int, to_level: int) -> String:
 	var before := get_attack_stats(from_level)
 	var after := get_attack_stats(to_level)
-	var detail := skill_definition.level_data(to_level).description
 	if from_level == 0:
-		return "命中怪物、墙体或镜印时反射\n伤害 %s\n每次 %d 枚 · 共用弹射 %d 次\n飞行距离 %.1f 米" % [str(snappedf(after.damage, 0.1)), after.count, after.bounces, after.distance]
-	return "伤害 %s → %s · 弹射 %d → %d 次\n齐射 %d → %d 枚 · 飞行 %.1f → %.1f 米\n%s" % [str(snappedf(before.damage, 0.1)), str(snappedf(after.damage, 0.1)), before.bounces, after.bounces, before.count, after.count, before.distance, after.distance, detail]
+		return CARD_TEXT.compose("自动发射棱晶\n遇敌、墙体或镜印反弹", PackedStringArray([
+			"伤害 %s · 间隔 %s 秒" % [CARD_TEXT.number(after.damage, 1), CARD_TEXT.number(after.interval)],
+			"齐射 %d 枚 · 每枚弹射 %d 次" % [after.count, after.bounces],
+			"飞行距离 %s 米" % CARD_TEXT.number(after.distance, 1)]))
+	return CARD_TEXT.skill("", false, before, after, [
+		["damage", "伤害", 1, ""], ["count", "齐射", 0, " 枚"], ["bounces", "每枚弹射", 0, " 次"],
+		["interval", "间隔", 2, " 秒"], ["distance", "飞行距离", 1, " 米"], ["speed", "飞行速度", 1, " 米/秒"], ["radius", "弹体半径", 2, " 米"]])
 
 func _active() -> bool:
 	return enabled and skill_level > 0 and session._path_ready and session.combat_active()

@@ -294,25 +294,25 @@ func run() -> void:
 	check(wave.enemies.is_empty() and wave._pending == 0 and wave._reserved_batch.is_empty(), "撤退清除半批怪潮、待生成成员和容量预留")
 	await settle()
 	await mixed_checks()
-	# 正式配置保持前三波总数，第一波起自动混编所有主怪。
+	# 正式配置保留前三波总数，四种主怪混编，辅助蛙独立少量穿插。
 	reset([])
 	wave.waves.assign(source_waves)
 	wave.population_rules = source_rules
-	wave.enemy_catalog = load("res://data/enemies/enemy_catalog.tres")
+	wave.enemy_catalog = load("res://data/combat/scenes/world/enemies/enemy_catalog.tres")
 	wave.endless_mode = true
 	check(start(), "正式怪潮编排实际开局")
 	for index in 3:
 		var definition := wave._definition_for_wave(index + 1)
 		var batches := definition.entries.filter(func(item): return item.batch_size > 1)
-		check(wave._wave_total(definition) == [18, 28, 40][index] and batches.size() == 1 and batches[0].batch_size == [10, 14, 18][index] and batches[0].mixed_horde, "前三波总数不变，目录混合怪潮逐步扩大")
+		check(wave._wave_total(definition) == [18, 28, 40][index] and batches.size() == 1 and batches[0].batch_size == 13 and batches[0].mixed_horde, "前三波总数不变，目录混合怪潮以完整比例批次出现")
 	for number in [4, 10, 25, 1000000000]:
 		var definition := wave._definition_for_wave(number)
 		var batch: WaveSpawnEntry = definition.entries.filter(func(item): return item.batch_size > 1)[0]
-		check(batch.batch_size >= 18 and batch.batch_size <= wave._run_population.active_limit(number), "无尽怪潮受当前波容量约束")
+		check(batch.batch_size >= 13 and batch.batch_size <= wave._run_population.active_limit(number), "无尽怪潮受当前波容量约束")
 	var late := wave._definition_for_wave(25)
 	var expected_late := mini(40 + (25 - source_waves.size()) * source_rules.enemies_per_wave_increment, source_rules.max_wave_enemies)
-	check(wave._wave_total(late) == expected_late and late.entries[1].batch_size > 18 and late.entries[1].batch_size <= floori(wave._run_population.active_limit(25) * 0.5), "后期怪潮按当前独立配置扩大，并为其它敌人保留至少一半同场容量")
-	check(source_waves[2].entries[1].batch_size == 18, "无尽规划不修改原始怪潮资源")
+	check(wave._wave_total(late) == expected_late and late.entries[1].batch_size > 13 and late.entries[1].batch_size <= floori(wave._run_population.active_limit(25) * 0.5), "后期怪潮按当前独立配置扩大，并为其它敌人保留至少一半同场容量")
+	check(source_waves[2].entries[1].batch_size == 13, "无尽规划不修改原始怪潮资源")
 	var births: Array[Dictionary] = []
 	var record := func(mob: WaveEnemy): births.append({"wave":wave.wave, "time":wave._wave_clock, "kind":mob.definition.enemy_id})
 	wave.enemy_spawned.connect(record)
@@ -337,10 +337,10 @@ func run() -> void:
 		if wave.phase != WavePrototype.Phase.REST:
 			print("Production horde state: ", wave.get_run_state())
 			break
-	var first_horde := births.filter(func(item): return item.wave == 1 and item.kind != &"mini_slime" and item.time >= 8.0 and item.time < 12.0)
+	var first_horde := births.filter(func(item): return item.wave == 1 and item.kind != &"mini_slime" and item.time >= 6.0 and item.time < 10.0)
 	var first_kinds := {}
 	for birth in first_horde: first_kinds[birth.kind] = true
-	check(first_horde.size() == 10 and first_horde[-1].time - first_horde[0].time <= 0.41 and first_kinds.size() == 5, "正式首波十只怪潮包含全部五种主怪并集中出现")
+	check(first_horde.size() == 13 and first_horde[-1].time - first_horde[0].time <= 0.61 and first_kinds.size() == 4 and not first_kinds.has(&"bell_frog"), "正式首波十三只怪潮覆盖四种主怪并集中出现，辅助蛙留到后续波次")
 	wave.enemy_spawned.disconnect(record)
 	check(FileAccess.get_sha256("res://data/world/world_terrain.tres") == terrain_hash, "不修改地形与手绘地图")
 	wave.retreat()

@@ -39,11 +39,14 @@
 [ext_resource type="Resource" path="res://data/combat/scenes/world/growth/epic/multistrike.tres" id="epic_multistrike"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/growth/epic/heavy_strike.tres" id="epic_heavy_strike"]
 [ext_resource type="Resource" path="res://data/combat/scenes/world/growth/epic/omnivamp.tres" id="epic_omnivamp"]
+[ext_resource type="Resource" path="res://data/combat/scenes/world/growth/legendary/kill_haste.tres" id="legendary_kill_haste"]
 
 [resource]
 resource_name = "正式战斗配置"
 script = ExtResource("19_ow8ov")
 equipment_bonuses_enabled = false
+critical_chance = 0.1
+critical_multiplier = 2.0
 ricochet_rules = ExtResource("18_2ssx0")
 sword_rules = ExtResource("26_mqf1j")
 action_visuals = ExtResource("scene_action_visuals")
@@ -52,12 +55,14 @@ ricochet_camera_settings = ExtResource("scene_ricochet_camera_settings")
 enemy_catalog = ExtResource("2_t1aap")
 default_enemy = ExtResource("1_f4f21")
 population_rules = ExtResource("17_vryv6")
+max_active_enemies = 80
 pursuit_throttle_threshold = 80
 spawn_shadow_settings = ExtResource("spawn_shadows")
 health_growth_rules = ExtResource("11_tuslj")
 waves = Array[ExtResource("27_yidwm")]([ExtResource("28_gfhx2"), ExtResource("29_s6xoj"), ExtResource("30_au3ot")])
 experience_rules = ExtResource("3_0s6kd")
 growth_rules = ExtResource("growth_rules")
-growth_definitions = Array[ExtResource("4_g1065")]([ExtResource("5_60sod"), ExtResource("6_7je1c"), ExtResource("8_xdffn"), ExtResource("9_sl6nf"), ExtResource("epic_global_range"), ExtResource("epic_speed_damage"), ExtResource("epic_multistrike"), ExtResource("epic_heavy_strike"), ExtResource("epic_omnivamp")])
+storm_damage = 20.0
+growth_definitions = Array[ExtResource("4_g1065")]([ExtResource("5_60sod"), ExtResource("6_7je1c"), ExtResource("8_xdffn"), ExtResource("9_sl6nf"), ExtResource("epic_global_range"), ExtResource("epic_speed_damage"), ExtResource("epic_multistrike"), ExtResource("epic_heavy_strike"), ExtResource("epic_omnivamp"), ExtResource("legendary_kill_haste")])
 skill_definitions = Array[ExtResource("20_i3d7y")]([ExtResource("21_t2ujw"), ExtResource("22_788ih"), ExtResource("23_5megx"), ExtResource("24_2rwn7"), ExtResource("25_ieqm8")])
 number_styles = Array[ExtResource("12_y75ug")]([ExtResource("13_ysycs"), ExtResource("14_qevsi"), ExtResource("15_6mle7"), ExtResource("16_ltva0")])

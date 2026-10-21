@@ -74,7 +74,10 @@ func run() -> void:
 		check(growth.state.level == 1, "Experience below the first threshold cannot upgrade early")
 		growth._grant_experience(1)
 		check(growth.state.level == 2 and growth.state.pending_choices == 1 and growth.choice_ui.is_open and wave.combat_frozen, "The configured first upgrade opens its choice and freezes combat")
-		check(growth.choice_options.size() == 3 and growth.choice_options.any(func(option): return option.category in [GrowthChoiceOption.Category.LEARN_SKILL, GrowthChoiceOption.Category.UPGRADE_SKILL]) and growth.choice_options.any(func(option): return option.ricochet_growth), "The first upgrade retains both skill and ricochet growth candidates")
+		var offered_ids := {}
+		for option in growth.choice_options: offered_ids[option.id] = true
+		check(growth.choice_options.size() == 3 and offered_ids.size() == 3 and growth.choice_options.all(func(option): return option.enabled and growth._candidate_pool.has(option)), "The first upgrade offers three distinct valid cards from the current pool")
+		check(growth._draw_pool.free_selection and growth._draw_pool.guaranteed_rarity == -1 and growth._draw_pool.rarity_weights == growth.progression_rules.ordinary_rarity_weights, "The first ordinary upgrade uses scene rarity weights without reserved categories")
 	wave.retreat()
 	world.free()
 	await frames()

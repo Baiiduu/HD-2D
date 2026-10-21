@@ -66,6 +66,19 @@ vec2 stroke(vec2 point, float head, float span, float inset, float width_scale) 
 	return vec2(tail, blade);
 }
 
+float spark_flecks(vec2 point, float trailing) {
+	vec2 grain_uv = vec2(point.x * 4.0 - visual_age * flow_speed, point.y * 4.0);
+	// 分支前计算原坐标的梯度，避免跳过空白像素后改变 mip 采样。
+	vec2 grain_dx = dFdx(grain_uv);
+	vec2 grain_dy = dFdy(grain_uv);
+	float flecks = 0.0;
+	if (trailing != 0.0 && spark_strength != 0.0) {
+		float grain = textureGrad(flow_noise, grain_uv, grain_dx, grain_dy).r;
+		flecks = step(0.86, grain) * trailing * spark_strength * 0.35;
+	}
+	return flecks;
+}
+
 void fragment() {
 	vec2 point = (UV - vec2(0.5)) * (2.0 * attack_radius);
 	float covered = max(0.0, leading_angle + attack_angle * 0.5);
@@ -77,8 +90,7 @@ void fragment() {
 	float blade = primary_stroke.y;
 	if (!blade_enabled) { blade = 0.0; }
 	if (!trail_enabled) { trailing = 0.0; }
-	float grain = texture(flow_noise, vec2(point.x * 4.0 - visual_age * flow_speed, point.y * 4.0)).r;
-	float flecks = step(0.86, grain) * trailing * spark_strength * 0.35;
+	float flecks = spark_flecks(point, trailing);
 	vec4 color = mix(tail_color, middle_color, clamp(primary_stroke.x * 0.55 + flecks, 0.0, 1.0));
 	color = mix(color, blade_color, blade);
 	float clearance = smoothstep(attack_radius * inner_ratio, attack_radius * inner_ratio + pixel_size, length(point));

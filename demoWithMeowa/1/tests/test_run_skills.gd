@@ -75,8 +75,12 @@ func run() -> void:
 	world.get_node("LoadoutUI").save_enabled = false
 	world.get_node("WorldEntry").preview_on_direct_run = false
 	world.get_node("WorldMainMenu").show_on_world_start = false
+	world.get_node("BattleConfiguration").configuration = world.get_node("BattleConfiguration").configuration.duplicate()
+	world.get_node("BattleConfiguration").configuration.experience_rules = ExperienceRules.new()
 	# 隔离技能成长；正式场景的增益配置保持原样，叠加另行验证。
 	world.get_node("BattleConfiguration").configuration.growth_definitions.clear()
+	# 本用例连续验证 A01 八级；地图品阶里程碑与空池跳过由独立测试覆盖。
+	world.get_node("BattleConfiguration").configuration.growth_rules = null
 	# A01 已在正式玩法停用；此兼容原型测试显式开启，不修改正式默认值。
 	world.get_node("WavePrototype/FanAutoAttack").enabled = true
 	world.get_node("WavePrototype/RunSkillManager").skill_paths.clear()
@@ -104,6 +108,7 @@ func run() -> void:
 	growth.choice_ui.open_duration = 0.0
 	growth.cards_per_draw = 100
 	wave.skill_draft.initial_choice.open_duration = 0.0
+	wave.skill_draft.initial_cards_per_draw = 100
 	growth.choice_ui.hover_duration = 0.0
 	fan.knockback_distance = 0.0
 	fan.audio_enabled = false

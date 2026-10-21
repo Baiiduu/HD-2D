@@ -34,16 +34,14 @@ World 同一真实扣血事件另由 FollowCamera 的独立受伤时间线提示
 
 正式地图默认启用 `VisualSample` 黄金时段。游戏内 R 或检查器 `Style` 可选原始光影、黄金、细雨、夜晚，仅切光影、受光与天气，保留镜头、朝向、布局、花草分布和材质开关。Godot「参数总览」统一定位参数，见 [参数与 Style](../technical/parameters-and-styles.md)。晴雨预设调整主光、填光、雾、湿润、暖窗和点缀；直接切 Weather 晴雨也联动，原始光影不自动联动。
 
-![出生区样板实机](../media/lumina-spawn-preview/day.png)
-
-[原始画面](../media/lumina-spawn-preview/original-restored.png) · [细雨](../media/lumina-spawn-preview/rain.png) · [夜晚](../media/lumina-spawn-preview/night.png) · [行走、闪身与 Q/E 实机视频](../media/lumina-spawn-preview/motion.mp4)
+ ·  ·  · [行走、闪身与 Q/E 实机视频](../media/lumina-spawn-preview/motion.mp4)
 
 | 调节位置 | 参数与意义 |
 | --- | --- |
 | `VisualSample` | `Style` 选择效果；`Follow Weather` 让晴雨照明联动 |
 | `MapEffects/Camera3D → 构图与跟随、景深` | 距离 28 米、俯角 32°、FOV 28°、景深强度 0.065；镜头由 Camera3D 独立调节，不被 Style 覆盖 |
 | `MapEffects/Camera3D` | 样板焦点高度 0.9 米；近/远清晰余量 3/4 米，过渡 2.5/6 米；跟随、连续旋转与吸附沿用原值 |
-| `VisualSample → 草地与花草样板` | 默认开启；草底对比 0.70，草花各自有限色阶；关闭恢复本轮前的颜色与分布，详见 [花草样板](foliage-visual-sample.md) |
+| `VisualSample → 草地与花草样板` | 默认开启；草底对比 0.70，草花各自有限色阶；关闭恢复本轮前的颜色与分布，详见 [参数总览与 Style](../technical/parameters-and-styles.md) |
 | `GroundDressing → 成簇地编（样板）` | 新样板斑块 5.6 米、强度 1、花簇阈值 0.65、主花色倾向 0.82；原基准为 4.8 米／0.85／0.60。草/花尺度继续为 0.90/0.85，不重采样像素图 |
 | `GroundDressing → 密度` | 新样板草 2.0、花 0.26，仍乘区域密度系数；原基准 3.0／0.44。出生点与门前留白，沿用道路、坡道及种植遮罩 |
 | 地表/侧壁材质与两栋建筑 | `Lumina Relief Enabled` 为凹凸开关；`Strength` 控制浅凹凸，`Tone Strength` 控制轻微亮暖暗冷，`Matte Floor` 限制湿表面的镜面感 |
@@ -60,17 +58,17 @@ World 同一真实扣血事件另由 FollowCamera 的独立受伤时间线提示
 
 ## 既有通用效果基准
 
-出生区另接入 [像素美术统一样板](pixel-art-sample.md)：Meowa 新草地、卵石、墙面、屋瓦。`VisualSample → 统一像素美术` 独立切新旧材质，Style 保留此选择。原素材和画笔配置保留。
+出生区另接入 [参数总览与 Style](../technical/parameters-and-styles.md)：Meowa 新草地、卵石、墙面、屋瓦。`VisualSample → 统一像素美术` 独立切新旧材质，Style 保留此选择。原素材和画笔配置保留。
 
-这四类材质现已追加 [五档色阶映射](pixel-color-ramps.md)，同时作用于连续地图的出生区和南侧战区地表。`VisualSample → 统一材质色阶` 提供开关与四条可编辑色板，调色只刷新材质，不改变镜头、布局或碰撞。
+这四类材质现已追加 [参数总览与 Style](../technical/parameters-and-styles.md)，同时作用于连续地图的出生区和南侧战区地表。`VisualSample → 统一材质色阶` 提供开关与四条可编辑色板，调色只刷新材质，不改变镜头、布局或碰撞。
 
 正式地图已经实例化 `res://scenes/shared/map_effects.tscn`。它提供当前视觉预览的效果默认值，具体地形、出生点与物件布局由地图搭建工作继续处理。
 
 正式地图的光照现已恢复预览基准，包括环境光与主光、真实阴影、泛光、SSAO、SSIL、体积雾、远景空气光和后处理。当前台地已铺草地、卵石路与土岩侧壁，材质响应湿润、反光与雨水；已有房屋参与场景照明和阴影。正式地图的局部光照覆盖已移除，参数在 `MapEffects` 对应节点调节。
 
-新地图已接入原有草、花与柔化绿色萤火虫。`GroundDressing` 显式连接 `Homestead`，在五个可编辑区域内随机铺设，按台地高度落地，排除道路、坡道与房屋范围；碎石密度为 0。天气驱动花草风摆，修改地形数据会刷新铺设。`GreenLights` 下三个发射器沿用柔和圆形亮点；整体颜色、大小和亮度在 `MapEffects/ArtDirection` 调节，局部数量与覆盖范围在各粒子节点调节。当前截图见 [出生点](D:/Project/HD-2DMap/docs/media/spawn-dressing-preview/spawn.png) 和 [房屋前](D:/Project/HD-2DMap/docs/media/spawn-dressing-preview/home.png)。
+新地图已接入原有草、花与柔化绿色萤火虫。`GroundDressing` 显式连接 `Homestead`，在五个可编辑区域内随机铺设，按台地高度落地，排除道路、坡道与房屋范围；碎石密度为 0。天气驱动花草风摆，修改地形数据会刷新铺设。`GreenLights` 下三个发射器沿用柔和圆形亮点；整体颜色、大小和亮度在 `MapEffects/ArtDirection` 调节，局部数量与覆盖范围在各粒子节点调节。当前截图见  和 。
 
-光影接入时对照检查 276 项参数与连接，原生 D3D12 渲染通过。花草与绿色光点接入后另通过 54 项连接、落地、过滤和参数检查；实际编辑器模式下调低花密度并恢复后，生成数量与原分布一致。当前五个区域共 655 丛草、1017 簇花、0 处碎石，三个萤火虫发射器各 36 个粒子。截图沿用开发相机：距离 11 米、俯角 10°、FOV 30°，深度景深强度 0.02。此前光照接入截图见 [出生区光照](../media/map-effects-preview/world-lighting.png)。
+光影接入时对照检查 276 项参数与连接，原生 D3D12 渲染通过。花草与绿色光点接入后另通过 54 项连接、落地、过滤和参数检查；实际编辑器模式下调低花密度并恢复后，生成数量与原分布一致。当前五个区域共 655 丛草、1017 簇花、0 处碎石，三个萤火虫发射器各 36 个粒子。截图沿用开发相机：距离 11 米、俯角 10°、FOV 30°，深度景深强度 0.02。此前光照接入截图见 。
 
 ## 当前地图逻辑
 
@@ -80,7 +78,7 @@ World 同一真实扣血事件另由 FollowCamera 的独立受伤时间线提示
 - 地形由 `TerrainData` 的格子数据生成顶面、崖壁、水、桥、坡道与碰撞。每格默认 1.6 米，每层默认 0.8 米；区域类型与覆盖层控制材质和地形结构。
 - `Player` 已有相机方向下的移动、侧向/背向动画、跳跃、下落与落地。预览 NPC 当前是展示用贴图，尚未提供完整交互、任务、背包或战斗系统。
 
-游戏方向见 [慢节奏波次生存草案](../rpg-game-design.md)。当前已接入 [基础波次灰盒](../gameplay/wave-graybox.md)，技能实际效果与成长继续讨论；具体出生点规划和地图布局仍可调整。
+游戏方向见[当前玩法与实现状态](../rpg-game-design.md)。正式战区的循环与刷新见[无尽波次](../gameplay/endless-waves.md)和[怪物刷新与波次基础](../gameplay/wave-spawning.md)，当前地形、入口与布局见[正式地图说明](../../demoWithMeowa/1/scenes/world/README.md)。
 
 ## 默认包含的效果
 
@@ -108,7 +106,7 @@ World 同一真实扣血事件另由 FollowCamera 的独立受伤时间线提示
 
 `GroundDressing.ground_sheen` 控制大片湿润亮斑，与地面雨滴环纹独立。正式地图当前为 0；Style 切换已改为保留该手动值，也保留上述雨纹参数。无需开启积水或湿亮斑来显示雨滴落地。
 
-当前镜头实机动画：[调整前](../media/ground-rain-preview/before.webp) · [调整后](../media/ground-rain-preview/after.webp)。36 帧来自原生 D3D12 / Forward+，1280×800，无损编码；对比使用相同世界位置、镜头、景深和雨纹计时，只调整地面落雨三项参数。草地、道路都有反馈，不新增三维粒子或逐滴节点。
+当前镜头实机动画： · 。36 帧来自原生 D3D12 / Forward+，1280×800，无损编码；对比使用相同世界位置、镜头、景深和雨纹计时，只调整地面落雨三项参数。草地、道路都有反馈，不新增三维粒子或逐滴节点。
 
 验证：83 项 Style 检查覆盖湿亮斑 0／自定值和雨纹调参的保留，参数总览通过；正式场景原生运行核对材质绑定、雨纹计时、四种 Style 以及关闭／恢复地面雨水。验证时同步补齐攻击脚本 `next_time` 的浮点声明，解决新增配置的类型推断阻塞，既有 32 项扇击检查通过；最终日志无脚本错误。
 

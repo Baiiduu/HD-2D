@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/growth/growth_buff_effect.gd" id="1_dgjjn"]
 [ext_resource type="Texture2D" path="res://assets/meowa/ui/journal/symbols/star.png" id="2_go645"]
 [ext_resource type="Script" path="res://scripts/growth/growth_buff_definition.gd" id="3_xbu2a"]
+[ext_resource type="Texture2D" uid="uid://bv7ba0uyokok7" path="res://assets/illustrations/growth/momentum_retention.png" id="illustration"]
 
 [resource]
 script = ExtResource("3_xbu2a")
@@ -10,5 +11,7 @@ attribute = 17
 bonus_per_level = 0.25
 id = &"R02"
 title = "动能维持"
+description = "减少飞行与碰撞时的速度损失"
 icon = ExtResource("2_go645")
+illustration = ExtResource("illustration")
 category = 3

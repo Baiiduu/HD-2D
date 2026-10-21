@@ -40,7 +40,7 @@ Y 可切换「镜头跟随人物」，「设置 → 镜头」与主菜单中的�
 
 `WavePresentation → settings` 调节辅助标题与最后一击特写；开战保持当前取景，不拉镜。最后一击特写默认 3 秒，快速推近、世界慢放并强调原生剪影，平滑恢复正常镜头后再衔接清波选卡和休整；UI、音乐与风雨声继续，返回主菜单和管理界面会完整释放演出状态。正式视觉参数见 `data/visual/wave_presentation.tres`，运行使用当前相机配置。
 
-战区地形使用 `data/world/world_terrain.tres`，当前战斗面为零层平地，取消原东西两侧的高台地与坡道；裁切后保留格子的原道路覆盖层、区域类型、高度与画笔编号。`data/world/world_surface.res` 保留手绘地表与分隔带数据，仅上传落在战区内的绘制块。原 `data/world/spawn_terrain.tres` 保留为小院原型基准。`VisualSample` 使用场景当前保存的光影，三种 Lumina 与原始增强仍可按 R 比较；原始增强参数见[提亮、明暗交界与光向统一](../../../../docs/visuals/original-light-refinement.md)。
+战区地形使用 `data/world/world_terrain.tres`，当前战斗面为零层平地，取消原东西两侧的高台地与坡道；裁切后保留格子的原道路覆盖层、区域类型、高度与画笔编号。`data/world/world_surface.res` 保留手绘地表与分隔带数据，仅上传落在战区内的绘制块。原 `data/world/spawn_terrain.tres` 保留为小院原型基准。`VisualSample` 使用场景当前保存的光影，三种 Lumina 与原始增强仍可按 R 比较；原始增强参数见[参数总览与 Style](../../../../docs/technical/parameters-and-styles.md)。
 
 `SpawnPoint` 是实际出生位置，运行时将人物放到此标记。默认 WASD / 方向键移动，Q/E 连续旋转，Y 切镜头跟随，R 切四种光影 Style，G 切晴雨，结算后 T 重试，P 打开／关闭设置。正式地图暂时关闭空格跳跃，保留按键配置与人物开关。主菜单与游戏内「设置 → 按键」可统一改键并恢复默认，保存本机偏好；Esc 保留返回与取消。晴雨快捷键与「画质 → 天气与装饰 → 下雨」共用按地图保存的状态，R 保留晴雨、雨量和雨丝数量。Godot「参数总览」统一定位参数，见 [参数与 Style](../../../../docs/technical/parameters-and-styles.md)。
 

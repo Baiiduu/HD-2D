@@ -55,7 +55,7 @@ func run() -> void:
 	for frame in 4: await process_frame
 	check(settings.get_viewport().get_visible_rect().encloses(settings._panel.get_global_rect()), "Settings panel fits the current viewport")
 	check(settings.menu_open and audio.menu_open and get_first_node_in_group(&"gameplay_input_blockers") == settings, "Settings owns player input and opens the embedded audio page")
-	check(not paused and not wave.combat_frozen, "Opening settings does not pause or freeze the world")
+	check(paused and not wave.combat_frozen, "Settings pauses the world independently of upgrade combat freeze")
 	settings.select_page(2)
 	check(settings._graphics_page.visible and not audio.menu_open and not orbit._panel.visible, "Graphics page shares the unified settings without keeping audio or diagnostics open")
 	settings.select_page(0)
