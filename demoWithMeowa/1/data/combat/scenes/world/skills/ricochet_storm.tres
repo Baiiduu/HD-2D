@@ -3,7 +3,7 @@
 [ext_resource type="Texture2D" uid="uid://xiek1u4j6pcv" path="res://assets/meowa/combat/light_pierce/pixel/impact.png" id="1_721fd"]
 [ext_resource type="Script" uid="uid://dgnmk10av1ee6" path="res://scripts/combat/combat_skill_level.gd" id="2_4ikpi"]
 [ext_resource type="Script" uid="uid://bys5inomsbf0o" path="res://scripts/combat/combat_skill_definition.gd" id="3_dqx6p"]
-[ext_resource type="Texture2D" path="res://assets/illustrations/skills/ricochet_storm.png" id="illustration"]
+[ext_resource type="Texture2D" uid="uid://bd1fmm0aqtcpn" path="res://assets/illustrations/skills/ricochet_storm.png" id="illustration"]
 
 [sub_resource type="Resource" id="Resource_ocemi"]
 script = ExtResource("2_4ikpi")

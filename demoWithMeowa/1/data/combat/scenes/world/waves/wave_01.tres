@@ -7,7 +7,6 @@
 [sub_resource type="Resource" id="Resource_8slvv"]
 script = ExtResource("1_qmo4s")
 enemy = ExtResource("2_8fh62")
-count = 5
 start_delay = 0.6
 interval = 0.7
 spawn_zone_ids = PackedStringArray("WestNorth", "EastNorth")

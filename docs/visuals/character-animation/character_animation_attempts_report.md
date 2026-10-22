@@ -1,6 +1,6 @@
 # 角色动画尝试路线报告
 
-整理日期：2026-10-16。范围：当前双剑动画对话中的试作、已留存的圣女骑士普攻／骨架资料，以及独立的程序武器试验。
+整理日期：2026-10-16。范围：当前双剑动画对话中的试作、已留存的圣女骑士动作／骨架资料，以及独立的程序武器试验。
 
 本报告整理既有产物，没有重新调用生成服务。**“已产出”不代表已经验收；最新双剑圣女素材仍是美术试验，尚未完成正式角色整套替换。**
 
@@ -20,7 +20,7 @@
 | --- | --- | --- |
 | 02 | [纯文字分镜直接生成中间帧](#case-02) | 已尝试，效果不理想；未找到对应序列 |
 | 03 | [圣女骑士：Meowa 战斗站姿与关键帧](#case-03) | 关键姿势试作 |
-| 04 | [圣女骑士：Meowa N1 八帧普攻](#case-04) | 完整动画试作，未正式接入 |
+| 04 | [切换角色时的转换后动作（Meowa N1，8帧）](#case-04) | 已指定为切换角色时的转换后动作，已归档 finalart，未接入游戏 |
 | 05 | [二维骨架六帧：先确定全身运动](#case-05) | 骨架底稿已产出 |
 | 06 | [二维骨架六帧：横扫＋反斜上切](#case-06) | 骨架方案已产出 |
 | 07 | [空间骨架六帧：透视横扫与斜劈](#case-07) | 空间结构稿已产出 |
@@ -48,7 +48,7 @@
 
 ## 路线关系
 
-圣女站姿 → N1普攻／六帧骨架试验；已有单剑参考 → 五关键姿势 → 完整13帧 → 人体审查 → 武器审查；圣女蹬跳13姿势 → 追加16帧旋转 → 合并29帧 → 拆为22攻击＋7反弹 → 抽为17攻击 → Meowa原生64 → 扩边96与尺度修正 → 17帧像素产物 → 前10帧新形象迁移。程序刚体武器属于独立验证支线。
+圣女站姿 → N1转换后动作／六帧骨架试验；已有单剑参考 → 五关键姿势 → 完整13帧 → 人体审查 → 武器审查；圣女蹬跳13姿势 → 追加16帧旋转 → 合并29帧 → 拆为22攻击＋7反弹 → 抽为17攻击 → Meowa原生64 → 扩边96与尺度修正 → 17帧像素产物 → 前10帧新形象迁移。程序刚体武器属于独立验证支线。
 
 <a id="case-02"></a>
 
@@ -148,9 +148,11 @@
 
 <a id="case-04"></a>
 
-## 04｜圣女骑士：Meowa N1 八帧普攻
+## 04｜切换角色时的转换后动作（Meowa N1，8帧）
 
-**状态：** 完整动画试作，未正式接入
+**最终归档：** [下载转换后动作（动画、图集与8张原生帧）](<../../../finalart/character_switch_post_transform_meowa_n1/character_switch_post_transform_meowa_n1.zip>)。96×96／帧；保留整理版与Meowa原始时序版。
+
+**状态：** 已指定为切换角色时的转换后动作，已归档 finalart，未接入游戏
 
 **实现方案：** 先制作N01准备姿势与N04主斩姿势，再让Meowa生成压低重心、上剑斜劈、随挥和回收。产物解码为原生帧，调整各帧播放时长。
 
@@ -172,33 +174,33 @@
 
 ### 该方案的序列效果
 
-**图集预览｜圣女骑士：Meowa N1 八帧普攻｜8 帧／姿势｜原始帧最大画布 96×96**
+**图集预览｜切换角色时的转换后动作（Meowa N1，8帧）｜8 帧／姿势｜原始帧最大画布 96×96**
 
 预览按原帧顺序排列；以整数倍率最近邻放大，背景棋盘格仅用于检视。
 
-![圣女骑士：Meowa N1 八帧普攻图集预览](<../../references/character-animation/character_animation_report/case-04/main/atlas-preview-01.png>)
+![切换角色时的转换后动作（Meowa N1，8帧）图集预览](<../../../finalart/character_switch_post_transform_meowa_n1/atlas-preview.png>)
 
 **动画检视**（像素分支为慢放，非原生帧文件）
 
-![圣女骑士：Meowa N1 八帧普攻动画检视](<../../references/character-animation/character_animation_report/case-04/main/animation-review.gif>)
+![切换角色时的转换后动作（Meowa N1，8帧）动画检视](<../../../finalart/character_switch_post_transform_meowa_n1/preview.gif>)
 
-[打开原始动画文件](<../../references/character-animation/character_animation_report/case-04/main/animation-original.webp>)
+[打开原始动画文件](<../../../finalart/character_switch_post_transform_meowa_n1/animation.webp>)
 
 **原生序列图：768×96 PNG**。按行从左到右读取；每格保持原始画布，不裁人物、不缩放、不插值。
 
-![圣女骑士：Meowa N1 八帧普攻原生序列图](<../../references/character-animation/character_animation_report/case-04/main/native-sequence.png>)
+![切换角色时的转换后动作（Meowa N1，8帧）原生序列图](<../../../finalart/character_switch_post_transform_meowa_n1/spritesheet.png>)
 
-[打开／保存原生序列图](<../../references/character-animation/character_animation_report/case-04/main/native-sequence.png>)
+[打开／保存原生序列图](<../../../finalart/character_switch_post_transform_meowa_n1/spritesheet.png>)
 
-**结果对应的源文件：** D:/.codexfile/work/saint-normal-attack-n1-20261014/delivery/normal_attack_n1.webp
+**当前归档文件：** finalart/character_switch_post_transform_meowa_n1/animation.webp（源动作 Meowa N1）
 
 ### 同帧的原始Meowa时间版
 
 这一项与N1整理版是同一组原生帧，区别在播放时长；下面按服务返回的原时长播放，画面仅作3倍最近邻显示。
 
-![N1原始Meowa时间版](<../../references/character-animation/character_animation_report/case-04/raw-meowa/original-timing-preview.gif>)
+![N1原始Meowa时间版](<../../../finalart/character_switch_post_transform_meowa_n1/preview-meowa-original.gif>)
 
-[打开原始Meowa无损动画](<../../references/character-animation/character_animation_report/case-04/raw-meowa/original-meowa-native.webp>)
+[打开原始Meowa无损动画](<../../../finalart/character_switch_post_transform_meowa_n1/animation-meowa-original.webp>)
 
 ---
 

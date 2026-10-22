@@ -177,7 +177,7 @@ func world_checks() -> void:
 	quiet(city)
 	root.add_child(city)
 	for index in 12: await process_frame
-	check(not (city.get_node("Player") as Player).animations.get_frame_texture(&"idle", 0).resource_path.contains("finalart"), "City 保留独立人物配置")
+	check((city.get_node("Player") as Player).animations != load("res://data/combat/scenes/world/player/character_movement.tres"), "City 与 World 使用独立人物动画资源")
 	city.free()
 	await process_frame
 

@@ -13,6 +13,14 @@ start_delay = 0.6
 interval = 0.55
 spawn_zone_ids = PackedStringArray("WestNorth", "WestSouth")
 
+[sub_resource type="Resource" id="Resource_3yr3l"]
+script = ExtResource("1_1ibui")
+mixed_horde = true
+count = 13
+start_delay = 0.6
+interval = 0.5
+spawn_zone_ids = PackedStringArray("WestNorth", "EastSouth")
+
 [sub_resource type="Resource" id="Resource_gf685"]
 script = ExtResource("1_1ibui")
 mixed_horde = true
@@ -21,14 +29,6 @@ start_delay = 9.0
 batch_size = 13
 interval = 9.0
 spawn_zone_ids = PackedStringArray("EastNorth", "EastSouth")
-
-[sub_resource type="Resource" id="Resource_3yr3l"]
-script = ExtResource("1_1ibui")
-mixed_horde = true
-count = 13
-start_delay = 0.6
-interval = 0.5
-spawn_zone_ids = PackedStringArray("WestNorth", "EastSouth")
 
 [sub_resource type="Resource" id="Resource_88ipu"]
 script = ExtResource("1_1ibui")

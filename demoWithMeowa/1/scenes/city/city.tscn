@@ -4,9 +4,9 @@
 [ext_resource type="PackedScene" path="res://scenes/buildings/convenience_24.tscn" id="3_7ekaa"]
 [ext_resource type="Script" uid="uid://c3bn768plavjr" path="res://scripts/player/player.gd" id="5_1eid2"]
 [ext_resource type="Shader" uid="uid://yl6y2vskn20o" path="res://shaders/terrain/terrain.gdshader" id="5_yu5j7"]
-[ext_resource type="SpriteFrames" uid="uid://65qht0ymca02" path="res://assets/meowa/player/animations.tres" id="6_73msu"]
+[ext_resource type="SpriteFrames" path="res://data/combat/scenes/city/player/character_movement.tres" id="6_73msu"]
 [ext_resource type="Texture2D" uid="uid://chbej7h30u00g" path="res://assets/meowa/city_plaza/fixed/battle/ground.png" id="6_kx422"]
-[ext_resource type="Texture2D" uid="uid://7bwsfpeaisy6" path="res://assets/meowa/player/idle_00.png" id="7_e1jlr"]
+[ext_resource type="Texture2D" uid="uid://cbkmhv47tyku1" path="res://assets/finalart/new_idle.png" id="7_e1jlr"]
 [ext_resource type="Texture2D" uid="uid://cce8go8o1xyjw" path="res://assets/meowa/city_plaza/fixed/battle/normal.png" id="7_p4sah"]
 [ext_resource type="Texture2D" uid="uid://c1bhhy50h44xg" path="res://assets/meowa/city_plaza/fixed/battle/orm_dry.png" id="8_6or5f"]
 [ext_resource type="Script" uid="uid://cnj43gbbfi4sc" path="res://scripts/rendering/character_lighting.gd" id="8_dr8uj"]
@@ -32,7 +32,7 @@
 [ext_resource type="PackedScene" path="res://scenes/player/character_skills.tscn" id="character_skills"]
 [ext_resource type="Resource" path="res://data/audio/music/combat_playlist.tres" id="combat_bgm"]
 [ext_resource type="Script" uid="uid://c3hp446u6v2rr" path="res://scripts/combat/scene_combat_binding.gd" id="combat_binding"]
-[ext_resource type="Resource" path="res://data/combat/scenes/city/configuration.tres" id="combat_configuration"]
+[ext_resource type="Resource" uid="uid://oeppnybqnbpc" path="res://data/combat/scenes/city/configuration.tres" id="combat_configuration"]
 [ext_resource type="PackedScene" path="res://scenes/city/city_terrain.tscn" id="combat_ground"]
 [ext_resource type="PackedScene" path="res://scenes/combat/wave_prototype.tscn" id="combat_wave"]
 [ext_resource type="PackedScene" path="res://scenes/audio/core_feedback_audio.tscn" id="core_audio"]
@@ -89,7 +89,7 @@
 [ext_resource type="Script" uid="uid://dgbspgh4x7cd6" path="res://scripts/combat/wave_spawn_zone.gd" id="spawn_zone"]
 [ext_resource type="PackedScene" path="res://scenes/buildings/convenience_24_v2.tscn" id="store2"]
 
-[sub_resource type="Image" id="Image_ptc8i"]
+[sub_resource type="Image" id="Image_yu5j7"]
 data = {
 "data": PackedByteArray("JT04/0hwTv9ciVD/eaBf/7XOeP9ES1f/ZG51/4WJgP+qqJf/xr+q/46Rnv+4ta7/28+2/+vfw//06M3/ND9S/0hZaf9bcID/e4yZ/56srP8="),
 "format": "RGBA8",
@@ -99,9 +99,9 @@ data = {
 }
 
 [sub_resource type="ImageTexture" id="ImageTexture_k6jmd"]
-image = SubResource("Image_ptc8i")
+image = SubResource("Image_yu5j7")
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_ynqrh"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_kx422"]
 resource_local_to_scene = true
 resource_name = "出生区地表"
 render_priority = 0
@@ -115,6 +115,11 @@ shader_parameter/wet_surface_reflectivity = 0.85
 shader_parameter/wet_surface_ripple_strength = 0.045
 shader_parameter/wet_surface_ripple_speed = 0.65
 shader_parameter/wet_surface_grass_response = 0.04
+shader_parameter/aurora_enabled = false
+shader_parameter/aurora_strength = 1.0
+shader_parameter/aurora_reflection_strength = 6.0
+shader_parameter/aurora_reflection_regions = PackedVector4Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/aurora_reflection_region_count = 0
 shader_parameter/pixel_palette_enabled = true
 shader_parameter/pixel_palette_texture = SubResource("ImageTexture_k6jmd")
 shader_parameter/pixel_stone_detail_strength = 0.65
@@ -199,7 +204,7 @@ shader_parameter/farming_enabled = false
 shader_parameter/farming_wet_darkening = 0.68
 shader_parameter/farming_wet_roughness = 0.72
 shader_parameter/rain_amount = 0.7
-shader_parameter/rain_clock = 1620.497617665532
+shader_parameter/rain_clock = 120.32521066666115
 shader_parameter/rain_density = 0.9
 shader_parameter/rain_radius = 0.11
 shader_parameter/rain_strength = 0.32
@@ -207,7 +212,7 @@ shader_parameter/weather_wetness = 0.08399999999999999
 shader_parameter/edge_fade_distance = 0.0
 shader_parameter/edge_fog_color = Color(0.18, 0.24, 0.39, 1)
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_v2k6q"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_p4sah"]
 resource_local_to_scene = true
 resource_name = "出生区台地侧壁"
 render_priority = 0
@@ -318,9 +323,11 @@ size = Vector3(0.22, 0.018, 2.4)
 radius = 0.24
 height = 1.06592
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_bbe5e"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_6or5f"]
 resource_local_to_scene = true
 shader = ExtResource("22_pgqvn")
+shader_parameter/aurora_enabled = false
+shader_parameter/aurora_strength = 1.0
 shader_parameter/zenith_color = Color(0.025, 0.045, 0.11, 1)
 shader_parameter/horizon_color = Color(0.18, 0.24, 0.39, 1)
 shader_parameter/fog_color = Color(0.18, 0.24, 0.39, 1)
@@ -336,16 +343,16 @@ shader_parameter/hemisphere_ground_color = Color(0.318, 0.275, 0.329, 1)
 shader_parameter/city_matte_enabled = false
 shader_parameter/city_matte_brightness = 0.85
 
-[sub_resource type="Sky" id="Sky_xietg"]
+[sub_resource type="Sky" id="Sky_mv2qa"]
 resource_local_to_scene = true
-sky_material = SubResource("ShaderMaterial_bbe5e")
+sky_material = SubResource("ShaderMaterial_6or5f")
 radiance_size = 2
 
-[sub_resource type="Environment" id="Environment_jmifd"]
+[sub_resource type="Environment" id="Environment_bvp5n"]
 resource_local_to_scene = true
 background_mode = 2
 background_color = Color(0.07059, 0.10588, 0.18039, 1)
-sky = SubResource("Sky_xietg")
+sky = SubResource("Sky_mv2qa")
 ambient_light_source = 2
 ambient_light_color = Color(0.45, 0.51, 0.68, 1)
 ambient_light_sky_contribution = 0.0
@@ -391,12 +398,12 @@ adjustment_brightness = 1.02
 adjustment_contrast = 1.08
 adjustment_saturation = 1.1
 
-[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_360qo"]
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_0pta2"]
 resource_local_to_scene = true
 dof_blur_far_enabled = true
 dof_blur_near_enabled = true
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_ivg2p"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_yibix"]
 resource_local_to_scene = true
 shader = ExtResource("56_idau5")
 shader_parameter/ellipse_enabled = false
@@ -408,6 +415,8 @@ shader_parameter/lens_enabled = false
 shader_parameter/lens_drop_count = 0
 shader_parameter/lens_drops = PackedVector4Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 shader_parameter/lens_drop_shapes = PackedVector4Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/lens_drop_tiles = PackedVector4Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/lens_tile_screen_size = Vector2(0, 0)
 shader_parameter/lens_blur = 1.0
 shader_parameter/lens_refraction = 9.0
 shader_parameter/lens_irregularity = 0.7
@@ -421,8 +430,24 @@ shader_parameter/highlight_tint = Color(1.08, 1, 0.9, 1)
 shader_parameter/split_toning = 0.18
 shader_parameter/lumina_grade_enabled = false
 shader_parameter/shadow_lift = Vector3(0.012, 0.02, 0.035)
+shader_parameter/charge_focus_center = Vector2(0.5, 0.5)
+shader_parameter/charge_focus_amount = 0.0
+shader_parameter/charge_focus_darken = 0.06
+shader_parameter/charge_focus_desaturation = 0.03
+shader_parameter/charge_focus_radius = 0.25
+shader_parameter/charge_direction_amount = 0.0
+shader_parameter/charge_route_start = Vector2(0.5, 0.5)
+shader_parameter/charge_route_end = Vector2(0.5, 0.25)
+shader_parameter/charge_route_half_width = 0.06
+shader_parameter/charge_direction_blur_pixels = 0.4
+shader_parameter/charge_direction_lift = 0.06
+shader_parameter/hurt_amount = 0.0
+shader_parameter/hurt_color = Color(0.9, 0.04, 0.07, 1)
+shader_parameter/wave_finish_amount = 0.0
+shader_parameter/wave_finish_impact = 0.0
+shader_parameter/wave_finish_center = Vector2(0.5, 0.5)
 
-[sub_resource type="CompositorEffect" id="CompositorEffect_wqm0v"]
+[sub_resource type="CompositorEffect" id="CompositorEffect_5y8ov"]
 resource_local_to_scene = true
 resource_name = ""
 enabled = true
@@ -440,8 +465,8 @@ configuration = ExtResource("combat_configuration")
 
 [node name="Ground" parent="." unique_id=140776511 instance=ExtResource("combat_ground")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -44.8)
-top_material = SubResource("ShaderMaterial_ynqrh")
-wall_material = SubResource("ShaderMaterial_v2k6q")
+top_material = SubResource("ShaderMaterial_kx422")
+wall_material = SubResource("ShaderMaterial_p4sah")
 
 [node name="Buildings" type="Node3D" parent="." unique_id=490120225]
 
@@ -756,7 +781,7 @@ mesh = SubResource("BoxMesh_yv64m")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0.2, -3.2)
 
 [node name="Player" type="CharacterBody3D" parent="." unique_id=523685145 node_paths=PackedStringArray("movement_camera")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0.2, -3.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0.044900313, -3.2)
 script = ExtResource("5_1eid2")
 animations = ExtResource("6_73msu")
 movement_camera = NodePath("../MapEffects/Camera3D")
@@ -769,7 +794,7 @@ shape = SubResource("CapsuleShape3D_x0qey")
 
 [node name="Sprite" type="Sprite3D" parent="Player" unique_id=1787848369]
 process_priority = 1
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+transform = Transform3D(0.75656533, 0, 0, 0, 0.72731483, 0, 0, 0, 1, 0, 0.45224082, -0.04772401)
 pixel_size = 0.0234375
 billboard = 2
 shaded = true
@@ -833,7 +858,7 @@ terrain = NodePath("../../Ground")
 surface_source = NodePath("../../Ground")
 
 [node name="WorldEnvironment" parent="MapEffects" index="6"]
-environment = SubResource("Environment_jmifd")
+environment = SubResource("Environment_bvp5n")
 
 [node name="Moon" parent="MapEffects" index="7"]
 transform = Transform3D(0.8480479, 0.3545854, -0.39380673, 0, 0.7431452, 0.66913056, 0.52991915, -0.5674553, 0.6302225, 0, 0, 0)
@@ -842,7 +867,7 @@ light_energy = 0.85
 light_cull_mask = 4294803455
 
 [node name="Camera3D" parent="MapEffects" index="8" node_paths=PackedStringArray("target", "post_process")]
-attributes = SubResource("CameraAttributesPractical_360qo")
+attributes = SubResource("CameraAttributesPractical_0pta2")
 fov = 28.0
 target = NodePath("../../Player")
 post_process = NodePath("../PostProcess/Screen")
@@ -857,7 +882,7 @@ dof_amount = 0.065
 ricochet_camera_settings = ExtResource("ricochet_camera")
 
 [node name="Screen" parent="MapEffects/PostProcess" index="0"]
-material = SubResource("ShaderMaterial_ivg2p")
+material = SubResource("ShaderMaterial_yibix")
 
 [node name="WaterReflection" parent="MapEffects" index="10" node_paths=PackedStringArray("terrain", "surface_source", "geometry_root")]
 terrain = NodePath("../../Ground")
@@ -873,7 +898,7 @@ camera = NodePath("../MapEffects/Camera3D")
 moon = NodePath("../MapEffects/Moon")
 weather = NodePath("../MapEffects/Weather")
 vegetation_root = NodePath("../StreetProps")
-bokeh = SubResource("CompositorEffect_wqm0v")
+bokeh = SubResource("CompositorEffect_5y8ov")
 
 [node name="LoadoutUI" parent="." unique_id=218135381 node_paths=PackedStringArray("player", "wave_session") instance=ExtResource("loadout_ui")]
 player = NodePath("../Player")
