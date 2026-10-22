@@ -1,0 +1,23 @@
+[gd_resource type="AnimationLibrary" format=3 uid="uid://bmvhu6lynqxa8"]
+
+[sub_resource type="Animation" id="aurora"]
+resource_name = "aurora"
+length = 20.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Model/Globe:material_override:shader_parameter/motion_phase")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 20),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 6.283185307179586]
+}
+
+[resource]
+_data = {
+&"aurora": SubResource("aurora")
+}

@@ -1,0 +1,581 @@
+{
+  "schema_version": 1,
+  "project": "D:\\Project\\HD-2DMap",
+  "exported_at": "2026-10-22T14:43:19+08:00",
+  "export_device": "desktop-8s0t95n",
+  "timezone": "Asia/Shanghai",
+  "selection": "human threads with cwd equal to project root or beneath it; subagents excluded",
+  "historical_reply_policy": "verbatim final answers; no invented summaries",
+  "unknown_historical_fields": [
+    "device",
+    "skills"
+  ],
+  "files_policy": "completed structured FileChange events only; shell/script side effects are not inferred",
+  "source_envelopes": "known client-generated Files mentioned/My request envelopes removed, human text preserved",
+  "sessions": [
+    {
+      "id": "01a1207b-718d-79c1-a3f1-4d3bbdee41d3",
+      "title": "\"D:\\Project\\godot\\games\\demoWithMeowa\"\n\"D:\\Project\\godot\\games\\benchmark\"\n将这两个文件夹提交到我的[https://github.com/Baiiduu/HD-2D.git](https://github.com/Baiiduu/HD-2D.git)仓库中",
+      "source": "\\\\?\\C:\\Users\\PC\\.codex\\sessions\\2026\\10\\09\\rollout-2026-10-09T19-45-24-01a1207b-718d-79c1-a3f1-4d3bbdee41d3.jsonl.zst",
+      "source_snapshot_bytes": 45159155,
+      "markdown": "会话/2026-10-09_01a1207b-718d-79c1-a3f1-4d3bbdee41d3.md",
+      "data": "原文数据/2026-10-09_01a1207b-718d-79c1-a3f1-4d3bbdee41d3.jsonl",
+      "first_message": "2026-10-09T11:50:06.559000+00:00",
+      "last_message": "2026-10-10T04:35:55.582000+00:00",
+      "turns": 19,
+      "user_messages": 28,
+      "final_answers": 23,
+      "turns_without_final_answer": 0,
+      "attachments": 1,
+      "unknown_model_turns": 0,
+      "registered_file_changes": 172,
+      "parser_stats": {
+        "human_messages": 28,
+        "final_answer_items": 23
+      }
+    },
+    {
+      "id": "01a123c9-94f4-7161-8aef-3e1e334eddc9",
+      "title": "D:\\Project\\godot\\games\\benchmark\\threejs\n这个是锁帧了么？你可以把锁帧去掉么？",
+      "source": "\\\\?\\C:\\Users\\PC\\.codex\\sessions\\2026\\10\\10\\rollout-2026-10-10T11-09-35-01a123c9-94f4-7161-8aef-3e1e334eddc9.jsonl.zst",
+      "source_snapshot_bytes": 112878,
+      "markdown": "会话/2026-10-10_01a123c9-94f4-7161-8aef-3e1e334eddc9.md",
+      "data": "原文数据/2026-10-10_01a123c9-94f4-7161-8aef-3e1e334eddc9.jsonl",
+      "first_message": "2026-10-10T03:10:14.811000+00:00",
+      "last_message": "2026-10-10T03:51:26.544000+00:00",
+      "turns": 4,
+      "user_messages": 4,
+      "final_answers": 4,
+      "turns_without_final_answer": 0,
+      "attachments": 0,
+      "unknown_model_turns": 0,
+      "registered_file_changes": 5,
+      "parser_stats": {
+        "human_messages": 4,
+        "final_answer_items": 4
+      }
+    },
+    {
+      "id": "01a12424-5601-7451-8290-547f8371db0e",
+      "title": "D:\\Project\\HD-2DMap\\demoWithMeowa\\1，这个是godot项目目录，了解当前情况\n阅读\"D:\\Project\\HD-2DMap\\AGENTS.md\"",
+      "source": "\\\\?\\C:\\Users\\PC\\.codex\\sessions\\2026\\10\\10\\rollout-2026-10-10T12-48-43-01a12424-5601-7451-8290-547f8371db0e.jsonl.zst",
+      "source_snapshot_bytes": 83376543,
+      "markdown": "会话/2026-10-10_01a12424-5601-7451-8290-547f8371db0e.md",
+      "data": "原文数据/2026-10-10_01a12424-5601-7451-8290-547f8371db0e.jsonl",
+      "first_message": "2026-10-10T04:51:58.211000+00:00",
+      "last_message": "2026-10-13T07:30:51.003000+00:00",
+      "turns": 63,
+      "user_messages": 75,
+      "final_answers": 64,
+      "turns_without_final_answer": 3,
+      "attachments": 1,
+      "unknown_model_turns": 0,
+      "registered_file_changes": 445,
+      "parser_stats": {
+        "human_messages": 75,
+        "final_answer_items": 64
+      }
+    },
+    {
+      "id": "01a12509-8e89-7b93-bc7e-d457ca9c635d",
+      "title": "3C 4",
+      "source": "\\\\?\\C:\\Users\\PC\\.codex\\sessions\\2026\\10\\10\\rollout-2026-10-10T16-59-05-01a12509-8e89-7b93-bc7e-d457ca9c635d.jsonl",
+      "source_snapshot_bytes": 822042850,
+      "markdown": "会话/2026-10-10_01a12509-8e89-7b93-bc7e-d457ca9c635d.md",
+      "data": "原文数据/2026-10-10_01a12509-8e89-7b93-bc7e-d457ca9c635d.jsonl",
+      "first_message": "2026-10-10T09:03:50.479000+00:00",
+      "last_message": "2026-10-21T05:44:07.869000+00:00",
+      "turns": 127,
+      "user_messages": 170,
+      "final_answers": 146,
+      "turns_without_final_answer": 1,
+      "attachments": 6,
+      "unknown_model_turns": 0,
+      "registered_file_changes": 825,
+      "parser_stats": {
+        "human_messages": 170,
+        "final_answer_items": 146
+      }
+    },
+    {
+      "id": "01a1250f-6216-7a53-bae0-b77027e126f5",
+      "title": "3C 1",
+      "source": "\\\\?\\C:\\Users\\PC\\.codex\\sessions\\2026\\10\\10\\rollout-2026-10-10T17-05-28-01a1250f-6216-7a53-bae0-b77027e126f5.jsonl",
+      "source_snapshot_bytes": 1213178140,
+      "markdown": "会话/2026-10-10_01a1250f-6216-7a53-bae0-b77027e126f5.md",
+      "data": "原文数据/2026-10-10_01a1250f-6216-7a53-bae0-b77027e126f5.jsonl",
+      "first_message": "2026-10-10T09:06:57.323000+00:00",
+      "last_message": "2026-10-21T06:34:11.333000+00:00",
+      "turns": 180,
+      "user_messages": 234,
+      "final_answers": 207,
+      "turns_without_final_answer": 5,
+      "attachments": 10,
+      "unknown_model_turns": 0,
+      "registered_file_changes": 1569,
+      "parser_stats": {
+        "human_messages": 234,
+        "final_answer_items": 215,
+        "nonhuman_turns_omitted": 10
+      }
+    },
+    {
+      "id": "01a12533-c6ad-70f2-bd3c-480925e1698e",
+      "title": "阅读Agents.md 当前图中的这个不同的层级地形我觉得他这个纹理太硬了，草地和这个山崖纹理还缺少一些过度，我需要更好的视觉表现",
+      "source": "\\\\?\\C:\\Users\\PC\\.codex\\sessions\\2026\\10\\10\\rollout-2026-10-10T17-45-12-01a12533-c6ad-70f2-bd3c-480925e1698e.jsonl.zst",
+      "source_snapshot_bytes": 218990965,
+      "markdown": "会话/2026-10-10_01a12533-c6ad-70f2-bd3c-480925e1698e.md",
+      "data": "原文数据/2026-10-10_01a12533-c6ad-70f2-bd3c-480925e1698e.jsonl",
+      "first_message": "2026-10-10T09:46:50.805000+00:00",
+      "last_message": "2026-10-13T06:37:12.513000+00:00",
+      "turns": 36,
+      "user_messages": 51,
+      "final_answers": 42,
+      "turns_without_final_answer": 2,
+      "attachments": 4,
+      "unknown_model_turns": 0,
+      "registered_file_changes": 257,
+      "parser_stats": {
+        "human_messages": 51,
+        "final_answer_items": 42
+      }
+    },
+    {
+      "id": "01a12547-4941-7e30-ad08-390139c00730",
+      "title": "阅读Agents.md我想加入 QE水平旋转摄像机，设置好最大角度，同时人物移动保持摄像机方向，避免出现wasd方向错位",
+      "source": "\\\\?\\C:\\Users\\PC\\.codex\\sessions\\2026\\10\\10\\rollout-2026-10-10T18-06-31-01a12547-4941-7e30-ad08-390139c00730.jsonl.zst",
+      "source_snapshot_bytes": 57485186,
+      "markdown": "会话/2026-10-10_01a12547-4941-7e30-ad08-390139c00730.md",
+      "data": "原文数据/2026-10-10_01a12547-4941-7e30-ad08-390139c00730.jsonl",
+      "first_message": "2026-10-10T10:07:36.882000+00:00",
+      "last_message": "2026-10-13T10:00:47.667000+00:00",
+      "turns": 30,
+      "user_messages": 45,
+      "final_answers": 39,
+      "turns_without_final_answer": 0,
+      "attachments": 1,
+      "unknown_model_turns": 0,
+      "registered_file_changes": 190,
+      "parser_stats": {
+        "human_messages": 45,
+        "final_answer_items": 39
+      }
+    },
+    {
+      "id": "01a12562-eb55-7c72-82cd-3ef288dbaa6d",
+      "title": "3C 0 成长",
+      "source": "\\\\?\\C:\\Users\\PC\\.codex\\sessions\\2026\\10\\10\\rollout-2026-10-10T18-36-42-01a12562-eb55-7c72-82cd-3ef288dbaa6d.jsonl",
+      "source_snapshot_bytes": 811966010,
+      "markdown": "会话/2026-10-10_01a12562-eb55-7c72-82cd-3ef288dbaa6d.md",
+      "data": "原文数据/2026-10-10_01a12562-eb55-7c72-82cd-3ef288dbaa6d.jsonl",
+      "first_message": "2026-10-10T10:37:08.275000+00:00",
+      "last_message": "2026-10-22T06:24:06.890000+00:00",
+      "turns": 181,
+      "user_messages": 245,
+      "final_answers": 205,
+      "turns_without_final_answer": 4,
+      "attachments": 7,
+      "unknown_model_turns": 0,
+      "registered_file_changes": 1273,
+      "parser_stats": {
+        "human_messages": 245,
+        "final_answer_items": 205
+      }
+    },
+    {
+      "id": "01a12f8e-4d8d-7891-8937-0daf9ea30f82",
+      "title": "3C 2",
+      "source": "\\\\?\\C:\\Users\\PC\\.codex\\sessions\\2026\\10\\12\\rollout-2026-10-12T18-00-17-01a12f8e-4d8d-7891-8937-0daf9ea30f82.jsonl",
+      "source_snapshot_bytes": 426624849,
+      "markdown": "会话/2026-10-12_01a12f8e-4d8d-7891-8937-0daf9ea30f82.md",
+      "data": "原文数据/2026-10-12_01a12f8e-4d8d-7891-8937-0daf9ea30f82.jsonl",
+      "first_message": "2026-10-12T10:01:37.915000+00:00",
+      "last_message": "2026-10-21T03:44:41.760000+00:00",
+      "turns": 160,
+      "user_messages": 205,
+      "final_answers": 184,
+      "turns_without_final_answer": 4,
+      "attachments": 1,
+      "unknown_model_turns": 0,
+      "registered_file_changes": 1429,
+      "parser_stats": {
+        "human_messages": 205,
+        "final_answer_items": 186,
+        "nonhuman_turns_omitted": 4
+      }
+    },
+    {
+      "id": "01a13408-d5a7-7b51-b2eb-64b6039b55bb",
+      "title": "3C 6",
+      "source": "\\\\?\\C:\\Users\\PC\\.codex\\sessions\\2026\\10\\13\\rollout-2026-10-13T14-52-36-01a13408-d5a7-7b51-b2eb-64b6039b55bb.jsonl",
+      "source_snapshot_bytes": 279192656,
+      "markdown": "会话/2026-10-13_01a13408-d5a7-7b51-b2eb-64b6039b55bb.md",
+      "data": "原文数据/2026-10-13_01a13408-d5a7-7b51-b2eb-64b6039b55bb.jsonl",
+      "first_message": "2026-10-13T06:53:32.013000+00:00",
+      "last_message": "2026-10-21T06:30:21.447000+00:00",
+      "turns": 78,
+      "user_messages": 91,
+      "final_answers": 86,
+      "turns_without_final_answer": 0,
+      "attachments": 3,
+      "unknown_model_turns": 0,
+      "registered_file_changes": 432,
+      "parser_stats": {
+        "human_messages": 91,
+        "final_answer_items": 86
+      }
+    },
+    {
+      "id": "01a13417-2118-7910-95db-d35b5430acd8",
+      "title": "3C 5",
+      "source": "\\\\?\\C:\\Users\\PC\\.codex\\sessions\\2026\\10\\13\\rollout-2026-10-13T15-08-13-01a13417-2118-7910-95db-d35b5430acd8.jsonl",
+      "source_snapshot_bytes": 251099680,
+      "markdown": "会话/2026-10-13_01a13417-2118-7910-95db-d35b5430acd8.md",
+      "data": "原文数据/2026-10-13_01a13417-2118-7910-95db-d35b5430acd8.jsonl",
+      "first_message": "2026-10-13T07:08:36.404000+00:00",
+      "last_message": "2026-10-21T03:37:22.049000+00:00",
+      "turns": 70,
+      "user_messages": 93,
+      "final_answers": 86,
+      "turns_without_final_answer": 3,
+      "attachments": 5,
+      "unknown_model_turns": 0,
+      "registered_file_changes": 537,
+      "parser_stats": {
+        "human_messages": 93,
+        "final_answer_items": 88,
+        "nonhuman_turns_omitted": 2
+      }
+    },
+    {
+      "id": "01a13417-daca-7f32-80c0-d463cec85aad",
+      "title": "核心视觉3",
+      "source": "\\\\?\\C:\\Users\\PC\\.codex\\sessions\\2026\\10\\13\\rollout-2026-10-13T15-09-01-01a13417-daca-7f32-80c0-d463cec85aad.jsonl",
+      "source_snapshot_bytes": 237589155,
+      "markdown": "会话/2026-10-13_01a13417-daca-7f32-80c0-d463cec85aad.md",
+      "data": "原文数据/2026-10-13_01a13417-daca-7f32-80c0-d463cec85aad.jsonl",
+      "first_message": "2026-10-13T07:09:08.040000+00:00",
+      "last_message": "2026-10-14T07:05:52.186000+00:00",
+      "turns": 29,
+      "user_messages": 51,
+      "final_answers": 38,
+      "turns_without_final_answer": 1,
+      "attachments": 2,
+      "unknown_model_turns": 0,
+      "registered_file_changes": 198,
+      "parser_stats": {
+        "human_messages": 51,
+        "final_answer_items": 39,
+        "nonhuman_turns_omitted": 2
+      }
+    },
+    {
+      "id": "01a134b4-b236-73e1-8269-d67df7cb62c0",
+      "title": "阅读Agents.md，查看当前核心视觉表现的进展，有什么不懂就问我",
+      "source": "\\\\?\\C:\\Users\\PC\\.codex\\sessions\\2026\\10\\13\\rollout-2026-10-13T18-00-19-01a134b4-b236-73e1-8269-d67df7cb62c0.jsonl.zst",
+      "source_snapshot_bytes": 25025257,
+      "markdown": "会话/2026-10-13_01a134b4-b236-73e1-8269-d67df7cb62c0.md",
+      "data": "原文数据/2026-10-13_01a134b4-b236-73e1-8269-d67df7cb62c0.jsonl",
+      "first_message": "2026-10-13T10:00:25.235000+00:00",
+      "last_message": "2026-10-13T10:28:53.323000+00:00",
+      "turns": 5,
+      "user_messages": 7,
+      "final_answers": 7,
+      "turns_without_final_answer": 0,
+      "attachments": 0,
+      "unknown_model_turns": 0,
+      "registered_file_changes": 22,
+      "parser_stats": {
+        "human_messages": 7,
+        "final_answer_items": 7
+      }
+    },
+    {
+      "id": "01a138c3-32ab-7c70-b623-219e0cedba5a",
+      "title": "3C 3",
+      "source": "\\\\?\\C:\\Users\\PC\\.codex\\sessions\\2026\\10\\14\\rollout-2026-10-14T12-54-39-01a138c3-32ab-7c70-b623-219e0cedba5a.jsonl",
+      "source_snapshot_bytes": 425500566,
+      "markdown": "会话/2026-10-14_01a138c3-32ab-7c70-b623-219e0cedba5a.md",
+      "data": "原文数据/2026-10-14_01a138c3-32ab-7c70-b623-219e0cedba5a.jsonl",
+      "first_message": "2026-10-14T04:54:52.433000+00:00",
+      "last_message": "2026-10-21T03:43:10.686000+00:00",
+      "turns": 85,
+      "user_messages": 131,
+      "final_answers": 111,
+      "turns_without_final_answer": 5,
+      "attachments": 5,
+      "unknown_model_turns": 0,
+      "registered_file_changes": 733,
+      "parser_stats": {
+        "human_messages": 131,
+        "final_answer_items": 118,
+        "nonhuman_turns_omitted": 8
+      }
+    },
+    {
+      "id": "01a13981-9813-7992-9b18-e0fdccc765d8",
+      "title": "3C 7",
+      "source": "\\\\?\\C:\\Users\\PC\\.codex\\sessions\\2026\\10\\14\\rollout-2026-10-14T16-22-36-01a13981-9813-7992-9b18-e0fdccc765d8.jsonl",
+      "source_snapshot_bytes": 236970390,
+      "markdown": "会话/2026-10-14_01a13981-9813-7992-9b18-e0fdccc765d8.md",
+      "data": "原文数据/2026-10-14_01a13981-9813-7992-9b18-e0fdccc765d8.jsonl",
+      "first_message": "2026-10-14T08:24:42.913000+00:00",
+      "last_message": "2026-10-21T03:42:42.201000+00:00",
+      "turns": 89,
+      "user_messages": 119,
+      "final_answers": 111,
+      "turns_without_final_answer": 2,
+      "attachments": 3,
+      "unknown_model_turns": 0,
+      "registered_file_changes": 648,
+      "parser_stats": {
+        "human_messages": 119,
+        "final_answer_items": 111
+      }
+    },
+    {
+      "id": "01a1442f-1961-7270-9479-0d12a56c93f7",
+      "title": "分析项目性能优化重点",
+      "source": "\\\\?\\C:\\Users\\PC\\.codex\\sessions\\2026\\10\\16\\rollout-2026-10-16T18-08-20-01a1442f-1961-7270-9479-0d12a56c93f7.jsonl",
+      "source_snapshot_bytes": 12562655,
+      "markdown": "会话/2026-10-16_01a1442f-1961-7270-9479-0d12a56c93f7.md",
+      "data": "原文数据/2026-10-16_01a1442f-1961-7270-9479-0d12a56c93f7.jsonl",
+      "first_message": "2026-10-16T10:08:47.743000+00:00",
+      "last_message": "2026-10-19T09:31:34.774000+00:00",
+      "turns": 12,
+      "user_messages": 14,
+      "final_answers": 14,
+      "turns_without_final_answer": 0,
+      "attachments": 0,
+      "unknown_model_turns": 0,
+      "registered_file_changes": 43,
+      "parser_stats": {
+        "human_messages": 14,
+        "final_answer_items": 15,
+        "nonhuman_turns_omitted": 1
+      }
+    },
+    {
+      "id": "01a1624b-7ea4-7332-a072-641772efca53",
+      "title": "安装 agent-logger skill",
+      "source": "C:\\Users\\PC\\.codex\\sessions\\2026\\10\\22\\rollout-2026-10-22T14-27-57-01a1624b-7ea4-7332-a072-641772efca53.jsonl",
+      "source_snapshot_bytes": 1735651,
+      "markdown": "会话/2026-10-22_01a1624b-7ea4-7332-a072-641772efca53.md",
+      "data": "原文数据/2026-10-22_01a1624b-7ea4-7332-a072-641772efca53.jsonl",
+      "first_message": "2026-10-22T06:28:12.878000+00:00",
+      "last_message": "2026-10-22T06:34:39.339000+00:00",
+      "turns": 3,
+      "user_messages": 3,
+      "final_answers": 4,
+      "turns_without_final_answer": 0,
+      "attachments": 0,
+      "unknown_model_turns": 0,
+      "registered_file_changes": 0,
+      "parser_stats": {
+        "human_messages": 4,
+        "final_answer_items": 4,
+        "current_live_turn_omitted": 1,
+        "current_live_messages_omitted": 1
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 3870,
+      "sha256": "b4a21e31d2117627a2de2382bae321f09e2075c54dfd50d5e63f102b4d097846"
+    },
+    {
+      "path": "会话/2026-10-09_01a1207b-718d-79c1-a3f1-4d3bbdee41d3.md",
+      "bytes": 60640,
+      "sha256": "a672388111326db3ba0b5c3f2e7eef062885d1b8fa97000bbe63d993ced30268"
+    },
+    {
+      "path": "会话/2026-10-10_01a123c9-94f4-7161-8aef-3e1e334eddc9.md",
+      "bytes": 4836,
+      "sha256": "f55ed6cec92c9b42a7f79e3d1ad85d4ec3a5ccf4bb10f266013a8ce76c4cefbd"
+    },
+    {
+      "path": "会话/2026-10-10_01a12424-5601-7451-8290-547f8371db0e.md",
+      "bytes": 150267,
+      "sha256": "8675e1eb646d3f3600d9c49c79e32b7f4d0bca3bbbb3b47c2ef859ff5b79c362"
+    },
+    {
+      "path": "会话/2026-10-10_01a12509-8e89-7b93-bc7e-d457ca9c635d.md",
+      "bytes": 323949,
+      "sha256": "80f1acf712382ce30e581f78562b69c86b94a36e9988a5c732e64217f6199d15"
+    },
+    {
+      "path": "会话/2026-10-10_01a1250f-6216-7a53-bae0-b77027e126f5.md",
+      "bytes": 451631,
+      "sha256": "f6483760cf5117ffe8e4cb93996f4aaaf6451ae37b1cfd3c530a339a79d9d924"
+    },
+    {
+      "path": "会话/2026-10-10_01a12533-c6ad-70f2-bd3c-480925e1698e.md",
+      "bytes": 79307,
+      "sha256": "0dbd00ae8e003f3d71e0021ac73a477f256740e34f3803f7c9b896fb3ee686b9"
+    },
+    {
+      "path": "会话/2026-10-10_01a12547-4941-7e30-ad08-390139c00730.md",
+      "bytes": 87644,
+      "sha256": "a619a93e0623f4b8fe04fc4923b66f6e58668e47fbad0d650b0aca1914ff06cb"
+    },
+    {
+      "path": "会话/2026-10-10_01a12562-eb55-7c72-82cd-3ef288dbaa6d.md",
+      "bytes": 463568,
+      "sha256": "35b57b4cad149031f0cee9c65d8e05ad43dd342e5e5c6542242db4de4ce29e16"
+    },
+    {
+      "path": "会话/2026-10-12_01a12f8e-4d8d-7891-8937-0daf9ea30f82.md",
+      "bytes": 425787,
+      "sha256": "e2453cf1d26b419adc77a36838261a1e0673ed1a8b2b5afd741c67e72985aba9"
+    },
+    {
+      "path": "会话/2026-10-13_01a13408-d5a7-7b51-b2eb-64b6039b55bb.md",
+      "bytes": 157587,
+      "sha256": "ef3a9cc2816f5c338695646293c6b0a9765a282cf2430d7c14865cd086e70a64"
+    },
+    {
+      "path": "会话/2026-10-13_01a13417-2118-7910-95db-d35b5430acd8.md",
+      "bytes": 181952,
+      "sha256": "cae551d7f8e809720797ecdca4bf2fbf1890361a43f39d140e5dd998abc81cf8"
+    },
+    {
+      "path": "会话/2026-10-13_01a13417-daca-7f32-80c0-d463cec85aad.md",
+      "bytes": 76350,
+      "sha256": "04e011fcf142019ce841e18a4e1f059ea467b214bd172d896263486aaad98e43"
+    },
+    {
+      "path": "会话/2026-10-13_01a134b4-b236-73e1-8269-d67df7cb62c0.md",
+      "bytes": 11965,
+      "sha256": "ff6b41cd15eb08f9162f43602c241ee3e893f3265dfad9e9c2cdf92500939988"
+    },
+    {
+      "path": "会话/2026-10-14_01a138c3-32ab-7c70-b623-219e0cedba5a.md",
+      "bytes": 240309,
+      "sha256": "ff8a96ccfd546abe5e5452e077bdd6f007a38d4a7e520654ba72b80dec7c3c7a"
+    },
+    {
+      "path": "会话/2026-10-14_01a13981-9813-7992-9b18-e0fdccc765d8.md",
+      "bytes": 191119,
+      "sha256": "061f962c1248e2e2c948c043f9d667c5f80a14fbedc6a702dea71032dcd12913"
+    },
+    {
+      "path": "会话/2026-10-16_01a1442f-1961-7270-9479-0d12a56c93f7.md",
+      "bytes": 36416,
+      "sha256": "f09b3c46c1d5dbc39c4c36d40fdf08782ba4bc02fd4721525122f33c7d90122c"
+    },
+    {
+      "path": "会话/2026-10-22_01a1624b-7ea4-7332-a072-641772efca53.md",
+      "bytes": 4753,
+      "sha256": "1cab2bca0aa685e15f3fb4277ba29f4c1b5d52acde3ad90143e37f2111d6ba21"
+    },
+    {
+      "path": "原文数据/2026-10-09_01a1207b-718d-79c1-a3f1-4d3bbdee41d3.jsonl",
+      "bytes": 86215,
+      "sha256": "3272e48cf5ec9b658fed5b7d3a9dae3f8b3ad50e4f3f4a0f3150da5ca5c9ab7e"
+    },
+    {
+      "path": "原文数据/2026-10-10_01a123c9-94f4-7161-8aef-3e1e334eddc9.jsonl",
+      "bytes": 5542,
+      "sha256": "e76fe6b845dc3506aed61a5ebcee01ec5f5bb8f8829657be86904188ce9cf82a"
+    },
+    {
+      "path": "原文数据/2026-10-10_01a12424-5601-7451-8290-547f8371db0e.jsonl",
+      "bytes": 197489,
+      "sha256": "a32d50a0d679223842d78e2493855bcd084a51215a936737c6c02d640211aebd"
+    },
+    {
+      "path": "原文数据/2026-10-10_01a12509-8e89-7b93-bc7e-d457ca9c635d.jsonl",
+      "bytes": 423886,
+      "sha256": "3ba96396190b15d40588999cdc9cbc8940c1807533735238a6a42219fd78fd1b"
+    },
+    {
+      "path": "原文数据/2026-10-10_01a1250f-6216-7a53-bae0-b77027e126f5.jsonl",
+      "bytes": 611585,
+      "sha256": "a47013c637859d0224ead4e74e24d996e158e044648d45e00bd5e61c2d1c3559"
+    },
+    {
+      "path": "原文数据/2026-10-10_01a12533-c6ad-70f2-bd3c-480925e1698e.jsonl",
+      "bytes": 107974,
+      "sha256": "5c9d8dedf01bf138d5b7e1555e98751882e4f9722b1eb466e66ff814cb82d1eb"
+    },
+    {
+      "path": "原文数据/2026-10-10_01a12547-4941-7e30-ad08-390139c00730.jsonl",
+      "bytes": 116825,
+      "sha256": "28cdca284f1229daa0f483e74225556b1de1fdde669d945d89aeeb82b43c0b88"
+    },
+    {
+      "path": "原文数据/2026-10-10_01a12562-eb55-7c72-82cd-3ef288dbaa6d.jsonl",
+      "bytes": 618788,
+      "sha256": "39e0a07b20672212672ae3f91c2cc3810ceee68298180365bce8b0c13e1b1635"
+    },
+    {
+      "path": "原文数据/2026-10-12_01a12f8e-4d8d-7891-8937-0daf9ea30f82.jsonl",
+      "bytes": 570180,
+      "sha256": "57e8597e2773b75be1c81c36c6a1edac2cdb2b9d5df2dc88b2aa99d3623d6925"
+    },
+    {
+      "path": "原文数据/2026-10-13_01a13408-d5a7-7b51-b2eb-64b6039b55bb.jsonl",
+      "bytes": 209250,
+      "sha256": "3539d9801914f9aa5bda9d43bb39dda77863695f357209339489ce302bad15f0"
+    },
+    {
+      "path": "原文数据/2026-10-13_01a13417-2118-7910-95db-d35b5430acd8.jsonl",
+      "bytes": 240963,
+      "sha256": "73781af4e3affb1d96a6548c2d2161c82b93cfd29d3df2c8c24d971ea588e3b0"
+    },
+    {
+      "path": "原文数据/2026-10-13_01a13417-daca-7f32-80c0-d463cec85aad.jsonl",
+      "bytes": 104816,
+      "sha256": "b181a10cd43cb8ba548aa1e49791b2fe4f3f1be86f7e8d49920f5849eed9ab65"
+    },
+    {
+      "path": "原文数据/2026-10-13_01a134b4-b236-73e1-8269-d67df7cb62c0.jsonl",
+      "bytes": 15027,
+      "sha256": "7799af0dbab08be7d5c5f430e099486bb76e2b797567358aba61debbb2b91407"
+    },
+    {
+      "path": "原文数据/2026-10-14_01a138c3-32ab-7c70-b623-219e0cedba5a.jsonl",
+      "bytes": 340931,
+      "sha256": "8b7cc48caa9517f396be738b2f5f9097da5a1b1d15f2fa477ac0829037c132c6"
+    },
+    {
+      "path": "原文数据/2026-10-14_01a13981-9813-7992-9b18-e0fdccc765d8.jsonl",
+      "bytes": 264699,
+      "sha256": "b1a850a50967a57479a7b83b6a5b3ca002517acfef03ed252380c579c2419929"
+    },
+    {
+      "path": "原文数据/2026-10-16_01a1442f-1961-7270-9479-0d12a56c93f7.jsonl",
+      "bytes": 45026,
+      "sha256": "3ea976a6784b9dd60137882686cc637102e2c5ade9c9fe82df5897f3dfd44689"
+    },
+    {
+      "path": "原文数据/2026-10-22_01a1624b-7ea4-7332-a072-641772efca53.jsonl",
+      "bytes": 5169,
+      "sha256": "f269a8c157e693d79a61286ff6fde12a8e54887582ffb52de0ad9ce21030b3b2"
+    }
+  ],
+  "totals": {
+    "turns": 1171,
+    "user_messages": 1566,
+    "final_answers": 1371,
+    "turns_without_final_answer": 30,
+    "attachments": 49,
+    "unknown_model_turns": 0,
+    "registered_file_changes": 8778
+  },
+  "publication": {
+    "type": "redacted_repository_copy",
+    "original_manifest_sha256": "8caf4e1b77a809f2c00e67458323b4ae54a10b8d9fa14e82a24261414ca02a0e",
+    "redacted_value_types": [
+      "ACCESS_KEY_SECRET",
+      "ALIBABA_ACCESS_KEY_ID"
+    ],
+    "redacted_files": {
+      "历史补录/会话/2026-10-12_01a12f8e-4d8d-7891-8937-0daf9ea30f82.md": 2,
+      "历史补录/原文数据/2026-10-12_01a12f8e-4d8d-7891-8937-0daf9ea30f82.jsonl": 4
+    },
+    "originals": "Authoritative unredacted logs are retained outside the repository on the owner's device."
+  }
+}

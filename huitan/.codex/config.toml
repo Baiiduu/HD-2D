@@ -1,0 +1,7 @@
+[mcp_servers.godot_mcp]
+command = "npx"
+args = ["-y", "@yanhuifair/godot-mcp@1.12.9", "-p", "."]
+cwd = "."
+env_vars = ["GODOT_PATH", "TEMP", "TMP", "npm_config_cache"]
+startup_timeout_sec = 90
+tool_timeout_sec = 45
