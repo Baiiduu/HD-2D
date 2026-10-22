@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "godot_mcp": {
+      "command": "npx",
+      "args": ["-y", "@yanhuifair/godot-mcp@1.12.9", "-p", "."]
+    }
+  }
+}
